@@ -1,0 +1,22 @@
+
+- name: "Prepare {{ item.role_id }} role directory"
+  file:
+    path: "{{ role_output_dir }}"
+    state: directory
+- name: Generate role
+  template:
+    src: "{{ src_dir }}/templates/create-datavolume-role.yaml"
+    dest: "{{ role_output_dir }}/00-create-datavolume-role.yaml"
+- name: Generate service account
+  template:
+    src: "{{ src_dir }}/templates/create-datavolume-sa.yaml"
+    dest: "{{ role_output_dir }}/01-create-datavolume-sa.yaml"
+- name: Generate role binding
+  template:
+    src: "{{ src_dir }}/templates/create-datavolume-role-binding.yaml"
+    dest: "{{ role_output_dir }}/02-create-datavolume-role-binding.yaml"
+- name: Make rbac bundle
+  assemble:
+    src: "{{ role_output_dir }}"
+    dest: "{{ role_output_dir }}/{{ task_name }}-{{ item.role_id }}-rbac.yaml"
+    delimiter: '\n'

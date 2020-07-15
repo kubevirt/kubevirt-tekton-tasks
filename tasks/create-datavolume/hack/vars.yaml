@@ -1,0 +1,2 @@
+task_name: create-datavolume
+create_dv_image: quay.io/openshift/origin-cli:4.7
