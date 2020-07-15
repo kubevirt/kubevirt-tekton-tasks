@@ -19,8 +19,8 @@ Install one of the following rbac permissions to the active namespace
     ```
   - Cluster scoped DataVolume creation
     ```bash
-    # Replace MY_NAMESPACE with the target namespace
-    wget -qO - https://raw.githubusercontent.com/suomiy/kubevirt-tekton-tasks/master/tasks/create-datavolume/manifests/create-datavolume-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/MY_NAMESPACE/" | kubectl apply -f -
+    TARGET_NAMESPACE="$(kubectl config current-context | cut -d/ -f1)"
+    wget -qO - https://raw.githubusercontent.com/suomiy/kubevirt-tekton-tasks/master/tasks/create-datavolume/manifests/create-datavolume-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
     ```
 
 ### Parameters
