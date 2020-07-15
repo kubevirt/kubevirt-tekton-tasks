@@ -1,0 +1,30 @@
+---
+- connection: local
+  hosts: 127.0.0.1
+  gather_facts: no
+  vars_files:
+  - vars.yaml
+  vars:
+    output_dir: ../dist
+    src_dir: ../src
+    role_name: "{{ task_name }}-task"
+    sa_name: "{{ role_name }}"
+    role_binding_name: "{{ role_name }}"
+  tasks:
+  - name: Prepare dist directory
+    file:
+      path: "{{ output_dir }}"
+      state: directory
+  - name: Generate task
+    template:
+      src: "{{ src_dir }}/templates/create-datavolume.yaml"
+      dest: "{{ output_dir }}/create-datavolume.yaml"
+    vars:
+      create_dv_script: "{{ lookup('file', '{{ src_dir }}/create-datavolume-script.sh') }}"
+  - name: Generate roles
+    include: generate-roles-subtasks.yaml
+    with_items:
+    - { role_type: Role, role_id: 'namespace', sa_namespace: null }
+    - { role_type: ClusterRole, role_id: 'cluster', sa_namespace: 'TARGET_NAMESPACE' }
+    vars:
+      role_output_dir: "{{ output_dir }}/{{ item.role_id }}-role"
