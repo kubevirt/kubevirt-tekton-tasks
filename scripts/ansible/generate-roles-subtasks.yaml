@@ -5,16 +5,16 @@
     state: directory
 - name: Generate role
   template:
-    src: "{{ src_dir }}/templates/create-datavolume-role.yaml"
-    dest: "{{ role_output_dir }}/00-create-datavolume-role.yaml"
+    src: "{{ manifest_templates_dir }}/{{ task_name }}-role.yaml"
+    dest: "{{ role_output_dir }}/00-{{ task_name }}-role.yaml"
 - name: Generate service account
   template:
-    src: "{{ src_dir }}/templates/create-datavolume-sa.yaml"
-    dest: "{{ role_output_dir }}/01-create-datavolume-sa.yaml"
+    src: "{{ manifest_templates_dir }}/{{ task_name }}-sa.yaml"
+    dest: "{{ role_output_dir }}/01-{{ task_name }}-sa.yaml"
 - name: Generate role binding
   template:
-    src: "{{ src_dir }}/templates/create-datavolume-role-binding.yaml"
-    dest: "{{ role_output_dir }}/02-create-datavolume-role-binding.yaml"
+    src: "{{ manifest_templates_dir }}/{{ task_name }}-role-binding.yaml"
+    dest: "{{ role_output_dir }}/02-{{ task_name }}-role-binding.yaml"
 - name: Make rbac bundle
   assemble:
     src: "{{ role_output_dir }}"
