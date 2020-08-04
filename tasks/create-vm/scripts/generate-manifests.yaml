@@ -5,7 +5,7 @@
   vars_files:
     - vars.yaml
   vars:
-    output_dir: ../dist
+    output_dir: ../dist/manifests
     manifest_templates_dir: ../manifest-templates
     repo_dir: ../../..
     role_name: "{{ task_name }}-task"

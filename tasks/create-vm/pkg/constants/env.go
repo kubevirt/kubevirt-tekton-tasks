@@ -1,7 +1,7 @@
 package constants
 
 import (
-	errors2 "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/errors"
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -12,10 +12,6 @@ func IsEnvVarTrue(envVarName string) bool {
 }
 
 func GetActiveNamespace() (string, error) {
-	if activeNamespace := os.Getenv(PodNamespaceENV); activeNamespace != "" {
-		return activeNamespace, nil
-	}
-
 	activeNamespaceBytes, _ := ioutil.ReadFile(serviceAccountNamespacePath)
 	activeNamespace := string(activeNamespaceBytes)
 
@@ -23,7 +19,7 @@ func GetActiveNamespace() (string, error) {
 		return activeNamespace, nil
 	}
 
-	return "", errors2.NewNotFoundError("could not detect active namespace")
+	return "", errors.New("could not detect active namespace")
 }
 
 func GetTektonResultsDir() string {

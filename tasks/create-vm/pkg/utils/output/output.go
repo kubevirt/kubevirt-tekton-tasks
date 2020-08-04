@@ -13,15 +13,6 @@ const (
 	JsonOutput OutputType = "json"
 )
 
-func GetOutputTypeNames() []string {
-	types := [...]OutputType{YamlOutput, JsonOutput}
-	res := make([]string, len(types))
-	for i, v := range types {
-		res[i] = string(v)
-	}
-	return res
-}
-
 func PrettyPrint(object interface{}, outputType OutputType) {
 	switch outputType {
 	case YamlOutput:

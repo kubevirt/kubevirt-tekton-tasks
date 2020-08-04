@@ -3,11 +3,11 @@ module github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm
 go 1.14
 
 require (
+	github.com/alexflint/go-arg v1.3.0
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
 	github.com/openshift/api v0.0.0
 	github.com/openshift/client-go v0.0.0
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/pflag v1.0.5
 	k8s.io/api v0.17.0
 	k8s.io/apimachinery v0.17.1-beta.0
 	k8s.io/client-go v12.0.0+incompatible
