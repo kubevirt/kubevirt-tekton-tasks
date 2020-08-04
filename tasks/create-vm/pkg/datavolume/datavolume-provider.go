@@ -26,20 +26,19 @@ func NewDataVolumeProvider(client datavolumeclientv1alpha1.CdiV1alpha1Interface)
 }
 
 func (d *dataVolumeProvider) GetByName(namespace string, names ...string) ([]*datavolumev1alpha1.DataVolume, error) {
-	var errs []error
+	var multiError errors2.MultiError
 	var dvs []*datavolumev1alpha1.DataVolume
 
 	for _, name := range names {
 		dv, err := d.client.DataVolumes(namespace).Get(name, metav1.GetOptions{})
 		if err == nil {
 			dvs = append(dvs, dv)
-			errs = append(errs, nil)
 		} else {
 			dvs = append(dvs, nil)
-			errs = append(errs, err)
+			multiError.Add(name, err)
 		}
 	}
-	return dvs, errors2.NewMultiErrorOrNil(errs)
+	return dvs, multiError.AsOptional()
 }
 
 func (d *dataVolumeProvider) AddOwnerReferences(dv *datavolumev1alpha1.DataVolume, newOwnerRefs ...metav1.OwnerReference) (*datavolumev1alpha1.DataVolume, error) {

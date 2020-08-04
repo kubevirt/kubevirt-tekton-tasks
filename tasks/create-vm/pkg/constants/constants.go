@@ -20,11 +20,10 @@ const (
 
 // Exit codes
 const (
-	WrongArgsExitCode                         = 2
-	VolumesNotPresentExitCode                 = 3
-	MissingRequiredTemplateParametersExitCode = 4
-	CreateVMErrorExitCode                     = 5
-	OwnVolumesErrorExitCode                   = 6
+	WrongArgsExitCode         = 2
+	VolumesNotPresentExitCode = 3
+	CreateVMErrorExitCode     = 4
+	OwnVolumesErrorExitCode   = 5
 )
 
 // Env related constants

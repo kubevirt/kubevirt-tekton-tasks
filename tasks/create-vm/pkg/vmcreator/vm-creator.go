@@ -99,53 +99,58 @@ func (v *VMCreator) CheckVolumesExist() error {
 	_, dvsErr := v.dataVolumeProvider.GetByName(v.activeNamespace, v.cliParams.GetAllDVNames()...)
 	_, pvcsErr := v.pvcProvider.GetByName(v.activeNamespace, v.cliParams.GetAllPVCNames()...)
 
-	return errors2.NewMultiFilteredErrorOrNil([]error{dvsErr, pvcsErr})
+	return errors2.NewMultiError().
+		AddC("dvsErr", dvsErr).
+		AddC("pvcsErr", pvcsErr).
+		AsOptional()
 }
 
 func (v *VMCreator) OwnVolumes(vm *kubevirtv1.VirtualMachine) error {
 	dvsErr := v.ownDataVolumes(vm)
 	pvcsErr := v.ownPersistentVolumeClaims(vm)
 
-	return errors2.NewMultiFilteredErrorOrNil([]error{dvsErr, pvcsErr})
+	return errors2.NewMultiError().
+		AddC("dvsErr", dvsErr).
+		AddC("pvcsErr", pvcsErr).
+		AsOptional()
 }
 
 func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
-	var ownErrors []error
+	var multiError errors2.MultiError
 
 	dvs, dvsErr := v.dataVolumeProvider.GetByName(v.activeNamespace, v.cliParams.OwnDataVolumes...)
 
 	for idx, dvName := range v.cliParams.OwnDataVolumes {
-		// TODO refactor multi error to get error by key? and not by idx
-		if err := errors2.GetErrorFromMultiError(dvsErr, idx); err != nil {
-			ownErrors = append(ownErrors, err)
+		if err := errors2.GetErrorFromMultiError(dvsErr, dvName); err != nil {
+			multiError.Add(dvName, err)
 			continue
 		}
 
 		if _, err := v.dataVolumeProvider.AddOwnerReferences(dvs[idx], virtualMachine.AsVMOwnerReference(vm)); err != nil {
-			ownErrors = append(ownErrors, errors.Wrapf(err, "could not add owner reference to %v DataVolume", dvName))
+			multiError.Add(dvName, errors.Wrapf(err, "could not add owner reference to %v DataVolume", dvName))
 		}
 
 	}
 
-	return errors2.NewMultiErrorOrNil(ownErrors)
+	return multiError.AsOptional()
 }
 
 func (v *VMCreator) ownPersistentVolumeClaims(vm *kubevirtv1.VirtualMachine) error {
-	var ownErrors []error
+	var multiError errors2.MultiError
 
 	pvcs, pvcsErr := v.pvcProvider.GetByName(v.activeNamespace, v.cliParams.OwnPersistentVolumeClaims...)
 
 	for idx, pvcName := range v.cliParams.OwnPersistentVolumeClaims {
-		if err := errors2.GetErrorFromMultiError(pvcsErr, idx); err != nil {
-			ownErrors = append(ownErrors, err)
+		if err := errors2.GetErrorFromMultiError(pvcsErr, pvcName); err != nil {
+			multiError.Add(pvcName, err)
 			continue
 		}
 
 		if _, err := v.pvcProvider.AddOwnerReferences(pvcs[idx], virtualMachine.AsVMOwnerReference(vm)); err != nil {
-			ownErrors = append(ownErrors, errors.Wrapf(err, "could not add owner reference to %v PersistentVolumeClaim", pvcName))
+			multiError.Add(pvcName, errors.Wrapf(err, "could not add owner reference to %v PersistentVolumeClaim", pvcName))
 		}
 
 	}
 
-	return errors2.NewMultiErrorOrNil(ownErrors)
+	return multiError.AsOptional()
 }

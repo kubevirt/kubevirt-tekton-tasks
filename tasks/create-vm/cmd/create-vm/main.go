@@ -3,14 +3,13 @@ package main
 import (
 	"fmt"
 	flag "github.com/spf13/pflag"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
 	. "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/constants"
-	customerrors "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/errors"
+	errors2 "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/errors"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/output"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/parse"
@@ -56,24 +55,9 @@ func customParse(flags ...*parse.SpaceSeparatedListFlag) {
 	for _, f := range flags {
 		err := f.SetReal()
 		if err != nil {
-			utils.ExitWithError(WrongArgsExitCode, err)
+			utils.Exit(WrongArgsExitCode, err)
 		}
 	}
-}
-
-func createVMExit(err error) {
-	switch e := err.(type) {
-	case *customerrors.MissingRequiredError:
-		utils.ExitWithError(MissingRequiredTemplateParametersExitCode, e)
-	case *errors.StatusError:
-		switch e.ErrStatus.Code {
-		case http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity:
-			utils.ExitWithError(CreateVMErrorExitCode, e)
-		}
-	}
-
-	// not exited yet - panic with error
-	panic(err)
 }
 
 func main() {
@@ -82,7 +66,7 @@ func main() {
 	customParse(templateParams, dataVolumes, ownDataVolumes, persistentVolumeClaims, ownPersistentVolumeClaims)
 
 	if err := checkArgErors(); err != nil {
-		utils.ExitWithError(WrongArgsExitCode, err)
+		utils.Exit(WrongArgsExitCode, err)
 	}
 
 	cliParams := &parse.CLIParams{
@@ -98,13 +82,15 @@ func main() {
 	vmCreator := vmcreator.NewVMCreator(cliParams)
 
 	if err := vmCreator.CheckVolumesExist(); err != nil {
-		utils.ExitWithError(VolumesNotPresentExitCode, err)
+		utils.Exit(VolumesNotPresentExitCode, err)
 	}
 
 	vm, err := vmCreator.CreateVM()
 
 	if err != nil {
-		createVMExit(err)
+		utils.ExitOrDie(CreateVMErrorExitCode, err,
+			errors2.IsStatusErrorSoft(err, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity),
+		)
 	}
 
 	// write results
@@ -113,7 +99,7 @@ func main() {
 	utils.WriteToFile(filepath.Join(resultsDir, NamespaceResultName), vm.Namespace)
 
 	if err := vmCreator.OwnVolumes(vm); err != nil {
-		utils.ExitWithError(OwnVolumesErrorExitCode, err)
+		utils.Exit(OwnVolumesErrorExitCode, err)
 	}
 
 	output.PrettyPrint(vm, output.OutputType(showOutput))

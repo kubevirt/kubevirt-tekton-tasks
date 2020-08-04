@@ -1,33 +1,32 @@
 package errors
 
-import (
-	"fmt"
-)
+import "k8s.io/apimachinery/pkg/api/errors"
 
-type MissingRequiredError struct {
-	s string
+type SoftError interface {
+	IsSoft() bool
 }
 
-func (e MissingRequiredError) Error() string {
-	return e.s
+func IsErrorSoft(err error) bool {
+	if err == nil {
+		return false
+	}
+	var softErr, ok = err.(SoftError)
+
+	return ok && softErr.IsSoft()
 }
 
-func NewMissingRequiredArgError(name string) error {
-	return &MissingRequiredError{s: fmt.Sprintf("missing required argument -%v", name)}
-}
+func IsStatusErrorSoft(err error, allowedStatusCodes ...int32) bool {
+	if err == nil {
+		return false
+	}
 
-func NewMissingRequiredError(s string) error {
-	return &MissingRequiredError{s}
-}
+	if statusErr, ok := err.(*errors.StatusError); ok {
+		for _, code := range allowedStatusCodes {
+			if code == statusErr.ErrStatus.Code {
+				return true
+			}
+		}
+	}
 
-type NotFoundError struct {
-	s string
-}
-
-func (e NotFoundError) Error() string {
-	return e.s
-}
-
-func NewNotFoundError(s string) error {
-	return &MissingRequiredError{s}
+	return false
 }
