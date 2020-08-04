@@ -1,7 +1,7 @@
 package constants
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/errors"
+	errors2 "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -23,7 +23,7 @@ func GetActiveNamespace() (string, error) {
 		return activeNamespace, nil
 	}
 
-	return "", errors.NewNotFoundError("could not detect active namespace")
+	return "", errors2.NewNotFoundError("could not detect active namespace")
 }
 
 func GetTektonResultsDir() string {

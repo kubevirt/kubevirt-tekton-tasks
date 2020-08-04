@@ -26,20 +26,19 @@ func NewPersistentVolumeClaimProvider(client clientv1.CoreV1Interface) Persisten
 }
 
 func (d *pvcProvider) GetByName(namespace string, names ...string) ([]*v1.PersistentVolumeClaim, error) {
-	var errs []error
+	var multiError errors2.MultiError
 	var pvcs []*v1.PersistentVolumeClaim
 
 	for _, name := range names {
 		pvc, err := d.client.PersistentVolumeClaims(namespace).Get(name, metav1.GetOptions{})
 		if err == nil {
 			pvcs = append(pvcs, pvc)
-			errs = append(errs, nil)
 		} else {
 			pvcs = append(pvcs, nil)
-			errs = append(errs, err)
+			multiError.Add(name, err)
 		}
 	}
-	return pvcs, errors2.NewMultiErrorOrNil(errs)
+	return pvcs, multiError.AsOptional()
 }
 
 func (d *pvcProvider) AddOwnerReferences(pvc *v1.PersistentVolumeClaim, newOwnerRefs ...metav1.OwnerReference) (*v1.PersistentVolumeClaim, error) {
