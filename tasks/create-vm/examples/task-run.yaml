@@ -3,7 +3,6 @@ apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
   name: create-vm-taskrun
-  namespace: default
 spec:
   serviceAccountName: create-vm-task
   taskRef:
@@ -12,12 +11,9 @@ spec:
   params:
     - name: templateName
       value: vm-template-example
-    - name: templateNamespace
-      value: default
     - name: templateParams
       value:
-        - NAME
-        - example-vm
+        - 'NAME:example-vm'
     - name: ownDataVolumes
       value:
         - example-dv
