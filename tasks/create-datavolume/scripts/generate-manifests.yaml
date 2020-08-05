@@ -5,7 +5,7 @@
   vars_files:
   - vars.yaml
   vars:
-    output_dir: ../dist
+    output_dir: ../dist/manifests
     manifest_templates_dir: ../src/templates
     additional_scripts_dir: ../src
     repo_dir: ../../..
