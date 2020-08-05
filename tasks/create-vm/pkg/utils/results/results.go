@@ -2,11 +2,15 @@ package results
 
 import (
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/constants"
+	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/logger"
+	"go.uber.org/zap"
 	"io/ioutil"
 	"path/filepath"
 )
 
-func WriteResults(results map[string]string) error {
+func RecordResults(results map[string]string) error {
+	logger.GetLogger().Debug("recording results", zap.Reflect("results", results))
+
 	resultsDir := constants.GetTektonResultsDir()
 
 	for resKey, resVal := range results {

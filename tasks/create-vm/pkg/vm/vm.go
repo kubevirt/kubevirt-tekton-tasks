@@ -65,7 +65,7 @@ func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {
 	}
 }
 
-func AddVolumes(vm *kubevirtv1.VirtualMachine, template *templatev1.Template, cliParams *parse.CLIParams) {
+func AddVolumes(vm *kubevirtv1.VirtualMachine, template *templatev1.Template, cliParams *parse.CLIOptions) {
 	for _, diskName := range cliParams.GetAllDiskNames() {
 		disk := kubevirtv1.Disk{
 			Name: diskName,

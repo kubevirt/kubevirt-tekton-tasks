@@ -5,16 +5,37 @@ import (
 	"os"
 )
 
-func ErrorExit(exitCode int, err error) {
-	errMsg := err.Error()
-	if len(errMsg) > 0 && errMsg[len(errMsg)-1] != '\n' {
-		errMsg += "\n"
-	}
-	_, _ = os.Stderr.WriteString(errMsg)
-	os.Exit(exitCode)
+type Exit struct {
+	Code int
+	Msg  string
+	Soft bool
 }
 
-func ErrorExitOrDie(exitCode int, err error, isSoftConditions ...bool) {
+func (e Exit) Error() string {
+	return e.Msg
+}
+
+func (e Exit) IsSoft() bool {
+	return e.Soft
+}
+
+func ExitFromError(code int, err error) {
+	if exit, ok := err.(Exit); ok == true {
+		panic(exit)
+	}
+
+	panic(Exit{
+		Code: code,
+		Msg:  err.Error(),
+		Soft: true,
+	})
+}
+
+func ExitOrDieFromError(code int, err error, isSoftConditions ...bool) {
+	if exit, ok := err.(Exit); ok == true {
+		panic(exit)
+	}
+
 	soft := errors2.IsErrorSoft(err)
 
 	// find any soft condition
@@ -22,9 +43,23 @@ func ErrorExitOrDie(exitCode int, err error, isSoftConditions ...bool) {
 		soft = isSoftConditions[idx]
 	}
 
-	if soft {
-		ErrorExit(exitCode, err)
-		// end
+	panic(Exit{
+		Code: code,
+		Msg:  err.Error(),
+		Soft: soft,
+	})
+}
+
+func HandleExit() {
+	if e := recover(); e != nil {
+		if exit, ok := e.(Exit); ok == true && exit.Soft {
+			errMsg := exit.Error()
+			if len(errMsg) > 0 && errMsg[len(errMsg)-1] != '\n' {
+				errMsg += "\n"
+			}
+			_, _ = os.Stderr.WriteString(errMsg)
+			os.Exit(exit.Code)
+		}
+		panic(e)
 	}
-	panic(err)
 }

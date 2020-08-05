@@ -8,6 +8,7 @@ require (
 	github.com/openshift/api v0.0.0
 	github.com/openshift/client-go v0.0.0
 	github.com/pkg/errors v0.9.1
+	go.uber.org/zap v1.15.0
 	k8s.io/api v0.17.0
 	k8s.io/apimachinery v0.17.1-beta.0
 	k8s.io/client-go v12.0.0+incompatible
