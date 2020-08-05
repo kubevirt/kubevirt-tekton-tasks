@@ -26,8 +26,9 @@ Install one of the following rbac permissions to the active namespace
 ### Parameters
 
 - **templateName**: Name of a template to create VM from
-- **templateNamespace**: Namespace of a template to create VM from
-- **templateParams**: Template params to pass when processing the template manifest. Each param name should be followed by its value. Eg `[“NAME”,“my-vm”,“DESC”,“blue”]`
+- **templateNamespace**: Namespace of a template to create VM from (defaults to active namespace)
+- **templateParams**: Template params to pass when processing the template manifest. Each param should have KEY:VAL format. Eg `[“NAME:my-vm”,“DESC:blue”]`
+- **templateNamespace**: Namespace where to create the VM (defaults to active namespace)
 - **dataVolumes**: Add DVs to VM Volumes.
 - **ownDataVolumes**: Add DVs to VM Volumes and add VM to DV ownerReferences. These DataVolumes will be deleted once the created VM gets deleted.
 - **persistentVolumeClaims**: Add PVCs to VM Volumes.
