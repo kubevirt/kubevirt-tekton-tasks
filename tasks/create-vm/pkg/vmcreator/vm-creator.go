@@ -8,8 +8,10 @@ import (
 	errors2 "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/errors"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/pvc"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates"
+	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/logger"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/parse"
 	virtualMachine "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/vm"
+	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -22,7 +24,7 @@ import (
 
 type VMCreator struct {
 	targetNamespace        string
-	cliParams              *parse.CLIParams
+	cliOptions             *parse.CLIOptions
 	config                 *rest.Config
 	templateProvider       templates.TemplateProvider
 	virtualMachineProvider virtualMachine.VirtualMachineProvider
@@ -37,8 +39,9 @@ func getConfig() (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
-func NewVMCreator(cliParams *parse.CLIParams) (*VMCreator, error) {
-	targetNS := cliParams.GetVirtualMachineNamespace()
+func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
+	logger.GetLogger().Debug("initialized clients and providers")
+	targetNS := cliOptions.GetVirtualMachineNamespace()
 
 	config, err := getConfig()
 	if err != nil {
@@ -61,7 +64,7 @@ func NewVMCreator(cliParams *parse.CLIParams) (*VMCreator, error) {
 
 	return &VMCreator{
 		targetNamespace:        targetNS,
-		cliParams:              cliParams,
+		cliOptions:             cliOptions,
 		config:                 config,
 		templateProvider:       templateProvider,
 		virtualMachineProvider: virtualMachineProvider,
@@ -71,12 +74,14 @@ func NewVMCreator(cliParams *parse.CLIParams) (*VMCreator, error) {
 }
 
 func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
-	template, err := v.templateProvider.Get(v.cliParams.GetTemplateNamespace(), v.cliParams.TemplateName)
+	logger.GetLogger().Debug("retrieving template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.cliOptions.GetTemplateNamespace()))
+	template, err := v.templateProvider.Get(v.cliOptions.GetTemplateNamespace(), v.cliOptions.TemplateName)
 	if err != nil {
 		return nil, err
 	}
 
-	processedTemplate, err := v.templateProvider.Process(v.targetNamespace, template, v.cliParams.GetTemplateParams())
+	logger.GetLogger().Debug("processing template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.targetNamespace))
+	processedTemplate, err := v.templateProvider.Process(v.targetNamespace, template, v.cliOptions.GetTemplateParams())
 	if err != nil {
 		return nil, err
 	}
@@ -87,14 +92,16 @@ func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
 
 	vm.Namespace = v.targetNamespace
 	virtualMachine.AddMetadata(vm, processedTemplate)
-	virtualMachine.AddVolumes(vm, processedTemplate, v.cliParams)
+	virtualMachine.AddVolumes(vm, processedTemplate, v.cliOptions)
 
+	logger.GetLogger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, vm)
 }
 
 func (v *VMCreator) CheckVolumesExist() error {
-	_, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, v.cliParams.GetAllDVNames()...)
-	_, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, v.cliParams.GetAllPVCNames()...)
+	logger.GetLogger().Debug("asserting additional volumes exist", zap.Strings("additional-volumes", v.cliOptions.GetAllDiskNames()))
+	_, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, v.cliOptions.GetAllDVNames()...)
+	_, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, v.cliOptions.GetAllPVCNames()...)
 
 	return errors2.NewMultiError().
 		AddC("dvsErr", dvsErr).
@@ -113,11 +120,12 @@ func (v *VMCreator) OwnVolumes(vm *kubevirtv1.VirtualMachine) error {
 }
 
 func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
+	logger.GetLogger().Debug("taking ownership of DataVolumes", zap.Strings("own-dvs", v.cliOptions.OwnDataVolumes))
 	var multiError errors2.MultiError
 
-	dvs, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, v.cliParams.OwnDataVolumes...)
+	dvs, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, v.cliOptions.OwnDataVolumes...)
 
-	for idx, dvName := range v.cliParams.OwnDataVolumes {
+	for idx, dvName := range v.cliOptions.OwnDataVolumes {
 		if err := errors2.GetErrorFromMultiError(dvsErr, dvName); err != nil {
 			multiError.Add(dvName, err)
 			continue
@@ -133,11 +141,12 @@ func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
 }
 
 func (v *VMCreator) ownPersistentVolumeClaims(vm *kubevirtv1.VirtualMachine) error {
+	logger.GetLogger().Debug("taking ownership of PersistentVolumeClaims", zap.Strings("own-pvcs", v.cliOptions.OwnPersistentVolumeClaims))
 	var multiError errors2.MultiError
 
-	pvcs, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, v.cliParams.OwnPersistentVolumeClaims...)
+	pvcs, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, v.cliOptions.OwnPersistentVolumeClaims...)
 
-	for idx, pvcName := range v.cliParams.OwnPersistentVolumeClaims {
+	for idx, pvcName := range v.cliOptions.OwnPersistentVolumeClaims {
 		if err := errors2.GetErrorFromMultiError(pvcsErr, pvcName); err != nil {
 			multiError.Add(pvcName, err)
 			continue

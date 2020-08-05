@@ -5,6 +5,7 @@ import (
 	. "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/constants"
 	errors2 "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/errors"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils"
+	log "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/logger"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/output"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/parse"
 	res "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/results"
@@ -13,33 +14,38 @@ import (
 )
 
 func main() {
-	cliParams := &parse.CLIParams{}
-	goarg.MustParse(cliParams)
+	defer utils.HandleExit()
 
-	if err := cliParams.Init(); err != nil {
-		utils.ErrorExitOrDie(InvalidNamespacesExitCode, err)
+	cliOptions := &parse.CLIOptions{}
+	goarg.MustParse(cliOptions)
+
+	logger := log.InitLogger(cliOptions.GetDebugLevel())
+	defer logger.Sync()
+
+	if err := cliOptions.Init(); err != nil {
+		utils.ExitOrDieFromError(InvalidNamespacesExitCode, err)
 	}
 
-	vmCreator, err := vmcreator.NewVMCreator(cliParams)
+	vmCreator, err := vmcreator.NewVMCreator(cliOptions)
 
 	if err != nil {
-		utils.ErrorExitOrDie(GenericExitCode, err)
+		utils.ExitOrDieFromError(GenericExitCode, err)
 	}
 
 	if err := vmCreator.CheckVolumesExist(); err != nil {
-		utils.ErrorExit(VolumesNotPresentExitCode, err)
+		utils.ExitFromError(VolumesNotPresentExitCode, err)
 	}
 
 	vm, err := vmCreator.CreateVM()
 
 	if err != nil {
-		utils.ErrorExitOrDie(CreateVMErrorExitCode, err,
+		utils.ExitOrDieFromError(CreateVMErrorExitCode, err,
 			errors2.IsStatusErrorSoft(err, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity),
 		)
 	}
 
 	if err := vmCreator.OwnVolumes(vm); err != nil {
-		utils.ErrorExit(OwnVolumesErrorExitCode, err)
+		utils.ExitFromError(OwnVolumesErrorExitCode, err)
 	}
 
 	results := map[string]string{
@@ -47,9 +53,9 @@ func main() {
 		NamespaceResultName: vm.Namespace,
 	}
 
-	if err := res.WriteResults(results); err != nil {
-		utils.ErrorExitOrDie(WriteResultsExitCode, err)
+	if err := res.RecordResults(results); err != nil {
+		utils.ExitOrDieFromError(WriteResultsExitCode, err)
 	}
 
-	output.PrettyPrint(vm, cliParams.Output)
+	output.PrettyPrint(vm, cliOptions.Output)
 }
