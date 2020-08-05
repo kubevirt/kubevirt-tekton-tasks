@@ -13,6 +13,11 @@ const (
 	JsonOutput OutputType = "json"
 )
 
+func IsOutputType(value string) bool {
+	val := OutputType(value)
+	return val == "" || val == YamlOutput || val == JsonOutput
+}
+
 func PrettyPrint(object interface{}, outputType OutputType) {
 	switch outputType {
 	case YamlOutput:

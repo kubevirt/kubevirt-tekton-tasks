@@ -20,8 +20,8 @@ readarray -t DV_OUTPUT_ARRAY < "$TMP_DV_RESULTS_FILENAME"
 DV_NAME="${DV_OUTPUT_ARRAY[0]}"
 DV_NAMESPACE="${DV_OUTPUT_ARRAY[1]}"
 
-echo "$DV_NAME" > /tekton/results/name
-echo "$DV_NAMESPACE" > /tekton/results/namespace
+echo -n "$DV_NAME" > /tekton/results/name
+echo -n "$DV_NAMESPACE" > /tekton/results/namespace
 
 echo "Created $DV_NAME Datavolume in $DV_NAMESPACE namespace."
 
