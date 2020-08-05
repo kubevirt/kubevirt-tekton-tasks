@@ -17,13 +17,18 @@ spec:
     - description: Name of a template to create VM from
       name: templateName
       type: string
-    - description: Namespace of a template to create VM from
+    - description: Namespace of a template to create VM from (defaults to active namespace)
       name: templateNamespace
       type: string
-    - description: Template params to pass when processing the template manifest. Each param name should be followed by its value. Eg [“NAME”,“my-vm”,“DESC”,“blue”]
+      default: ""
+    - description: Template params to pass when processing the template manifest. Eg [“NAME:my-vm”, “DESC:blue”]
       name: templateParams
       type: array
       default: []
+    - description: Namespace where to create the VM (defaults to active namespace)
+      name: vmNamespace
+      type: string
+      default: ""
 {% endif %}
     - description: Add DVs to VM Volumes
       name: dataVolumes
@@ -53,17 +58,20 @@ spec:
         - create-vm
         - "--output=yaml"
 {% if item.task_type == "Template" %}
-        - '--templateName=$(params.templateName)'
-        - '--templateNamespace=$(params.templateNamespace)'
-        - '--templateParams'
+        - '--template-name'
+        - $(params.templateName)
+        - '--template-namespace'
+        - $(params.templateNamespace)
+        - '--template-params'
         - $(params.templateParams)
+        - '--vm-namespace'
+        - $(params.vmNamespace)
 {% endif %}
-        - '--dataVolumes'
+        - '--dvs'
         - $(params.dataVolumes)
-        - '--ownDataVolumes'
+        - '--own-dvs'
         - $(params.ownDataVolumes)
-        - '--persistentVolumeClaims'
+        - '--pvcs'
         - $(params.persistentVolumeClaims)
-        - '--ownPersistentVolumeClaims'
+        - '--own-pvcs'
         - $(params.ownPersistentVolumeClaims)
-        - '--'
