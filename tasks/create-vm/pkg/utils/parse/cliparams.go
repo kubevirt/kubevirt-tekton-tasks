@@ -1,8 +1,6 @@
 package parse
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/constants"
-	errors2 "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/errors"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/logger"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/output"
@@ -82,40 +80,19 @@ func (c *CLIOptions) setVirtualMachineNamespace(namespace string) {
 func (c *CLIOptions) Init() error {
 	defer logger.GetLogger().Debug("parsed arguments", zap.Reflect("cliOptions", c))
 
-	tempNamespace := c.GetTemplateNamespace()
-	vmNamespace := c.GetVirtualMachineNamespace()
-
-	if tempNamespace == "" || vmNamespace == "" {
-		activeNamespace, err := constants.GetActiveNamespace()
-		if err != nil {
-			return errors2.NewMissingRequiredError("%v: %v option is empty", err.Error(), c.getMissingNamespaceOptionNames())
-		}
-		if tempNamespace == "" {
-			c.setTemplateNamespace(activeNamespace)
-		}
-		if vmNamespace == "" {
-			c.setVirtualMachineNamespace(activeNamespace)
-		}
+	if err := c.assertValidTypes(); err != nil {
+		return err
 	}
 
-	if len(c.TemplateNamespaces) > 1 {
-		c.setTemplateNamespace(c.GetTemplateNamespace())
+	if err := c.resolveTemplateParams(); err != nil {
+		return err
 	}
-	if len(c.VirtualMachineNamespaces) > 1 {
-		c.setVirtualMachineNamespace(c.GetVirtualMachineNamespace())
+
+	if err := c.resolveDefaultNamespaces(); err != nil {
+		return err
 	}
+
+	c.trimSpaces()
 
 	return nil
-}
-
-func (c *CLIOptions) getMissingNamespaceOptionNames() string {
-	var result = make([]string, 0, 2)
-	if c.GetTemplateNamespace() == "" {
-		result = append(result, templateNamespaceOptionName)
-	}
-	if c.GetVirtualMachineNamespace() == "" {
-		result = append(result, vmNamespaceOptionName)
-	}
-
-	return strings.Join(result, "/")
 }
