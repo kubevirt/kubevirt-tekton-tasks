@@ -38,15 +38,7 @@ func getConfig() (*rest.Config, error) {
 }
 
 func NewVMCreator(cliParams *parse.CLIParams) (*VMCreator, error) {
-	targetNS := cliParams.VirtualMachineNamespace
-
-	if targetNS == "" {
-		activeNamespace, err := GetActiveNamespace()
-		if err != nil {
-			return nil, errors2.NewMissingRequiredError("%v: %v option is empty", err.Error(), parse.VMNamespaceOptionName)
-		}
-		targetNS = activeNamespace
-	}
+	targetNS := cliParams.GetVirtualMachineNamespace()
 
 	config, err := getConfig()
 	if err != nil {
@@ -79,12 +71,7 @@ func NewVMCreator(cliParams *parse.CLIParams) (*VMCreator, error) {
 }
 
 func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
-	templateNamespace := v.cliParams.TemplateNamespace
-	if templateNamespace == "" {
-		templateNamespace = v.targetNamespace
-	}
-
-	template, err := v.templateProvider.Get(templateNamespace, v.cliParams.TemplateName)
+	template, err := v.templateProvider.Get(v.cliParams.GetTemplateNamespace(), v.cliParams.TemplateName)
 	if err != nil {
 		return nil, err
 	}

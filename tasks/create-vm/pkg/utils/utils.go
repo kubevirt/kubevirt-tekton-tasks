@@ -6,7 +6,11 @@ import (
 )
 
 func ErrorExit(exitCode int, err error) {
-	_, _ = os.Stderr.WriteString(err.Error())
+	errMsg := err.Error()
+	if len(errMsg) > 0 && errMsg[len(errMsg)-1] != '\n' {
+		errMsg += "\n"
+	}
+	_, _ = os.Stderr.WriteString(errMsg)
 	os.Exit(exitCode)
 }
 
@@ -23,8 +27,4 @@ func ErrorExitOrDie(exitCode int, err error, isSoftConditions ...bool) {
 		// end
 	}
 	panic(err)
-}
-
-func ConcatStringArrays(a []string, b []string) []string {
-	return append(append([]string{}, a...), b...)
 }

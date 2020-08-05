@@ -16,6 +16,10 @@ func main() {
 	cliParams := &parse.CLIParams{}
 	goarg.MustParse(cliParams)
 
+	if err := cliParams.Init(); err != nil {
+		utils.ErrorExitOrDie(InvalidNamespacesExitCode, err)
+	}
+
 	vmCreator, err := vmcreator.NewVMCreator(cliParams)
 
 	if err != nil {
