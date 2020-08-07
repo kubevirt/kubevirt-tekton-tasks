@@ -1,10 +1,16 @@
 package templates
 
 import (
+	"encoding/json"
 	templatev1 "github.com/openshift/api/template/v1"
+	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates/validations"
 	"k8s.io/apimachinery/pkg/runtime"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	"strings"
+)
+
+const (
+	validationsAnnotation = "validations"
 )
 
 // Get label whose key starts with labelPrefix and has value true
@@ -36,4 +42,17 @@ func DecodeVM(template *templatev1.Template) (*kubevirtv1.VirtualMachine, error)
 		}
 	}
 	return vm, nil
+}
+
+func GetTemplateValidations(template *templatev1.Template) (*validations.TemplateValidations, error) {
+	marshalledValidations := template.Annotations[validationsAnnotation]
+	var commonTemplateValidations []validations.CommonTemplateValidation
+
+	// empty validations have defaults
+	if marshalledValidations != "" {
+		if err := json.Unmarshal([]byte(marshalledValidations), &commonTemplateValidations); err != nil {
+			return nil, err
+		}
+	}
+	return validations.NewTemplateValidations(commonTemplateValidations), nil
 }

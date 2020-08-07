@@ -3,6 +3,7 @@ package vm
 import (
 	templatev1 "github.com/openshift/api/template/v1"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates"
+	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates/validations"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/parse"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -65,12 +66,13 @@ func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {
 	}
 }
 
-func AddVolumes(vm *kubevirtv1.VirtualMachine, template *templatev1.Template, cliParams *parse.CLIOptions) {
+func AddVolumes(vm *kubevirtv1.VirtualMachine, templateValidations *validations.TemplateValidations, cliParams *parse.CLIOptions) {
+	defaultBus := templateValidations.GetDefaultDiskBus()
 	for _, diskName := range cliParams.GetAllDiskNames() {
 		disk := kubevirtv1.Disk{
 			Name: diskName,
 			DiskDevice: kubevirtv1.DiskDevice{
-				Disk: &kubevirtv1.DiskTarget{Bus: "virtio"}, // TODO get from template validations or default to virtio
+				Disk: &kubevirtv1.DiskTarget{Bus: defaultBus},
 			},
 		}
 
