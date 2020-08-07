@@ -8,6 +8,7 @@ import (
 	errors2 "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/errors"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/pvc"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates"
+	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates/validations"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/logger"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/parse"
 	virtualMachine "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/vm"
@@ -80,7 +81,7 @@ func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
 		return nil, err
 	}
 
-	logger.GetLogger().Debug("processing template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.targetNamespace))
+	logger.GetLogger().Debug("processing template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.cliOptions.GetTemplateNamespace()))
 	processedTemplate, err := v.templateProvider.Process(v.targetNamespace, template, v.cliOptions.GetTemplateParams())
 	if err != nil {
 		return nil, err
@@ -90,9 +91,18 @@ func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
 		return nil, err
 	}
 
+	templateValidations, err := templates.GetTemplateValidations(processedTemplate)
+	if err != nil {
+		logger.GetLogger().Warn("could not parse template validations", zap.Error(err))
+		templateValidations = validations.NewTemplateValidations(nil) // fallback to defaults
+	}
+	if templateValidations.IsEmpty() {
+		logger.GetLogger().Debug("template validations are empty: falling back to defaults")
+	}
+
 	vm.Namespace = v.targetNamespace
 	virtualMachine.AddMetadata(vm, processedTemplate)
-	virtualMachine.AddVolumes(vm, processedTemplate, v.cliOptions)
+	virtualMachine.AddVolumes(vm, templateValidations, v.cliOptions)
 
 	logger.GetLogger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, vm)
