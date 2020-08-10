@@ -3,14 +3,18 @@ package templates
 import (
 	"encoding/json"
 	templatev1 "github.com/openshift/api/template/v1"
+	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/constants"
+	lab "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/constants/labels"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates/validations"
 	"k8s.io/apimachinery/pkg/runtime"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	"sort"
 	"strings"
 )
 
 const (
 	validationsAnnotation = "validations"
+	osLabelPrefix         = lab.TemplateOsLabel + "/"
 )
 
 // Get label whose key starts with labelPrefix and has value true
@@ -55,4 +59,29 @@ func GetTemplateValidations(template *templatev1.Template) (*validations.Templat
 		}
 	}
 	return validations.NewTemplateValidations(commonTemplateValidations), nil
+}
+
+// returns osID, osName
+func GetOs(template *templatev1.Template) (string, string) {
+
+	var osIds textIDs
+
+	for key, val := range template.Labels {
+		if strings.HasPrefix(key, osLabelPrefix) && val == constants.True {
+			osId := key[len(osLabelPrefix):]
+			osIds = append(osIds, osId)
+		}
+	}
+
+	sort.Sort(osIds)
+
+	if len(osIds) == 0 {
+		return "", ""
+	}
+
+	osID := osIds[len(osIds)-1]
+
+	osName := template.Annotations[lab.TemplateNameOsAnnotation + "/" + osID]
+
+	return osID, osName
 }

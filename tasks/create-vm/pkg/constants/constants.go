@@ -26,3 +26,9 @@ const (
 	serviceAccountNamespacePath = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 	TektonResultsDirPath        = "/tekton/results"
 )
+
+// misc
+const (
+	True = "true"
+	False = "false"
+)

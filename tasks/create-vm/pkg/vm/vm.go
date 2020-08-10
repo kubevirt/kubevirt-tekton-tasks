@@ -2,6 +2,9 @@ package vm
 
 import (
 	templatev1 "github.com/openshift/api/template/v1"
+	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/constants"
+	lab "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/constants/labels"
+	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/k8s"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates/validations"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/parse"
@@ -10,59 +13,39 @@ import (
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 )
 
-const (
-	// templateOsLabel is a label that specifies the OS of the template
-	templateOsLabel = "os.template.kubevirt.io"
-
-	// templateWorkloadLabel is a label that specifies the workload of the template
-	templateWorkloadLabel = "workload.template.kubevirt.io"
-
-	// templateFlavorLabel is a label that specifies the flavor of the template
-	templateFlavorLabel = "flavor.template.kubevirt.io"
-
-	// templateNameOsAnnotation is an annotation that specifies human readable os name
-	templateNameOsAnnotation = "name.os.template.kubevirt.io"
-
-	// templateNameLabel defines a label of the template name which was used to created the VM
-	templateNameLabel = "vm.kubevirt.io/template"
-
-	// templateNamespace defines a label of the template namespace which was used to create the VM
-	templateNamespace = "vm.kubevirt.io/template.namespace"
-
-	// vmNameLabel defines a label of virtual machine name which was used to create the VM
-	vmNameLabel = "vm.kubevirt.io/name"
-)
-
 func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {
-	labels := vm.ObjectMeta.GetLabels()
-	if labels == nil {
-		labels = make(map[string]string)
-		vm.ObjectMeta.SetLabels(labels)
-	}
-
-	tempLabels := vm.Spec.Template.ObjectMeta.GetLabels()
+	labels := k8s.EnsureLabels(&vm.ObjectMeta)
+	tempLabels := k8s.EnsureLabels(&vm.Spec.Template.ObjectMeta)
 
 	// reference origin template
-	labels[templateNameLabel] = template.GetName()
-	labels[templateNamespace] = template.GetNamespace()
+	labels[lab.TemplateNameLabel] = template.GetName()
+	labels[lab.TemplateNamespace] = template.GetNamespace()
 
 	// set template flavor
-	if flavorKey, flavorValue := templates.GetFlagLabelByPrefix(template, templateFlavorLabel); flavorKey != "" {
+	if flavorKey, flavorValue := templates.GetFlagLabelByPrefix(template, lab.TemplateFlavorLabel); flavorKey != "" {
 		labels[flavorKey] = flavorValue
 		tempLabels[flavorKey] = flavorValue
 	}
 
 	// set template workload
-	if workloadKey, workloadValue := templates.GetFlagLabelByPrefix(template, templateWorkloadLabel); workloadKey != "" {
+	if workloadKey, workloadValue := templates.GetFlagLabelByPrefix(template, lab.TemplateWorkloadLabel); workloadKey != "" {
 		labels[workloadKey] = workloadValue
 		tempLabels[workloadKey] = workloadValue
 	}
 
-	// TODO search for correct os label and annotation from template and set here
+	if osID, osName := templates.GetOs(template); osID != "" {
+		osIDLabel := lab.TemplateOsLabel + "/" + osID
+		labels[osIDLabel] = constants.True
+		tempLabels[osIDLabel] = constants.True
+		if osName != "" {
+			osIdAnnotation := lab.TemplateNameOsAnnotation + "/" + osID
+			k8s.EnsureAnnotations(&vm.ObjectMeta)[osIdAnnotation] = osName
+		}
+	}
 
 	// for pairing service-vm (like for RDP)
 	if vmName := vm.GetName(); vmName != "" {
-		tempLabels[vmNameLabel] = vmName
+		tempLabels[lab.VMNameLabel] = vmName
 	}
 }
 
