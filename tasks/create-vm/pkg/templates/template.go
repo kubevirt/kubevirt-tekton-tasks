@@ -81,7 +81,7 @@ func GetOs(template *templatev1.Template) (string, string) {
 
 	osID := osIds[len(osIds)-1]
 
-	osName := template.Annotations[lab.TemplateNameOsAnnotation + "/" + osID]
+	osName := template.Annotations[lab.TemplateNameOsAnnotation+"/"+osID]
 
 	return osID, osName
 }

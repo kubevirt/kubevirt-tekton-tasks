@@ -29,6 +29,6 @@ const (
 
 // misc
 const (
-	True = "true"
+	True  = "true"
 	False = "false"
 )
