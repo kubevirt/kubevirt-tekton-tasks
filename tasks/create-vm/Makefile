@@ -21,6 +21,9 @@ build:
 	mkdir -p $(DIST_DIR)
 	go build -o $(DIST_DIR)/$(CREATE_VM_IMAGE) cmd/create-vm/main.go
 
+test:
+	go test ./...
+
 docker-build:
 	docker build -f build/create-vm/Dockerfile -t $(IMAGE_REGISTRY)/$(CREATE_VM_IMAGE):$(IMAGE_TAG) .
 
@@ -29,13 +32,14 @@ docker-push:
 
 release-manifests: clean-dist-manifests clean-manifests build-manifests copy-bundle-to-manifests
 
-release: release-manifests docker-build
+release: test release-manifests docker-build
 
 release-with-push: release docker-push
 
 .PHONY: \
 	all \
 	build \
+	test \
 	docker-build \
 	docker-push \
 	release-manifests \
