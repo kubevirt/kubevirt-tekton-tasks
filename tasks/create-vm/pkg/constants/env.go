@@ -5,10 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func IsEnvVarTrue(envVarName string) bool {
-	return os.Getenv(envVarName) == "true"
+	return strings.ToLower(os.Getenv(envVarName)) == "true"
 }
 
 func GetActiveNamespace() (string, error) {

@@ -22,4 +22,3 @@ const (
 	// VMNameLabel defines a label of virtual machine name which was used to create the VM
 	VMNameLabel = "vm.kubevirt.io/name"
 )
-

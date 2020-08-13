@@ -56,7 +56,7 @@ func (t *TemplateValidations) GetDefaultDiskBus() string {
 		if recommendedBuses[defaultDiskBus] {
 			return defaultDiskBus
 		}
-		for bus, _ := range recommendedBuses {
+		for bus := range recommendedBuses {
 			return bus
 		}
 	}
@@ -64,7 +64,7 @@ func (t *TemplateValidations) GetDefaultDiskBus() string {
 	if allowedBuses[defaultDiskBus] {
 		return defaultDiskBus
 	}
-	for bus, _ := range allowedBuses {
+	for bus := range allowedBuses {
 		return bus
 	}
 
@@ -93,7 +93,7 @@ func (t *TemplateValidations) getRecommendedBuses(jsonPath string) map[string]bo
 	allowedBuses := t.getAllowedBuses(jsonPath, false)
 	recommendedBuses := t.getAllowedBuses(jsonPath, true)
 
-	for key, _ := range recommendedBuses {
+	for key := range recommendedBuses {
 		if !allowedBuses[key] {
 			delete(recommendedBuses, key)
 		}

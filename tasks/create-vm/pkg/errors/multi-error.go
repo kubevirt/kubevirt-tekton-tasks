@@ -51,6 +51,13 @@ func (e *MultiError) IsEmpty() bool {
 	return e == nil || len(e.keyOrder) <= 0 || len(e.errorMap) <= 0
 }
 
+func (e *MultiError) Len() int {
+	if e == nil {
+		return 0
+	}
+	return len(e.keyOrder)
+}
+
 func (e *MultiError) IsSoft() bool {
 	if !e.IsEmpty() {
 		for _, key := range e.keyOrder {

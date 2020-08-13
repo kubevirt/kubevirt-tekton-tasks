@@ -24,7 +24,7 @@ func (c *CLIOptions) resolveTemplateParams() error {
 		c.TemplateParams[i] = trimmedParam
 		split := strings.SplitN(trimmedParam, templateParamSep, 2)
 		if len(split) < 2 || split[0] == "" {
-			paramsError.Add(fmt.Sprintf("param %d \"%v\"", param, i), errors2.NewMissingRequiredError("param %v has incorrect format: should be KEY:VAL", param))
+			paramsError.Add(fmt.Sprintf("param %d \"%v\"", i, param), errors2.NewMissingRequiredError("param %v has incorrect format: should be KEY:VAL", param))
 		}
 	}
 

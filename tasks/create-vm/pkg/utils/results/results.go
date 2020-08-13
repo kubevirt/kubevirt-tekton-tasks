@@ -9,6 +9,10 @@ import (
 )
 
 func RecordResults(results map[string]string) error {
+	if results == nil || len(results) == 0 {
+		return nil
+	}
+
 	logger.GetLogger().Debug("recording results", zap.Reflect("results", results))
 
 	resultsDir := constants.GetTektonResultsDir()

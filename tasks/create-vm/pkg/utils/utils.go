@@ -20,6 +20,13 @@ func (e Exit) IsSoft() bool {
 }
 
 func ExitFromError(code int, err error) {
+	if err == nil {
+		panic(Exit{
+			Code: code,
+			Soft: true,
+		})
+	}
+
 	if exit, ok := err.(Exit); ok == true {
 		panic(exit)
 	}
@@ -32,6 +39,13 @@ func ExitFromError(code int, err error) {
 }
 
 func ExitOrDieFromError(code int, err error, isSoftConditions ...bool) {
+	if err == nil {
+		panic(Exit{
+			Code: code,
+			Soft: true,
+		})
+	}
+
 	if exit, ok := err.(Exit); ok == true {
 		panic(exit)
 	}
@@ -50,6 +64,7 @@ func ExitOrDieFromError(code int, err error, isSoftConditions ...bool) {
 	})
 }
 
+// logic should equal to utilstest.TestHandleExit func
 func HandleExit() {
 	if e := recover(); e != nil {
 		if exit, ok := e.(Exit); ok == true && exit.Soft {

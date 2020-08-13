@@ -5,6 +5,8 @@ go 1.14
 require (
 	github.com/alexflint/go-arg v1.3.0
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
+	github.com/onsi/ginkgo v1.14.0
+	github.com/onsi/gomega v1.10.1
 	github.com/openshift/api v0.0.0
 	github.com/openshift/client-go v0.0.0
 	github.com/pkg/errors v0.9.1
