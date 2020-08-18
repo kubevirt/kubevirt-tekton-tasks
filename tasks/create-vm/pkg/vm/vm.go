@@ -2,15 +2,16 @@ package vm
 
 import (
 	templatev1 "github.com/openshift/api/template/v1"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubevirtv1 "kubevirt.io/client-go/api/v1"
+
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/constants"
 	lab "github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/constants/labels"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/k8s"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/templates/validations"
 	"github.com/suomiy/kubevirt-tekton-tasks/tasks/create-vm/pkg/utils/parse"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
 )
 
 func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {
@@ -50,6 +51,9 @@ func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {
 }
 
 func AddVolumes(vm *kubevirtv1.VirtualMachine, templateValidations *validations.TemplateValidations, cliParams *parse.CLIOptions) {
+	if templateValidations == nil {
+		templateValidations = validations.NewTemplateValidations(nil)
+	}
 	defaultBus := templateValidations.GetDefaultDiskBus()
 	for _, diskName := range cliParams.GetAllDiskNames() {
 		disk := kubevirtv1.Disk{
