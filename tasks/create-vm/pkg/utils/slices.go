@@ -9,5 +9,9 @@ func GetLast(values []string) string {
 }
 
 func ConcatStringSlices(a []string, b []string) []string {
+	if len(a) == 0 && len(b) == 0 {
+		return nil
+	}
+
 	return append(append([]string{}, a...), b...)
 }

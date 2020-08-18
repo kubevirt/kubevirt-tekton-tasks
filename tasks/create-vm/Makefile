@@ -21,8 +21,11 @@ build:
 	mkdir -p $(DIST_DIR)
 	go build -o $(DIST_DIR)/$(CREATE_VM_IMAGE) cmd/create-vm/main.go
 
+lint:
+	if [ -n "`gofmt -d .`" ]; then gofmt -d .; exit 1; fi
+
 test:
-	go test ./...
+	go test `go list ./... | grep -v utilstest`
 
 docker-build:
 	docker build -f build/create-vm/Dockerfile -t $(IMAGE_REGISTRY)/$(CREATE_VM_IMAGE):$(IMAGE_TAG) .
@@ -32,13 +35,14 @@ docker-push:
 
 release-manifests: clean-dist-manifests clean-manifests build-manifests copy-bundle-to-manifests
 
-release: test release-manifests docker-build
+release: lint test release-manifests docker-build
 
 release-with-push: release docker-push
 
 .PHONY: \
 	all \
 	build \
+	lint \
 	test \
 	docker-build \
 	docker-push \

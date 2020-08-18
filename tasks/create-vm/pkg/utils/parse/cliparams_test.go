@@ -52,9 +52,9 @@ var _ = Describe("Cliparams", func() {
 		}, map[string]interface{}{
 			"GetTemplateNamespace":       defaultNS,
 			"GetVirtualMachineNamespace": defaultNS,
-			"GetAllPVCNames":             []string{},
-			"GetAllDVNames":              []string{},
-			"GetAllDiskNames":            []string{},
+			"GetAllPVCNames":             []string(nil),
+			"GetAllDVNames":              []string(nil),
+			"GetAllDiskNames":            []string(nil),
 			"GetTemplateParams":          map[string]string{},
 			"GetDebugLevel":              zapcore.InfoLevel,
 		}),
