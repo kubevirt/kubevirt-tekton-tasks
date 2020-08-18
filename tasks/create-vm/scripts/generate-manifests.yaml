@@ -11,15 +11,17 @@
     role_name: "{{ task_name }}-task"
     sa_name: "{{ role_name }}"
     role_binding_name: "{{ role_name }}"
+    default_file_mode: "0644"
   tasks:
     - name: Prepare dist directory
       file:
         path: "{{ output_dir }}"
         state: directory
-    - name: Generate create-vm-from-template task
+    - name: Generate create-vm task
       template:
         src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
         dest: "{{ output_dir }}/{{ item.task_with_flavor_name }}.yaml"
+        mode: "{{ default_file_mode }}"
       with_items:
         - { task_type: Template, task_with_flavor_name: "{{ task_name }}-from-template" }
     - name: Generate roles
