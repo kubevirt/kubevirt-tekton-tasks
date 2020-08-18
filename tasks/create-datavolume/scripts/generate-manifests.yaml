@@ -12,6 +12,7 @@
     role_name: "{{ task_name }}-task"
     sa_name: "{{ role_name }}"
     role_binding_name: "{{ role_name }}"
+    default_file_mode: "0644"
   tasks:
   - name: Prepare dist directory
     file:
@@ -21,6 +22,7 @@
     template:
       src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
       dest: "{{ output_dir }}/{{ task_name }}.yaml"
+      mode: "{{ default_file_mode }}"
     vars:
       create_dv_script: "{{ lookup('file', '{{ additional_scripts_dir }}/create-datavolume-script.sh') }}"
   - name: Generate roles
