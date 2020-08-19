@@ -2,14 +2,14 @@
 
 This task creates a DataVolume with oc client.
 
-## `create-datavolume`
+## `create-datavolume-from-manifest`
 
 ### Installation
 
 Install the Task
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/suomiy/kubevirt-tekton-tasks/master/tasks/create-datavolume/manifests/create-datavolume.yaml
+kubectl apply -f https://raw.githubusercontent.com/suomiy/kubevirt-tekton-tasks/master/tasks/create-datavolume/manifests/create-datavolume-from-manifest.yaml
 ```
 
 Install one of the following rbac permissions to the active namespace

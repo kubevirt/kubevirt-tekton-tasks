@@ -1,2 +1,0 @@
-task_name: create-vm
-create_vm_image: quay.io/suomiy/create-vm:latest
