@@ -1,4 +1,4 @@
-package utils
+package zutils
 
 func GetLast(values []string) string {
 	l := len(values)

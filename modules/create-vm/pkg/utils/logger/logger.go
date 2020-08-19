@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -13,7 +13,7 @@ func InitLogger(level zapcore.Level) *zap.Logger {
 	var config zap.Config
 
 	// set opinionated presets
-	if constants.IsEnvVarTrue(constants.OutOfClusterENV) {
+	if zconstants.IsEnvVarTrue(zconstants.OutOfClusterENV) {
 		config = zap.NewDevelopmentConfig()
 	} else {
 		config = zap.NewProductionConfig()

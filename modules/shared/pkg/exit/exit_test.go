@@ -1,12 +1,12 @@
-package utils_test
+package exit_test
 
 import (
 	"errors"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
-	errors2 "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/errors"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/exit"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 )
 
 const (
@@ -20,7 +20,7 @@ var _ = Describe("Utils", func() {
 	Describe("exits correctly", func() {
 		table.DescribeTable("just exit", func(err error, shouldExitWithCode int, shouldExitWithMessage string) {
 			defer utilstest.HandleTestExit(false, shouldExitWithCode, shouldExitWithMessage)
-			utils.ExitFromError(shouldExitWithCode, err)
+			exit.ExitFromError(shouldExitWithCode, err)
 		},
 			table.Entry("no err", nil, 0, ""),
 			table.Entry("err", errors.New(exFailed), 2, exFailedRes),
@@ -31,11 +31,11 @@ var _ = Describe("Utils", func() {
 	Describe("exits or dies correctly", func() {
 		table.DescribeTable("exit or die", func(err error, shouldExitWithCode int, shouldExitWithMessage string, shouldPanic bool, softConditions []bool) {
 			defer utilstest.HandleTestExit(shouldPanic, shouldExitWithCode, shouldExitWithMessage)
-			utils.ExitOrDieFromError(shouldExitWithCode, err, softConditions...)
+			exit.ExitOrDieFromError(shouldExitWithCode, err, softConditions...)
 		},
 			table.Entry("no err exits", nil, 0, "", false, nil),
 			table.Entry("hard err dies", errors.New(exFailed), 2, exFailedRes, true, []bool{false}),
-			table.Entry("soft err exits", errors2.NewMissingRequiredError(exFailed), 3, exFailedRes, false, nil),
+			table.Entry("soft err exits", zerrors.NewMissingRequiredError(exFailed), 3, exFailedRes, false, nil),
 			table.Entry("hard err with additional soft conditions exits", errors.New(exFailed), 2, exFailedRes, false, []bool{false, true, false}),
 		)
 	})

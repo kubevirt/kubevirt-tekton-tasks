@@ -1,16 +1,16 @@
-package errors_test
+package zutils_test
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-func TestErrors(t *testing.T) {
+func TestUtils(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Errors Suite")
+	RunSpecs(t, "Utils Suite")
 }
 
 var _ = BeforeSuite(utilstest.SetupTestSuite)

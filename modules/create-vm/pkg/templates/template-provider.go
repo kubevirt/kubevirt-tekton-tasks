@@ -3,7 +3,7 @@ package templates
 import (
 	templatev1 "github.com/openshift/api/template/v1"
 	tempclient "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
-	errors2 "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/errors"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -34,13 +34,13 @@ func (t *templateProvider) Process(namespace string, template *templatev1.Templa
 	temp := template.DeepCopy()
 	params := temp.Parameters
 
-	var paramsError errors2.MultiError
+	var paramsError zerrors.MultiError
 	for i, param := range params {
 		additionalValue := paramValues[param.Name]
 		if additionalValue != "" {
 			temp.Parameters[i].Value = additionalValue
 		} else if param.Value == "" && param.Required {
-			paramsError.Add(param.Name, errors2.NewMissingRequiredError("required param %v is missing a value", param.Name))
+			paramsError.Add(param.Name, zerrors.NewMissingRequiredError("required param %v is missing a value", param.Name))
 		}
 	}
 	if !paramsError.IsEmpty() {

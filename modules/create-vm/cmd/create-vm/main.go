@@ -3,13 +3,15 @@ package main
 import (
 	goarg "github.com/alexflint/go-arg"
 	. "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	errors2 "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/errors"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils"
 	log "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/logger"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
-	res "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/results"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/vmcreator"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/exit"
+	res "github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/results"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -23,29 +25,29 @@ func main() {
 	defer logger.Sync()
 
 	if err := cliOptions.Init(); err != nil {
-		utils.ExitOrDieFromError(InvalidNamespacesExitCode, err)
+		exit.ExitOrDieFromError(InvalidNamespacesExitCode, err)
 	}
 
 	vmCreator, err := vmcreator.NewVMCreator(cliOptions)
 
 	if err != nil {
-		utils.ExitOrDieFromError(GenericExitCode, err)
+		exit.ExitOrDieFromError(GenericExitCode, err)
 	}
 
 	if err := vmCreator.CheckVolumesExist(); err != nil {
-		utils.ExitFromError(VolumesNotPresentExitCode, err)
+		exit.ExitFromError(VolumesNotPresentExitCode, err)
 	}
 
 	vm, err := vmCreator.CreateVM()
 
 	if err != nil {
-		utils.ExitOrDieFromError(CreateVMErrorExitCode, err,
-			errors2.IsStatusErrorSoft(err, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity),
+		exit.ExitOrDieFromError(CreateVMErrorExitCode, err,
+			zerrors.IsStatusErrorSoft(err, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity),
 		)
 	}
 
 	if err := vmCreator.OwnVolumes(vm); err != nil {
-		utils.ExitFromError(OwnVolumesErrorExitCode, err)
+		exit.ExitFromError(OwnVolumesErrorExitCode, err)
 	}
 
 	results := map[string]string{
@@ -53,8 +55,9 @@ func main() {
 		NamespaceResultName: vm.Namespace,
 	}
 
+	log.GetLogger().Debug("recording results", zap.Reflect("results", results))
 	if err := res.RecordResults(results); err != nil {
-		utils.ExitOrDieFromError(WriteResultsExitCode, err)
+		exit.ExitOrDieFromError(WriteResultsExitCode, err)
 	}
 
 	output.PrettyPrint(vm, cliOptions.Output)

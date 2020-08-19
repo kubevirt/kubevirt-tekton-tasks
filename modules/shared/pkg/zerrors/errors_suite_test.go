@@ -1,16 +1,16 @@
-package constants_test
+package zerrors_test
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-func TestConstants(t *testing.T) {
+func TestErrors(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Constants Suite")
+	RunSpecs(t, "Errors Suite")
 }
 
 var _ = BeforeSuite(utilstest.SetupTestSuite)
