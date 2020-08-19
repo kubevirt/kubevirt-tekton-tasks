@@ -1,7 +1,7 @@
 FROM golang:1.14 AS builder
 WORKDIR /src/create-vm
 COPY . .
-ENV GOFLAGS="-mod=readonly"
+ENV GOFLAGS="-mod=vendor"
 ENV GO111MODULE=on
 RUN	CGO_ENABLED=0 GOOS=linux go build -o /create-vm cmd/create-vm/main.go
 
