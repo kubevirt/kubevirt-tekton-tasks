@@ -1,4 +1,4 @@
-package constants
+package zconstants
 
 import (
 	"errors"

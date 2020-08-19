@@ -1,16 +1,16 @@
-package utils_test
+package results_test
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-func TestUtils(t *testing.T) {
+func TestResults(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Utils Suite")
+	RunSpecs(t, "Results Suite")
 }
 
 var _ = BeforeSuite(utilstest.SetupTestSuite)

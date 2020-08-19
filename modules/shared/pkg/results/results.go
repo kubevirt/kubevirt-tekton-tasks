@@ -1,9 +1,7 @@
 package results
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/logger"
-	"go.uber.org/zap"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"io/ioutil"
 	"path/filepath"
 )
@@ -13,9 +11,7 @@ func RecordResults(results map[string]string) error {
 		return nil
 	}
 
-	logger.GetLogger().Debug("recording results", zap.Reflect("results", results))
-
-	resultsDir := constants.GetTektonResultsDir()
+	resultsDir := zconstants.GetTektonResultsDir()
 
 	for resKey, resVal := range results {
 		filename := filepath.Join(resultsDir, resKey)

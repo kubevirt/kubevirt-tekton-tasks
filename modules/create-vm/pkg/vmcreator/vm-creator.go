@@ -3,15 +3,15 @@ package vmcreator
 import (
 	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	"github.com/pkg/errors"
-	. "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/datavolume"
-	errors2 "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/errors"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/pvc"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/logger"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
 	virtualMachine "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
+	. "github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -113,7 +113,7 @@ func (v *VMCreator) CheckVolumesExist() error {
 	_, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, v.cliOptions.GetAllDVNames()...)
 	_, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, v.cliOptions.GetAllPVCNames()...)
 
-	return errors2.NewMultiError().
+	return zerrors.NewMultiError().
 		AddC("dvsErr", dvsErr).
 		AddC("pvcsErr", pvcsErr).
 		AsOptional()
@@ -123,7 +123,7 @@ func (v *VMCreator) OwnVolumes(vm *kubevirtv1.VirtualMachine) error {
 	dvsErr := v.ownDataVolumes(vm)
 	pvcsErr := v.ownPersistentVolumeClaims(vm)
 
-	return errors2.NewMultiError().
+	return zerrors.NewMultiError().
 		AddC("dvsErr", dvsErr).
 		AddC("pvcsErr", pvcsErr).
 		AsOptional()
@@ -131,12 +131,12 @@ func (v *VMCreator) OwnVolumes(vm *kubevirtv1.VirtualMachine) error {
 
 func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
 	logger.GetLogger().Debug("taking ownership of DataVolumes", zap.Strings("own-dvs", v.cliOptions.OwnDataVolumes))
-	var multiError errors2.MultiError
+	var multiError zerrors.MultiError
 
 	dvs, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, v.cliOptions.OwnDataVolumes...)
 
 	for idx, dvName := range v.cliOptions.OwnDataVolumes {
-		if err := errors2.GetErrorFromMultiError(dvsErr, dvName); err != nil {
+		if err := zerrors.GetErrorFromMultiError(dvsErr, dvName); err != nil {
 			multiError.Add(dvName, err)
 			continue
 		}
@@ -152,12 +152,12 @@ func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
 
 func (v *VMCreator) ownPersistentVolumeClaims(vm *kubevirtv1.VirtualMachine) error {
 	logger.GetLogger().Debug("taking ownership of PersistentVolumeClaims", zap.Strings("own-pvcs", v.cliOptions.OwnPersistentVolumeClaims))
-	var multiError errors2.MultiError
+	var multiError zerrors.MultiError
 
 	pvcs, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, v.cliOptions.OwnPersistentVolumeClaims...)
 
 	for idx, pvcName := range v.cliOptions.OwnPersistentVolumeClaims {
-		if err := errors2.GetErrorFromMultiError(pvcsErr, pvcName); err != nil {
+		if err := zerrors.GetErrorFromMultiError(pvcsErr, pvcName); err != nil {
 			multiError.Add(pvcName, err)
 			continue
 		}
