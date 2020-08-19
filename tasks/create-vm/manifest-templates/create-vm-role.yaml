@@ -1,0 +1,48 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: {{ item.role_type }}
+metadata:
+  name: {{ role_name }}
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+      - create
+    apiGroups:
+      - kubevirt.io
+    resources:
+      - virtualmachines
+      - virtualmachineinstances
+  - verbs:
+      - '*'
+    apiGroups:
+      - kubevirt.io
+    resources:
+      - virtualmachines/finalizers
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - template.openshift.io
+    resources:
+      - templates
+  - verbs:
+      - create
+    apiGroups:
+      - template.openshift.io
+    resources:
+      - processedtemplates
+  - verbs:
+      - '*'
+    apiGroups:
+      - ''
+    resources:
+      - persistentvolumeclaims
+  - verbs:
+      - '*'
+    apiGroups:
+      - cdi.kubevirt.io
+    resources:
+      - datavolumes
