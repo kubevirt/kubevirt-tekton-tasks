@@ -2,29 +2,29 @@ package parse
 
 import (
 	"fmt"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	errors2 "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/errors"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"strings"
 	"unicode"
 )
 
 func (c *CLIOptions) assertValidTypes() error {
 	if !output.IsOutputType(string(c.Output)) {
-		return errors2.NewMissingRequiredError("%v is not a valid output type", c.Output)
+		return zerrors.NewMissingRequiredError("%v is not a valid output type", c.Output)
 	}
 	return nil
 }
 
 func (c *CLIOptions) resolveTemplateParams() error {
-	var paramsError errors2.MultiError
+	var paramsError zerrors.MultiError
 
 	for i, param := range c.TemplateParams {
 		trimmedParam := strings.TrimLeftFunc(param, unicode.IsSpace)
 		c.TemplateParams[i] = trimmedParam
 		split := strings.SplitN(trimmedParam, templateParamSep, 2)
 		if len(split) < 2 || split[0] == "" {
-			paramsError.Add(fmt.Sprintf("param %d \"%v\"", i, param), errors2.NewMissingRequiredError("param %v has incorrect format: should be KEY:VAL", param))
+			paramsError.Add(fmt.Sprintf("param %d \"%v\"", i, param), zerrors.NewMissingRequiredError("param %v has incorrect format: should be KEY:VAL", param))
 		}
 	}
 
@@ -60,9 +60,9 @@ func (c *CLIOptions) resolveDefaultNamespaces() error {
 	vmNamespace := c.GetVirtualMachineNamespace()
 
 	if tempNamespace == "" || vmNamespace == "" {
-		activeNamespace, err := constants.GetActiveNamespace()
+		activeNamespace, err := zconstants.GetActiveNamespace()
 		if err != nil {
-			return errors2.NewMissingRequiredError("%v: %v option is empty", err.Error(), c.getMissingNamespaceOptionNames())
+			return zerrors.NewMissingRequiredError("%v: %v option is empty", err.Error(), c.getMissingNamespaceOptionNames())
 		}
 		if tempNamespace == "" {
 			c.setTemplateNamespace(activeNamespace)

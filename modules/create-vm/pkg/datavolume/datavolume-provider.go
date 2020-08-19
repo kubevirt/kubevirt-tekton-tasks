@@ -2,8 +2,8 @@ package datavolume
 
 import (
 	"errors"
-	errors2 "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/errors"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	datavolumev1alpha1 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1alpha1"
@@ -26,7 +26,7 @@ func NewDataVolumeProvider(client datavolumeclientv1alpha1.CdiV1alpha1Interface)
 }
 
 func (d *dataVolumeProvider) GetByName(namespace string, names ...string) ([]*datavolumev1alpha1.DataVolume, error) {
-	var multiError errors2.MultiError
+	var multiError zerrors.MultiError
 	var dvs []*datavolumev1alpha1.DataVolume
 
 	for _, name := range names {

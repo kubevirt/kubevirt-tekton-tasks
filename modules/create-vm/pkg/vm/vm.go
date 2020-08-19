@@ -6,12 +6,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
 	lab "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants/labels"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 )
 
 func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {
@@ -36,8 +36,8 @@ func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {
 
 	if osID, osName := templates.GetOs(template); osID != "" {
 		osIDLabel := lab.TemplateOsLabel + "/" + osID
-		labels[osIDLabel] = constants.True
-		tempLabels[osIDLabel] = constants.True
+		labels[osIDLabel] = zconstants.True
+		tempLabels[osIDLabel] = zconstants.True
 		if osName != "" {
 			osIdAnnotation := lab.TemplateNameOsAnnotation + "/" + osID
 			k8s.EnsureAnnotations(&vm.ObjectMeta)[osIdAnnotation] = osName

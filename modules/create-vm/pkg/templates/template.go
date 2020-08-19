@@ -3,9 +3,9 @@ package templates
 import (
 	"encoding/json"
 	templatev1 "github.com/openshift/api/template/v1"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
 	lab "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants/labels"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"k8s.io/apimachinery/pkg/runtime"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	"sort"
@@ -67,7 +67,7 @@ func GetOs(template *templatev1.Template) (string, string) {
 	var osIds textIDs
 
 	for key, val := range template.Labels {
-		if strings.HasPrefix(key, osLabelPrefix) && val == constants.True {
+		if strings.HasPrefix(key, osLabelPrefix) && val == zconstants.True {
 			osId := key[len(osLabelPrefix):]
 			osIds = append(osIds, osId)
 		}
