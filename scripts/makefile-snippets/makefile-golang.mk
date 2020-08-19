@@ -1,17 +1,19 @@
-DIST_DIR ?= dist
-CMD_DIR ?= cmd
+export GOFLAGS=-mod=vendor
+export GO111MODULE=on
 
-build:
-	mkdir -p $(DIST_DIR)
-	go build -o $(DIST_DIR)/$(TASK_NAME) $(CMD_DIR)/$(TASK_NAME)/main.go
+FOLDERS_WITHOUT_VENDOR = $(shell ls -d */ | grep -v "^vendor/")
 
 lint:
-	if [ -n "`gofmt -d .`" ]; then gofmt -d .; exit 1; fi
+	if [ -n "`gofmt -d $(FOLDERS_WITHOUT_VENDOR)`" ]; then gofmt -d $(FOLDERS_WITHOUT_VENDOR); exit 1; fi
 
 test:
 	go test `go list ./... | grep -v utilstest`
 
+vendor:
+	go mod tidy
+	go mod vendor
+
 .PHONY: \
-	build \
 	lint \
-	test
+	test \
+	vendor

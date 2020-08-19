@@ -9,6 +9,12 @@ include ../../scripts/makefile-snippets/makefile-deploy.mk # undeploy deploy dep
 
 release: clean-dist-manifests clean-manifests build-manifests copy-bundle-to-manifests
 
+deploy-dev: deploy
+
+deploy-namespace-dev: deploy-namespace
+
 .PHONY: \
 	all \
-	release
+	release \
+	deploy-dev \
+	deploy-namespace-dev

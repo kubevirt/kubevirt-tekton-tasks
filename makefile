@@ -19,6 +19,11 @@ deploy: $(TASKS_DIR)/*
 deploy-namespace: $(TASKS_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-namespace;)
 
+deploy-dev: $(TASKS_DIR)/*
+	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-dev;)
+
+deploy-namespace-dev: $(TASKS_DIR)/*
+	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-namespace-dev;)
 
 .PHONY: \
 	all \

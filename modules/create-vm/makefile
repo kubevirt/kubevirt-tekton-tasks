@@ -4,7 +4,8 @@ CONFIG_FILE ?= ../../configs/create-vm.yaml
 include ../../scripts/makefile-snippets/makefile-load-config.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean
-include ../../scripts/makefile-snippets/makefile-golang.mk # build lint test
+include ../../scripts/makefile-snippets/makefile-golang.mk # lint test vendor
+include ../../scripts/makefile-snippets/makefile-golang-build.mk # build
 include ../../scripts/makefile-snippets/makefile-docker.mk # docker-build docker-push
 
 release: lint test docker-build
