@@ -9,8 +9,9 @@ metadata:
     manifest.params.task.kubevirt.io/kind: DataVolume
     waitForSuccess.params.task.kubevirt.io/type: boolean
   labels:
-    task.kubevirt.io/type: {{ task_name }}
-  name: {{ task_name }}
+    task.kubevirt.io/type: {{ item.task_with_flavor_name }}
+    task.kubevirt.io/category: {{ task_name }}
+  name: {{ item.task_with_flavor_name }}
 spec:
   description: >-
     This task creates a DataVolume with oc client. It can optionally wait until
@@ -30,6 +31,6 @@ spec:
       name: namespace
   steps:
     - name: create
-      image: {{ create_dv_image }}
+      image: {{ main_image }}
       script: |
         {{ create_dv_script | indent( width=8 ) }}

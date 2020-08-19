@@ -9,8 +9,9 @@ metadata:
     manifest.params.task.kubevirt.io/kind: DataVolume
     waitForSuccess.params.task.kubevirt.io/type: boolean
   labels:
-    task.kubevirt.io/type: create-datavolume
-  name: create-datavolume
+    task.kubevirt.io/type: create-datavolume-from-manifest
+    task.kubevirt.io/category: create-datavolume
+  name: create-datavolume-from-manifest
 spec:
   description: >-
     This task creates a DataVolume with oc client. It can optionally wait until
