@@ -3,7 +3,7 @@
   hosts: 127.0.0.1
   gather_facts: no
   vars_files:
-    - vars.yaml
+    - ../configs/vars.yaml
   vars:
     output_dir: ../dist/manifests
     manifest_templates_dir: ../manifest-templates
