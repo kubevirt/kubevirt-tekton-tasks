@@ -1,0 +1,77 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
+{% if item.task_type == "Template" %}
+    templateParams.params.task.kubevirt.io/type: template-params-array
+{% endif %}
+  labels:
+    task.kubevirt.io/type: {{ item.task_with_flavor_name }}
+    task.kubevirt.io/category: {{ task_name }}
+  name: {{ item.task_with_flavor_name }}
+spec:
+  params:
+{% if item.task_type == "Template" %}
+    - description: Name of a template to create VM from
+      name: templateName
+      type: string
+    - description: Namespace of a template to create VM from (defaults to active namespace)
+      name: templateNamespace
+      type: string
+      default: ""
+    - description: Template params to pass when processing the template manifest. Eg [“NAME:my-vm”, “DESC:blue”]
+      name: templateParams
+      type: array
+      default: []
+    - description: Namespace where to create the VM (defaults to active namespace)
+      name: vmNamespace
+      type: string
+      default: ""
+{% endif %}
+    - description: Add DVs to VM Volumes
+      name: dataVolumes
+      type: array
+      default: []
+    - description: Add DVs to VM Volumes and add VM to DV ownerReferences. These DataVolumes will be deleted once the created VM gets deleted.
+      name: ownDataVolumes
+      type: array
+      default: []
+    - description: Add PVCs to VM Volumes
+      name: persistentVolumeClaims
+      type: array
+      default: []
+    - description: Add PVCs to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted.
+      name: ownPersistentVolumeClaims
+      type: array
+      default: []
+  results:
+    - description: The name of a VM that was created
+      name: name
+    - description: The namespace of a VM that was created
+      name: namespace
+  steps:
+    - name: createvm
+      image: {{ create_vm_image }}
+      command:
+        - create-vm
+        - "--output=yaml"
+{% if item.task_type == "Template" %}
+        - '--template-name'
+        - $(params.templateName)
+        - '--template-namespace'
+        - $(params.templateNamespace)
+        - '--template-params'
+        - $(params.templateParams)
+        - '--vm-namespace'
+        - $(params.vmNamespace)
+{% endif %}
+        - '--dvs'
+        - $(params.dataVolumes)
+        - '--own-dvs'
+        - $(params.ownDataVolumes)
+        - '--pvcs'
+        - $(params.persistentVolumeClaims)
+        - '--own-pvcs'
+        - $(params.ownPersistentVolumeClaims)
