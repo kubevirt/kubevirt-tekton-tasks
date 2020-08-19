@@ -3,7 +3,7 @@
   hosts: 127.0.0.1
   gather_facts: no
   vars_files:
-  - ../configs/vars.yaml
+  - ../../../configs/create-datavolume.yaml
   vars:
     output_dir: ../dist/manifests
     manifest_templates_dir: ../src/templates
@@ -21,10 +21,12 @@
   - name: Generate task
     template:
       src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
-      dest: "{{ output_dir }}/{{ task_name }}.yaml"
+      dest: "{{ output_dir }}/{{ item.task_with_flavor_name }}.yaml"
       mode: "{{ default_file_mode }}"
     vars:
       create_dv_script: "{{ lookup('file', '{{ additional_scripts_dir }}/create-datavolume-script.sh') }}"
+    with_items:
+      - { task_type: FromManifest, task_with_flavor_name: "{{ task_name }}-from-manifest" }
   - name: Generate roles
     include: "{{ repo_dir }}/scripts/ansible/generate-roles-subtasks.yaml"
     with_items:

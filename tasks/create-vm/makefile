@@ -1,6 +1,7 @@
 all: clean build-manifests
 
-include ./configs/vars.mk
+CONFIG_FILE ?= ../../configs/create-vm.yaml
+include ../../scripts/makefile-snippets/makefile-load-config.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean-dist clean
 include ../../scripts/makefile-snippets/makefile-manifests.mk # clean-dist-manifests clean-manifests build-manifests copy-bundle-to-manifests

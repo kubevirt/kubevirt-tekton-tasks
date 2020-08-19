@@ -49,7 +49,7 @@ spec:
       name: namespace
   steps:
     - name: createvm
-      image: quay.io/suomiy/create-vm:latest
+      image: quay.io/suomiy/create-vm:v0.0.1
       command:
         - create-vm
         - "--output=yaml"

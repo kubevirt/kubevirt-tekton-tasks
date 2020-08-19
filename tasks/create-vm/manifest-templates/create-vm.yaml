@@ -53,7 +53,7 @@ spec:
       name: namespace
   steps:
     - name: createvm
-      image: {{ create_vm_image }}
+      image: {{ main_image }}
       command:
         - create-vm
         - "--output=yaml"
