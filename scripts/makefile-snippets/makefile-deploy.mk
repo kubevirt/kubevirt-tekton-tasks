@@ -1,4 +1,4 @@
-TARGET_NAMESPACE := $(shell kubectl config current-context | cut -d/ -f1)
+TARGET_NAMESPACE ?= $(shell kubectl config current-context | cut -d/ -f1)
 MANIFESTS_DIR ?= manifests
 
 undeploy:
@@ -6,11 +6,11 @@ undeploy:
 
 deploy: undeploy
 	sed "s/TARGET_NAMESPACE/$(TARGET_NAMESPACE)/" $(MANIFESTS_DIR)/$(TASK_NAME)-cluster-rbac.yaml | kubectl apply -f -
-	set -e; $(foreach SUBTASK_NAME, $(SUBTASK_NAMES), kubectl apply -f $(MANIFESTS_DIR)/$(SUBTASK_NAME);)
+	set -e; $(foreach SUBTASK_NAME, $(SUBTASK_NAMES), kubectl apply -f $(MANIFESTS_DIR)/$(SUBTASK_NAME).yaml;)
 
 deploy-namespace: undeploy
 	kubectl apply -f manifests/$(TASK_NAME)-namespace-rbac.yaml
-	set -e; $(foreach SUBTASK_NAME, $(SUBTASK_NAMES), kubectl apply -f $(MANIFESTS_DIR)/$(SUBTASK_NAME);)
+	set -e; $(foreach SUBTASK_NAME, $(SUBTASK_NAMES), kubectl apply -f $(MANIFESTS_DIR)/$(SUBTASK_NAME).yaml;)
 
 
 .PHONY: \
