@@ -7,7 +7,7 @@ spec:
   serviceAccountName: create-datavolume-task
   taskRef:
     kind: ClusterTask
-    name: create-datavolume
+    name: create-datavolume-from-manifest
   params:
     - name: waitForSuccess
       value: 'true'
