@@ -1,11 +1,11 @@
-package constants_test
+package zconstants_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	. "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest"
+	. "github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"os"
 )
 
@@ -18,22 +18,22 @@ var _ = Describe("Env", func() {
 	var defaultOutOfClusterENV string
 
 	BeforeEach(func() {
-		defaultOutOfClusterENV = os.Getenv(constants.OutOfClusterENV)
+		defaultOutOfClusterENV = os.Getenv(zconstants.OutOfClusterENV)
 	})
 	AfterEach(func() {
 		UnSetEnv(existingVar)
 		UnSetEnv(nonExistingVar)
-		SetEnv(constants.OutOfClusterENV, defaultOutOfClusterENV)
+		SetEnv(zconstants.OutOfClusterENV, defaultOutOfClusterENV)
 	})
 
 	Describe("Identifies ENV flags", func() {
 		It("should identify missing flag", func() {
-			Expect(constants.IsEnvVarTrue(nonExistingVar)).To(BeFalse())
+			Expect(zconstants.IsEnvVarTrue(nonExistingVar)).To(BeFalse())
 		})
 
 		table.DescribeTable("should identify false flag", func(tested string) {
 			SetEnv(existingVar, tested)
-			Expect(constants.IsEnvVarTrue(existingVar)).To(BeFalse())
+			Expect(zconstants.IsEnvVarTrue(existingVar)).To(BeFalse())
 		},
 			table.Entry("False", "false"),
 			table.Entry("Bad", "falzee"),
@@ -43,7 +43,7 @@ var _ = Describe("Env", func() {
 
 		table.DescribeTable("should identify true flag", func(tested string) {
 			SetEnv(existingVar, tested)
-			Expect(constants.IsEnvVarTrue(existingVar)).To(BeTrue())
+			Expect(zconstants.IsEnvVarTrue(existingVar)).To(BeTrue())
 		},
 			table.Entry("True", "true"),
 			table.Entry("UpperCase", "TRUE"),
@@ -52,19 +52,19 @@ var _ = Describe("Env", func() {
 	})
 	Describe("should lookup active namespace", func() {
 		It("should fail out of cluster", func() {
-			ns, err := constants.GetActiveNamespace()
+			ns, err := zconstants.GetActiveNamespace()
 			Expect(ns).To(BeEmpty())
 			Expect(err).To(HaveOccurred())
 		})
 	})
 	Describe("return results tekton dir", func() {
 		It("should return supplemental dir if out of cluster", func() {
-			SetEnv(constants.OutOfClusterENV, "true")
-			Expect(constants.GetTektonResultsDir()).To(BeADirectory())
+			SetEnv(zconstants.OutOfClusterENV, "true")
+			Expect(zconstants.GetTektonResultsDir()).To(BeADirectory())
 		})
 		It("should return tekton dir in a cluster", func() {
-			SetEnv(constants.OutOfClusterENV, "false")
-			Expect(constants.GetTektonResultsDir()).To(Equal(constants.TektonResultsDirPath))
+			SetEnv(zconstants.OutOfClusterENV, "false")
+			Expect(zconstants.GetTektonResultsDir()).To(Equal(zconstants.TektonResultsDirPath))
 		})
 	})
 

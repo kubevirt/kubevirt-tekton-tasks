@@ -1,7 +1,7 @@
-package utils
+package exit
 
 import (
-	errors2 "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/errors"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"os"
 )
 
@@ -50,7 +50,7 @@ func ExitOrDieFromError(code int, err error, isSoftConditions ...bool) {
 		panic(exit)
 	}
 
-	soft := errors2.IsErrorSoft(err)
+	soft := zerrors.IsErrorSoft(err)
 
 	// find any soft condition
 	for idx := 0; !soft && idx < len(isSoftConditions); idx++ {

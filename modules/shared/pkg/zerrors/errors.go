@@ -1,4 +1,4 @@
-package errors
+package zerrors
 
 import "k8s.io/apimachinery/pkg/api/errors"
 

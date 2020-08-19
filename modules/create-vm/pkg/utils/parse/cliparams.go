@@ -1,9 +1,9 @@
 package parse
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/logger"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"strings"
@@ -31,15 +31,15 @@ type CLIOptions struct {
 }
 
 func (c *CLIOptions) GetAllPVCNames() []string {
-	return utils.ConcatStringSlices(c.OwnPersistentVolumeClaims, c.PersistentVolumeClaims)
+	return zutils.ConcatStringSlices(c.OwnPersistentVolumeClaims, c.PersistentVolumeClaims)
 }
 
 func (c *CLIOptions) GetAllDVNames() []string {
-	return utils.ConcatStringSlices(c.OwnDataVolumes, c.DataVolumes)
+	return zutils.ConcatStringSlices(c.OwnDataVolumes, c.DataVolumes)
 }
 
 func (c *CLIOptions) GetAllDiskNames() []string {
-	return utils.ConcatStringSlices(c.GetAllPVCNames(), c.GetAllDVNames())
+	return zutils.ConcatStringSlices(c.GetAllPVCNames(), c.GetAllDVNames())
 }
 
 func (c *CLIOptions) GetTemplateParams() map[string]string {
@@ -62,11 +62,11 @@ func (c *CLIOptions) GetDebugLevel() zapcore.Level {
 }
 
 func (c *CLIOptions) GetTemplateNamespace() string {
-	return utils.GetLast(c.TemplateNamespaces)
+	return zutils.GetLast(c.TemplateNamespaces)
 }
 
 func (c *CLIOptions) GetVirtualMachineNamespace() string {
-	return utils.GetLast(c.VirtualMachineNamespaces)
+	return zutils.GetLast(c.VirtualMachineNamespaces)
 }
 
 func (c *CLIOptions) setTemplateNamespace(namespace string) {

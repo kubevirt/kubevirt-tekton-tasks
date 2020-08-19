@@ -2,8 +2,8 @@ package pvc
 
 import (
 	"errors"
-	errors2 "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/errors"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -26,7 +26,7 @@ func NewPersistentVolumeClaimProvider(client clientv1.CoreV1Interface) Persisten
 }
 
 func (d *pvcProvider) GetByName(namespace string, names ...string) ([]*v1.PersistentVolumeClaim, error) {
-	var multiError errors2.MultiError
+	var multiError zerrors.MultiError
 	var pvcs []*v1.PersistentVolumeClaim
 
 	for _, name := range names {
