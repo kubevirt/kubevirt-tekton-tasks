@@ -3,7 +3,6 @@ package main
 import (
 	goarg "github.com/alexflint/go-arg"
 	. "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils"
 	log "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/logger"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
@@ -16,7 +15,7 @@ import (
 )
 
 func main() {
-	defer utils.HandleExit()
+	defer exit.HandleExit()
 
 	cliOptions := &parse.CLIOptions{}
 	goarg.MustParse(cliOptions)
