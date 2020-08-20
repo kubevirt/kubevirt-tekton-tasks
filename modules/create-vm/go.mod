@@ -1,6 +1,6 @@
 module github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm
 
-go 1.14
+go 1.15
 
 require (
 	github.com/alexflint/go-arg v1.3.0
