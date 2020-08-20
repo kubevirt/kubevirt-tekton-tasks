@@ -33,10 +33,10 @@ func (c *CLIOptions) resolveTemplateParams() error {
 		AsOptional()
 }
 
-func (c *CLIOptions) trimSpaces() {
+func (c *CLIOptions) trimSpacesAndReduceCount() {
 	c.TemplateName = strings.TrimSpace(c.TemplateName)
-	c.setTemplateNamespace(strings.TrimSpace(c.GetTemplateNamespace()))             // also reduce count to 1
-	c.setVirtualMachineNamespace(strings.TrimSpace(c.GetVirtualMachineNamespace())) // also reduce count to 1
+	c.setTemplateNamespace(strings.TrimSpace(c.GetTemplateNamespace()))             // reduce count to 1
+	c.setVirtualMachineNamespace(strings.TrimSpace(c.GetVirtualMachineNamespace())) // reduce count to 1
 
 	for i, v := range c.TemplateParams {
 		c.TemplateParams[i] = strings.TrimLeftFunc(v, unicode.IsSpace)
