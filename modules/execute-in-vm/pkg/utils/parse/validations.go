@@ -40,7 +40,7 @@ func (c *CLIOptions) resolveExecutionScript() error {
 		return nil
 	}
 	if strings.TrimSpace(command) == "" {
-		return zerrors.NewMissingRequiredError("one of %v|%v options is required", commandArgsOptionName, scriptOptionName)
+		return zerrors.NewMissingRequiredError("%v|%v option is required", commandArgsOptionName, scriptOptionName)
 	}
 
 	if args != "" {
