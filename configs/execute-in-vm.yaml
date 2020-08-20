@@ -1,0 +1,4 @@
+task_name: execute-in-vm
+main_image: quay.io/suomiy/execute-in-vm:v0.0.1
+subtask_names:
+  - execute-in-vm

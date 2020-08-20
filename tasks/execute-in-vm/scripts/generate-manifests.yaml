@@ -1,0 +1,31 @@
+---
+- connection: local
+  hosts: 127.0.0.1
+  gather_facts: no
+  vars_files:
+    - ../../../configs/execute-in-vm.yaml
+  vars:
+    output_dir: ../dist/manifests
+    manifest_templates_dir: ../templates/manifests
+    repo_dir: ../../..
+    role_name: "{{ task_name }}-task"
+    sa_name: "{{ role_name }}"
+    role_binding_name: "{{ role_name }}"
+    default_file_mode: "0644"
+  tasks:
+    - name: Prepare dist directory
+      file:
+        path: "{{ output_dir }}"
+        state: directory
+    - name: Generate execute-in-vm task
+      template:
+        src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
+        dest: "{{ output_dir }}/{{ task_name }}.yaml"
+        mode: "{{ default_file_mode }}"
+    - name: Generate roles
+      include: "{{ repo_dir }}/scripts/ansible/generate-roles-subtasks.yaml"
+      with_items:
+        - { role_type: Role, role_id: 'namespace', sa_namespace: null }
+        - { role_type: ClusterRole, role_id: 'cluster', sa_namespace: 'TARGET_NAMESPACE' }
+      vars:
+        role_output_dir: "{{ output_dir }}/{{ item.role_id }}-role"
