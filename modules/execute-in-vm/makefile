@@ -22,7 +22,7 @@ release-with-push: release
 
 .PHONY: \
 	all \
+	release-dev \
+	release-dev-with-push \
 	release \
-	release-with-push \
-	release-prod \
-	release-prod-with-push
+	release-with-push

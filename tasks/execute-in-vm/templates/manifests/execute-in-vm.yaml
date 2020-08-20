@@ -41,11 +41,9 @@ spec:
         - $(params.vmName)
         - '--vm-namespace'
         - $(params.vmNamespace)
-        - '--secret-name'
-        - $(params.secretName)
         - '--command'
         - $(params.command)
-        - '--args'
+        - '--command-args'
         - $(params.args)
         - '--script'
         - $(params.script)

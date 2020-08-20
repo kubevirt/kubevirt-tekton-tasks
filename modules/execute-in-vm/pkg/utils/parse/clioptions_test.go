@@ -26,7 +26,7 @@ var _ = Describe("Cliparams", func() {
 		Expect(options.Init().Error()).To(ContainSubstring(expectedErrMessage))
 	},
 		table.Entry("namespace missing", "vm-namespace option is empty", &parse.CLIOptions{}),
-		table.Entry("no script or command", "one of command-args|script options is required", &parse.CLIOptions{
+		table.Entry("no script or command", "command-args|script option is required", &parse.CLIOptions{
 			VirtualMachineNamespaces: defaultNSArr,
 		}),
 		table.Entry("script and command", "one of command|script options is allowed", &parse.CLIOptions{

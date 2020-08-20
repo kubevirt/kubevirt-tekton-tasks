@@ -20,4 +20,7 @@ func main() {
 	if err := cliOptions.Init(); err != nil {
 		exit.ExitOrDieFromError(InvalidArguments, err)
 	}
+
+	// ssh -oStrictHostKeyChecking=accept-new -i /tmp/id_rsa fedora@10.116.0.104
+	// -oStrictHostKeyChecking=no
 }
