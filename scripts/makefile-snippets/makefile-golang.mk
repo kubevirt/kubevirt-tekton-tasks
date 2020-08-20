@@ -6,14 +6,17 @@ export GO111MODULE=on
 FOLDERS_WITHOUT_VENDOR = $(shell ls -d */ | grep -v "^vendor/")
 
 lint:
-	if [ -n "`gofmt -d $(FOLDERS_WITHOUT_VENDOR)`" ]; then gofmt -d $(FOLDERS_WITHOUT_VENDOR); exit 1; fi
+	@if [ -n "`gofmt -d $(FOLDERS_WITHOUT_VENDOR)`" ]; then gofmt -d $(FOLDERS_WITHOUT_VENDOR); exit 1; fi
+
+lint-fix:
+	@gofmt -w $(FOLDERS_WITHOUT_VENDOR)
 
 test:
-	mkdir -p $(DIST_DIR)
-	go test -coverprofile $(DIST_DIR)/cover.out `go list ./... | grep -v utilstest`
+	@mkdir -p $(DIST_DIR)
+	@go test -coverprofile $(DIST_DIR)/cover.out `go list ./... | grep -v utilstest`
 
 cover: test
-	go tool cover -html $(DIST_DIR)/cover.out
+	@go tool cover -html $(DIST_DIR)/cover.out
 
 
 vendor:
