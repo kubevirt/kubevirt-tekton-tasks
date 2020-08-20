@@ -6,7 +6,7 @@
     - ../../../configs/create-vm.yaml
   vars:
     output_dir: ../dist/manifests
-    manifest_templates_dir: ../manifest-templates
+    manifest_templates_dir: ../templates/manifests
     repo_dir: ../../..
     role_name: "{{ task_name }}-task"
     sa_name: "{{ role_name }}"
