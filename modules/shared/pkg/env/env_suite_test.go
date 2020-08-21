@@ -1,4 +1,4 @@
-package exit_test
+package env_test
 
 import (
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/internal/intutilstest"
@@ -8,9 +8,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestExit(t *testing.T) {
+func TestEnv(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Exit Suite")
+	RunSpecs(t, "Env Suite")
 }
 
 var _ = BeforeSuite(intutilstest.SetupTestSuite)

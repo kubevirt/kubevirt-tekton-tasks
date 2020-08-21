@@ -1,7 +1,7 @@
 package zutils_test
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/internal/intutilstest"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -13,5 +13,5 @@ func TestUtils(t *testing.T) {
 	RunSpecs(t, "Utils Suite")
 }
 
-var _ = BeforeSuite(utilstest.SetupTestSuite)
-var _ = AfterSuite(utilstest.TearDownSuite)
+var _ = BeforeSuite(intutilstest.SetupTestSuite)
+var _ = AfterSuite(intutilstest.TearDownSuite)

@@ -1,7 +1,7 @@
 package results_test
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/internal/intutilstest"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -13,5 +13,5 @@ func TestResults(t *testing.T) {
 	RunSpecs(t, "Results Suite")
 }
 
-var _ = BeforeSuite(utilstest.SetupTestSuite)
-var _ = AfterSuite(utilstest.TearDownSuite)
+var _ = BeforeSuite(intutilstest.SetupTestSuite)
+var _ = AfterSuite(intutilstest.TearDownSuite)
