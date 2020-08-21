@@ -1,7 +1,7 @@
 package results
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	"io/ioutil"
 	"path/filepath"
 )
@@ -11,7 +11,7 @@ func RecordResults(results map[string]string) error {
 		return nil
 	}
 
-	resultsDir := zconstants.GetTektonResultsDir()
+	resultsDir := env.GetTektonResultsDir()
 
 	for resKey, resVal := range results {
 		filename := filepath.Join(resultsDir, resKey)

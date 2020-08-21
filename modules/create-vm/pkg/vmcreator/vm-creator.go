@@ -7,10 +7,11 @@ import (
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/pvc"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/logger"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/log"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
 	virtualMachine "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
-	. "github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
@@ -34,14 +35,14 @@ type VMCreator struct {
 }
 
 func getConfig() (*rest.Config, error) {
-	if IsEnvVarTrue(OutOfClusterENV) {
+	if env.IsEnvVarTrue(zconstants.OutOfClusterENV) {
 		return clientcmd.BuildConfigFromFlags("", filepath.Join(homedir.HomeDir(), ".kube", "config"))
 	}
 	return rest.InClusterConfig()
 }
 
 func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
-	logger.GetLogger().Debug("initialized clients and providers")
+	log.GetLogger().Debug("initialized clients and providers")
 	targetNS := cliOptions.GetVirtualMachineNamespace()
 
 	config, err := getConfig()
@@ -75,13 +76,13 @@ func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
 }
 
 func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
-	logger.GetLogger().Debug("retrieving template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.cliOptions.GetTemplateNamespace()))
+	log.GetLogger().Debug("retrieving template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.cliOptions.GetTemplateNamespace()))
 	template, err := v.templateProvider.Get(v.cliOptions.GetTemplateNamespace(), v.cliOptions.TemplateName)
 	if err != nil {
 		return nil, err
 	}
 
-	logger.GetLogger().Debug("processing template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.cliOptions.GetTemplateNamespace()))
+	log.GetLogger().Debug("processing template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.cliOptions.GetTemplateNamespace()))
 	processedTemplate, err := v.templateProvider.Process(v.targetNamespace, template, v.cliOptions.GetTemplateParams())
 	if err != nil {
 		return nil, err
@@ -93,23 +94,23 @@ func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
 
 	templateValidations, err := templates.GetTemplateValidations(processedTemplate)
 	if err != nil {
-		logger.GetLogger().Warn("could not parse template validations", zap.Error(err))
+		log.GetLogger().Warn("could not parse template validations", zap.Error(err))
 		templateValidations = validations.NewTemplateValidations(nil) // fallback to defaults
 	}
 	if templateValidations.IsEmpty() {
-		logger.GetLogger().Debug("template validations are empty: falling back to defaults")
+		log.GetLogger().Debug("template validations are empty: falling back to defaults")
 	}
 
 	vm.Namespace = v.targetNamespace
 	virtualMachine.AddMetadata(vm, processedTemplate)
 	virtualMachine.AddVolumes(vm, templateValidations, v.cliOptions)
 
-	logger.GetLogger().Debug("creating VM", zap.Reflect("vm", vm))
+	log.GetLogger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, vm)
 }
 
 func (v *VMCreator) CheckVolumesExist() error {
-	logger.GetLogger().Debug("asserting additional volumes exist", zap.Strings("additional-volumes", v.cliOptions.GetAllDiskNames()))
+	log.GetLogger().Debug("asserting additional volumes exist", zap.Strings("additional-volumes", v.cliOptions.GetAllDiskNames()))
 	_, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, v.cliOptions.GetAllDVNames()...)
 	_, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, v.cliOptions.GetAllPVCNames()...)
 
@@ -130,7 +131,7 @@ func (v *VMCreator) OwnVolumes(vm *kubevirtv1.VirtualMachine) error {
 }
 
 func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
-	logger.GetLogger().Debug("taking ownership of DataVolumes", zap.Strings("own-dvs", v.cliOptions.OwnDataVolumes))
+	log.GetLogger().Debug("taking ownership of DataVolumes", zap.Strings("own-dvs", v.cliOptions.OwnDataVolumes))
 	var multiError zerrors.MultiError
 
 	dvs, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, v.cliOptions.OwnDataVolumes...)
@@ -151,7 +152,7 @@ func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
 }
 
 func (v *VMCreator) ownPersistentVolumeClaims(vm *kubevirtv1.VirtualMachine) error {
-	logger.GetLogger().Debug("taking ownership of PersistentVolumeClaims", zap.Strings("own-pvcs", v.cliOptions.OwnPersistentVolumeClaims))
+	log.GetLogger().Debug("taking ownership of PersistentVolumeClaims", zap.Strings("own-pvcs", v.cliOptions.OwnPersistentVolumeClaims))
 	var multiError zerrors.MultiError
 
 	pvcs, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, v.cliOptions.OwnPersistentVolumeClaims...)
