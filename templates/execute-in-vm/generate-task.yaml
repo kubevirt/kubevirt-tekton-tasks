@@ -34,3 +34,21 @@
         - { role_type: ClusterRole, role_id: 'cluster', sa_namespace: 'TARGET_NAMESPACE' }
       vars:
         role_output_dir: "{{ manifests_output_dir }}"
+    - name: Prepare examples dist directory
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ examples_output_dir }}"
+        - "{{ examples_secrets_output_dir }}"
+    - name: Generate example secrets
+      template:
+        src: "{{ examples_templates_dir }}/{{ ssh_secret_name }}.yaml"
+        dest: "{{ examples_secrets_output_dir }}/{{ item.secret_with_flavor_name }}.yaml"
+        mode: "{{ default_file_mode }}"
+      with_items:
+        - { task_type: Manual, advanced: false, secret_with_flavor_name: "{{ ssh_secret_name }}" }
+        - { task_type: Manual, advanced: true, secret_with_flavor_name: "{{ ssh_secret_name }}-with-options" }
+    # TODO: TBD
+    #        - { task_type: Generated, advanced: false, secret_with_flavor_name: "{{ ssh_secret_name }}-generated-all-keys" }
+    #        - { task_type: PartiallyGeneratedNotStrict, advanced: false, secret_with_flavor_name: "{{ ssh_secret_name }}-generated-client-keys-no-strict" }

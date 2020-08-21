@@ -4,6 +4,9 @@ kind: ClusterTask
 metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: execute-in-vm-task
+    vmNamespace.params.task.kubevirt.io/type: namespace
+    secretName.params.task.kubevirt.io/type: execute-in-vm-secret
+    script.params.task.kubevirt.io/type: script
   labels:
     task.kubevirt.io/type: execute-in-vm
     task.kubevirt.io/category: execute-in-vm
