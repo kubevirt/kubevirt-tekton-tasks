@@ -126,8 +126,9 @@ github.com/pborman/uuid
 github.com/pkg/errors
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/suomiy/kubevirt-tekton-tasks/modules/shared v0.0.1
+# github.com/suomiy/kubevirt-tekton-tasks/modules/shared v0.0.2
 ## explicit
+github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env
 github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/exit
 github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/results
 github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest

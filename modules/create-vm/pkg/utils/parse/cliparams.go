@@ -1,10 +1,8 @@
 package parse
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/logger"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
-	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"strings"
 )
@@ -78,8 +76,6 @@ func (c *CLIOptions) setVirtualMachineNamespace(namespace string) {
 }
 
 func (c *CLIOptions) Init() error {
-	defer logger.GetLogger().Debug("parsed arguments", zap.Reflect("cliOptions", c))
-
 	if err := c.assertValidTypes(); err != nil {
 		return err
 	}

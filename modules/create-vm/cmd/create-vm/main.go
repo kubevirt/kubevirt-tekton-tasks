@@ -3,7 +3,7 @@ package main
 import (
 	goarg "github.com/alexflint/go-arg"
 	. "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	log "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/logger"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/log"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/vmcreator"
@@ -26,6 +26,7 @@ func main() {
 	if err := cliOptions.Init(); err != nil {
 		exit.ExitOrDieFromError(InvalidNamespacesExitCode, err)
 	}
+	log.GetLogger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
 
 	vmCreator, err := vmcreator.NewVMCreator(cliOptions)
 

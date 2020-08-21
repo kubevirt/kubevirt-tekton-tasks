@@ -1,7 +1,7 @@
 package utilstest
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/logger"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/log"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"go.uber.org/zap"
@@ -9,7 +9,7 @@ import (
 
 func SetupTestSuite() {
 	utilstest.SetEnv(zconstants.OutOfClusterENV, "true")
-	logger.InitLogger(zap.InfoLevel)
+	log.InitLogger(zap.InfoLevel)
 }
 
 func TearDownSuite() {

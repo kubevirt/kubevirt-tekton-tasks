@@ -3,7 +3,7 @@ package parse
 import (
 	"fmt"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"strings"
 	"unicode"
@@ -60,7 +60,7 @@ func (c *CLIOptions) resolveDefaultNamespaces() error {
 	vmNamespace := c.GetVirtualMachineNamespace()
 
 	if tempNamespace == "" || vmNamespace == "" {
-		activeNamespace, err := zconstants.GetActiveNamespace()
+		activeNamespace, err := env.GetActiveNamespace()
 		if err != nil {
 			return zerrors.NewMissingRequiredError("%v: %v option is empty", err.Error(), c.getMissingNamespaceOptionNames())
 		}
