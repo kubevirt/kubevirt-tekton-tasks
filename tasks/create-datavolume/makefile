@@ -1,13 +1,20 @@
-all: clean build-manifests
+all: clean generate-task
 
 CONFIG_FILE ?= ../../configs/create-datavolume.yaml
+HAS_EXAMPLES = false
+
 include ../../scripts/makefile-snippets/makefile-load-config.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean-dist clean
-include ../../scripts/makefile-snippets/makefile-manifests.mk # clean-dist-manifests clean-manifests build-manifests copy-bundle-to-manifests
+include ../../scripts/makefile-snippets/makefile-generate-task.mk # clean-generated-task-dist clean-generated-task-release generate-task copy-generated-task-to-release
 include ../../scripts/makefile-snippets/makefile-deploy.mk # undeploy deploy deploy-namespace
 
-release: clean-dist-manifests clean-manifests build-manifests copy-bundle-to-manifests
+release: \
+	clean \
+	generate-task \
+	clean-generated-task-release \
+	copy-generated-task-to-release \
+	clean
 
 deploy-dev: deploy
 

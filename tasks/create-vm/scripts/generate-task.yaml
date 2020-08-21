@@ -5,7 +5,7 @@
   vars_files:
     - ../../../configs/create-vm.yaml
   vars:
-    output_dir: ../dist/manifests
+    manifests_output_dir: ../dist/manifests
     manifest_templates_dir: ../templates/manifests
     repo_dir: ../../..
     role_name: "{{ task_name }}-task"
@@ -15,12 +15,12 @@
   tasks:
     - name: Prepare dist directory
       file:
-        path: "{{ output_dir }}"
+        path: "{{ manifests_output_dir }}"
         state: directory
     - name: Generate create-vm task
       template:
         src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
-        dest: "{{ output_dir }}/{{ item.task_with_flavor_name }}.yaml"
+        dest: "{{ manifests_output_dir }}/{{ item.task_with_flavor_name }}.yaml"
         mode: "{{ default_file_mode }}"
       with_items:
         - { task_type: Template, task_with_flavor_name: "{{ task_name }}-from-template" }
@@ -30,4 +30,4 @@
         - { role_type: Role, role_id: 'namespace', sa_namespace: null }
         - { role_type: ClusterRole, role_id: 'cluster', sa_namespace: 'TARGET_NAMESPACE' }
       vars:
-        role_output_dir: "{{ output_dir }}/{{ item.role_id }}-role"
+        role_output_dir: "{{ manifests_output_dir }}/{{ item.role_id }}-role"
