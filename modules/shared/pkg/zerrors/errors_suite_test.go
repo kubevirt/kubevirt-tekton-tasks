@@ -1,7 +1,7 @@
 package zerrors_test
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/internal/intutilstest"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -13,5 +13,5 @@ func TestErrors(t *testing.T) {
 	RunSpecs(t, "Errors Suite")
 }
 
-var _ = BeforeSuite(utilstest.SetupTestSuite)
-var _ = AfterSuite(utilstest.TearDownSuite)
+var _ = BeforeSuite(intutilstest.SetupTestSuite)
+var _ = AfterSuite(intutilstest.TearDownSuite)

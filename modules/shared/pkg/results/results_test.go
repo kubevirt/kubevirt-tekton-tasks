@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	results2 "github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/results"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -28,11 +28,11 @@ var _ = Describe("Results", func() {
 		})
 		table.DescribeTable("writes to correct file", func(results map[string]string) {
 			Expect(results2.RecordResults(results)).Should(Succeed())
-			files, err := filepath.Glob(zconstants.GetTektonResultsDir() + "/*" + testSuffix)
+			files, err := filepath.Glob(env.GetTektonResultsDir() + "/*" + testSuffix)
 			Expect(err).Should(Succeed())
 			Expect(files).Should(HaveLen(len(results)))
 			for filename, expectedContent := range results {
-				content, err := ioutil.ReadFile(zconstants.GetTektonResultsDir() + "/" + filename)
+				content, err := ioutil.ReadFile(env.GetTektonResultsDir() + "/" + filename)
 				Expect(err).Should(Succeed())
 				Expect(string(content)).To(Equal(expectedContent))
 			}
