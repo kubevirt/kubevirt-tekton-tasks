@@ -1,0 +1,51 @@
+---
+- connection: local
+  hosts: 127.0.0.1
+  gather_facts: no
+  vars_files:
+    - ../../../configs/execute-in-vm.yaml
+  vars:
+    manifests_output_dir: ../dist/manifests
+    examples_output_dir: ../dist/examples
+    examples_secrets_output_dir: "{{ examples_output_dir }}/secrets"
+    manifest_templates_dir: ../templates/manifests
+    examples_templates_dir: ../templates/examples
+    repo_dir: ../../..
+    role_name: "{{ task_name }}-task"
+    sa_name: "{{ role_name }}"
+    role_binding_name: "{{ role_name }}"
+    default_file_mode: "0644"
+  tasks:
+    - name: Prepare manifests dist directory
+      file:
+        path: "{{ manifests_output_dir }}"
+        state: directory
+    - name: Generate execute-in-vm task
+      template:
+        src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
+        dest: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
+        mode: "{{ default_file_mode }}"
+    - name: Generate roles
+      include: "{{ repo_dir }}/scripts/ansible/generate-roles-subtasks.yaml"
+      with_items:
+        - { role_type: Role, role_id: 'namespace', sa_namespace: null }
+        - { role_type: ClusterRole, role_id: 'cluster', sa_namespace: 'TARGET_NAMESPACE' }
+      vars:
+        role_output_dir: "{{ manifests_output_dir }}/{{ item.role_id }}-role"
+    - name: Prepare examples secrets dist directory
+      file:
+        path: "{{ examples_secrets_output_dir }}"
+        state: directory
+    - name: Generate example secrets
+      vars:
+        ssh_secret_name: "ssh-secret"
+      template:
+        src: "{{ examples_templates_dir }}/{{ ssh_secret_name }}.yaml"
+        dest: "{{ examples_secrets_output_dir }}/{{ item.secret_with_flavor_name }}.yaml"
+        mode: "{{ default_file_mode }}"
+      with_items:
+        - { task_type: Manual, advanced: false, secret_with_flavor_name: "{{ ssh_secret_name }}" }
+        - { task_type: Manual, advanced: true, secret_with_flavor_name: "{{ ssh_secret_name }}-with-options" }
+# TODO: TBD
+#        - { task_type: Generated, advanced: false, secret_with_flavor_name: "{{ ssh_secret_name }}-generated-all-keys" }
+#        - { task_type: PartiallyGeneratedNotStrict, advanced: false, secret_with_flavor_name: "{{ ssh_secret_name }}-generated-client-keys-no-strict" }

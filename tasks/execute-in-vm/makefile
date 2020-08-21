@@ -1,4 +1,4 @@
-all: clean build-manifests
+all: clean generate-task
 
 CONFIG_FILE ?= ../../configs/execute-in-vm.yaml
 
@@ -10,7 +10,12 @@ include ../../scripts/makefile-snippets/makefile-generate-task.mk # clean-genera
 include ../../scripts/makefile-snippets/makefile-deploy.mk # undeploy deploy deploy-namespace
 include ../../scripts/makefile-snippets/makefile-deploy-dev.mk # deploy-dev deploy-namespace-dev
 
-release: clean-dist-manifests clean-manifests build-manifests copy-bundle-to-manifests
+release: \
+	clean \
+	generate-task \
+	clean-generated-task-release \
+	copy-generated-task-to-release \
+	clean
 
 .PHONY: \
 	all \
