@@ -16,7 +16,7 @@ var (
 	multipleNSArr = []string{"overriden-ns", defaultNS}
 )
 
-var _ = Describe("Cliparams", func() {
+var _ = Describe("CLIOptions", func() {
 	table.DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
 		Expect(options.Init().Error()).To(ContainSubstring(expectedErrMessage))
 	},

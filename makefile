@@ -22,8 +22,8 @@ deploy-namespace: $(TASKS_DIR)/*
 deploy-dev: $(TASKS_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-dev;)
 
-deploy-namespace-dev: $(TASKS_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-namespace-dev;)
+deploy-dev-namespace: $(TASKS_DIR)/*
+	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-dev-namespace;)
 
 lint: $(MODULES_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) lint;)
@@ -39,9 +39,10 @@ test: $(MODULES_DIR)/*
 	clean \
 	release-manifests \
 	undeploy \
+	deploy \
 	deploy-namespace \
 	deploy-dev \
-	deploy-namespace-dev \
+	deploy-dev-namespace \
 	lint \
 	lint-fix \
 	test

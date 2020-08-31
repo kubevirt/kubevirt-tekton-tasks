@@ -18,7 +18,7 @@ release: \
 
 deploy-dev: deploy
 
-deploy-namespace-dev: deploy-namespace
+deploy-dev-namespace: deploy-namespace
 
 .PHONY: \
 	all \

@@ -39,3 +39,6 @@ replace (
 
 	sigs.k8s.io/structured-merge-diff => sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2
 )
+
+// uncomment for development
+// replace github.com/suomiy/kubevirt-tekton-tasks/modules/shared v0.0.2 => ../shared
