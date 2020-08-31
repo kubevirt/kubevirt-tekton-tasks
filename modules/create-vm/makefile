@@ -10,7 +10,7 @@ include ../../scripts/makefile-snippets/makefile-docker.mk # docker-build docker
 
 release-dev: lint test docker-build
 
-release-dev-with-push: release docker-push
+release-dev-with-push: release-dev docker-push
 
 release: IMAGE = $(MAIN_IMAGE)
 release: release-dev
