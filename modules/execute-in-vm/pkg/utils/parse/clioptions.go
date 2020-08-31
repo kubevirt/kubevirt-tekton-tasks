@@ -1,9 +1,7 @@
 package parse
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/logger"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
-	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -18,10 +16,9 @@ const (
 type CLIOptions struct {
 	VirtualMachineName       string   `arg:"--vm-name,required" placeholder:"NAME" help:"Name of a VM to execute the action in"`
 	VirtualMachineNamespaces []string `arg:"--vm-namespace" placeholder:"NAMESPACE" help:"Namespace of a VM to execute the action in"`
-	Command                  []string `arg:"--command" placeholder:"command" help:"Command to execute in a VM"`
-	CommandArgs              []string `arg:"--command-args" placeholder:"ARG1 ARG2" help:"Arguments of a command"`
-	Scripts                  []string `arg:"--script" placeholder:"SCRIPT" help:"Script to execute in a VM"`
+	Script                   string   `arg:"--script,env:EXECUTE_SCRIPT" placeholder:"SCRIPT" help:"Script to execute in a VM (can be set by EXECUTE_SCRIPT env variable)"`
 	Debug                    bool     `arg:"--debug" help:"Sets DEBUG log level"`
+	Command                  []string `arg:"positional" placeholder:"COMMAND" help:"Command to execute in a VM"`
 }
 
 func (c *CLIOptions) GetDebugLevel() zapcore.Level {
@@ -36,7 +33,7 @@ func (c *CLIOptions) GetVirtualMachineNamespace() string {
 }
 
 func (c *CLIOptions) GetScript() string {
-	return zutils.GetLast(c.Scripts)
+	return c.Script
 }
 
 func (c *CLIOptions) setVirtualMachineNamespace(namespace string) {
@@ -48,17 +45,7 @@ func (c *CLIOptions) setVirtualMachineNamespace(namespace string) {
 
 }
 
-func (c *CLIOptions) setScript(script string) {
-	if script == "" {
-		c.Scripts = nil
-	} else {
-		c.Scripts = []string{script}
-	}
-}
-
 func (c *CLIOptions) Init() error {
-	defer logger.GetLogger().Debug("parsed arguments", zap.Reflect("cliOptions", c))
-
 	c.trimSpacesAndReduceCount()
 
 	if err := c.resolveDefaultNamespaces(); err != nil {
