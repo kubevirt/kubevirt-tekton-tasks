@@ -1,0 +1,22 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: execute-in-vm-with-ssh-taskrun
+spec:
+  serviceAccountName: execute-in-vm-task
+  taskRef:
+    kind: ClusterTask
+    name: execute-in-vm
+  params:
+    - name: vmName
+      value: vm-example
+    - name: secretName
+      value: ssh-secret
+    - name: command
+      value:
+        - ls
+    - name: args
+      value:
+        - '-al'
+        - '/'

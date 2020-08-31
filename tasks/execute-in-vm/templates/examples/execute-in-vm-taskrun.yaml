@@ -1,0 +1,22 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: {{ item.taskrun_with_flavor_name }}
+spec:
+  serviceAccountName: {{ sa_name }}
+  taskRef:
+    kind: ClusterTask
+    name: {{ task_name }}
+  params:
+    - name: vmName
+      value: vm-example
+    - name: secretName
+      value: {{ item.secret_name }}
+    - name: command
+      value:
+        - ls
+    - name: args
+      value:
+        - '-al'
+        - '/'
