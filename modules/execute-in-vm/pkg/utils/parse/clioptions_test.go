@@ -15,13 +15,11 @@ var (
 	defaultNSArr    = []string{defaultNS}
 	multipleNSArr   = []string{"overriden-ns", defaultNS}
 	script          = "#!/bin/bash\necho hello world"
-	scriptArr       = []string{script}
-	commandArr      = []string{"echo", "-E"}
-	commandArgsArr  = []string{"hello", "world"}
+	commandArr      = []string{"echo", "-E", "hello", "world"}
 	expectedCommand = "echo -E hello world"
 )
 
-var _ = Describe("Cliparams", func() {
+var _ = Describe("CLIOptions", func() {
 	table.DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
 		Expect(options.Init().Error()).To(ContainSubstring(expectedErrMessage))
 	},
@@ -31,13 +29,8 @@ var _ = Describe("Cliparams", func() {
 		}),
 		table.Entry("script and command", "one of command|script options is allowed", &parse.CLIOptions{
 			VirtualMachineNamespaces: defaultNSArr,
-			Scripts:                  scriptArr,
+			Script:                   script,
 			Command:                  commandArr,
-		}),
-		table.Entry("script and command", "one of command-args|script options is allowed", &parse.CLIOptions{
-			VirtualMachineNamespaces: defaultNSArr,
-			Scripts:                  scriptArr,
-			CommandArgs:              commandArgsArr,
 		}),
 	)
 	//
@@ -51,7 +44,7 @@ var _ = Describe("Cliparams", func() {
 	},
 		table.Entry("returns valid defaults", &parse.CLIOptions{
 			VirtualMachineNamespaces: defaultNSArr,
-			Scripts:                  scriptArr,
+			Script:                   script,
 		}, map[string]interface{}{
 			"GetVirtualMachineNamespace": defaultNS,
 			"GetScript":                  script,
@@ -59,14 +52,14 @@ var _ = Describe("Cliparams", func() {
 		}),
 		table.Entry("handles multiple ns from cli", &parse.CLIOptions{
 			VirtualMachineNamespaces: multipleNSArr,
-			Scripts:                  scriptArr,
+			Script:                   script,
 		}, map[string]interface{}{
 			"GetVirtualMachineNamespace": defaultNS,
 		}),
 		table.Entry("handles Script cli arguments", &parse.CLIOptions{
 			VirtualMachineName:       "vm",
 			VirtualMachineNamespaces: defaultNSArr,
-			Scripts:                  scriptArr,
+			Script:                   script,
 			Debug:                    true,
 		}, map[string]interface{}{
 			"GetVirtualMachineNamespace": defaultNS,
@@ -84,7 +77,6 @@ var _ = Describe("Cliparams", func() {
 		table.Entry("handles Command cli arguments", &parse.CLIOptions{
 			VirtualMachineName:       "vm",
 			VirtualMachineNamespaces: defaultNSArr,
-			CommandArgs:              commandArgsArr,
 			Command:                  commandArr,
 			Debug:                    true,
 		}, map[string]interface{}{
