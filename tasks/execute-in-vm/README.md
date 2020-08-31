@@ -40,11 +40,13 @@ The secret is used for storing credentials and options used in VM authentication
 ##### SSH section
 - **user** (required): Username.
 - **private-key**: Private key to use for authentication. Alternatively generate-client-keys can be used instead.
-- **authorized-key**: Allowed authorized key. Alternatively generate-host-keys can be used instead.
+- **host-public-key**: Public key of known host to connect to. Alternatively generate-host-keys can be used instead.
 - **disable-strict-host-key-checking**: authorized-key does not have to be supplied when this value is set to true.
 - **additional-ssh-options**: Additional arguments to pass to the SSH command.
+<!---
 - **generate-client-keys (TBD)**: Generates authentication keys for execute-in-vm task client if set to true. Then it will try to supply the public key to VM's authorized keys.
 - **generate-host-keys (TBD)**: Generates authentication keys for the VM if set to true. Then it will try to supply the private and public key to the VM.
+-->
 
 Please see [secret](examples/secrets) examples 
 

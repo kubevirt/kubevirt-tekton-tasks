@@ -39,26 +39,26 @@ spec:
     - name: execute-in-vm
       image: quay.io/kubevirt/execute-in-vm:v0.0.1
       command:
-        - execute-in-vm
+        - entrypoint
+      args:
         - '--vm-name'
         - $(params.vmName)
         - '--vm-namespace'
         - $(params.vmNamespace)
-        - '--command'
+        - '--'
         - $(params.command)
-        - '--command-args'
         - $(params.args)
-        - '--script'
-        - $(params.script)
       env:
         - name: POD_NAME
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: EXECUTE_SCRIPT
+          value: $(params.script)
       volumeMounts:
-        - mountPath: /data/vmcredentials/
-          name: vmcredentials
+        - mountPath: /data/connectionsecret/
+          name: connectionsecret
   volumes:
-    - name: vmcredentials
+    - name: connectionsecret
       secret:
         secretName: $(params.secretName)
