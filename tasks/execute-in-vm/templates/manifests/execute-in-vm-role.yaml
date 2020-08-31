@@ -8,16 +8,16 @@ rules:
       - get
       - list
       - watch
-      - patch
-      - update
     apiGroups:
       - kubevirt.io
     resources:
       - virtualmachines
       - virtualmachineinstances
   - verbs:
-      - '*'
+      - update
     apiGroups:
-      - ''
+      - subresources.kubevirt.io
     resources:
-      - services
+      - virtualmachines/start
+      - virtualmachines/stop
+      - virtualmachines/restart
