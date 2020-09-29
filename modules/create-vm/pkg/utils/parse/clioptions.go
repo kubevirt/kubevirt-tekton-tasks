@@ -88,7 +88,7 @@ func (c *CLIOptions) Init() error {
 		return err
 	}
 
-	c.trimSpaces()
+	c.trimSpacesAndReduceCount()
 
 	return nil
 }

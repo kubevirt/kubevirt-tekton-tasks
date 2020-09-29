@@ -4,7 +4,10 @@ kind: ClusterTask
 metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: create-vm-task
+    templateName.params.task.kubevirt.io/type: vm-template
+    templateNamespace.params.task.kubevirt.io/type: namespace
     templateParams.params.task.kubevirt.io/type: template-params-array
+    vmNamespace.params.task.kubevirt.io/type: namespace
   labels:
     task.kubevirt.io/type: create-vm-from-template
     task.kubevirt.io/category: create-vm

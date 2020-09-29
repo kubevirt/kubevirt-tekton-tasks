@@ -11,8 +11,10 @@ func HandleTestExit(shouldPanic bool, shouldExitWithCode int, shouldExitWithMess
 	if e := recover(); e != nil {
 		if ex, ok := e.(exit.Exit); ok == true && ex.Soft {
 			errMsg := ex.Error()
-			if len(errMsg) > 0 && errMsg[len(errMsg)-1] != '\n' {
-				errMsg += "\n"
+			if len(errMsg) > 0 {
+				if errMsg[len(errMsg)-1] != '\n' {
+					errMsg += "\n"
+				}
 			}
 			Expect(errMsg).To(Equal(shouldExitWithMessage))
 			Expect(ex.Code).To(Equal(shouldExitWithCode))
