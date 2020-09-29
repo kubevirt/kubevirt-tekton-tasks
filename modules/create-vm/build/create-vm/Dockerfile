@@ -1,18 +1,20 @@
-FROM golang:1.14 AS builder
-WORKDIR /src/create-vm
-COPY . .
+FROM golang:1.15 AS builder
+ENV TASK_NAME=create-vm
 ENV GOFLAGS="-mod=vendor"
 ENV GO111MODULE=on
-RUN	CGO_ENABLED=0 GOOS=linux go build -o /create-vm cmd/create-vm/main.go
+WORKDIR /src/${TASK_NAME}
+COPY . .
+RUN	CGO_ENABLED=0 GOOS=linux go build -o /${TASK_NAME} cmd/${TASK_NAME}/main.go
 
-FROM registry.access.redhat.com/ubi7/ubi-minimal:latest
-ENV CREATE_VM=/usr/local/bin/create-vm \
+FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
+ENV TASK_NAME=create-vm
+ENV ENTRY_CMD=/usr/local/bin/${TASK_NAME} \
     USER_UID=1001 \
-    USER_NAME=create-vm
+    USER_NAME=${TASK_NAME}
 
-# install create-vm binary
-COPY --from=builder /create-vm ${CREATE_VM}
-COPY build/create-vm/bin /usr/local/bin
+# install task binary
+COPY --from=builder /${TASK_NAME} ${ENTRY_CMD}
+COPY build/${TASK_NAME}/bin /usr/local/bin
 RUN  /usr/local/bin/user_setup
 
 ENTRYPOINT ["/usr/local/bin/entrypoint"]

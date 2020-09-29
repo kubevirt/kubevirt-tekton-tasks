@@ -22,8 +22,17 @@ deploy-namespace: $(TASKS_DIR)/*
 deploy-dev: $(TASKS_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-dev;)
 
-deploy-namespace-dev: $(TASKS_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-namespace-dev;)
+deploy-dev-namespace: $(TASKS_DIR)/*
+	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-dev-namespace;)
+
+lint: $(MODULES_DIR)/*
+	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) lint;)
+
+lint-fix: $(MODULES_DIR)/*
+	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) lint-fix;)
+
+test: $(MODULES_DIR)/*
+	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) test;)
 
 .PHONY: \
 	all \
@@ -31,4 +40,9 @@ deploy-namespace-dev: $(TASKS_DIR)/*
 	release-manifests \
 	undeploy \
 	deploy \
-	deploy-namespace
+	deploy-namespace \
+	deploy-dev \
+	deploy-dev-namespace \
+	lint \
+	lint-fix \
+	test

@@ -1,6 +1,6 @@
 module github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm
 
-go 1.14
+go 1.15
 
 require (
 	github.com/alexflint/go-arg v1.3.0
@@ -39,3 +39,6 @@ replace (
 
 	sigs.k8s.io/structured-merge-diff => sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2
 )
+
+// uncomment for development
+// replace github.com/suomiy/kubevirt-tekton-tasks/modules/shared v0.0.2 => ../shared

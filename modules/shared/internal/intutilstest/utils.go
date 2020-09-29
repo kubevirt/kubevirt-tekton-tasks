@@ -12,4 +12,3 @@ func SetupTestSuite() {
 func TearDownSuite() {
 	utilstest.UnSetEnv(zconstants.OutOfClusterENV)
 }
-

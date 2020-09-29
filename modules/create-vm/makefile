@@ -8,19 +8,19 @@ include ../../scripts/makefile-snippets/makefile-golang.mk # lint test vendor
 include ../../scripts/makefile-snippets/makefile-golang-build.mk # build
 include ../../scripts/makefile-snippets/makefile-docker.mk # docker-build docker-push
 
-release: lint test docker-build
+release-dev: lint test docker-build
 
-release-with-push: release docker-push
+release-dev-with-push: release-dev docker-push
 
-release-prod: IMAGE = $(MAIN_IMAGE)
-release-prod: release
+release: IMAGE = $(MAIN_IMAGE)
+release: release-dev
 
-release-prod-with-push: IMAGE := $(MAIN_IMAGE)
-release-prod-with-push: release-with-push
+release-with-push: IMAGE = $(MAIN_IMAGE)
+release-with-push: release-dev-with-push
 
 .PHONY: \
 	all \
+	release-dev \
+	release-dev-with-push \
 	release \
-	release-with-push \
-	release-prod \
-	release-prod-with-push
+	release-with-push
