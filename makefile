@@ -30,5 +30,6 @@ deploy-namespace-dev: $(TASKS_DIR)/*
 	clean \
 	release-manifests \
 	undeploy \
-	deploy \
-	deploy-namespace
+	deploy-namespace \
+	deploy-dev \
+	deploy-namespace-dev
