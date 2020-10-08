@@ -9,7 +9,6 @@ $(error TASK_NAME is empty)
 endif
 
 MAIN_IMAGE ?= $(shell sed -n  's/^main_image *: *//p' $(CONFIG_FILE))
-MAIN_IMAGE_WITHOUT_TAG ?= $(shell echo $(MAIN_IMAGE) | sed 's/:.*$$//')
 
 ifeq ($(strip $(MAIN_IMAGE)),)
 $(error MAIN_IMAGE is empty)
@@ -21,3 +20,19 @@ ifeq ($(strip $(SUBTASK_NAMES)),)
 $(error SUBTASK_NAMES is empty, at least one subtask has to be defined)
 endif
 
+CONTAINER_ENGINE ?=  $(shell \
+	if podman ps >/dev/null; then \
+	  echo podman ; \
+    elif docker ps >/dev/null; then \
+      echo docker ; \
+	fi)
+
+ifeq ($(strip $(CONTAINER_ENGINE)),)
+$(error no working container runtime found. Neither docker nor podman seems to work.)
+endif
+
+IMAGE_REGISTRY ?= quay.io
+IMAGE_REGISTRY_USER ?= $(USER)
+IMAGE_TAG ?= latest
+IMAGE_NAME ?= $(TASK_NAME)
+IMAGE ?= $(IMAGE_REGISTRY)/$(IMAGE_REGISTRY_USER)/$(IMAGE_NAME):$(IMAGE_TAG)
