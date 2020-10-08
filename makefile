@@ -40,6 +40,9 @@ test: $(MODULES_DIR)/*
 cluster-sync:
 	./scripts/cluster-sync.sh
 
+cluster-clean:
+	./scripts/cluster-clean.sh
+
 e2e-tests:
 	./automation/e2e-tests.sh
 

@@ -17,7 +17,7 @@ podman login -u kubeadmin -p "$(oc whoami -t)" --tls-verify=false "$IMAGE_REGIST
 set -x
 
 pushd modules
-  for MODULE_DIR in $(echo ./* | grep -v "^shared$"); do
+  for MODULE_DIR in $(ls | grep -v "^shared$"); do
     pushd "$MODULE_DIR"
       make release-dev-with-push ARGS="--tls-verify=false"
     popd
