@@ -20,15 +20,24 @@ generate-task:
 	ansible-playbook $(TASK_SCRIPTS_DIR)/generate-task.yaml
 
 copy-generated-task-to-release:
-	mkdir -p manifests
+	mkdir -p $(MANIFESTS_DIR)
 	cp $(DIST_MANIFESTS_DIR)/namespace-role/$(TASK_NAME)-namespace-rbac.yaml \
 		$(DIST_MANIFESTS_DIR)/cluster-role/$(TASK_NAME)-cluster-rbac.yaml \
 		$(MANIFESTS_DIR)
 	set -e; $(foreach SUBTASK_NAME, $(SUBTASK_NAMES), cp $(DIST_MANIFESTS_DIR)/$(SUBTASK_NAME).yaml $(MANIFESTS_DIR);)
 	if [ "$(HAS_EXAMPLES)" == true ]; then cp -r $(DIST_EXAMPLES_DIR) $(EXAMPLES_DIR); fi
 
+test-generated-tasks-consistency: MANIFESTS_DIR_OLD := $(MANIFESTS_DIR)
+test-generated-tasks-consistency: EXAMPLES_DIR_OLD := $(EXAMPLES_DIR)
+test-generated-tasks-consistency: MANIFESTS_DIR = $(DIST_DIR)/consistency/manifests
+test-generated-tasks-consistency: EXAMPLES_DIR = $(DIST_DIR)/consistency/examples
+test-generated-tasks-consistency: clean generate-task copy-generated-task-to-release
+	diff -r $(MANIFESTS_DIR_OLD) $(MANIFESTS_DIR)
+	if [ "$(HAS_EXAMPLES)" == true ]; then diff -r $(EXAMPLES_DIR_OLD) $(EXAMPLES_DIR); fi
+
 .PHONY: \
 	clean-generated-task-dist \
 	clean-generated-task-release \
 	generate-task \
-	copy-generated-task-to-release
+	copy-generated-task-to-release \
+	test-generated-tasks-consistency

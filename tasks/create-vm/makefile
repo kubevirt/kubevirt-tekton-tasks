@@ -3,7 +3,7 @@ all: clean generate-task
 CONFIG_FILE ?= ../../configs/create-vm.yaml
 HAS_EXAMPLES = false
 
-include ../../scripts/makefile-snippets/makefile-load-config.mk
+include ../../scripts/makefile-snippets/makefile-common.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean
 include ../../scripts/makefile-snippets/makefile-generate-task.mk # clean-generated-task-dist clean-generated-task-release generate-task copy-generated-task-to-release

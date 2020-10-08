@@ -25,6 +25,9 @@ deploy-dev: $(TASKS_DIR)/*
 deploy-dev-namespace: $(TASKS_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-dev-namespace;)
 
+test-generated-tasks-consistency: $(TASKS_DIR)/*
+	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) test-generated-tasks-consistency;)
+
 lint: $(MODULES_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) lint;)
 
@@ -33,6 +36,12 @@ lint-fix: $(MODULES_DIR)/*
 
 test: $(MODULES_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) test;)
+
+cluster-sync:
+	./scripts/cluster-sync.sh
+
+e2e-tests:
+	./automation/e2e-tests.sh
 
 .PHONY: \
 	all \
@@ -43,6 +52,9 @@ test: $(MODULES_DIR)/*
 	deploy-namespace \
 	deploy-dev \
 	deploy-dev-namespace \
+	test-generated-tasks-consistency \
 	lint \
 	lint-fix \
-	test
+	test \
+	cluster-sync \
+	e2e-tests

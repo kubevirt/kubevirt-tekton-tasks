@@ -1,22 +1,23 @@
 all: clean build
 
 CONFIG_FILE ?= ../../configs/create-vm.yaml
-include ../../scripts/makefile-snippets/makefile-load-config.mk
+include ../../scripts/makefile-snippets/makefile-common.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean
 include ../../scripts/makefile-snippets/makefile-golang.mk # lint test vendor
 include ../../scripts/makefile-snippets/makefile-golang-build.mk # build
-include ../../scripts/makefile-snippets/makefile-docker.mk # docker-build docker-push
 
-release-dev: lint test docker-build
+release-dev:
+	$(CONTAINER_ENGINE) build -f build/$(IMAGE_NAME)/Dockerfile -t $(IMAGE) .
 
-release-dev-with-push: release-dev docker-push
+release-dev-with-push: release-dev
+	$(CONTAINER_ENGINE) push $(IMAGE) $(ARGS)
 
-release: IMAGE = $(MAIN_IMAGE)
-release: release-dev
+release: lint test
+	$(CONTAINER_ENGINE) build -f build/$(IMAGE_NAME)/Dockerfile -t $(MAIN_IMAGE) .
 
-release-with-push: IMAGE = $(MAIN_IMAGE)
-release-with-push: release-dev-with-push
+release-with-push: release
+	$(CONTAINER_ENGINE) push $(MAIN_IMAGE) $(ARGS)
 
 .PHONY: \
 	all \
