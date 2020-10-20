@@ -4,7 +4,8 @@ CONFIG_FILE ?= ../../configs/create-vm.yaml
 include ../../scripts/makefile-snippets/makefile-common.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean
-include ../../scripts/makefile-snippets/makefile-golang.mk # lint test vendor
+include ../../scripts/makefile-snippets/makefile-golang.mk # lint lint-fix vendor
+include ../../scripts/makefile-snippets/makefile-golang-test.mk # test cover
 include ../../scripts/makefile-snippets/makefile-golang-build.mk # build
 
 release-dev:
