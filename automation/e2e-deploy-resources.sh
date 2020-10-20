@@ -3,8 +3,9 @@
 set -ex
 
 KUBEVIRT_VERSION=$(curl -s https://github.com/kubevirt/kubevirt/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
-CDI_VERSION=$(curl -s https://github.com/kubevirt/containerized-data-importer/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
-
+#CDI_VERSION=$(curl -s https://github.com/kubevirt/containerized-data-importer/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
+# TODO change to latest once beta version becomes latest
+CDI_VERSION="v1.24.2"
 
 # Deploy Tekton Pipelines
 oc new-project tekton-pipelines

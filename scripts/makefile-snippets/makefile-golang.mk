@@ -1,5 +1,3 @@
-DIST_DIR ?= dist
-
 export GOFLAGS=-mod=vendor
 export GO111MODULE=on
 
@@ -11,19 +9,11 @@ lint:
 lint-fix:
 	@gofmt -w $(FOLDERS_WITHOUT_VENDOR)
 
-test:
-	@mkdir -p $(DIST_DIR)
-	@go test -coverprofile $(DIST_DIR)/cover.out `go list ./... | grep -v utilstest`
-
-cover: test
-	@go tool cover -html $(DIST_DIR)/cover.out
-
-
 vendor:
 	go mod tidy
 	go mod vendor
 
 .PHONY: \
 	lint \
-	test \
+	lint-fix \
 	vendor

@@ -1,5 +1,6 @@
 TASKS_DIR = ./tasks
 MODULES_DIR = ./modules
+UNIT_TESTS_DIR = $(shell ls -d $(MODULES_DIR)/* | grep -v "/tests$$")
 
 all: $(TASKS_DIR)/* $(MODULES_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR);)
@@ -29,13 +30,13 @@ test-generated-tasks-consistency: $(TASKS_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) test-generated-tasks-consistency;)
 
 lint: $(MODULES_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) lint;)
+	set -e; $(foreach MODULE_DIR, $^, $(MAKE) -C $(MODULE_DIR) lint;)
 
 lint-fix: $(MODULES_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) lint-fix;)
+	set -e; $(foreach MODULE_DIR, $^, $(MAKE) -C $(MODULE_DIR) lint-fix;)
 
-test: $(MODULES_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) test;)
+test: $(UNIT_TESTS_DIR)
+	set -e; $(foreach UNIT_TEST_DIR, $^, $(MAKE) -C $(UNIT_TEST_DIR) test;)
 
 cluster-sync:
 	./scripts/cluster-sync.sh
@@ -45,6 +46,10 @@ cluster-clean:
 
 e2e-tests:
 	./automation/e2e-tests.sh
+
+e2e-tests-no-deploy:
+	$(MAKE) -C ./modules/tests e2e-tests
+
 
 .PHONY: \
 	all \

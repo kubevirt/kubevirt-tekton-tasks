@@ -13,7 +13,7 @@ spec:
       value: 'true'
     - name: manifest
       value: |
-        apiVersion: cdi.kubevirt.io/v1alpha1
+        apiVersion: cdi.kubevirt.io/v1beta1
         kind: DataVolume
         metadata:
           generateName: example-dv-
