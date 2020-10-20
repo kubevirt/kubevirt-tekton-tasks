@@ -41,14 +41,17 @@ test: $(UNIT_TESTS_DIR)
 cluster-sync:
 	./scripts/cluster-sync.sh
 
+cluster-test:
+	./scripts/cluster-test.sh
+
 cluster-clean:
 	./scripts/cluster-clean.sh
 
+cluster-clean-without-images:
+	PRUNE_IMAGES=false ./scripts/cluster-clean.sh
+
 e2e-tests:
 	./automation/e2e-tests.sh
-
-e2e-tests-no-deploy:
-	$(MAKE) -C ./modules/tests e2e-tests
 
 
 .PHONY: \
@@ -65,4 +68,7 @@ e2e-tests-no-deploy:
 	lint-fix \
 	test \
 	cluster-sync \
+	cluster-test \
+	cluster-clean \
+	cluster-clean-without-images \
 	e2e-tests
