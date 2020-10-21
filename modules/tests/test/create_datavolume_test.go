@@ -41,7 +41,7 @@ var _ = Describe("Create DataVolume", func() {
 		podClient = kubeClient.Pods(testConfig.DeployNamespace)
 	})
 
-	table.DescribeTable("taskrun fails and no DV is created", func(config *dv.CreateDVTestConfig) {
+	table.DescribeTable("taskrun fails and no TestDataVolume is created", func(config *dv.CreateDVTestConfig) {
 		testConfig.LimitScope(config.LimitScope)
 		taskRun, err := config.Init(testConfig).AsTaskRun()
 		Expect(err).ShouldNot(HaveOccurred())
@@ -57,41 +57,63 @@ var _ = Describe("Create DataVolume", func() {
 			Expect(tekton.GetTaskRunLogs(podClient, taskRun)).Should(ContainSubstring(config.ExpectedLogs))
 		}
 
-		if config.Datavolume != nil && config.Datavolume.Name != "" {
-			// test DV should not exist - check just to be sure
-			_, err := cdiClientSet.DataVolumes(config.Datavolume.Namespace).Get(config.Datavolume.Name, metav1.GetOptions{})
+		dv := config.TaskData.Datavolume
+
+		if dv != nil && dv.Data.Name != "" {
+			// test TestDataVolume should not exist - check just to be sure
+			_, err := cdiClientSet.DataVolumes(dv.Data.Namespace).Get(dv.Data.Name, metav1.GetOptions{})
 			Expect(err).Should(HaveOccurred())
 		}
 	},
 		table.Entry("empty dv", &dv.CreateDVTestConfig{
-			Datavolume:     nil,
-			ServiceAccount: CreateDataVolumeServiceAccountName,
-			ExpectedLogs:   "manifest does not contain DataVolume kind",
+			TaskRunTestConfig: utils.TaskRunTestConfig{
+				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ExpectedLogs:   "manifest does not contain DataVolume kind",
+			},
+			TaskData: dv.CreateDVTaskData{
+				Datavolume: nil,
+			},
 		}),
 		table.Entry("malformed dv", &dv.CreateDVTestConfig{
-			Datavolume:     dv.NewBlankDV("malformed").WithoutTypeMeta().Build(),
-			ServiceAccount: CreateDataVolumeServiceAccountName,
-			ExpectedLogs:   "manifest does not contain DataVolume kind",
+			TaskRunTestConfig: utils.TaskRunTestConfig{
+				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ExpectedLogs:   "manifest does not contain DataVolume kind",
+			},
+			TaskData: dv.CreateDVTaskData{
+				Datavolume: dv.NewBlankDataVolume("malformed").WithoutTypeMeta(),
+			},
 		}),
 		table.Entry("no service account", &dv.CreateDVTestConfig{
-			Datavolume:   dv.NewBlankDV("no-sc").Build(),
-			ExpectedLogs: "datavolumes.cdi.kubevirt.io is forbidden",
+			TaskRunTestConfig: utils.TaskRunTestConfig{
+				ExpectedLogs: "datavolumes.cdi.kubevirt.io is forbidden",
+			},
+			TaskData: dv.CreateDVTaskData{
+				Datavolume: dv.NewBlankDataVolume("no-sa"),
+			},
 		}),
 		table.Entry("missing name", &dv.CreateDVTestConfig{
-			Datavolume:     dv.NewBlankDV("").Build(),
-			ServiceAccount: CreateDataVolumeServiceAccountName,
-			ExpectedLogs:   "invalid: metadata.name: Required value: name",
+			TaskRunTestConfig: utils.TaskRunTestConfig{
+				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ExpectedLogs:   "invalid: metadata.name: Required value: name",
+			},
+			TaskData: dv.CreateDVTaskData{
+				Datavolume: dv.NewBlankDataVolume(""),
+			},
 		}),
-		table.Entry("cannot create a DV in different namespace (namespace scoped)", &dv.CreateDVTestConfig{
-			Datavolume:     dv.NewBlankDV("namespace-scope").Build(),
-			ServiceAccount: CreateDataVolumeServiceAccountName,
-			Namespace:      CustomTargetNS,
-			LimitScope:     utils.NamespaceScope,
-			ExpectedLogs:   "datavolumes.cdi.kubevirt.io is forbidden",
+		table.Entry("cannot create a TestDataVolume in different namespace (namespace scoped)", &dv.CreateDVTestConfig{
+			TaskRunTestConfig: utils.TaskRunTestConfig{
+				ServiceAccount: CreateDataVolumeServiceAccountName,
+				Namespace:      CustomTargetNS,
+				LimitScope:     utils.NamespaceScope,
+				ExpectedLogs:   "datavolumes.cdi.kubevirt.io is forbidden",
+			},
+			TaskData: dv.CreateDVTaskData{
+				Datavolume: dv.NewBlankDataVolume("namespace-scope"),
+			},
 		}),
 	)
 
-	table.DescribeTable("DV and PVC is created successfully", func(config *dv.CreateDVTestConfig) {
+	table.DescribeTable("TestDataVolume and PVC is created successfully", func(config *dv.CreateDVTestConfig) {
 		testConfig.LimitScope(config.LimitScope)
 		taskRun, err := config.Init(testConfig).AsTaskRun()
 		Expect(err).ShouldNot(HaveOccurred())
@@ -105,8 +127,8 @@ var _ = Describe("Create DataVolume", func() {
 		results := tekton.TaskResultsToMap(taskRun.Status.TaskRunResults)
 
 		Expect(results).Should(HaveLen(2))
-		dvName := results[CreateDataVolumeFromManifestResults.Name]
-		dvNamespace := results[CreateDataVolumeFromManifestResults.Namespace]
+		dvName := results[CreateVMFromManifestResults.Name]
+		dvNamespace := results[CreateVMFromManifestResults.Namespace]
 		Expect(dvName).ToNot(BeEmpty())
 		Expect(dvNamespace).ToNot(BeEmpty())
 		defer dv.DeleteDataVolume(cdiClientSet.DataVolumes(dvNamespace), dvName, testConfig.Debug)
@@ -129,25 +151,39 @@ var _ = Describe("Create DataVolume", func() {
 		}
 	},
 		table.Entry("blank wait", &dv.CreateDVTestConfig{
-			Datavolume:     dv.NewBlankDV("blank").Build(),
-			ServiceAccount: CreateDataVolumeServiceAccountName,
-			Timeout:        Timeouts.SmallBlankDVCreation,
-			WaitForSuccess: true,
-			ExpectedLogs:   "Created",
+			TaskRunTestConfig: utils.TaskRunTestConfig{
+				ServiceAccount: CreateDataVolumeServiceAccountName,
+				Timeout:        Timeouts.SmallBlankDVCreation,
+				ExpectedLogs:   "Created",
+			},
+			TaskData: dv.CreateDVTaskData{
+				Datavolume:     dv.NewBlankDataVolume("blank"),
+				WaitForSuccess: true,
+			},
 		}),
 		table.Entry("blank no wait", &dv.CreateDVTestConfig{
-			Datavolume:     dv.NewBlankDV("blank-wait").Build(),
-			ServiceAccount: CreateDataVolumeServiceAccountName,
-			Timeout:        Timeouts.SmallBlankDVCreation,
-			ExpectedLogs:   "Created",
+			TaskRunTestConfig: utils.TaskRunTestConfig{
+				ServiceAccount: CreateDataVolumeServiceAccountName,
+				Timeout:        Timeouts.SmallBlankDVCreation,
+				ExpectedLogs:   "Created",
+			},
+			TaskData: dv.CreateDVTaskData{
+				Datavolume:     dv.NewBlankDataVolume("blank-wait"),
+				WaitForSuccess: true,
+			},
 		}),
 		table.Entry("works also in the same namespace as deploy (cluster scoped)", &dv.CreateDVTestConfig{
-			Datavolume:     dv.NewBlankDV("namespace-scope").Build(),
-			ServiceAccount: CreateDataVolumeServiceAccountName,
-			Namespace:      DeployTargetNS,
-			LimitScope:     utils.ClusterScope,
-			Timeout:        Timeouts.SmallBlankDVCreation,
-			ExpectedLogs:   "Created",
+			TaskRunTestConfig: utils.TaskRunTestConfig{
+				ServiceAccount: CreateDataVolumeServiceAccountName,
+				Namespace:      DeployTargetNS,
+				LimitScope:     utils.ClusterScope,
+				Timeout:        Timeouts.SmallBlankDVCreation,
+				ExpectedLogs:   "Created",
+			},
+			TaskData: dv.CreateDVTaskData{
+				Datavolume:     dv.NewBlankDataVolume("namespace-scope"),
+				WaitForSuccess: true,
+			},
 		}),
 	)
 })
