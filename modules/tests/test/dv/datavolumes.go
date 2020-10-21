@@ -8,13 +8,13 @@ import (
 	v1beta12 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1beta1"
 )
 
-type DV struct {
-	datavolume *v1beta12.DataVolume
+type TestDataVolume struct {
+	Data v1beta12.DataVolume
 }
 
-func NewBlankDV(name string) *DV {
+func NewBlankDataVolume(name string) *TestDataVolume {
 	volumeMode := v1.PersistentVolumeFilesystem
-	datavolume := &v1beta12.DataVolume{
+	datavolume := v1beta12.DataVolume{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: constants.DataVolumeApiVersion,
 			Kind:       constants.DataVolumeKind,
@@ -38,17 +38,13 @@ func NewBlankDV(name string) *DV {
 		},
 	}
 
-	return &DV{
+	return &TestDataVolume{
 		datavolume,
 	}
 }
 
-func (d *DV) WithoutTypeMeta() *DV {
-	d.datavolume.Kind = ""
-	d.datavolume.APIVersion = ""
+func (d *TestDataVolume) WithoutTypeMeta() *TestDataVolume {
+	d.Data.Kind = ""
+	d.Data.APIVersion = ""
 	return d
-}
-
-func (d *DV) Build() *v1beta12.DataVolume {
-	return d.datavolume
 }
