@@ -24,3 +24,15 @@ var CreateVMFromTemplateParams = createVMFromTemplateParams{
 	PersistentVolumeClaims:    "persistentVolumeClaims",
 	OwnPersistentVolumeClaims: "ownPersistentVolumeClaims",
 }
+
+type createVMFromManifestResults struct {
+	Name      string
+	Namespace string
+}
+
+var CreateVMFromManifestResults = createVMFromManifestResults{
+	Name:      "name",
+	Namespace: "namespace",
+}
+
+const ExpectedSuccessfulVMCreation = "apiVersion: kubevirt.io/v1alpha3\nkind: VirtualMachine\n"
