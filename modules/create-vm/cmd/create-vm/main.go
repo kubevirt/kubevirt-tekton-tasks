@@ -24,7 +24,7 @@ func main() {
 	defer logger.Sync()
 
 	if err := cliOptions.Init(); err != nil {
-		exit.ExitOrDieFromError(InvalidNamespacesExitCode, err)
+		exit.ExitOrDieFromError(InvalidCLIInputExitCode, err)
 	}
 	log.GetLogger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
 

@@ -6,6 +6,7 @@ import (
 	lab "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants/labels"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
 	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
+	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"k8s.io/apimachinery/pkg/runtime"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	"sort"
@@ -31,7 +32,7 @@ func GetFlagLabelByPrefix(template *templatev1.Template, labelPrefix string) (st
 }
 
 func DecodeVM(template *templatev1.Template) (*kubevirtv1.VirtualMachine, error) {
-	var vm = &kubevirtv1.VirtualMachine{}
+	var vm *kubevirtv1.VirtualMachine
 
 	for _, obj := range template.Objects {
 		decoder := kubevirtv1.Codecs.UniversalDecoder(kubevirtv1.GroupVersion)
@@ -44,6 +45,9 @@ func DecodeVM(template *templatev1.Template) (*kubevirtv1.VirtualMachine, error)
 			vm = done
 			break
 		}
+	}
+	if vm == nil {
+		return nil, zerrors.NewMissingRequiredError("no VM object found in the template")
 	}
 	return vm, nil
 }

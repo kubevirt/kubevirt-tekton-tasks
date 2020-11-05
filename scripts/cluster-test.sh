@@ -3,6 +3,7 @@
 SCOPE="${SCOPE:-cluster}"
 DEBUG="${DEBUG:-false}"
 STORAGE_CLASS="${STORAGE_CLASS:-}"
+NUM_NODES=${NUM_NODES:-2}
 DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config current-context | cut -d/ -f1)}"
 
 if [[ "$SCOPE" == "cluster" ]]; then
@@ -18,7 +19,7 @@ oc get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || oc new-p
 oc project "$DEPLOY_NAMESPACE"
 
 pushd modules/tests || exit
-  ginkgo  -r -p --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race -- \
+  ginkgo  -r -p --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --nodes="${NUM_NODES}" -- \
     --deploy-namespace="${DEPLOY_NAMESPACE}" \
     --test-namespace="${TEST_NAMESPACE}" \
     --kubeconfig-path="${KUBECONFIG}" \

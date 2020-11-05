@@ -17,9 +17,9 @@ import (
 	"time"
 )
 
-func WaitForTaskRunState(client pipev1beta1.TaskRunInterface, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) *v1beta1.TaskRun {
+func WaitForTaskRunState(client pipev1beta1.TektonV1beta1Interface, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) *v1beta1.TaskRun {
 	err := wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
-		r, err := client.Get(name, metav1.GetOptions{})
+		r, err := client.TaskRuns(namespace).Get(name, metav1.GetOptions{})
 		if err != nil {
 			return true, err
 		}
@@ -27,25 +27,19 @@ func WaitForTaskRunState(client pipev1beta1.TaskRunInterface, name string, timeo
 	})
 	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
-	taskRun, err := client.Get(name, metav1.GetOptions{})
+	taskRun, err := client.TaskRuns(namespace).Get(name, metav1.GetOptions{})
 	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 	return taskRun
 }
 
-func CreateTaskRun(taskRunClient pipev1beta1.TaskRunInterface, taskRun *v1beta1.TaskRun) (*v1beta1.TaskRun, string) {
-	taskRun, err := taskRunClient.Create(taskRun)
-	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-	return taskRun, taskRun.Name
-}
-
-func GetTaskRunLogs(podClient clientv1.PodInterface, taskRun *v1beta1.TaskRun) string {
+func GetTaskRunLogs(coreClient clientv1.CoreV1Interface, taskRun *v1beta1.TaskRun) string {
 	if taskRun.Status.PodName == "" {
 		return ""
 	}
 
 	// print logs
-	req := podClient.GetLogs(taskRun.Status.PodName, &v1.PodLogOptions{})
+	req := coreClient.Pods(taskRun.Namespace).GetLogs(taskRun.Status.PodName, &v1.PodLogOptions{})
 
 	podLogs, err := req.Stream()
 	if err != nil {
@@ -61,31 +55,16 @@ func GetTaskRunLogs(podClient clientv1.PodInterface, taskRun *v1beta1.TaskRun) s
 	return buf.String()
 }
 
-func DeleteTaskRun(taskRunClient pipev1beta1.TaskRunInterface, podClient clientv1.PodInterface, taskRunName string, debug bool) {
-	originalError := recover()
-	failed := originalError != nil
+func PrintTaskRunDebugInfo(tknClient pipev1beta1.TektonV1beta1Interface, coreClient clientv1.CoreV1Interface, taskRunNamespace, taskRunName string) {
+	// print conditions
+	taskRun, err := tknClient.TaskRuns(taskRunNamespace).Get(taskRunName, metav1.GetOptions{})
+	if err == nil {
+		conditions, _ := yaml.Marshal(taskRun.Status.Conditions)
+		fmt.Printf("taskrun conditions:\n%v\n", string(conditions))
 
-	if failed {
-		defer panic(originalError)
-	}
-
-	if !debug || failed {
-		taskRun, err := taskRunClient.Get(taskRunName, metav1.GetOptions{})
-		if err == nil {
-			if !debug {
-				defer taskRunClient.Delete(taskRunName, &metav1.DeleteOptions{})
-			}
-
-			if failed {
-				// print conditions
-				conditions, _ := yaml.Marshal(taskRun.Status.Conditions)
-				fmt.Printf("taskrun conditions:\n%v\n", string(conditions))
-
-				if taskRun.Status.PodName == "" {
-					return
-				}
-				fmt.Printf("%v pod logs:\n%v\n", taskRun.Status.PodName, GetTaskRunLogs(podClient, taskRun))
-			}
+		if taskRun.Status.PodName == "" {
+			return
 		}
+		fmt.Printf("%v pod logs:\n%v\n", taskRun.Status.PodName, GetTaskRunLogs(coreClient, taskRun))
 	}
 }
