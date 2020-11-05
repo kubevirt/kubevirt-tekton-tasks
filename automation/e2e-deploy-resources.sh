@@ -2,9 +2,12 @@
 
 set -ex
 
+if oc get namespace tekton-pipelines > /dev/null 2>&1; then
+  exit 0
+fi
+
 KUBEVIRT_VERSION=$(curl -s https://github.com/kubevirt/kubevirt/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
 CDI_VERSION=$(curl -s https://github.com/kubevirt/containerized-data-importer/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
-
 
 # Deploy Tekton Pipelines
 oc new-project tekton-pipelines

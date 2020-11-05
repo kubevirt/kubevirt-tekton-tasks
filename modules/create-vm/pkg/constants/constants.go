@@ -3,7 +3,7 @@ package constants
 // Exit codes
 const (
 	GenericExitCode           = 1
-	InvalidNamespacesExitCode = 2
+	InvalidCLIInputExitCode   = 2
 	VolumesNotPresentExitCode = 3
 	CreateVMErrorExitCode     = 4
 	OwnVolumesErrorExitCode   = 5
