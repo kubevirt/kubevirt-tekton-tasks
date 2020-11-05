@@ -65,6 +65,14 @@ func (d *TestDataVolume) AttachAs(attachmentType TestDataVolumeAttachmentType) *
 	return d
 }
 
+func (d *TestDataVolume) WithURLSource(url string) *TestDataVolume {
+	d.Data.Spec.Source.Blank = nil
+	d.Data.Spec.Source.HTTP = &v1beta12.DataVolumeSourceHTTP{
+		URL: url,
+	}
+	return d
+}
+
 func (d *TestDataVolume) Build() *v1beta12.DataVolume {
 	return d.Data
 }

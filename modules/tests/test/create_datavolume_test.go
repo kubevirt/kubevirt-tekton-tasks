@@ -31,7 +31,6 @@ var _ = Describe("Create DataVolume", func() {
 			_, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Get(dataVolume.Name, metav1.GetOptions{})
 			Expect(err).Should(HaveOccurred())
 		}
-
 	},
 		table.Entry("empty dv", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
@@ -135,4 +134,31 @@ var _ = Describe("Create DataVolume", func() {
 			},
 		}),
 	)
+
+	It("taskrun fails and DataVolume is created but does not import successfully", func() {
+		config := &testconfigs.CreateDVTestConfig{
+			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+				ServiceAccount: CreateDataVolumeServiceAccountName,
+				Timeout:        Timeouts.QuickTaskRun,
+			},
+			TaskData: testconfigs.CreateDVTaskData{
+				Datavolume: dv.NewBlankDataVolume("blank").
+					WithURLSource("https://invalid.source.my.domain.fail").Build(),
+				WaitForSuccess: true,
+			},
+		}
+		f.TestSetup(config)
+
+		dataVolume := config.TaskData.Datavolume
+		f.ManageDataVolumes(dataVolume)
+
+		runner.NewTaskRunRunner(f, config.GetTaskRun()).
+			CreateTaskRun().
+			ExpectFailure()
+
+		d, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Get(dataVolume.Name, metav1.GetOptions{})
+		Expect(err).ShouldNot(HaveOccurred())
+		Expect(d.Spec.Source.HTTP.URL).To(Equal(dataVolume.Spec.Source.HTTP.URL))
+		Expect(dv.HasDataVolumeFailedToImport(d)).To(BeTrue())
+	})
 })
