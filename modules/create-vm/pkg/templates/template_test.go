@@ -25,6 +25,14 @@ var _ = Describe("Template", func() {
 		Expect(vm.Spec.Template.Spec.Domain.Devices.Interfaces[0].Name).To(Equal("default"))
 	})
 
+	It("DecodeVM fails", func() {
+		template := testobjects.NewFedoraServerTinyTemplate()
+		template.Objects = nil
+		vm, err := templates.DecodeVM(template)
+		Expect(err).Should(HaveOccurred())
+		Expect(vm).To(BeNil())
+	})
+
 	It("GetTemplateValidations", func() {
 		validations, err := templates.GetTemplateValidations(testobjects.NewFedoraServerTinyTemplate())
 		Expect(err).Should(Succeed())
