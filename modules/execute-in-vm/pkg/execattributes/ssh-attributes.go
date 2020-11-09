@@ -2,8 +2,8 @@ package execattributes
 
 import (
 	"fmt"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env/fileoptions"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env/fileoptions"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap/zapcore"
 	"os/user"
 	"path"

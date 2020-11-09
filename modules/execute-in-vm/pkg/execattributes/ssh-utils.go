@@ -1,7 +1,7 @@
 package execattributes
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"regexp"
 	"strconv"
 )

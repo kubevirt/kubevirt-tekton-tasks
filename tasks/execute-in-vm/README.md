@@ -9,18 +9,18 @@ This task can execute a script, or a command in a Virtual Machine
 Install the Task
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/suomiy/kubevirt-tekton-tasks/master/tasks/execute-in-vm/manifests/execute-in-vm.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/master/tasks/execute-in-vm/manifests/execute-in-vm.yaml
 ```
 
 Install one of the following rbac permissions to the active namespace
   - Permissions for executing in VMs from active namespace
     ```bash
-    kubectl apply -f https://raw.githubusercontent.com/suomiy/kubevirt-tekton-tasks/master/tasks/execute-in-vm/manifests/execute-in-vm-namespace-rbac.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/master/tasks/execute-in-vm/manifests/execute-in-vm-namespace-rbac.yaml
     ```
   - Permissions for executing in VMs from the cluster
     ```bash
     TARGET_NAMESPACE="$(kubectl config current-context | cut -d/ -f1)"
-    wget -qO - https://raw.githubusercontent.com/suomiy/kubevirt-tekton-tasks/master/tasks/execute-in-vm/manifests/execute-in-vm-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
+    wget -qO - https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/master/tasks/execute-in-vm/manifests/execute-in-vm-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
     ```
 
 ### Parameters

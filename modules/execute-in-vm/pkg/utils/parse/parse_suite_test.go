@@ -1,7 +1,7 @@
 package parse_test
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utilstest"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utilstest"
 	"testing"
 
 	. "github.com/onsi/ginkgo"

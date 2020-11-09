@@ -1,8 +1,8 @@
 package log
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

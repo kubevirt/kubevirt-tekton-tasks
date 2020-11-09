@@ -2,12 +2,12 @@ package execute
 
 import (
 	"fmt"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/execattributes"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/log"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/parse"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/vmi"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/execattributes"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/vmi"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

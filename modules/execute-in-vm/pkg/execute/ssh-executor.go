@@ -2,11 +2,11 @@ package execute
 
 import (
 	"fmt"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/execattributes"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/log"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/parse"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/exit"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/execattributes"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	"net"
 	"os"
 	"os/exec"
