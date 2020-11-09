@@ -9,18 +9,18 @@ This task creates a DataVolume with oc client.
 Install the Task
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/suomiy/kubevirt-tekton-tasks/master/tasks/create-datavolume/manifests/create-datavolume-from-manifest.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/master/tasks/create-datavolume/manifests/create-datavolume-from-manifest.yaml
 ```
 
 Install one of the following rbac permissions to the active namespace
   - Namespace scoped DataVolume creation
     ```bash
-    kubectl apply -f https://raw.githubusercontent.com/suomiy/kubevirt-tekton-tasks/master/tasks/create-datavolume/manifests/create-datavolume-namespace-rbac.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/master/tasks/create-datavolume/manifests/create-datavolume-namespace-rbac.yaml
     ```
   - Cluster scoped DataVolume creation
     ```bash
     TARGET_NAMESPACE="$(kubectl config current-context | cut -d/ -f1)"
-    wget -qO - https://raw.githubusercontent.com/suomiy/kubevirt-tekton-tasks/master/tasks/create-datavolume/manifests/create-datavolume-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
+    wget -qO - https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/master/tasks/create-datavolume/manifests/create-datavolume-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
     ```
 
 ### Parameters

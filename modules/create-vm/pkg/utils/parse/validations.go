@@ -2,9 +2,9 @@ package parse
 
 import (
 	"fmt"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"strings"
 	"unicode"
 )

@@ -1,7 +1,7 @@
 package testconfigs
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 )

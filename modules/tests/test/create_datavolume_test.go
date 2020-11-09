@@ -1,14 +1,14 @@
 package test
 
 import (
+	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	. "github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/dv"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/framework"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/runner"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

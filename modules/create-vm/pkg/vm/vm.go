@@ -6,12 +6,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 
-	lab "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants/labels"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
+	lab "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants/labels"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 )
 
 func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {

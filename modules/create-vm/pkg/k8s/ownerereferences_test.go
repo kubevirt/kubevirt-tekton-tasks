@@ -7,7 +7,7 @@ import (
 	v1core "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
 )
 
 var _ = Describe("Ownerereferences", func() {

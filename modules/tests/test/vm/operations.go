@@ -1,8 +1,8 @@
 package vm
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/dv"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"

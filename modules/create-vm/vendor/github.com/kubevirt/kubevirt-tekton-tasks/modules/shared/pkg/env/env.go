@@ -2,8 +2,8 @@ package env
 
 import (
 	"errors"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"io/ioutil"
 	"os"
 	"path/filepath"

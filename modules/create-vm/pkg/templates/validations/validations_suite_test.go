@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	"testing"
 
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest"
 )
 
 func TestValidations(t *testing.T) {

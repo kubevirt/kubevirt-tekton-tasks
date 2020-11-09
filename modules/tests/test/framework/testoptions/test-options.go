@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"k8s.io/client-go/util/homedir"
 	"os"
 	"path/filepath"

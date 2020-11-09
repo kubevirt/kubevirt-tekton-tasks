@@ -1,8 +1,8 @@
 package parse
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap/zapcore"
 	"strings"
 )

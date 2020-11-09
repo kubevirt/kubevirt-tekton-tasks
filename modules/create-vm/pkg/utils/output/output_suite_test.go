@@ -1,7 +1,7 @@
 package output_test
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest"
 	"testing"
 
 	. "github.com/onsi/ginkgo"

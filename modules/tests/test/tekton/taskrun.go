@@ -3,8 +3,8 @@ package tekton
 import (
 	"bytes"
 	"fmt"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/onsi/gomega"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	pipev1beta1 "github.com/tektoncd/pipeline/pkg/client/clientset/versioned/typed/pipeline/v1beta1"
 	tkntest "github.com/tektoncd/pipeline/test"

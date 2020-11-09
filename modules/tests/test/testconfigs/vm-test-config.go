@@ -1,11 +1,11 @@
 package testconfigs
 
 import (
+	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/template"
 	v1 "github.com/openshift/api/template/v1"
-	. "github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/dv"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/template"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

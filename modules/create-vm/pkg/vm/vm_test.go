@@ -8,11 +8,11 @@ import (
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	"sort"
 
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
-	. "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testconstants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
-	vm2 "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
+	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testconstants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
+	vm2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
 )
 
 var _ = Describe("VM", func() {

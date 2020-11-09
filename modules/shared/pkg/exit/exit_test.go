@@ -2,11 +2,11 @@ package exit_test
 
 import (
 	"errors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/exit"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 )
 
 const (

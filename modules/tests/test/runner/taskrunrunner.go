@@ -1,9 +1,9 @@
 package runner
 
 import (
+	framework2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
 	. "github.com/onsi/gomega"
-	framework2 "github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/framework"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/tekton"
 	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	tkntest "github.com/tektoncd/pipeline/test"
 	"time"

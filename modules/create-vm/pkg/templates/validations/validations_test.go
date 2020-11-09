@@ -5,9 +5,9 @@ import (
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
-	. "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testconstants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
+	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testconstants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
 )
 
 var _ = Describe("Validations", func() {

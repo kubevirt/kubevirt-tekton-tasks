@@ -1,4 +1,4 @@
-module github.com/suomiy/kubevirt-tekton-tasks/modules/tests
+module github.com/kubevirt/kubevirt-tekton-tasks/modules/tests
 
 go 1.15
 

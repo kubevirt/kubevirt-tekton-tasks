@@ -1,12 +1,12 @@
 package env_test
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
+	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env"
-	. "github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"os"
 )
 

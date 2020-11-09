@@ -1,9 +1,9 @@
 package templates
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	templatev1 "github.com/openshift/api/template/v1"
 	tempclient "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

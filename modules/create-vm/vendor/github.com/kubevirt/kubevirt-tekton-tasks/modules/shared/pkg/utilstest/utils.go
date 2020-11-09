@@ -1,27 +1,20 @@
 package utilstest
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	. "github.com/onsi/gomega"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/exit"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"os"
 )
-
-func SetupTestSuite() {
-	SetEnv(zconstants.OutOfClusterENV, "true")
-}
-
-func TearDownSuite() {
-	UnSetEnv(zconstants.OutOfClusterENV)
-}
 
 // logic should equal to utils.HandleExit func
 func HandleTestExit(shouldPanic bool, shouldExitWithCode int, shouldExitWithMessage string) {
 	if e := recover(); e != nil {
 		if ex, ok := e.(exit.Exit); ok == true && ex.Soft {
 			errMsg := ex.Error()
-			if len(errMsg) > 0 && errMsg[len(errMsg)-1] != '\n' {
-				errMsg += "\n"
+			if len(errMsg) > 0 {
+				if errMsg[len(errMsg)-1] != '\n' {
+					errMsg += "\n"
+				}
 			}
 			Expect(errMsg).To(Equal(shouldExitWithMessage))
 			Expect(ex.Code).To(Equal(shouldExitWithCode))

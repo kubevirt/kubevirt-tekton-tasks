@@ -1,8 +1,8 @@
 package utilstest
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	. "github.com/onsi/gomega"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	"os"
 )
 

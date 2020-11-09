@@ -3,7 +3,7 @@ package testobjects
 import (
 	"strings"
 
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
 )
 
 func NewTestCommonTemplateValidations(buses ...string) []validations.CommonTemplateValidation {

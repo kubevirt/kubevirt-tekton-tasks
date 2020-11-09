@@ -2,8 +2,8 @@ package framework
 
 import (
 	"fmt"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	tknclientversioned "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
 	tknclientv1beta1 "github.com/tektoncd/pipeline/pkg/client/clientset/versioned/typed/pipeline/v1beta1"
 	"k8s.io/client-go/kubernetes"

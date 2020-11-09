@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
 
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
 )
 
 var _ = Describe("ObjectMeta", func() {

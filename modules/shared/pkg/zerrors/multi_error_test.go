@@ -2,10 +2,10 @@ package zerrors_test
 
 import (
 	"errors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"strconv"
 )
 

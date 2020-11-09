@@ -1,4 +1,4 @@
-module github.com/suomiy/kubevirt-tekton-tasks/modules/shared
+module github.com/kubevirt/kubevirt-tekton-tasks/modules/shared
 
 go 1.15
 

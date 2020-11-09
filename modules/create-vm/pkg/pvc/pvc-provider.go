@@ -2,8 +2,8 @@ package pvc
 
 import (
 	"errors"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"

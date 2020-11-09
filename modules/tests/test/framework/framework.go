@@ -2,11 +2,11 @@ package framework
 
 import (
 	"fmt"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
 	. "github.com/onsi/ginkgo"
 	templatev1 "github.com/openshift/api/template/v1"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/tests/test/tekton"
 	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"

@@ -53,6 +53,15 @@ github.com/json-iterator/go
 # github.com/k8snetworkplumbingwg/network-attachment-definition-client v0.0.0-20191119172530-79f836b90111
 github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io
 github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1
+# github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ../shared
+## explicit
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/utilstest
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils
 # github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
@@ -126,15 +135,6 @@ github.com/pborman/uuid
 github.com/pkg/errors
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/suomiy/kubevirt-tekton-tasks/modules/shared v0.0.2
-## explicit
-github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env
-github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/exit
-github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/results
-github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/utilstest
-github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
-github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors
-github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zutils
 # go.uber.org/atomic v1.6.0
 go.uber.org/atomic
 # go.uber.org/multierr v1.5.0

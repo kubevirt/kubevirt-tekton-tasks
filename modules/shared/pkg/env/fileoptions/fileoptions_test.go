@@ -2,10 +2,10 @@ package fileoptions_test
 
 import (
 	"fmt"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env/fileoptions"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env/fileoptions"
 	"io/ioutil"
 	"math/rand"
 	"os"

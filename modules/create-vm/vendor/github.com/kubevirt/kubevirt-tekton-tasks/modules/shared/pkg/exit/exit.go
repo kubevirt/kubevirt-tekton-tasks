@@ -1,7 +1,7 @@
 package exit
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"os"
 )
 
@@ -69,10 +69,12 @@ func HandleExit() {
 	if e := recover(); e != nil {
 		if exit, ok := e.(Exit); ok == true && exit.Soft {
 			errMsg := exit.Error()
-			if len(errMsg) > 0 && errMsg[len(errMsg)-1] != '\n' {
-				errMsg += "\n"
+			if len(errMsg) > 0 {
+				if errMsg[len(errMsg)-1] != '\n' {
+					errMsg += "\n"
+				}
+				_, _ = os.Stderr.WriteString(errMsg)
 			}
-			_, _ = os.Stderr.WriteString(errMsg)
 			os.Exit(exit.Code)
 		}
 		panic(e)

@@ -4,9 +4,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testconstants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testconstants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
 )
 
 var _ = Describe("Template", func() {

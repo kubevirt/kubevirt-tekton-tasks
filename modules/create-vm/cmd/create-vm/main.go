@@ -2,14 +2,14 @@ package main
 
 import (
 	goarg "github.com/alexflint/go-arg"
-	. "github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/log"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/vmcreator"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/exit"
-	res "github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/results"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vmcreator"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
+	res "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap"
 	"net/http"
 )

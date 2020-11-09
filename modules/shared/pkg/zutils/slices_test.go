@@ -1,9 +1,9 @@
 package zutils_test
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 )
 
 var _ = Describe("Slices", func() {

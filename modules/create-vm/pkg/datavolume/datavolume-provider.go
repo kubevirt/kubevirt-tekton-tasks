@@ -2,8 +2,8 @@ package datavolume
 
 import (
 	"errors"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	datavolumev1alpha1 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1alpha1"

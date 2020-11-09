@@ -1,7 +1,7 @@
 package fileoptions_test
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/internal/intutilstest"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/internal/intutilstest"
 	"testing"
 
 	. "github.com/onsi/ginkgo"

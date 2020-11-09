@@ -1,7 +1,7 @@
 package results
 
 import (
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	"io/ioutil"
 	"path/filepath"
 )

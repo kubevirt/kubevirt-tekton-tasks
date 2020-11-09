@@ -1,11 +1,11 @@
 package results_test
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
+	results2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/env"
-	results2 "github.com/suomiy/kubevirt-tekton-tasks/modules/shared/pkg/results"
 	"io/ioutil"
 	"os"
 	"path/filepath"
