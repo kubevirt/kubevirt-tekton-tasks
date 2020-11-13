@@ -25,11 +25,9 @@ CONTAINER_ENGINE ?=  $(shell \
 	  echo podman ; \
     elif docker ps >/dev/null; then \
       echo docker ; \
+    else \
+      echo 'no-container-engine-found:'; \
 	fi)
-
-ifeq ($(strip $(CONTAINER_ENGINE)),)
-$(error no working container runtime found. Neither docker nor podman seems to work.)
-endif
 
 IMAGE_REGISTRY ?= quay.io
 IMAGE_REGISTRY_USER ?= $(USER)
