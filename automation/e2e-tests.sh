@@ -8,10 +8,6 @@ export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-e2e-tests-$(shuf -i10000-99999 -n1)
 export IMAGE_REGISTRY_USER="$DEPLOY_NAMESPACE"
 export NUM_NODES=${NUM_NODES:-2}
 
-make lint
-make test
-make test-generated-tasks-consistency
-
 ./automation/e2e-deploy-resources.sh
 
 oc get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || oc new-project "$DEPLOY_NAMESPACE"
