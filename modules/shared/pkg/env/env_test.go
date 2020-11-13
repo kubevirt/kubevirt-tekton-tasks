@@ -51,13 +51,6 @@ var _ = Describe("Env", func() {
 			table.Entry("Partially UpperCase", "True"),
 		)
 	})
-	Describe("should lookup active namespace", func() {
-		It("should fail out of cluster", func() {
-			ns, err := env.GetActiveNamespace()
-			Expect(ns).To(BeEmpty())
-			Expect(err).To(HaveOccurred())
-		})
-	})
 	Describe("return working dir", func() {
 		It("should be a dir", func() {
 			Expect(env.GetWorkingDir()).To(BeADirectory())
