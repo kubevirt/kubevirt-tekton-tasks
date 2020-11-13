@@ -18,7 +18,9 @@ var (
 
 var _ = Describe("CLIOptions", func() {
 	table.DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
-		Expect(options.Init().Error()).To(ContainSubstring(expectedErrMessage))
+		err := options.Init()
+		Expect(err).Should(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring(expectedErrMessage))
 	},
 		table.Entry("invalid output", "not a valid output type", &parse.CLIOptions{
 			Output: "incorrect-fmt",
@@ -28,13 +30,6 @@ var _ = Describe("CLIOptions", func() {
 		}),
 		table.Entry("invalid template params 2", "parameters have incorrect format", &parse.CLIOptions{
 			TemplateParams: []string{":V1"},
-		}),
-		table.Entry("namespace missing", "template-namespace/vm-namespace option is empty", &parse.CLIOptions{}),
-		table.Entry("namespace missing for template", "vm-namespace option is empty", &parse.CLIOptions{
-			TemplateNamespaces: defaultNSArr,
-		}),
-		table.Entry("namespace missing for vm", "template-namespace option is empty", &parse.CLIOptions{
-			VirtualMachineNamespaces: defaultNSArr,
 		}),
 	)
 

@@ -5,6 +5,7 @@ set -x
 mkdir -p ${HOME}
 chown -R ${USER_UID}:0 ${HOME}
 chmod ug+rwx ${HOME}
+chmod -R uga+rw ${HOME}
 
 # runtime user will need to be able to self-insert in /etc/passwd
 chmod uga+rw /etc/passwd
