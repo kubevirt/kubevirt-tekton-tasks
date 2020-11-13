@@ -19,11 +19,12 @@ func IsEnvVarTrue(envVarName string) bool {
 }
 
 func GetActiveNamespace() (string, error) {
-	activeNamespaceBytes, _ := ioutil.ReadFile(serviceAccountNamespacePath)
-	activeNamespace := string(activeNamespaceBytes)
+	activeNamespaceBytes, err := ioutil.ReadFile(serviceAccountNamespacePath)
 
-	if activeNamespace != "" {
-		return activeNamespace, nil
+	if err == nil {
+		if activeNamespace := string(activeNamespaceBytes); activeNamespace != "" {
+			return activeNamespace, nil
+		}
 	}
 
 	return "", errors.New("could not detect active namespace")
