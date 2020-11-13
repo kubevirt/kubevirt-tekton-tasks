@@ -11,5 +11,5 @@ RUN dnf install -y jq ansible make && rm -rf /var/cache/yum /var/cache/dnf
 RUN chmod uga+w /etc/passwd
 
 #set permissions for ansible tmp folder
-RUN mkdir -p /.ansible/tmp
-RUN chmod -R 777 /.ansible
+RUN mkdir -p ${REPO_DIR}/.ansible/tmp
+RUN chmod -R 777 ${REPO_DIR}/.ansible
