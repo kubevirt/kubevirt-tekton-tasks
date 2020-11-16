@@ -5,7 +5,7 @@ include ../../scripts/makefile-snippets/makefile-common.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean
 include ../../scripts/makefile-snippets/makefile-golang.mk # lint lint-fix vendor
-include ../../scripts/makefile-snippets/makefile-golang-test.mk # test cover
+include ../../scripts/makefile-snippets/makefile-golang-test.mk # test cover junit-report
 include ../../scripts/makefile-snippets/makefile-golang-build.mk # build
 
 CREATE_VM_IMAGE ?= $(IMAGE)

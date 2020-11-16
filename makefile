@@ -6,6 +6,7 @@ all: $(TASKS_DIR)/* $(MODULES_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR);)
 
 clean: $(TASKS_DIR)/* $(MODULES_DIR)/*
+	rm -rf dist
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) clean;)
 
 release-manifests: $(TASKS_DIR)/*
@@ -38,6 +39,9 @@ lint-fix: $(MODULES_DIR)/*
 test: $(UNIT_TESTS_DIR)
 	set -e; $(foreach UNIT_TEST_DIR, $^, $(MAKE) -C $(UNIT_TEST_DIR) test;)
 
+test-with-reports:
+	./scripts/test-with-reports.sh
+
 cluster-sync:
 	./scripts/cluster-sync.sh
 
@@ -67,6 +71,7 @@ e2e-tests:
 	lint \
 	lint-fix \
 	test \
+	test-with-reports \
 	cluster-sync \
 	cluster-test \
 	cluster-clean \

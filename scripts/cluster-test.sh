@@ -19,7 +19,7 @@ oc get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || oc new-p
 oc project "$DEPLOY_NAMESPACE"
 
 pushd modules/tests || exit
-  ginkgo  -r -p --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --nodes="${NUM_NODES}" -- \
+  ginkgo -r -p --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --nodes="${NUM_NODES}" -- \
     --deploy-namespace="${DEPLOY_NAMESPACE}" \
     --test-namespace="${TEST_NAMESPACE}" \
     --kubeconfig-path="${KUBECONFIG}" \
