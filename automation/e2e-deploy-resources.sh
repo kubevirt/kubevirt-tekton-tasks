@@ -34,10 +34,7 @@ data:
 ---
 EOF
 
-
 # Deploy Storage
-oc create -f https://raw.githubusercontent.com/kubevirt/kubevirt.github.io/master/labs/manifests/storage-setup.yml
-
 oc create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$CDI_VERSION/cdi-operator.yaml
 
 oc create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$CDI_VERSION/cdi-cr.yaml
@@ -46,18 +43,3 @@ oc create -f https://github.com/kubevirt/containerized-data-importer/releases/do
 oc project openshift
 oc create -f https://github.com/kubevirt/common-templates/releases/download/$COMMON_TEMPLATES_VERSION/common-templates-$COMMON_TEMPLATES_VERSION.yaml
 oc project default
-
-oc rollout status -n cdi deployment/cdi-operator
-oc apply -f - <<EOF
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: cdi-role
-  namespace: cdi
-rules:
-- apiGroups: ["cdi.kubevirt.io"]
-  resources: ["datavolumes/source"]
-  verbs: ["*"]
----
-EOF

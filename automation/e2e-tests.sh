@@ -23,5 +23,6 @@ fi
 
 # Wait for kubevirt to be available
 oc wait -n kubevirt kv kubevirt --for condition=Available --timeout 15m
+oc rollout status -n cdi deployment/cdi-operator --timeout 10m
 
 make cluster-test
