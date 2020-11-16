@@ -2,18 +2,18 @@
 
 RET_CODE=0
 
-ARTIFACTS_DIR=${ARTIFACTS_DIR:=dist}
-ARTIFACTS_DIR=$(readlink -m "${ARTIFACTS_DIR}")
-TEST_OUT="${ARTIFACTS_DIR}/test.out"
-COVER_OUT="${ARTIFACTS_DIR}/cover.out"
-JUNIT_XML="${ARTIFACTS_DIR}/junit.xml"
-COVERAGE_HTML="${ARTIFACTS_DIR}/coverage.html"
+ARTIFACT_DIR="${ARTIFACT_DIR:=dist}"
+ARTIFACT_DIR="$(readlink -m "${ARTIFACT_DIR}")"
+TEST_OUT="${ARTIFACT_DIR}/test.out"
+COVER_OUT="${ARTIFACT_DIR}/cover.out"
+JUNIT_XML="${ARTIFACT_DIR}/junit.xml"
+COVERAGE_HTML="${ARTIFACT_DIR}/coverage.html"
 FAKE_GOPATH_ROOT="/tmp/goroot-kubevirt-tekton-tasks"
 FAKE_KV_GOPATH="${FAKE_GOPATH_ROOT}/src/github.com/kubevirt"
 FAKE_REPO_GOPATH="${FAKE_KV_GOPATH}/kubevirt-tekton-tasks"
 
 rm -rf "${TEST_OUT}" "${COVER_OUT}" "${JUNIT_XML}" "${COVERAGE_HTML}" "${FAKE_GOPATH_ROOT}"
-mkdir -p "${ARTIFACTS_DIR}"
+mkdir -p "${ARTIFACT_DIR}"
 
 pushd modules > /dev/null || exit 1
   export DIST_DIR=dist
@@ -35,7 +35,9 @@ pushd modules > /dev/null || exit 1
   done
 popd > /dev/null || exit 1
 
-go-junit-report < "${TEST_OUT}" > "${JUNIT_XML}"
+if type go-junit-report > /dev/null; then
+  go-junit-report < "${TEST_OUT}" > "${JUNIT_XML}"
+fi
 
 mkdir -p "${FAKE_KV_GOPATH}"
 ln -s "$(pwd)" "${FAKE_REPO_GOPATH}"
