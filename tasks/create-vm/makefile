@@ -3,6 +3,10 @@ all: clean generate-task
 CONFIG_FILE ?= ../../configs/create-vm.yaml
 HAS_EXAMPLES = false
 
+ifdef CREATE_VM_IMAGE
+IMAGE = $(CREATE_VM_IMAGE)
+endif
+
 include ../../scripts/makefile-snippets/makefile-common.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean

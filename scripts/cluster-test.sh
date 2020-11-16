@@ -4,7 +4,7 @@ SCOPE="${SCOPE:-cluster}"
 DEBUG="${DEBUG:-false}"
 STORAGE_CLASS="${STORAGE_CLASS:-}"
 NUM_NODES=${NUM_NODES:-2}
-DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config current-context | cut -d/ -f1)}"
+DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(oc project --short)}"
 
 if [[ "$SCOPE" == "cluster" ]]; then
     export TEST_NAMESPACE="${TEST_NAMESPACE:-e2e-tests-$(shuf -i10000-99999 -n1)}"

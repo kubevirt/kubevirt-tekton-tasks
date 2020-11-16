@@ -3,8 +3,8 @@
 set -ex
 
 export SCOPE="${SCOPE:-cluster}"
-export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(oc config current-context | cut -d/ -f1)}"
-export IMAGE_REGISTRY_USER="${IMAGE_REGISTRY_USER:-$DEPLOY_NAMESPACE}"
+export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(oc project --short)}"
+export IMAGE_REGISTRY_USER="${DEPLOY_NAMESPACE}"
 
 oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
 
