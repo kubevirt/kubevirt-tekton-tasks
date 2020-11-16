@@ -8,6 +8,7 @@ fi
 
 KUBEVIRT_VERSION=$(curl -s https://github.com/kubevirt/kubevirt/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
 CDI_VERSION=$(curl -s https://github.com/kubevirt/containerized-data-importer/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
+COMMON_TEMPLATES_VERSION=$(curl -s https://github.com/kubevirt/common-templates/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
 
 # Deploy Tekton Pipelines
 oc new-project tekton-pipelines
@@ -43,7 +44,7 @@ oc create -f https://github.com/kubevirt/containerized-data-importer/releases/do
 
 # Deploy Common Templates
 oc project openshift
-oc create -f https://raw.githubusercontent.com/MarSik/kubevirt-ssp-operator/master/roles/KubevirtCommonTemplatesBundle/files/common-templates-v0.12.1.yaml
+oc create -f https://github.com/kubevirt/common-templates/releases/download/$COMMON_TEMPLATES_VERSION/common-templates-$COMMON_TEMPLATES_VERSION.yaml
 oc project default
 
 oc rollout status -n cdi deployment/cdi-operator

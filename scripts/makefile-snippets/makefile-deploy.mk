@@ -1,16 +1,16 @@
-TARGET_NAMESPACE ?= $(shell kubectl config current-context | cut -d/ -f1)
+TARGET_NAMESPACE ?= $(shell oc project --short)
 MANIFESTS_DIR ?= manifests
 
 undeploy:
-	kubectl delete -f $(MANIFESTS_DIR) 2> /dev/null || echo "undeployed only available resources"
+	oc delete -f $(MANIFESTS_DIR) 2> /dev/null || echo "undeployed only available resources"
 
 deploy: undeploy
-	sed "s/TARGET_NAMESPACE/$(TARGET_NAMESPACE)/" $(MANIFESTS_DIR)/$(TASK_NAME)-cluster-rbac.yaml | kubectl apply -f -
-	set -e; $(foreach SUBTASK_NAME, $(SUBTASK_NAMES), kubectl apply -f $(MANIFESTS_DIR)/$(SUBTASK_NAME).yaml;)
+	sed "s/TARGET_NAMESPACE/$(TARGET_NAMESPACE)/" $(MANIFESTS_DIR)/$(TASK_NAME)-cluster-rbac.yaml | oc apply -f -
+	set -e; $(foreach SUBTASK_NAME, $(SUBTASK_NAMES), oc apply -f $(MANIFESTS_DIR)/$(SUBTASK_NAME).yaml;)
 
 deploy-namespace: undeploy
-	kubectl apply -f manifests/$(TASK_NAME)-namespace-rbac.yaml
-	set -e; $(foreach SUBTASK_NAME, $(SUBTASK_NAMES), kubectl apply -f $(MANIFESTS_DIR)/$(SUBTASK_NAME).yaml;)
+	oc apply -f manifests/$(TASK_NAME)-namespace-rbac.yaml
+	set -e; $(foreach SUBTASK_NAME, $(SUBTASK_NAMES), oc apply -f $(MANIFESTS_DIR)/$(SUBTASK_NAME).yaml;)
 
 
 .PHONY: \
