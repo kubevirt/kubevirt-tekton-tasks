@@ -27,11 +27,11 @@ copy-generated-task-to-release:
 	set -e; $(foreach SUBTASK_NAME, $(SUBTASK_NAMES), cp $(DIST_MANIFESTS_DIR)/$(SUBTASK_NAME).yaml $(MANIFESTS_DIR);)
 	if [ "$(HAS_EXAMPLES)" == true ]; then cp -r $(DIST_EXAMPLES_DIR) $(EXAMPLES_DIR); fi
 
-test-generated-tasks-consistency: MANIFESTS_DIR_OLD := $(MANIFESTS_DIR)
-test-generated-tasks-consistency: EXAMPLES_DIR_OLD := $(EXAMPLES_DIR)
-test-generated-tasks-consistency: MANIFESTS_DIR = $(DIST_DIR)/consistency/manifests
-test-generated-tasks-consistency: EXAMPLES_DIR = $(DIST_DIR)/consistency/examples
-test-generated-tasks-consistency: clean generate-task copy-generated-task-to-release
+test-yaml-consistency: MANIFESTS_DIR_OLD := $(MANIFESTS_DIR)
+test-yaml-consistency: EXAMPLES_DIR_OLD := $(EXAMPLES_DIR)
+test-yaml-consistency: MANIFESTS_DIR = $(DIST_DIR)/consistency/manifests
+test-yaml-consistency: EXAMPLES_DIR = $(DIST_DIR)/consistency/examples
+test-yaml-consistency: clean generate-task copy-generated-task-to-release
 	diff -r $(MANIFESTS_DIR_OLD) $(MANIFESTS_DIR)
 	if [ "$(HAS_EXAMPLES)" == true ]; then diff -r $(EXAMPLES_DIR_OLD) $(EXAMPLES_DIR); fi
 
@@ -40,4 +40,4 @@ test-generated-tasks-consistency: clean generate-task copy-generated-task-to-rel
 	clean-generated-task-release \
 	generate-task \
 	copy-generated-task-to-release \
-	test-generated-tasks-consistency
+	test-yaml-consistency

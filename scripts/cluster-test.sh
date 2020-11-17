@@ -2,6 +2,8 @@
 
 set -e
 
+RET_CODE=0
+
 SCOPE="${SCOPE:-cluster}"
 DEBUG="${DEBUG:-false}"
 STORAGE_CLASS="${STORAGE_CLASS:-}"
@@ -29,6 +31,9 @@ oc project "$DEPLOY_NAMESPACE"
 
 pushd modules/tests || exit
   rm -rf dist
+  set +e
+  set -o pipefail
+
   ginkgo -r -p --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --nodes="${NUM_NODES}" -- \
     --deploy-namespace="${DEPLOY_NAMESPACE}" \
     --test-namespace="${TEST_NAMESPACE}" \
@@ -37,6 +42,10 @@ pushd modules/tests || exit
     --storage-class="${STORAGE_CLASS}" \
     --debug="${DEBUG}" | tee "${TEST_OUT}"
 
+  RET_CODE="${PIPESTATUS[0]}"
+  set -e
 
   cp dist/junit* "${ARTIFACT_DIR}"
 popd
+
+exit "${RET_CODE}"

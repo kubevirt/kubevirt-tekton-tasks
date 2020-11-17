@@ -27,8 +27,8 @@ deploy-dev: $(TASKS_DIR)/*
 deploy-dev-namespace: $(TASKS_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-dev-namespace;)
 
-test-generated-tasks-consistency: $(TASKS_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) test-generated-tasks-consistency;)
+test-yaml-consistency:
+	./scripts/test-yaml-consistency.sh
 
 lint: $(MODULES_DIR)/*
 	set -e; $(foreach MODULE_DIR, $^, $(MAKE) -C $(MODULE_DIR) lint;)
@@ -67,7 +67,7 @@ e2e-tests:
 	deploy-namespace \
 	deploy-dev \
 	deploy-dev-namespace \
-	test-generated-tasks-consistency \
+	test-yaml-consistency \
 	lint \
 	lint-fix \
 	test \

@@ -55,7 +55,8 @@ func getCommonTemplatesVersion(templateList *v1.TemplateList) string {
 	}
 
 	if len(commonTemplatesVersion) == 0 {
-		Fail("Could not compute common templates version")
+		Expect(templateList).ShouldNot(BeNil())
+		Fail(fmt.Sprintf("Could not compute common templates version. Number of found templates = %v", len(templateList.Items)))
 	}
 
 	return fmt.Sprintf("v%v", utils.JoinIntSlice(commonTemplatesVersion, "."))
