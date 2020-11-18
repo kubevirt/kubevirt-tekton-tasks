@@ -40,6 +40,5 @@ oc create -f https://github.com/kubevirt/containerized-data-importer/releases/do
 oc create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$CDI_VERSION/cdi-cr.yaml
 
 # Deploy Common Templates
-oc project openshift
-oc create -f https://github.com/kubevirt/common-templates/releases/download/$COMMON_TEMPLATES_VERSION/common-templates-$COMMON_TEMPLATES_VERSION.yaml
-oc project default
+oc create -n openshift -f https://github.com/kubevirt/common-templates/releases/download/$COMMON_TEMPLATES_VERSION/common-templates-$COMMON_TEMPLATES_VERSION.yaml
+
