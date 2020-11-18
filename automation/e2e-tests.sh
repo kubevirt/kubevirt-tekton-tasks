@@ -3,6 +3,7 @@
 set -ex
 
 export SCOPE="${SCOPE:-cluster}"
+export DEV_MODE="${DEV_MODE:-false}"
 export STORAGE_CLASS="${STORAGE_CLASS:-}"
 export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-e2e-tests-$(shuf -i10000-99999 -n1)}"
 export NUM_NODES=${NUM_NODES:-2}
@@ -11,13 +12,17 @@ export NUM_NODES=${NUM_NODES:-2}
 
 oc get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || oc new-project "$DEPLOY_NAMESPACE"
 
-export TARGET_NAMESPACE="$DEPLOY_NAMESPACE"
 oc project $DEPLOY_NAMESPACE
 
-if [[ "$SCOPE" == "cluster" ]]; then
-  make deploy-dev
+if [[ "$DEV_MODE" == "true" ]]; then
+  make cluster-sync
 else
-  make deploy-dev-namespace
+  export TARGET_NAMESPACE="$DEPLOY_NAMESPACE"
+  if [[ "$SCOPE" == "cluster" ]]; then
+    make deploy-dev
+  else
+    make deploy-dev-namespace
+  fi
 fi
 
 

@@ -4,7 +4,10 @@ import "strconv"
 
 func IsBVersionHigher(a []int, b []int) bool {
 	for idx, partA := range a {
-		partB := b[idx]
+		partB := 0
+		if idx < len(b) {
+			partB = b[idx]
+		}
 		if partA > partB {
 			return false
 		}
