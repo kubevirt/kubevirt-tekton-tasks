@@ -43,4 +43,8 @@ visit "${REPO_DIR}"
   leave
 leave
 
-exit $RET_CODE
+ if [ "${RET_CODE}" -eq 0 ]; then
+   echo -e "\nConsistency: OK!"
+ fi
+
+exit ${RET_CODE}
