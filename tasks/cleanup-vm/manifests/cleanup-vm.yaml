@@ -3,19 +3,17 @@ apiVersion: tekton.dev/v1beta1
 kind: ClusterTask
 metadata:
   annotations:
-    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
-    vmNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
-    secretName.params.task.kubevirt.io/type: {{ task_param_types.execute_in_vm_secret }}
-    script.params.task.kubevirt.io/type: {{ task_param_types.script }}
-{% if is_cleanup %}
-    delete.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
-    stop.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
-    timeout.params.task.kubevirt.io/type: {{ task_param_types.duration }}
-{% endif %}
+    task.kubevirt.io/associatedServiceAccount: cleanup-vm-task
+    vmNamespace.params.task.kubevirt.io/type: namespace
+    secretName.params.task.kubevirt.io/type: execute-in-vm-secret
+    script.params.task.kubevirt.io/type: script
+    delete.params.task.kubevirt.io/type: boolean
+    stop.params.task.kubevirt.io/type: boolean
+    timeout.params.task.kubevirt.io/type: duration
   labels:
-    task.kubevirt.io/type: {{ task_name }}
-    task.kubevirt.io/category: {{ execute_in_vm_task_name }}
-  name: {{ task_name }}
+    task.kubevirt.io/type: cleanup-vm
+    task.kubevirt.io/category: execute-in-vm
+  name: cleanup-vm
 spec:
   params:
     - description: Name of a VM to execute the action in
@@ -25,7 +23,6 @@ spec:
       name: vmNamespace
       type: string
       default: ""
-{% if is_cleanup %}
     - description: Stop the VM after executing the action
       name: stop
       type: string
@@ -38,7 +35,6 @@ spec:
       name: timeout
       type: string
       default: "30m"
-{% endif %}
     - description: Secret to use when connecting to a VM
       name: secretName
       type: string
@@ -56,7 +52,7 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: {{ main_image }}
+      image: quay.io/kubevirt/execute-in-vm:v0.0.1
       command:
         - entrypoint
       args:
@@ -64,14 +60,12 @@ spec:
         - $(params.vmName)
         - '--vm-namespace'
         - $(params.vmNamespace)
-{% if is_cleanup %}
         - '--stop'
         - $(params.stop)
         - '--delete'
         - $(params.delete)
         - '--timeout'
         - $(params.timeout)
-{% endif %}
         - '--'
         - $(params.command)
         - $(params.args)

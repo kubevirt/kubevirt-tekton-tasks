@@ -1,0 +1,43 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cleanup-vm-task
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - kubevirt.io
+    resources:
+      - virtualmachines
+      - virtualmachineinstances
+  - verbs:
+      - update
+    apiGroups:
+      - subresources.kubevirt.io
+    resources:
+      - virtualmachines/start
+      - virtualmachines/stop
+      - virtualmachines/restart
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cleanup-vm-task
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cleanup-vm-task
+roleRef:
+  kind: ClusterRole
+  name: cleanup-vm-task
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: cleanup-vm-task
+    namespace: TARGET_NAMESPACE

@@ -1,0 +1,15 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: cleanup-vm-simple-taskrun
+spec:
+  serviceAccountName: cleanup-vm-task
+  taskRef:
+    kind: ClusterTask
+    name: cleanup-vm
+  params:
+    - name: vmName
+      value: vm-example
+    - name: delete
+      value: true

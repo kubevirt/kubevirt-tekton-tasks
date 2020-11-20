@@ -1,0 +1,28 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: cleanup-vm-with-ssh-taskrun
+spec:
+  serviceAccountName: cleanup-vm-task
+  taskRef:
+    kind: ClusterTask
+    name: cleanup-vm
+  params:
+    - name: vmName
+      value: vm-example
+    - name: secretName
+      value: ssh-secret
+    - name: stop
+      value: true
+    - name: delete
+      value: false
+    - name: timeout
+      value: 10m
+    - name: command
+      value:
+        - systemctl
+    - name: args
+      value:
+        - 'stop'
+        - 'postgresql'
