@@ -1,34 +1,23 @@
-TASKS_DIR = ./tasks
 MODULES_DIR = ./modules
 UNIT_TESTS_DIR = $(shell ls -d $(MODULES_DIR)/* | grep -v "/tests$$")
 
-all: $(TASKS_DIR)/* $(MODULES_DIR)/*
+all: $(MODULES_DIR)/*
 	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR);)
 
-clean: $(TASKS_DIR)/* $(MODULES_DIR)/*
-	rm -rf dist
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) clean;)
+clean:
+	./scripts/clean.sh
 
-release-manifests: $(TASKS_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) release;)
-
-undeploy: $(TASKS_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) undeploy;)
-
-deploy: $(TASKS_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy;)
-
-deploy-namespace: $(TASKS_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-namespace;)
-
-deploy-dev: $(TASKS_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-dev;)
-
-deploy-dev-namespace: $(TASKS_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR) deploy-dev-namespace;)
+generate-yaml-tasks:
+	./scripts/generate-yaml-tasks.sh
 
 test-yaml-consistency:
 	./scripts/test-yaml-consistency.sh
+
+deploy:
+	./scripts/deploy-tasks.sh
+
+undeploy:
+	./scripts/undeploy-tasks.sh
 
 lint: $(MODULES_DIR)/*
 	set -e; $(foreach MODULE_DIR, $^, $(MAKE) -C $(MODULE_DIR) lint;)
@@ -51,7 +40,7 @@ cluster-test:
 cluster-clean:
 	./scripts/cluster-clean.sh
 
-cluster-clean-without-images:
+cluster-clean-and-skip-images:
 	PRUNE_IMAGES=false ./scripts/cluster-clean.sh
 
 e2e-tests:
@@ -61,13 +50,10 @@ e2e-tests:
 .PHONY: \
 	all \
 	clean \
-	release-manifests \
-	undeploy \
-	deploy \
-	deploy-namespace \
-	deploy-dev \
-	deploy-dev-namespace \
+	generate-yaml-tasks \
 	test-yaml-consistency \
+	deploy \
+	undeploy \
 	lint \
 	lint-fix \
 	test \
@@ -75,5 +61,5 @@ e2e-tests:
 	cluster-sync \
 	cluster-test \
 	cluster-clean \
-	cluster-clean-without-images \
+	cluster-clean-and-skip-images \
 	e2e-tests

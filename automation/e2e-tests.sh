@@ -8,6 +8,8 @@ export STORAGE_CLASS="${STORAGE_CLASS:-}"
 export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-e2e-tests-$(shuf -i10000-99999 -n1)}"
 export NUM_NODES=${NUM_NODES:-2}
 
+export CREATE_VM_IMAGE="${CREATE_VM_IMAGE:-}"
+
 ./automation/e2e-deploy-resources.sh
 
 oc get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || oc new-project "$DEPLOY_NAMESPACE"
@@ -17,12 +19,7 @@ oc project $DEPLOY_NAMESPACE
 if [[ "$DEV_MODE" == "true" ]]; then
   make cluster-sync
 else
-  export TARGET_NAMESPACE="$DEPLOY_NAMESPACE"
-  if [[ "$SCOPE" == "cluster" ]]; then
-    make deploy-dev
-  else
-    make deploy-dev-namespace
-  fi
+  make deploy
 fi
 
 

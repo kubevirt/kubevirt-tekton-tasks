@@ -42,24 +42,17 @@ func getCommonTemplatesVersion(templateList *v1.TemplateList) string {
 	requiredTemplate := "fedora-server-tiny"
 
 	for _, template := range templateList.Items {
-		fmt.Printf("checking %v\n", template.Name)
 		if strings.HasPrefix(template.Name, requiredTemplate) {
-			fmt.Println("  hasRightPrefix")
 			parts := strings.Split(template.Name, fmt.Sprintf("%v-v", requiredTemplate))
-			fmt.Printf("  parts len %v\n", len(parts))
-			fmt.Printf("  parts %v\n", parts)
 			if len(parts) == 2 {
 				nextVersion, err := utils.ConvertStringSliceToInt(strings.Split(parts[1], "."))
 				noErr(err)
-				fmt.Printf("  nextVersion %v\n", nextVersion)
 				if utils.IsBVersionHigher(commonTemplatesVersion, nextVersion) {
 					commonTemplatesVersion = nextVersion
 				}
-				fmt.Printf("  commonTemplatesVersion %v\n", commonTemplatesVersion)
 			}
 		}
 	}
-	fmt.Printf("  commonTemplatesVersion %v\n", commonTemplatesVersion)
 
 	if len(commonTemplatesVersion) == 0 {
 		Expect(templateList).ShouldNot(BeNil())

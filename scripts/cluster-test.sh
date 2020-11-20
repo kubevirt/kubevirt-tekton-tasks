@@ -22,7 +22,6 @@ if [[ "$SCOPE" == "cluster" ]]; then
 else
     export TEST_NAMESPACE="${TEST_NAMESPACE:-$DEPLOY_NAMESPACE}"
 fi
-export TARGET_NAMESPACE="$TEST_NAMESPACE"
 
 oc get namespaces -o name | grep -Eq "^namespace/$TEST_NAMESPACE$" || oc new-project "$TEST_NAMESPACE" > /dev/null
 oc get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || oc new-project "$DEPLOY_NAMESPACE" > /dev/null
