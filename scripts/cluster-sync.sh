@@ -1,37 +1,39 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
+
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
+
+source "${SCRIPT_DIR}/common.sh"
 
 export SCOPE="${SCOPE:-cluster}"
 export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(oc project --short)}"
-export IMAGE_REGISTRY_USER="${DEPLOY_NAMESPACE}"
 
 oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
-
 IMAGE_REGISTRY="$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')"
-export IMAGE_REGISTRY="$IMAGE_REGISTRY"
 
 # wait for the route
 sleep 5
 
-set +x
 podman login -u kubeadmin -p "$(oc whoami -t)" --tls-verify=false "$IMAGE_REGISTRY"
-set -x
 
-pushd modules
-  for MODULE_DIR in $(ls | grep -vE "^(shared|tests)$"); do
-    pushd "$MODULE_DIR"
-      make release-dev-with-push ARGS="--tls-verify=false"
-    popd
-  done
-popd
+declare -A CUSTOM_IMAGES
+CUSTOM_IMAGES["create-vm"]="CREATE_VM_IMAGE"
 
-export IMAGE_REGISTRY="image-registry.openshift-image-registry.svc:5000"
-export TARGET_NAMESPACE="$DEPLOY_NAMESPACE"
-oc project $DEPLOY_NAMESPACE
+visit "${REPO_DIR}"
+  visit modules
+    for TASK_NAME in $(ls | grep -vE "^(shared|tests)$"); do
+      visit "$TASK_NAME"
+        export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${TASK_NAME}:latest"
+        make release-dev-with-push ARGS="--tls-verify=false"
 
-if [[ "$SCOPE" == "cluster" ]]; then
-  make deploy-dev
-else
-  make deploy-dev-namespace
-fi
+        # set inside-cluster registry
+        export IMAGE="image-registry.openshift-image-registry.svc:5000/${DEPLOY_NAMESPACE}/${TASK_NAME}:latest"
+        export ${CUSTOM_IMAGES[${TASK_NAME}]}="${IMAGE}"
+      leave
+    done
+  leave
+leave
+
+"${REPO_DIR}/scripts/deploy-tasks.sh"

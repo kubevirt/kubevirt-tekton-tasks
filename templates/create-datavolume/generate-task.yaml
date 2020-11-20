@@ -3,17 +3,21 @@
   hosts: 127.0.0.1
   gather_facts: no
   vars_files:
-  - ../../../configs/create-datavolume.yaml
+  - ../../configs/create-datavolume.yaml
   vars:
-    manifests_output_dir: ../dist/manifests
-    manifest_templates_dir: ../src/templates
-    additional_scripts_dir: ../src
-    repo_dir: ../../..
+    manifests_output_dir: ./dist/manifests
+    manifest_templates_dir: ./manifests
+    additional_scripts_dir: .
+    repo_dir: ../..
     role_name: "{{ task_name }}-task"
     sa_name: "{{ role_name }}"
     role_binding_name: "{{ role_name }}"
     default_file_mode: "0644"
   tasks:
+  - name: Clean dist directory
+    file:
+      path: "{{ manifests_output_dir }}"
+      state: absent
   - name: Prepare dist directory
     file:
       path: "{{ manifests_output_dir }}"
@@ -33,4 +37,4 @@
     - { role_type: Role, role_id: 'namespace', sa_namespace: null }
     - { role_type: ClusterRole, role_id: 'cluster', sa_namespace: 'TARGET_NAMESPACE' }
     vars:
-      role_output_dir: "{{ manifests_output_dir }}/{{ item.role_id }}-role"
+      role_output_dir: "{{ manifests_output_dir }}"
