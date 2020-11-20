@@ -14,17 +14,10 @@ export CREATE_VM_IMAGE="${CREATE_VM_IMAGE:-}"
 
 oc get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || oc new-project "$DEPLOY_NAMESPACE"
 
-oc project $DEPLOY_NAMESPACE
-
 if [[ "$DEV_MODE" == "true" ]]; then
   make cluster-sync
 else
   make deploy
 fi
-
-
-# Wait for kubevirt to be available
-oc wait -n kubevirt kv kubevirt --for condition=Available --timeout 15m
-oc rollout status -n cdi deployment/cdi-operator --timeout 10m
 
 make cluster-test

@@ -30,7 +30,9 @@ func BuildTestSuite() {
 		err = framework.InitClients(framework.ClientsInstance, framework.TestOptionsInstance)
 		noErr(err)
 
-		templateList, err := framework.ClientsInstance.TemplateClient.Templates("openshift").List(metav1.ListOptions{})
+		templateList, err := framework.ClientsInstance.TemplateClient.Templates("openshift").List(metav1.ListOptions{
+			LabelSelector: "template.kubevirt.io/type=base",
+		})
 		noErr(err)
 
 		framework.TestOptionsInstance.CommonTemplatesVersion = getCommonTemplatesVersion(templateList)

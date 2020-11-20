@@ -28,12 +28,17 @@ type Clients struct {
 }
 
 func InitClients(clients *Clients, testOptions *testoptions.TestOptions) error {
-	restConf, err := rest.InClusterConfig()
-	if err != nil {
-		restConf, err = clientcmd.BuildConfigFromFlags("", testOptions.KubeConfigPath)
+	var restConf *rest.Config
+	var lastErr error
+
+	if testOptions.KubeConfigPath != "" {
+		restConf, lastErr = clientcmd.BuildConfigFromFlags("", testOptions.KubeConfigPath)
+	} else {
+		restConf, lastErr = rest.InClusterConfig()
 	}
-	if err != nil {
-		return fmt.Errorf("could not load KUBECONFIG: %v", err)
+
+	if lastErr != nil {
+		return fmt.Errorf("could not load KUBECONFIG: %v", lastErr)
 	}
 
 	k8sClient, err := kubeclient.NewForConfig(restConf)
