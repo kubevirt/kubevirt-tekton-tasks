@@ -2,6 +2,11 @@
 
 set -o pipefail
 
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
+
+source "${SCRIPT_DIR}/common.sh"
+
 RET_CODE=0
 
 ARTIFACT_DIR="${ARTIFACT_DIR:=dist}"
@@ -17,27 +22,29 @@ FAKE_REPO_GOPATH="${FAKE_KV_GOPATH}/kubevirt-tekton-tasks"
 rm -rf "${TEST_OUT}" "${COVER_OUT}" "${JUNIT_XML}" "${COVERAGE_HTML}" "${FAKE_GOPATH_ROOT}"
 mkdir -p "${ARTIFACT_DIR}"
 
-pushd modules > /dev/null || exit 1
-  export DIST_DIR=dist
-
+visit "${REPO_DIR}/modules"
   for MODULE_DIR in $(ls | grep -vE "^(tests)$"); do
-    pushd "$MODULE_DIR" > /dev/null || continue
-      make test-verbose
-      CURRENT_RET_CODE=$?
-      if [ "${CURRENT_RET_CODE}" -ne 0 ]; then
-        RET_CODE=${CURRENT_RET_CODE}
-      fi
-      cat ${DIST_DIR}/test.out >> "${TEST_OUT}"
+    visit "$MODULE_DIR"
+      if [ -f go.mod ]; then
+       DIST_DIR=dist
+        mkdir -p ${DIST_DIR}
+        go test -v -coverprofile=${DIST_DIR}/coverage.out -covermode=atomic \
+           $(go list ./... | grep -v utilstest) | tee ${DIST_DIR}/test.out
+        CURRENT_RET_CODE=$?
+        if [ "${CURRENT_RET_CODE}" -ne 0 ]; then
+          RET_CODE=${CURRENT_RET_CODE}
+        fi
+        cat ${DIST_DIR}/test.out >> "${TEST_OUT}"
 
-      if [ -f "${COVER_OUT}" ]; then
-        sed "/^mode.*/d" dist/coverage.out >> "${COVER_OUT}" # remove first line with mode
-      else
-        cp ${DIST_DIR}/coverage.out "${COVER_OUT}"
+        if [ -f "${COVER_OUT}" ]; then
+          sed "/^mode.*/d" dist/coverage.out >> "${COVER_OUT}" # remove first line with mode
+        else
+          cp ${DIST_DIR}/coverage.out "${COVER_OUT}"
+        fi
       fi
-
-    popd > /dev/null || continue
+    leave
   done
-popd > /dev/null || exit 1
+leave
 
 if type go-junit-report > /dev/null; then
   go-junit-report < "${TEST_OUT}" > "${JUNIT_XML}"

@@ -8,13 +8,11 @@ include ../../scripts/makefile-snippets/makefile-golang.mk # lint lint-fix vendo
 include ../../scripts/makefile-snippets/makefile-golang-test.mk # test cover junit-report
 include ../../scripts/makefile-snippets/makefile-golang-build.mk # build
 
-CREATE_VM_IMAGE ?= $(IMAGE)
-
 release-dev:
-	$(CONTAINER_ENGINE) build -f build/$(IMAGE_NAME)/Dockerfile -t $(CREATE_VM_IMAGE) .
+	$(CONTAINER_ENGINE) build -f build/$(IMAGE_NAME)/Dockerfile -t $(IMAGE) .
 
 release-dev-with-push: release-dev
-	$(CONTAINER_ENGINE) push $(CREATE_VM_IMAGE) $(ARGS)
+	$(CONTAINER_ENGINE) push $(IMAGE) $(ARGS)
 
 release: lint test
 	$(CONTAINER_ENGINE) build -f build/$(IMAGE_NAME)/Dockerfile -t $(MAIN_IMAGE) .

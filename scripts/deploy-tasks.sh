@@ -14,11 +14,6 @@ source "${SCRIPT_DIR}/common.sh"
 SCOPE="${SCOPE:-cluster}"
 DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(oc project --short)}"
 
-CREATE_VM_IMAGE="${CREATE_VM_IMAGE:-}"
-
-declare -A CUSTOM_IMAGES
-CUSTOM_IMAGES["create-vm"]="${CREATE_VM_IMAGE}"
-
 oc project "${DEPLOY_NAMESPACE}" || true
 
 visit "${REPO_DIR}/tasks"
@@ -26,7 +21,7 @@ visit "${REPO_DIR}/tasks"
     CONFIG_FILE="${REPO_DIR}/configs/${TASK_NAME}.yaml"
     MAIN_IMAGE="$(sed -n  's/^main_image *: *//p' "${CONFIG_FILE}")"
     SUBTASK_NAMES=( "$(sed -n -e  '/^subtask_names *: */,/^ *^[-]/p'  "${CONFIG_FILE}" | sed -n  's/^ *-//p')" )
-    CUSTOM_IMAGE="${CUSTOM_IMAGES[${TASK_NAME}]}"
+    CUSTOM_IMAGE="${TASK_NAME_TO_IMAGE[${TASK_NAME}]}"
 
     visit "${TASK_NAME}"
       oc delete -f manifests 2> /dev/null || true

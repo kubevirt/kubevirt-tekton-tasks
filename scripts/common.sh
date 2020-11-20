@@ -7,3 +7,11 @@ function visit() {
 function leave() {
   popd > /dev/null
 }
+
+
+declare -A TASK_NAME_TO_ENV_NAME
+declare -A TASK_NAME_TO_IMAGE
+
+export CREATE_VM_IMAGE="${CREATE_VM_IMAGE:-}"
+TASK_NAME_TO_ENV_NAME["create-vm"]="CREATE_VM_IMAGE"
+TASK_NAME_TO_IMAGE["create-vm"]="${CREATE_VM_IMAGE}"

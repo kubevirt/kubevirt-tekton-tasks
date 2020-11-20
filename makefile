@@ -1,8 +1,7 @@
 MODULES_DIR = ./modules
 UNIT_TESTS_DIR = $(shell ls -d $(MODULES_DIR)/* | grep -v "/tests$$")
 
-all: $(MODULES_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR);)
+all: clean
 
 clean:
 	./scripts/clean.sh
@@ -46,6 +45,9 @@ cluster-clean-and-skip-images:
 e2e-tests:
 	./automation/e2e-tests.sh
 
+onboard-new-task-with-ci-stub:
+	./scripts/onboard-new-task-with-ci-stub.sh
+
 
 .PHONY: \
 	all \
@@ -62,4 +64,5 @@ e2e-tests:
 	cluster-test \
 	cluster-clean \
 	cluster-clean-and-skip-images \
-	e2e-tests
+	e2e-tests \
+	onboard-new-task-with-ci-stub

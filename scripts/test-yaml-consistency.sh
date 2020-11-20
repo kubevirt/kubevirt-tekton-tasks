@@ -18,7 +18,7 @@ rm -rf "${TEST_OUT}"
 mkdir -p "${ARTIFACT_DIR}"
 
 visit "${REPO_DIR}"
-  DRY_RUN=true make generate-yaml-tasks | tee -a "${TEST_OUT}"
+  DRY_RUN=true "${SCRIPT_DIR}/generate-yaml-tasks.sh" | tee -a "${TEST_OUT}"
   visit "templates"
     for TASK_NAME in *; do
       visit "${TASK_NAME}"
