@@ -26,7 +26,7 @@ visit "${REPO_DIR}/modules"
   for MODULE_DIR in $(ls | grep -vE "^(tests)$"); do
     visit "$MODULE_DIR"
       if [ -f go.mod ]; then
-       DIST_DIR=dist
+        DIST_DIR=dist
         mkdir -p ${DIST_DIR}
         go test -v -coverprofile=${DIST_DIR}/coverage.out -covermode=atomic \
            $(go list ./... | grep -v utilstest) | tee ${DIST_DIR}/test.out
