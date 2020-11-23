@@ -25,7 +25,7 @@ visit "${REPO_DIR}"
   visit modules
     for TASK_NAME in $(ls | grep -vE "^(shared|tests)$"); do
       visit "$TASK_NAME"
-        export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${TASK_NAME}:latest"
+        export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/tekton-task-${TASK_NAME}:latest"
         make release-dev-with-push ARGS="--tls-verify=false"
 
         # set inside-cluster registry
