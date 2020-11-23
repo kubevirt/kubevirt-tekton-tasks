@@ -52,7 +52,7 @@ spec:
       name: namespace
   steps:
     - name: createvm
-      image: quay.io/suomiy/create-vm:v0.0.1
+      image: quay.io/kubevirt/tekton-task-create-vm:v0.0.1
       command:
         - create-vm
         - "--output=yaml"
