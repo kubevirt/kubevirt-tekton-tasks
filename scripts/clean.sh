@@ -19,7 +19,9 @@ visit "${REPO_DIR}"
   visit "modules"
     for MODULE in *; do
       visit "${MODULE}"
-        make clean
+        if [ -f makefile ] || [ -f Makefile ]; then
+          make clean
+        fi
       leave
     done
   leave

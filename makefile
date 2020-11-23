@@ -1,8 +1,4 @@
-MODULES_DIR = ./modules
-UNIT_TESTS_DIR = $(shell ls -d $(MODULES_DIR)/* | grep -v "/tests$$")
-
-all: $(MODULES_DIR)/*
-	set -e; $(foreach TASK_DIR, $^, $(MAKE) -C $(TASK_DIR);)
+all: clean
 
 clean:
 	./scripts/clean.sh
@@ -19,14 +15,14 @@ deploy:
 undeploy:
 	./scripts/undeploy-tasks.sh
 
-lint: $(MODULES_DIR)/*
-	set -e; $(foreach MODULE_DIR, $^, $(MAKE) -C $(MODULE_DIR) lint;)
+lint:
+	./scripts/lint.sh
 
-lint-fix: $(MODULES_DIR)/*
-	set -e; $(foreach MODULE_DIR, $^, $(MAKE) -C $(MODULE_DIR) lint-fix;)
+lint-fix:
+	./scripts/lint-fix.sh
 
-test: $(UNIT_TESTS_DIR)
-	set -e; $(foreach UNIT_TEST_DIR, $^, $(MAKE) -C $(UNIT_TEST_DIR) test;)
+test:
+	./scripts/test.sh
 
 test-with-reports:
 	./scripts/test-with-reports.sh
@@ -46,6 +42,9 @@ cluster-clean-and-skip-images:
 e2e-tests:
 	./automation/e2e-tests.sh
 
+onboard-new-task-with-ci-stub:
+	./scripts/onboard-new-task-with-ci-stub.sh
+
 
 .PHONY: \
 	all \
@@ -62,4 +61,5 @@ e2e-tests:
 	cluster-test \
 	cluster-clean \
 	cluster-clean-and-skip-images \
-	e2e-tests
+	e2e-tests \
+	onboard-new-task-with-ci-stub
