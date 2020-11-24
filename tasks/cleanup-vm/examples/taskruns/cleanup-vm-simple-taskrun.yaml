@@ -12,4 +12,4 @@ spec:
     - name: vmName
       value: vm-example
     - name: delete
-      value: true
+      value: "true"

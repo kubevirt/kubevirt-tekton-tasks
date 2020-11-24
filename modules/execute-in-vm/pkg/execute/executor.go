@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/rest"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	"kubevirt.io/client-go/kubecli"
+	"time"
 )
 
 type Executor struct {
@@ -22,18 +23,30 @@ type Executor struct {
 	kubevirtClient kubecli.KubevirtClient
 	executor       RemoteExecutor
 
-	attemptedStart bool
-	ipAddress      string
+	attemptedStart  bool
+	attemptedStop   bool
+	attemptedDelete bool
+	ipAddress       string
 }
 
-func NewExecutor(clioptions *parse.CLIOptions, execAttributes execattributes.ExecAttributes) (*Executor, error) {
+func NewExecutor(clioptions *parse.CLIOptions, connectionSecretPath string) (*Executor, error) {
 	var executor RemoteExecutor
 
-	switch execAttributes.GetType() {
-	case constants.SSHSecretType:
-		executor = newSSHExecutor(clioptions, execAttributes)
-	default:
-		return nil, fmt.Errorf("invalid secret/execution type %v", execAttributes.GetType())
+	executor = newSSHExecutor(clioptions, execattributes.NewExecAttributes())
+	if clioptions.GetScript() != "" {
+		execAttributes := execattributes.NewExecAttributes()
+
+		if err := execAttributes.Init(connectionSecretPath); err != nil {
+			return nil, err
+		}
+		log.GetLogger().Debug("retrieved connection secret exec attributes", zap.Object("execAttributes", execAttributes))
+
+		switch execAttributes.GetType() {
+		case constants.SSHSecretType:
+			executor = newSSHExecutor(clioptions, execAttributes)
+		default:
+			return nil, fmt.Errorf("invalid secret/execution type %v", execAttributes.GetType())
+		}
 	}
 
 	config, err := rest.InClusterConfig()
@@ -49,13 +62,12 @@ func NewExecutor(clioptions *parse.CLIOptions, execAttributes execattributes.Exe
 	return &Executor{clioptions: clioptions, kubevirtClient: kubevirtClient, executor: executor}, nil
 }
 
-func (e *Executor) EnsureVMRunning() error {
+func (e *Executor) EnsureVMRunning(timeout time.Duration) error {
 	vmName := e.clioptions.VirtualMachineName
 	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
 	logFields := []zap.Field{zap.String("name", vmName), zap.String("namespace", vmNamespace)}
 
-	//
-	return wait.PollImmediateInfinite(constants.PollVMIInterval, func() (done bool, err error) {
+	conditionFn := func() (done bool, err error) {
 		vmInstance, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(vmName, &v1.GetOptions{})
 
 		if err != nil {
@@ -105,21 +117,104 @@ func (e *Executor) EnsureVMRunning() error {
 			log.GetLogger().Debug("waiting for a VMI to start", logFields...)
 			return false, nil
 		}
+	}
+
+	if timeout <= 0 {
+		return wait.PollImmediateInfinite(constants.PollVMIInterval, conditionFn)
+	}
+	return wait.PollImmediate(constants.PollVMIInterval, timeout, conditionFn)
+
+}
+
+func (e *Executor) EnsureVMStopped() error {
+	vmName := e.clioptions.VirtualMachineName
+	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
+
+	return wait.PollImmediateInfinite(constants.PollVMItoStopInterval, func() (bool, error) {
+		_, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(vmName, &v1.GetOptions{})
+
+		if err == nil {
+			if stopErr := e.ensureVMStop(); stopErr != nil {
+				switch t := stopErr.(type) {
+				case *errors.StatusError:
+					if t.Status().Reason == v1.StatusReasonConflict { // stop already requested
+						return false, nil
+					}
+					return false, stopErr
+				default:
+					return false, stopErr
+				}
+			}
+
+			log.GetLogger().Debug(" waiting for a VM to stop", zap.String("name", vmName), zap.String("namespace", vmNamespace))
+			return false, nil
+		}
+
+		switch t := err.(type) {
+		case *errors.StatusError:
+			if t.Status().Reason == v1.StatusReasonNotFound {
+				return true, nil
+			}
+			return false, err
+		default:
+			return false, err
+		}
+
 	})
 }
 
-func (e *Executor) SetupConnection() error {
+func (e *Executor) EnsureVMDeleted() error {
+	vmName := e.clioptions.VirtualMachineName
+	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
+
+	return wait.PollImmediateInfinite(constants.PollVMtoDeleteInterval, func() (bool, error) {
+		_, err := e.kubevirtClient.VirtualMachine(vmNamespace).Get(vmName, &v1.GetOptions{})
+
+		if err == nil {
+			if err := e.ensureVMDelete(); err != nil {
+				return false, err
+			}
+			log.GetLogger().Debug(" waiting for a VM to be deleted", zap.String("name", vmName), zap.String("namespace", vmNamespace))
+			return false, nil
+		}
+
+		switch t := err.(type) {
+		case *errors.StatusError:
+			if t.Status().Reason == v1.StatusReasonNotFound {
+				return true, nil
+			}
+			return false, err
+		default:
+			return false, err
+		}
+
+	})
+}
+
+func (e *Executor) SetupConnection(timeout time.Duration) error {
+	if e.executor == nil {
+		return fmt.Errorf("executor is missing or was not initialized")
+	}
+
 	if err := e.executor.Init(e.ipAddress); err != nil {
 		return err
 	}
 
-	return wait.PollImmediateInfinite(constants.PollValidConnectionInterval, func() (done bool, err error) {
+	conditionFn := func() (done bool, err error) {
 		return e.executor.TestConnection(), nil
-	})
+	}
+
+	if timeout <= 0 {
+		return wait.PollImmediateInfinite(constants.PollValidConnectionInterval, conditionFn)
+	}
+	return wait.PollImmediate(constants.PollValidConnectionInterval, timeout, conditionFn)
 }
 
-func (e *Executor) RemoteExecute() error {
-	return e.executor.RemoteExecute()
+func (e *Executor) RemoteExecute(timeout time.Duration) error {
+	if e.executor == nil {
+		return fmt.Errorf("executor is missing or was not initialized")
+	}
+	return e.executor.RemoteExecute(timeout)
 }
 
 func (e *Executor) ensureVMStarted() error {
@@ -132,5 +227,35 @@ func (e *Executor) ensureVMStarted() error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (e *Executor) ensureVMStop() error {
+	vmName := e.clioptions.VirtualMachineName
+	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
+	if !e.attemptedStop {
+		e.attemptedStop = true
+
+		log.GetLogger().Debug("stopping a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
+		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Stop(vmName); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (e *Executor) ensureVMDelete() error {
+	vmName := e.clioptions.VirtualMachineName
+	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
+	if !e.attemptedDelete {
+		e.attemptedDelete = true
+
+		log.GetLogger().Debug("deleting a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
+		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Delete(vmName, &v1.DeleteOptions{}); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

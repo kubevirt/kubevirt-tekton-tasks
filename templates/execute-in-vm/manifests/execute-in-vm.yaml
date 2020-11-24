@@ -34,7 +34,7 @@ spec:
       name: delete
       type: string
       default: "false"
-    - description: Timeout for the command/script. The VM will be stoped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
+    - description: Timeout for the command/script (includes potential VM start). The VM will be stoped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
       name: timeout
       type: string
       default: "30m"
@@ -42,6 +42,7 @@ spec:
     - description: Secret to use when connecting to a VM
       name: secretName
       type: string
+      default: "__empty__"
     - description: Command to execute in a VM
       name: command
       type: array
@@ -89,3 +90,4 @@ spec:
     - name: connectionsecret
       secret:
         secretName: $(params.secretName)
+        optional: true

@@ -5,13 +5,14 @@ import "time"
 // Exit codes
 // reserve 0+ numbers for the exit code of the command
 const (
-	InvalidArguments                             = -1 // same as go-arg invalid args exit
-	InvalidSecret                                = -2
-	ExecutorSetupConnectionFailed                = -3
-	EnsureVMRunningFailed                        = -4
-	RemoteCommandExecutionFailedFromUnknownError = -5
+	InvalidArguments       = -1 // same as go-arg invalid args exit
+	ExecutorInitialization = -2
+	ExecutorActionsFailed  = -3
+	CommandTimeout         = -4
 )
 
-const PollVMIInterval = 5 * time.Second
-const PollValidConnectionInterval = 4 * time.Second
+const PollVMIInterval = 3 * time.Second
+const PollValidConnectionInterval = 3 * time.Second
 const CheckSSHConnectionTimeout = 3 * time.Second
+const PollVMtoDeleteInterval = 1 * time.Second
+const PollVMItoStopInterval = 1 * time.Second

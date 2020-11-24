@@ -6,13 +6,13 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/execattributes"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/parse"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	"net"
 	"os"
 	"os/exec"
 	"path"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -73,7 +73,7 @@ func (e *sshExecutor) TestConnection() bool {
 	return conn != nil && err == nil
 }
 
-func (e *sshExecutor) RemoteExecute() error {
+func (e *sshExecutor) RemoteExecute(timeout time.Duration) error {
 	destination := e.ssh.GetUser() + "@" + e.ipAddress
 
 	var opts []string
@@ -94,20 +94,7 @@ func (e *sshExecutor) RemoteExecute() error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	result := exit.Exit{
-		Code: 0,
-		Soft: true,
-	}
-
-	if err := cmd.Run(); err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			result.Code = exitErr.ExitCode()
-		} else {
-			return err
-		}
-	}
-
-	return result
+	return RunCmdWithTimeout(timeout, cmd)
 }
 
 func writeToUserFile(filename string, content string, append bool) error {

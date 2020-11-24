@@ -14,9 +14,9 @@ spec:
     - name: secretName
       value: ssh-secret
     - name: stop
-      value: true
+      value: "true"
     - name: delete
-      value: false
+      value: "false"
     - name: timeout
       value: 10m
     - name: command

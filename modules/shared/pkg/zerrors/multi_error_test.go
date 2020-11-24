@@ -74,7 +74,7 @@ var _ = Describe("MultiError", func() {
 		table.Entry("new func soft", zerrors.NewMultiError(), true),
 		table.Entry("soft with only soft errors", zerrors.NewMultiError().
 			AddC("soft1", zerrors.NewMissingRequiredError("soft1")).
-			AddC("soft2", zerrors.NewMissingRequiredError("soft2")), true),
+			AddC("soft2", zerrors.NewSoftError("soft2")), true),
 		table.Entry("not soft with one hard and one soft", zerrors.NewMultiError().
 			AddC("soft1", zerrors.NewMissingRequiredError("soft1")).
 			AddC("hard2", errors.New("hard2")), false),

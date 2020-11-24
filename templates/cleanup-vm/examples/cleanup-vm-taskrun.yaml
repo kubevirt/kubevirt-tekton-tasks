@@ -15,9 +15,9 @@ spec:
     - name: secretName
       value: {{ item.secret_name }}
     - name: stop
-      value: true
+      value: "true"
     - name: delete
-      value: false
+      value: "false"
     - name: timeout
       value: 10m
     - name: command
@@ -30,5 +30,5 @@ spec:
 {% endif %}
 {% if item.taskrun_type == "Simple" %}
     - name: delete
-      value: true
+      value: "true"
 {% endif %}

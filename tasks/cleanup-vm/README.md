@@ -30,7 +30,7 @@ Install one of the following rbac permissions to the active namespace
 - **vmNamespace**: Namespace of a VM to execute the action in (defaults to active namespace).
 - **stop**: Stops the VM after executing the commands when set to true
 - **delete**: Deletes the VM after executing the commands when set to true
-- **timeout**: Timeout for the command/script. The VM will be stoped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
+- **timeout**: Timeout for the command/script (includes potential VM start). The VM will be stoped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
 - **secretName**: Secret to use when connecting to a VM.
 - **command**: Command to execute in a VM.
 - **args**: Arguments of a command.
