@@ -22,12 +22,13 @@ visit "${REPO_DIR}"
   visit modules
     for TASK_NAME in $(ls | grep -vE "^(shared|tests)$"); do
       visit "${TASK_NAME}"
-        export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/tekton-task-${TASK_NAME}:latest"
+        IMAGE_NAME_AND_TAG="tekton-task-${TASK_NAME}:latest"
+        export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
         podman build -f "build/${TASK_NAME}/Dockerfile" -t "${IMAGE}" .
         podman push "${IMAGE}" --tls-verify=false
 
         # set inside-cluster registry
-        export IMAGE="image-registry.openshift-image-registry.svc:5000/${DEPLOY_NAMESPACE}/${TASK_NAME}:latest"
+        export IMAGE="image-registry.openshift-image-registry.svc:5000/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
         export ${TASK_NAME_TO_ENV_NAME[${TASK_NAME}]}="${IMAGE}"
       leave
     done
