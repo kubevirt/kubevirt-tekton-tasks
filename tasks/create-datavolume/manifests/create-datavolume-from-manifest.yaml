@@ -5,7 +5,7 @@ metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: create-datavolume-task
     manifest.params.task.kubevirt.io/type: resource-yaml
-    manifest.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1alpha1
+    manifest.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
     manifest.params.task.kubevirt.io/kind: DataVolume
     waitForSuccess.params.task.kubevirt.io/type: boolean
   labels:
@@ -31,7 +31,7 @@ spec:
       name: namespace
   steps:
     - name: create
-      image: quay.io/openshift/origin-cli:4.7
+      image: quay.io/openshift/origin-cli:4.8
       script: |
         #!/usr/bin/env bash
 

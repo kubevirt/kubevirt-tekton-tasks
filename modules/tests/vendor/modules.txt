@@ -90,7 +90,7 @@ github.com/coreos/prometheus-operator/pkg/apis/monitoring
 github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/docker/cli v0.0.0-20200210162036-a4bedce16568
+# github.com/docker/cli v0.0.0-20200130152716-5d0cf8839492
 github.com/docker/cli/cli/config
 github.com/docker/cli/cli/config/configfile
 github.com/docker/cli/cli/config/credentials
@@ -109,19 +109,27 @@ github.com/evanphx/json-patch
 github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
+# github.com/go-kit/kit v0.9.0 => github.com/go-kit/kit v0.3.0
+github.com/go-kit/kit/log
+# github.com/go-logfmt/logfmt v0.4.0
+github.com/go-logfmt/logfmt
 # github.com/go-logr/logr v0.1.0
 github.com/go-logr/logr
 # github.com/go-openapi/jsonpointer v0.19.3
 github.com/go-openapi/jsonpointer
-# github.com/go-openapi/jsonreference v0.19.3
+# github.com/go-openapi/jsonreference v0.19.2
 github.com/go-openapi/jsonreference
 # github.com/go-openapi/spec v0.19.6
 github.com/go-openapi/spec
 # github.com/go-openapi/swag v0.19.7
 github.com/go-openapi/swag
+# github.com/go-stack/stack v1.8.0
+github.com/go-stack/stack
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
+# github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+github.com/golang/glog
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/mock v1.4.4
@@ -165,7 +173,7 @@ github.com/google/gofuzz
 github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
-# github.com/googleapis/gnostic v0.4.0
+# github.com/googleapis/gnostic v0.4.0 => github.com/googleapis/gnostic v0.3.1
 github.com/googleapis/gnostic/OpenAPIv2
 github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
@@ -195,10 +203,14 @@ github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8
 github.com/kelseyhightower/envconfig
 # github.com/konsorten/go-windows-terminal-sequences v1.0.3
 github.com/konsorten/go-windows-terminal-sequences
+# github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
+github.com/kr/logfmt
+# github.com/kubernetes-csi/external-snapshotter/v2 v2.1.1
+github.com/kubernetes-csi/external-snapshotter/v2/pkg/apis/volumesnapshot/v1beta1
 # github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
 github.com/lightstep/tracecontext.go/traceparent
 github.com/lightstep/tracecontext.go/tracestate
-# github.com/mailru/easyjson v0.7.1-0.20191009090205-6c0755d89d1e
+# github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
@@ -293,7 +305,7 @@ github.com/prometheus/statsd_exporter/pkg/mapper/fsm
 github.com/sirupsen/logrus
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/tektoncd/pipeline v0.17.0
+# github.com/tektoncd/pipeline v0.17.3 => github.com/tektoncd/pipeline v0.17.3
 ## explicit
 github.com/tektoncd/pipeline/pkg/apis/config
 github.com/tektoncd/pipeline/pkg/apis/pipeline
@@ -578,7 +590,7 @@ gopkg.in/inf.v0
 gopkg.in/tomb.v1
 # gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
-# k8s.io/api v0.18.7-rc.0 => k8s.io/api v0.16.4
+# k8s.io/api v0.19.4 => k8s.io/api v0.16.4
 ## explicit
 k8s.io/api/admissionregistration/v1
 k8s.io/api/admissionregistration/v1beta1
@@ -618,7 +630,7 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.18.4 => k8s.io/apiextensions-apiserver v0.16.4
+# k8s.io/apiextensions-apiserver v0.19.0-rc.2 => k8s.io/apiextensions-apiserver v0.16.4
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
@@ -626,7 +638,7 @@ k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1
-# k8s.io/apimachinery v0.19.0 => k8s.io/apimachinery v0.16.4
+# k8s.io/apimachinery v0.19.4 => k8s.io/apimachinery v0.16.4
 ## explicit
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
@@ -882,9 +894,10 @@ k8s.io/klog/v2
 # k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
 k8s.io/kube-openapi/pkg/common
 k8s.io/kube-openapi/pkg/util/proto
-# k8s.io/utils v0.0.0-20200603063816-c1c6865ac451
+# k8s.io/utils v0.0.0-20200720150651-0bdb4ca86cbc
 k8s.io/utils/buffer
 k8s.io/utils/integer
+k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/trace
 # knative.dev/pkg v0.0.0-20200831162708-14fb2347fb77
@@ -928,13 +941,21 @@ knative.dev/pkg/tracing/config
 knative.dev/pkg/tracing/propagation
 knative.dev/pkg/tracing/propagation/tracecontextb3
 knative.dev/pkg/tracker
-# kubevirt.io/client-go v0.26.5
+# kubevirt.io/client-go v0.35.0
 ## explicit
 kubevirt.io/client-go/api/v1
+kubevirt.io/client-go/apis/snapshot
+kubevirt.io/client-go/apis/snapshot/v1alpha1
 kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned
 kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/scheme
 kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/typed/core/v1alpha1
 kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/typed/upload/v1alpha1
+kubevirt.io/client-go/generated/external-snapshotter/clientset/versioned
+kubevirt.io/client-go/generated/external-snapshotter/clientset/versioned/scheme
+kubevirt.io/client-go/generated/external-snapshotter/clientset/versioned/typed/volumesnapshot/v1beta1
+kubevirt.io/client-go/generated/kubevirt/clientset/versioned
+kubevirt.io/client-go/generated/kubevirt/clientset/versioned/scheme
+kubevirt.io/client-go/generated/kubevirt/clientset/versioned/typed/snapshot/v1alpha1
 kubevirt.io/client-go/generated/network-attachment-definition-client/clientset/versioned
 kubevirt.io/client-go/generated/network-attachment-definition-client/clientset/versioned/scheme
 kubevirt.io/client-go/generated/network-attachment-definition-client/clientset/versioned/typed/k8s.cni.cncf.io/v1
@@ -942,11 +963,12 @@ kubevirt.io/client-go/generated/prometheus-operator/clientset/versioned
 kubevirt.io/client-go/generated/prometheus-operator/clientset/versioned/scheme
 kubevirt.io/client-go/generated/prometheus-operator/clientset/versioned/typed/monitoring/v1
 kubevirt.io/client-go/kubecli
+kubevirt.io/client-go/log
 kubevirt.io/client-go/precond
 kubevirt.io/client-go/subresources
 kubevirt.io/client-go/util
 kubevirt.io/client-go/version
-# kubevirt.io/containerized-data-importer v1.20.1 => kubevirt.io/containerized-data-importer v1.20.1
+# kubevirt.io/containerized-data-importer v1.25.0 => kubevirt.io/containerized-data-importer v1.21.0
 ## explicit
 kubevirt.io/containerized-data-importer/pkg/apis/core
 kubevirt.io/containerized-data-importer/pkg/apis/core/v1alpha1
@@ -959,17 +981,36 @@ kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/cor
 # sigs.k8s.io/yaml v1.2.0
 ## explicit
 sigs.k8s.io/yaml
-# github.com/openshift/api => github.com/openshift/api v0.0.0-20191219222812-2987a591a72c
-# github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20191125132246-f6563a70e19a
 # k8s.io/api => k8s.io/api v0.16.4
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.16.4
 # k8s.io/apimachinery => k8s.io/apimachinery v0.16.4
 # k8s.io/apiserver => k8s.io/apiserver v0.16.4
+# k8s.io/cli-runtime => k8s.io/cli-runtime v0.16.4
 # k8s.io/client-go => k8s.io/client-go v0.16.4
+# k8s.io/cloud-provider => k8s.io/cloud-provider v0.16.4
 # k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.16.4
 # k8s.io/code-generator => k8s.io/code-generator v0.16.4
 # k8s.io/component-base => k8s.io/component-base v0.16.4
-# k8s.io/klog => k8s.io/klog v0.4.0
+# k8s.io/cri-api => k8s.io/cri-api v0.16.4
+# k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.16.4
 # k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.16.4
-# kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.20.1
-# sigs.k8s.io/structured-merge-diff => sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2
+# k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.16.4
+# k8s.io/kube-proxy => k8s.io/kube-proxy v0.16.4
+# k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.16.4
+# k8s.io/kubectl => k8s.io/kubectl v0.16.4
+# k8s.io/kubelet => k8s.io/kubelet v0.16.4
+# k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.16.4
+# k8s.io/metrics => k8s.io/metrics v0.16.4
+# k8s.io/node-api => k8s.io/node-api v0.16.4
+# k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.16.4
+# k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.16.4
+# k8s.io/sample-controller => k8s.io/sample-controller v0.16.4
+# k8s.io/klog => k8s.io/klog v0.4.0
+# sigs.k8s.io/structured-merge-diff => sigs.k8s.io/structured-merge-diff v1.0.2
+# github.com/go-kit/kit => github.com/go-kit/kit v0.3.0
+# github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.3.1
+# github.com/tektoncd/pipeline => github.com/tektoncd/pipeline v0.17.3
+# github.com/openshift/api => github.com/openshift/api v0.0.0-20191219222812-2987a591a72c
+# github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20191125132246-f6563a70e19a
+# github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190128024246-5eb7ae5bdb7a
+# kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.21.0

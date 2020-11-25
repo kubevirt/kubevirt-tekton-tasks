@@ -1,4 +1,4 @@
 task_name: create-datavolume
-main_image: quay.io/openshift/origin-cli:4.7
+main_image: quay.io/openshift/origin-cli:4.8
 subtask_names:
   - create-datavolume-from-manifest
