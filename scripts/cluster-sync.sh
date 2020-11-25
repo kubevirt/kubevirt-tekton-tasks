@@ -20,7 +20,7 @@ podman login -u kubeadmin -p "$(oc whoami -t)" --tls-verify=false "$IMAGE_REGIST
 
 visit "${REPO_DIR}"
   visit modules
-    for TASK_NAME in $(ls | grep -vE "^(shared|tests)$"); do
+    for TASK_NAME in $(ls | grep -vE "^(${EXCLUDED_NON_IMAGE_MODULES})$"); do
       visit "${TASK_NAME}"
         IMAGE_NAME_AND_TAG="tekton-task-${TASK_NAME}:latest"
         export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
