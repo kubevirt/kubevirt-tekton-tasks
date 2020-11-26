@@ -9,18 +9,18 @@ Flavors of this task create a VirtualMachine from different sources
 Install the Task
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/master/tasks/create-vm/manifests/create-vm-from-template.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm/manifests/create-vm-from-template.yaml
 ```
 
 Install one of the following rbac permissions to the active namespace
   - Permissions for templates from active namespace
     ```bash
-    kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/master/tasks/create-vm/manifests/create-vm-namespace-rbac.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm/manifests/create-vm-namespace-rbac.yaml
     ```
   - Permissions for all templates from the cluster
     ```bash
     TARGET_NAMESPACE="$(kubectl config current-context | cut -d/ -f1)"
-    wget -qO - https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/master/tasks/create-vm/manifests/create-vm-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
+    wget -qO - https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm/manifests/create-vm-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
     ```
 
 ### Parameters
