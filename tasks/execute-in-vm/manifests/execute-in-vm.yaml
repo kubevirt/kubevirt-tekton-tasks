@@ -13,26 +13,26 @@ metadata:
   name: execute-in-vm
 spec:
   params:
-    - description: Name of a VM to execute the action in
+    - description: Name of a VM to execute the action in.
       name: vmName
       type: string
-    - description: Namespace of a VM to execute the action in (defaults to active namespace)
+    - description: Namespace of a VM to execute the action in. (defaults to active namespace)
       name: vmNamespace
       type: string
       default: ""
-    - description: Secret to use when connecting to a VM
+    - description: Secret to use when connecting to a VM.
       name: secretName
       type: string
       default: "__empty__"
-    - description: Command to execute in a VM
+    - description: Command to execute in a VM.
       name: command
       type: array
       default: []
-    - description: Arguments of a command
+    - description: Arguments of a command.
       name: args
       type: array
       default: []
-    - description: Script to execute in a VM
+    - description: Script to execute in a VM.
       name: script
       type: string
       default: ""
@@ -50,10 +50,6 @@ spec:
         - $(params.command)
         - $(params.args)
       env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
         - name: EXECUTE_SCRIPT
           value: $(params.script)
       volumeMounts:
