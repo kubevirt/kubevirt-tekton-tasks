@@ -47,7 +47,7 @@ visit "${REPO_DIR}/modules"
 leave
 
 if type go-junit-report > /dev/null; then
-  go-junit-report < "${TEST_OUT}" > "${JUNIT_XML}"
+  sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' "${TEST_OUT}" | go-junit-report > "${JUNIT_XML}"
 fi
 
 mkdir -p "${FAKE_KV_GOPATH}"
