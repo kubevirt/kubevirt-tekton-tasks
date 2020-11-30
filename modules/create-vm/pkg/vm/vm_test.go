@@ -1,6 +1,7 @@
 package vm_test
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -10,16 +11,16 @@ import (
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
-	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testconstants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
 	vm2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
+	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants"
+	shtestobjects "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 )
 
 var _ = Describe("VM", func() {
 	var vm *kubevirtv1.VirtualMachine
 
 	BeforeEach(func() {
-		vm = testobjects.NewTestVM()
+		vm = shtestobjects.NewTestVM()
 	})
 
 	It("Creates owner reference", func() {
@@ -33,7 +34,7 @@ var _ = Describe("VM", func() {
 		var cliOptions *parse.CLIOptions
 
 		BeforeEach(func() {
-			vm = testobjects.NewTestVM()
+			vm = shtestobjects.NewTestVM()
 			emptyValidations = validations.NewTemplateValidations(nil)
 			cliOptions = &parse.CLIOptions{
 				TemplateName:              "test",
@@ -71,7 +72,7 @@ var _ = Describe("VM", func() {
 	})
 
 	It("Adds correct metadata", func() {
-		vm2.AddMetadata(vm, testobjects.NewFedoraServerTinyTemplate())
+		vm2.AddMetadata(vm, shtestobjects.NewFedoraServerTinyTemplate())
 
 		Expect(vm.Labels).To(Equal(map[string]string{
 			"vm.kubevirt.io/template":              "fedora-server-tiny-v0.7.0",

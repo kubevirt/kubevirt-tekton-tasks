@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/alexflint/go-arg v1.3.0
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
 	github.com/onsi/ginkgo v1.14.0
 	github.com/onsi/gomega v1.10.1
@@ -21,7 +22,10 @@ require (
 )
 
 // locally referenced modules
-replace github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ../shared
+replace (
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ../shared
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
+)
 
 // Pinned to kubernetes-1.16.4 (due to kubevirt/client-go v0.35.0)
 replace (

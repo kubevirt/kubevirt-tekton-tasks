@@ -8,6 +8,7 @@ function leave() {
   popd > /dev/null
 }
 
+export EXCLUDED_NON_IMAGE_MODULES="shared|sharedtest|tests"
 
 declare -A TASK_NAME_TO_ENV_NAME
 declare -A TASK_NAME_TO_IMAGE

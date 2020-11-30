@@ -5,8 +5,8 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testconstants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 )
 
 var _ = Describe("Template", func() {

@@ -85,6 +85,10 @@ github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/utilstest
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils
+# github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
+## explicit
+github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants
+github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects
 # github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer

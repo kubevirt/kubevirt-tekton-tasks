@@ -17,7 +17,7 @@ LINT_OUT="${ARTIFACT_DIR}/lint.out"
 rm -f "${LINT_OUT}"
 
 visit "${REPO_DIR}/modules"
-  for MODULE_DIR in $(ls | grep -vE "^(tests)$"); do
+  for MODULE_DIR in *; do
     visit "$MODULE_DIR"
       if [ -f go.mod ]; then
         if [ -n "$(gofmt -d $(ls -d */ | grep -v "^vendor/") | tee -a "${LINT_OUT}")" ]; then
