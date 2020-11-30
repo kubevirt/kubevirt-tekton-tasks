@@ -5,7 +5,7 @@ metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
     manifest.params.task.kubevirt.io/type: resource-yaml
-    manifest.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1alpha1
+    manifest.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
     manifest.params.task.kubevirt.io/kind: DataVolume
     waitForSuccess.params.task.kubevirt.io/type: boolean
   labels:

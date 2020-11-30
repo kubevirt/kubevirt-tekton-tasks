@@ -20,7 +20,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	kubevirtcliv1 "kubevirt.io/client-go/kubecli"
-	datavolumeclientv1alpha1 "kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/core/v1alpha1"
+	datavolumeclientv1beta1 "kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/core/v1beta1"
 	"path/filepath"
 )
 
@@ -53,7 +53,7 @@ func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
 	// clients
 	kubeClient := kubernetes.NewForConfigOrDie(config)
 	templateClient := templatev1.NewForConfigOrDie(config)
-	cdiClient := datavolumeclientv1alpha1.NewForConfigOrDie(config)
+	cdiClient := datavolumeclientv1beta1.NewForConfigOrDie(config)
 	kubevirtClient, err := kubevirtcliv1.GetKubevirtClientFromRESTConfig(config)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Cannot create kubevirt client")

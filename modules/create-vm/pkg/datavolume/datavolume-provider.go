@@ -6,28 +6,28 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	datavolumev1alpha1 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1alpha1"
-	datavolumeclientv1alpha1 "kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/core/v1alpha1"
+	datavolumev1beta1 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1beta1"
+	datavolumeclientv1beta1 "kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/core/v1beta1"
 )
 
 type dataVolumeProvider struct {
-	client datavolumeclientv1alpha1.CdiV1alpha1Interface
+	client datavolumeclientv1beta1.CdiV1beta1Interface
 }
 
 type DataVolumeProvider interface {
-	GetByName(namespace string, names ...string) ([]*datavolumev1alpha1.DataVolume, error)
-	AddOwnerReferences(dv *datavolumev1alpha1.DataVolume, newOwnerRefs ...metav1.OwnerReference) (*datavolumev1alpha1.DataVolume, error)
+	GetByName(namespace string, names ...string) ([]*datavolumev1beta1.DataVolume, error)
+	AddOwnerReferences(dv *datavolumev1beta1.DataVolume, newOwnerRefs ...metav1.OwnerReference) (*datavolumev1beta1.DataVolume, error)
 }
 
-func NewDataVolumeProvider(client datavolumeclientv1alpha1.CdiV1alpha1Interface) DataVolumeProvider {
+func NewDataVolumeProvider(client datavolumeclientv1beta1.CdiV1beta1Interface) DataVolumeProvider {
 	return &dataVolumeProvider{
 		client: client,
 	}
 }
 
-func (d *dataVolumeProvider) GetByName(namespace string, names ...string) ([]*datavolumev1alpha1.DataVolume, error) {
+func (d *dataVolumeProvider) GetByName(namespace string, names ...string) ([]*datavolumev1beta1.DataVolume, error) {
 	var multiError zerrors.MultiError
-	var dvs []*datavolumev1alpha1.DataVolume
+	var dvs []*datavolumev1beta1.DataVolume
 
 	for _, name := range names {
 		dv, err := d.client.DataVolumes(namespace).Get(name, metav1.GetOptions{})
@@ -41,7 +41,7 @@ func (d *dataVolumeProvider) GetByName(namespace string, names ...string) ([]*da
 	return dvs, multiError.AsOptional()
 }
 
-func (d *dataVolumeProvider) AddOwnerReferences(dv *datavolumev1alpha1.DataVolume, newOwnerRefs ...metav1.OwnerReference) (*datavolumev1alpha1.DataVolume, error) {
+func (d *dataVolumeProvider) AddOwnerReferences(dv *datavolumev1beta1.DataVolume, newOwnerRefs ...metav1.OwnerReference) (*datavolumev1beta1.DataVolume, error) {
 	if dv == nil {
 		return nil, errors.New("did not receive any DataVolume to add reference to")
 	}
