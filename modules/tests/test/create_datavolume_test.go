@@ -113,7 +113,7 @@ var _ = Describe("Create DataVolume", func() {
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateDataVolumeServiceAccountName,
 				Timeout:        Timeouts.SmallBlankDVCreation,
-				ExpectedLogs:   "Created",
+				ExpectedLogs:   "Created not",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
 				Datavolume:     dv.NewBlankDataVolume("blank-wait").Build(),
@@ -125,7 +125,7 @@ var _ = Describe("Create DataVolume", func() {
 				ServiceAccount: CreateDataVolumeServiceAccountName,
 				LimitScope:     ClusterScope,
 				Timeout:        Timeouts.SmallBlankDVCreation,
-				ExpectedLogs:   "Created",
+				ExpectedLogs:   "Created not",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
 				Datavolume:     dv.NewBlankDataVolume("same-ns-cluster-scope").Build(),

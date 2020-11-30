@@ -197,7 +197,7 @@ var _ = Describe("Create VM from template", func() {
 		table.Entry("[NAMESPACE SCOPED] cannot use template from a different namespace", &testconfigs.CreateVMFromTemplateTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "templates.template.openshift.io \"unreachable-template\" is forbidden",
+				ExpectedLogs:   "templates.template.openshift.io \"really-unreachable-template\" is forbidden",
 				LimitScope:     NamespaceScope,
 			},
 			TaskData: testconfigs.CreateVMFromTemplateTaskData{

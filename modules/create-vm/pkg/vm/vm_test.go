@@ -90,7 +90,8 @@ var _ = Describe("VM", func() {
 			"name":                                 vm.Name,
 			"os.template.kubevirt.io/fedora29":     "true",
 			"flavor.template.kubevirt.io/tiny":     "true",
-			"workload.template.kubevirt.io/server": "true",
+			"workload.template.kubevirt.io/server":
+				"false",
 		}))
 
 	})
