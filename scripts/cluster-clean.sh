@@ -14,7 +14,7 @@ pushd modules
   for TEST_NS in $(oc get namespaces -o name | grep -Eo "e2e-tests-[0-9]{5}"); do
     oc project "$TEST_NS"
     for MODULE_DIR in $(ls | grep -vE "^(${EXCLUDED_NON_IMAGE_MODULES})$"); do
-      podman rmi "$IMAGE_REGISTRY/$TEST_NS/`basename $MODULE_DIR`:latest" || true
+      podman rmi "$IMAGE_REGISTRY/$TEST_NS/tekton-task-$(basename "{$MODULE_DIR}"):latest" || true
     done
 
     for RESOURCE in pipelineresources.tekton.dev \
