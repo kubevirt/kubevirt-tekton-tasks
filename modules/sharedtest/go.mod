@@ -3,6 +3,7 @@ module github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest
 go 1.15
 
 require (
+	github.com/onsi/ginkgo v1.12.1
 	github.com/openshift/api v0.0.0
 	k8s.io/apimachinery v0.19.4
 	kubevirt.io/client-go v0.35.0

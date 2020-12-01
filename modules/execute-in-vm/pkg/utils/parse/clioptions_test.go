@@ -24,7 +24,6 @@ var _ = Describe("CLIOptions", func() {
 	table.DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
 		Expect(options.Init().Error()).To(ContainSubstring(expectedErrMessage))
 	},
-		table.Entry("namespace missing", "vm-namespace option is empty", &parse.CLIOptions{}),
 		table.Entry("no script or command", "no action was specified: at least one of the following options is required: command|script|stop|delete", &parse.CLIOptions{
 			VirtualMachineNamespaces: defaultNSArr,
 		}),

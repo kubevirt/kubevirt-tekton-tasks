@@ -1,4 +1,4 @@
-package execute
+package cmd
 
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"

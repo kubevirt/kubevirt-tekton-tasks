@@ -78,5 +78,9 @@ func (s *attributes) GetSSHAttributes() SSHAttributes {
 func (s *attributes) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	encoder.AddString("secretType", string(s.secretType))
 	encoder.AddString("secretPath", s.secretPath)
-	return encoder.AddObject("ssh", s.ssh)
+	if s.ssh == nil {
+		return encoder.AddReflected("ssh", s.ssh)
+	} else {
+		return encoder.AddObject("ssh", s.ssh)
+	}
 }

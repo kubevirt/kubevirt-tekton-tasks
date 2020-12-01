@@ -2,6 +2,7 @@ package execute
 
 import (
 	"fmt"
+	cmd2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/cmd"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/execattributes"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/log"
@@ -18,7 +19,6 @@ import (
 const (
 	knownHostsFilename = "known_hosts"
 	idRSAFilename      = "id_rsa"
-	sshPort            = "22"
 )
 
 const (
@@ -94,7 +94,7 @@ func (e *sshExecutor) RemoteExecute(timeout time.Duration) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	return RunCmdWithTimeout(timeout, cmd)
+	return cmd2.RunCmdWithTimeout(timeout, cmd)
 }
 
 func writeToUserFile(filename string, content string, append bool) error {

@@ -61,10 +61,6 @@ func (c *CLIOptions) ShouldDelete() bool {
 	return zutils.IsTrue(c.Delete)
 }
 
-func (c *CLIOptions) ShouldCleanup() bool {
-	return c.ShouldStop() || c.ShouldDelete()
-}
-
 func (c *CLIOptions) setVirtualMachineNamespace(namespace string) {
 	if namespace == "" {
 		c.VirtualMachineNamespaces = nil
