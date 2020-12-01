@@ -14,8 +14,8 @@ ENV ENTRY_CMD=/usr/local/bin/${TASK_NAME} \
     HOME=/home/${TASK_NAME}
 
 # install ssh client
-RUN yum update --disablerepo=* --enablerepo=ubi-8-appstream --enablerepo=ubi-8-baseos --exclude=filesystem -y && yum clean all && rm -rf /var/cache/yum /var/cache/dnf
-RUN yum install --disablerepo=* --enablerepo=ubi-8-appstream --enablerepo=ubi-8-baseos openssh-clients -y && yum clean all && rm -rf /var/cache/yum /var/cache/dnf /var/lib/rpm
+RUN yum update --exclude=filesystem -y && yum clean all && rm -rf /var/cache/yum /var/cache/dnf
+RUN yum install openssh-clients -y && yum clean all && rm -rf /var/cache/yum /var/cache/dnf /var/lib/rpm
 
 # install task binary
 COPY --from=builder /${TASK_NAME} ${ENTRY_CMD}
