@@ -14,12 +14,6 @@ ifeq ($(strip $(MAIN_IMAGE)),)
 $(error MAIN_IMAGE is empty)
 endif
 
-SUBTASK_NAMES ?= $(shell sed -n -e  '/^subtask_names *: */,/^ *^[-]/p' $(CONFIG_FILE) | sed -n  's/^ *-//p')
-
-ifeq ($(strip $(SUBTASK_NAMES)),)
-$(error SUBTASK_NAMES is empty, at least one subtask has to be defined)
-endif
-
 CONTAINER_ENGINE ?=  $(shell \
 	if podman ps >/dev/null; then \
 	  echo podman ; \

@@ -1,4 +1,3 @@
 **/go.sum linguist-generated
-tasks/**/manifests/** linguist-generated
-tasks/**/examples/** linguist-generated
+tasks/** linguist-generated
 **/vendor/ linguist-vendored

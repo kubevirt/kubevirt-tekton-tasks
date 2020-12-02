@@ -1,4 +1,2 @@
 task_name: create-vm
 main_image: quay.io/kubevirt/tekton-task-create-vm:v0.0.1
-subtask_names:
-  - create-vm-from-template
