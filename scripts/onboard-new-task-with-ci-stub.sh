@@ -36,8 +36,6 @@ echo "creating ${CONFIG_FILE}"
 cat <<EOF > "${CONFIG_FILE}"
 task_name: ${TASK_NAME}
 main_image: quay.io/kubevirt/${TASK_NAME}:v0.0.1
-subtask_names:
-  - ${TASK_NAME}
 EOF
 fi
 

@@ -2,12 +2,13 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  name: create-dv-taskrun
+  name: {{ item.taskrun_with_flavor_name }}
 spec:
-  serviceAccountName: create-datavolume-task
+  serviceAccountName: {{ sa_name }}
   taskRef:
     kind: ClusterTask
-    name: create-datavolume-from-manifest
+    name: {{ item.subtask_name }}
+{% if item.type == "from-manifest-simple" %}
   params:
     - name: waitForSuccess
       value: 'true'
@@ -27,3 +28,6 @@ spec:
             volumeMode: Filesystem
           source:
             blank: {}
+{% else %}
+  params: []
+{% endif %}
