@@ -234,6 +234,98 @@ apiVersion: tekton.dev/v1beta1
 kind: ClusterTask
 metadata:
   annotations:
+    task.kubevirt.io/associatedServiceAccount: clone-template-task
+    sourceTemplate.params.task.kubevirt.io/kind: Template
+    sourceTemplate.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
+    sourceTemplateNamespace.params.task.kubevirt.io/type: namespace
+    targetTemplate.params.task.kubevirt.io/kind: Template
+    targetTemplate.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
+    targetTemplateNamespace.params.task.kubevirt.io/type: namespace
+  labels:
+    task.kubevirt.io/type: clone-template
+    task.kubevirt.io/category: clone-template
+  name: clone-template
+spec:
+  params:
+    - name: sourceTemplate
+      description: Source Template to clone from.
+      type: string
+    - name: sourceTemplateNamespace
+      description: Namespace of sourceTemplate. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: targetTemplate
+      description: Target Template to clone to. The name will be generated if not specified.
+      default: ""
+      type: string
+    - name: targetTemplateNamespace
+      description: Namespace of targetTemplate. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: clonePVCs
+      description: Clone all PVCs of the sourceTemplate.
+      default: "true"
+      type: string
+  results:
+    - name: name
+      description: The name of target Template.
+    - name: namespace
+      description: The namespace of a target Template.
+  steps:
+    - name: clone-template
+      image: quay.io/kubevirt/tekton-task-clone-template:v0.0.1
+      command:
+        - clone-template
+        - '--source-template-name'
+        - $(params.sourceTemplate)
+        - '--source-template-namespace'
+        - $(params.sourceTemplateNamespace)
+        - '--target-template-name'
+        - $(params.targetTemplate)
+        - '--target-template-namespace'
+        - $(params.targetTemplateNamespace)
+        - '--clone-pvcs'
+        - $(params.clonePVCs)
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: clone-template-task
+rules:
+  - verbs:
+      - get
+      - list
+      - create
+      - watch
+    apiGroups:
+      - template.openshift.io
+    resources:
+      - templates
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: clone-template-task
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: clone-template-task
+roleRef:
+  kind: ClusterRole
+  name: clone-template-task
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: clone-template-task
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
     task.kubevirt.io/associatedServiceAccount: create-datavolume-from-manifest-task
     manifest.params.task.kubevirt.io/type: resource-yaml
     manifest.params.task.kubevirt.io/kind: DataVolume

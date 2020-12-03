@@ -1,0 +1,57 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
+    sourceTemplate.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
+    sourceTemplate.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
+    sourceTemplateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    targetTemplate.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
+    targetTemplate.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
+    targetTemplateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+  labels:
+    task.kubevirt.io/type: {{ task_name }}
+    task.kubevirt.io/category: {{ task_category }}
+  name: {{ task_name }}
+spec:
+  params:
+    - name: sourceTemplate
+      description: Source Template to clone from.
+      type: string
+    - name: sourceTemplateNamespace
+      description: Namespace of sourceTemplate. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: targetTemplate
+      description: Target Template to clone to. The name will be generated if not specified.
+      default: ""
+      type: string
+    - name: targetTemplateNamespace
+      description: Namespace of targetTemplate. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: clonePVCs
+      description: Clone all PVCs of the sourceTemplate.
+      default: "true"
+      type: string
+  results:
+    - name: name
+      description: The name of target Template.
+    - name: namespace
+      description: The namespace of a target Template.
+  steps:
+    - name: clone-template
+      image: {{ main_image }}
+      command:
+        - clone-template
+        - '--source-template-name'
+        - $(params.sourceTemplate)
+        - '--source-template-namespace'
+        - $(params.sourceTemplateNamespace)
+        - '--target-template-name'
+        - $(params.targetTemplate)
+        - '--target-template-namespace'
+        - $(params.targetTemplateNamespace)
+        - '--clone-pvcs'
+        - $(params.clonePVCs)
