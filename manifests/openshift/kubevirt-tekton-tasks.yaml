@@ -31,7 +31,7 @@ spec:
       name: delete
       type: string
       default: "false"
-    - description: Timeout for the command/script (includes potential VM start). The VM will be stopped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
+    - description: Timeout for the command/script (includes potential VM start). The VM will be stoped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
       name: timeout
       type: string
       default: "30m"
@@ -53,10 +53,12 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: quay.io/kubevirt/tekton-task-execute-in-vm:v0.0.7
+      image: quay.io/kubevirt/tekton-task-execute-in-vm:v0.0.4
       command:
         - entrypoint
       args:
+        - '--vm-name'
+        - $(params.vmName)
         - '--stop'
         - $(params.stop)
         - '--delete'
@@ -67,8 +69,6 @@ spec:
         - $(params.command)
         - $(params.args)
       env:
-        - name: VM_NAME
-          value: $(params.vmName)
         - name: VM_NAMESPACE
           value: $(params.vmNamespace)
         - name: EXECUTE_SCRIPT
@@ -363,19 +363,19 @@ spec:
       default: ""
       type: string
     - name: dataVolumes
-      description: Add DVs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. ["rootdisk:my-dv", "my-dv2"]
+      description: Add DVs to VM Volumes.
       default: []
       type: array
     - name: ownDataVolumes
-      description: Add DVs to VM Volumes and add VM to DV ownerReferences. These DataVolumes will be deleted once the created VM gets deleted. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. ["rootdisk:my-dv", "my-dv2"]
+      description: Add DVs to VM Volumes and add VM to DV ownerReferences. These DataVolumes will be deleted once the created VM gets deleted.
       default: []
       type: array
     - name: persistentVolumeClaims
-      description: Add PVCs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:PVC_NAME format. Eg. ["rootdisk:my-pvc", "my-pvc2"]
+      description: Add PVCs to VM Volumes.
       default: []
       type: array
     - name: ownPersistentVolumeClaims
-      description: Add PVCs to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted. Replaces a particular volume if in VOLUME_NAME:PVC_NAME format. Eg. ["rootdisk:my-pvc", "my-pvc2"]
+      description: Add PVCs to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted.
       default: []
       type: array
   results:
@@ -385,7 +385,7 @@ spec:
       description: The namespace of a VM that was created.
   steps:
     - name: createvm
-      image: quay.io/kubevirt/tekton-task-create-vm:v0.0.7
+      image: quay.io/kubevirt/tekton-task-create-vm:v0.0.5
       command:
         - create-vm
       args:
@@ -484,10 +484,10 @@ metadata:
 spec:
   params:
     - name: templateName
-      description: Name of an OKD template to create VM from.
+      description: Name of an OpenShift template to create VM from.
       type: string
     - name: templateNamespace
-      description: Namespace of an OKD template to create VM from. (defaults to active namespace)
+      description: Namespace of an OpenShift template to create VM from. (defaults to active namespace)
       default: ""
       type: string
     - name: templateParams
@@ -499,19 +499,19 @@ spec:
       default: ""
       type: string
     - name: dataVolumes
-      description: Add DVs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. ["rootdisk:my-dv", "my-dv2"]
+      description: Add DVs to VM Volumes.
       default: []
       type: array
     - name: ownDataVolumes
-      description: Add DVs to VM Volumes and add VM to DV ownerReferences. These DataVolumes will be deleted once the created VM gets deleted. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. ["rootdisk:my-dv", "my-dv2"]
+      description: Add DVs to VM Volumes and add VM to DV ownerReferences. These DataVolumes will be deleted once the created VM gets deleted.
       default: []
       type: array
     - name: persistentVolumeClaims
-      description: Add PVCs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:PVC_NAME format. Eg. ["rootdisk:my-pvc", "my-pvc2"]
+      description: Add PVCs to VM Volumes.
       default: []
       type: array
     - name: ownPersistentVolumeClaims
-      description: Add PVCs to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted. Replaces a particular volume if in VOLUME_NAME:PVC_NAME format. Eg. ["rootdisk:my-pvc", "my-pvc2"]
+      description: Add PVCs to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted.
       default: []
       type: array
   results:
@@ -521,7 +521,7 @@ spec:
       description: The namespace of a VM that was created.
   steps:
     - name: createvm
-      image: quay.io/kubevirt/tekton-task-create-vm:v0.0.7
+      image: quay.io/kubevirt/tekton-task-create-vm:v0.0.5
       command:
         - create-vm
       args:
@@ -643,7 +643,7 @@ spec:
       default: ""
   steps:
     - name: run-virt-customize
-      image: quay.io/kubevirt/tekton-task-disk-virt-customize:v0.0.3
+      image: quay.io/kubevirt/tekton-task-disk-virt-customize:v0.0.1
       command:
         - entrypoint
       args:
@@ -653,75 +653,6 @@ spec:
         - name: CUSTOMIZE_COMMANDS
           value: $(params.customizeCommands)
         - name: ADDITIONAL_VIRT_CUSTOMIZE_OPTIONS
-          value: $(params.additionalOptions)
-        - name: LIBGUESTFS_BACKEND
-          value: direct
-        - name: LIBGUESTFS_PATH
-          value: /mnt/appliance
-      securityContext:
-        runAsUser: 0
-      resources:
-        limits:
-          devices.kubevirt.io/kvm: '1'
-          devices.kubevirt.io/tun: '1'
-          devices.kubevirt.io/vhost-net: '1'
-        requests:
-          devices.kubevirt.io/kvm: '1'
-          devices.kubevirt.io/tun: '1'
-          devices.kubevirt.io/vhost-net: '1'
-      volumeMounts:
-        - mountPath: /mnt/appliance/
-          name: guestfsappliance
-        - mountPath: /mnt/targetpvc/
-          name: targetpvc
-  volumes:
-    - name: guestfsappliance
-      emptyDir: {}
-    - name: targetpvc
-      persistentVolumeClaim:
-        claimName: $(params.pvc)
----
-apiVersion: tekton.dev/v1beta1
-kind: ClusterTask
-metadata:
-  annotations:
-    pvc.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    pvc.params.task.kubevirt.io/apiVersion: v1
-    sysprepCommands.params.task.kubevirt.io/type: script
-    verbose.params.task.kubevirt.io/type: boolean
-  labels:
-    task.kubevirt.io/type: disk-virt-sysprep
-    task.kubevirt.io/category: disk-virt-sysprep
-  name: disk-virt-sysprep
-spec:
-  params:
-    - name: pvc
-      description: PersistentVolumeClaim to run the the virt-sysprep script in. PVC should be in the same namespace as taskrun/pipelinerun.
-      type: string
-    - name: sysprepCommands
-      description: virt-sysprep commands in "--commands-from-file" format.
-      type: string
-      default: ""
-    - name: verbose
-      description: Enable verbose mode and tracing of libguestfs API calls.
-      type: string
-      default: 'false'
-    - name: additionalOptions
-      description: Additional options to pass to virt-sysprep.
-      type: string
-      default: ""
-  steps:
-    - name: run-virt-sysprep
-      image: quay.io/kubevirt/tekton-task-disk-virt-sysprep:v0.0.1
-      command:
-        - entrypoint
-      args:
-        - '--verbose'
-        - $(params.verbose)
-      env:
-        - name: SYSPREP_COMMANDS
-          value: $(params.sysprepCommands)
-        - name: ADDITIONAL_VIRT_SYSPREP_OPTIONS
           value: $(params.additionalOptions)
         - name: LIBGUESTFS_BACKEND
           value: direct
@@ -789,16 +720,16 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: quay.io/kubevirt/tekton-task-execute-in-vm:v0.0.7
+      image: quay.io/kubevirt/tekton-task-execute-in-vm:v0.0.4
       command:
         - entrypoint
       args:
+        - '--vm-name'
+        - $(params.vmName)
         - '--'
         - $(params.command)
         - $(params.args)
       env:
-        - name: VM_NAME
-          value: $(params.vmName)
         - name: VM_NAMESPACE
           value: $(params.vmNamespace)
         - name: EXECUTE_SCRIPT
@@ -911,7 +842,7 @@ spec:
       description: The namespace of a private key secret.
   steps:
     - name: generate-ssh-keys
-      image: quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.0.4
+      image: quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.0.2
       command:
         - entrypoint
         - '--'
@@ -959,77 +890,3 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: generate-ssh-keys-task
----
-apiVersion: tekton.dev/v1beta1
-kind: ClusterTask
-metadata:
-  annotations:
-    task.kubevirt.io/associatedServiceAccount: wait-for-vmi-status-task
-    vmiNamespace.params.task.kubevirt.io/type: namespace
-  labels:
-    task.kubevirt.io/type: wait-for-vmi-status
-    task.kubevirt.io/category: wait-for-vmi-status
-  name: wait-for-vmi-status
-spec:
-  params:
-    - name: vmiName
-      description: Name of a VirtualMachineInstance to wait for.
-      type: string
-    - name: vmiNamespace
-      description: Namespace of a VirtualMachineInstance to wait for. (defaults to manifest namespace or active namespace)
-      default: ""
-      type: string
-    - name: successCondition
-      default: ""
-      description: A label selector expression to decide if the VirtualMachineInstance (VMI) is in a success state. Eg. "status.phase == Succeeded". It is evaluated on each VMI update and will result in this task succeeding if true.
-    - name: failureCondition
-      default: ""
-      description: A label selector expression to decide if the VirtualMachineInstance (VMI) is in a failed state. Eg. "status.phase in (Failed, Unknown)". It is evaluated on each VMI update and will result in this task failing if true.
-  steps:
-    - name: wait-for-vmi-status
-      image: quay.io/kubevirt/tekton-task-wait-for-vmi-status:v0.0.1
-      command:
-        - entrypoint
-      env:
-        - name: VMI_NAME
-          value: $(params.vmiName)
-        - name: VMI_NAMESPACE
-          value: $(params.vmiNamespace)
-        - name: SUCCESS_CONDITION
-          value: $(params.successCondition)
-        - name: FAILURE_CONDITION
-          value: $(params.failureCondition)
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: wait-for-vmi-status-task
-rules:
-  - verbs:
-      - get
-      - list
-      - watch
-    apiGroups:
-      - kubevirt.io
-    resources:
-      - virtualmachineinstances
-
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: wait-for-vmi-status-task
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: wait-for-vmi-status-task
-roleRef:
-  kind: ClusterRole
-  name: wait-for-vmi-status-task
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-  - kind: ServiceAccount
-    name: wait-for-vmi-status-task

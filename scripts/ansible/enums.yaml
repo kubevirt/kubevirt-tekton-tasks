@@ -4,16 +4,18 @@ task_param_types:
   duration: duration
   script: script
   resource_yaml: resource-yaml
+  vm_template_name: vm-template-name
+  template_params_array: template-params-array
+  private_key_options_array: private-key-options-array
+  execute_in_vm_secret: execute-in-vm-secret
   v1_version: v1
   secret_kind: Secret
   pvc_kind: PersistentVolumeClaim
+  storage_version: storage.k8s.io/v1
+  storageclass_kind: StorageClass
   template_version: template.openshift.io/v1
   template_kind: Template
   vm_version: kubevirt.io/v1
   vm_kind: VirtualMachine
   cdi_beta_api_version: cdi.kubevirt.io/v1beta1
   datavolume_kind: DataVolume
-  vm_template_name: vm-template-name
-  template_params_array: template-params-array
-  private_key_options_array: private-key-options-array
-  execute_in_vm_secret: execute-in-vm-secret

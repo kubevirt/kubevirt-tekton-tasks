@@ -1,0 +1,17 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: clone-pvc-taskrun
+spec:
+  serviceAccountName: clone-pvc-task
+  taskRef:
+    kind: ClusterTask
+    name: clone-pvc
+  params:
+    - name: sourcePVC
+      value: source-pvc
+    - name: targetPVC
+      value: target-pvc
+    - name: waitForSuccess
+      value: true

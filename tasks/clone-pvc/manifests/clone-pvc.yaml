@@ -1,0 +1,101 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: clone-pvc-task
+    sourcePVC.params.task.kubevirt.io/kind: PersistentVolumeClaim
+    sourcePVC.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
+    sourcePVCNamespace.params.task.kubevirt.io/type: namespace
+    targetPVC.params.task.kubevirt.io/kind: PersistentVolumeClaim
+    targetPVC.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
+    targetPVCNamespace.params.task.kubevirt.io/type: namespace
+    storageClass.params.task.kubevirt.io/kind: StorageClass
+    storageClass.params.task.kubevirt.io/apiVersion: storage.k8s.io/v1
+    waitForSuccess.params.task.kubevirt.io/type: boolean
+  labels:
+    task.kubevirt.io/type: clone-pvc
+    task.kubevirt.io/category: create-datavolume
+  name: clone-pvc
+spec:
+  params:
+    - name: sourcePVC
+      description: Source PersistentVolumeClaim to clone from.
+      type: string
+    - name: sourcePVCNamespace
+      description: Namespace of sourcePVC. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: targetPVC
+      description: Target PersistentVolumeClaim to clone to. The name will be generated if not specified. Implemented by CDI DataVolumes.
+      default: ""
+      type: string
+    - name: targetPVCNamespace
+      description: Namespace of targetPVC. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: storageClass
+      description: StorageClass to use when cloning. (defaults to empty; ie default StorageClass)
+      default: ""
+      type: string
+    - name: waitForSuccess
+      description: Set to "true" or "false" if container should wait for Ready condition of a DataVolume.
+      default: 'false'
+      type: string
+  results:
+    - name: name
+      description: The name of target PVC.
+    - name: namespace
+      description: The namespace of a target PVC.
+  steps:
+    - name: clone-pvc
+      image: quay.io/kubevirt/tekton-task-create-datavolume:v0.0.1
+      command:
+        - clone-pvc
+        - '--source-pvc-name'
+        - $(params.sourcePVC)
+        - '--source-pvc-namespace'
+        - $(params.sourcePVCNamespace)
+        - '--target-pvc-name'
+        - $(params.targetPVC)
+        - '--target-pvc-namespace'
+        - $(params.targetPVCNamespace)
+        - '--storage-class'
+        - $(params.storageClass)
+        - '--wait-for-success'
+        - $(params.waitForSuccess)
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: clone-pvc-task
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+      - create
+    apiGroups:
+      - cdi.kubevirt.io
+    resources:
+      - datavolumes
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: clone-pvc-task
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: clone-pvc-task
+roleRef:
+  kind: ClusterRole
+  name: clone-pvc-task
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: clone-pvc-task
