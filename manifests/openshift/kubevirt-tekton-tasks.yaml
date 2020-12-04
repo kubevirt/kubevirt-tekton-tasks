@@ -982,3 +982,95 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: generate-ssh-keys-task
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: modify-vm-template-task
+    template.params.task.kubevirt.io/kind: Template
+    template.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
+    templateNamespace.params.task.kubevirt.io/type: namespace
+    cpus.params.task.kubevirt.io/type: number
+    memory.params.task.kubevirt.io/type: memory
+  labels:
+    task.kubevirt.io/type: modify-vm-template
+    task.kubevirt.io/category: modify-vm-template
+  name: modify-vm-template
+spec:
+  params:
+    - name: template
+      description: Template to modify.
+      type: string
+    - name: templateNamespace
+      description: Namespace of template. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: cpus
+      description: Changes number of VM CPUs.
+      default: ""
+      type: string
+    - name: memory
+      description: Changes memory of the VM.
+      default: ""
+      type: string
+    - name: providerName
+      description: Specifies the name of the template provider.
+      default: ""
+      type: string
+    - name: supportURL
+      description: Specifies the support URL of the template.
+      default: ""
+      type: string
+  steps:
+    - name: modify-vm-template
+      image: quay.io/kubevirt/tekton-task-modify-vm-template:v0.0.1
+      command:
+        - modify-vm-template
+        - '--template-name'
+        - $(params.template)
+        - '--template-namespace'
+        - $(params.templateNamespace)
+        - '--cpus'
+        - $(params.cpus)
+        - '--memory'
+        - $(params.memory)
+        - '--provider-name'
+        - $(params.providerName)
+        - '--support-url'
+        - $(params.supportURL)
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: modify-vm-template-task
+rules:
+  - verbs:
+      - get
+      - list
+      - update
+      - watch
+    apiGroups:
+      - template.openshift.io
+    resources:
+      - templates
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: modify-vm-template-task
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: modify-vm-template-task
+roleRef:
+  kind: ClusterRole
+  name: modify-vm-template-task
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: modify-vm-template-task

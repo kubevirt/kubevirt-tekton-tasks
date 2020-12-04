@@ -1,8 +1,10 @@
 task_param_types:
   boolean: boolean
+  number: number
   namespace: namespace
   duration: duration
   script: script
+  memory: memory
   resource_yaml: resource-yaml
   vm_template_name: vm-template-name
   template_params_array: template-params-array
