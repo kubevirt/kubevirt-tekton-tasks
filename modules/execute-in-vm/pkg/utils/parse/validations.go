@@ -1,9 +1,11 @@
 package parse
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"strings"
 	"time"
 )
@@ -42,6 +44,23 @@ func (c *CLIOptions) resolveExecutionScript() error {
 	}
 
 	c.Script = command
+
+	return nil
+
+}
+
+func (c *CLIOptions) validateConnectionSecretName() error {
+	command := strings.Join(c.Command, " ")
+
+	if c.GetScript() != "" || strings.TrimSpace(command) != "" {
+		if c.ConnectionSecretName == "" || c.ConnectionSecretName == constants.EmptyConnectionSecretName {
+			return zerrors.NewMissingRequiredError("connection secret should not be empty")
+		}
+
+		if len(validation.IsDNS1123Subdomain(c.ConnectionSecretName)) > 0 {
+			return zerrors.NewMissingRequiredError("connection secret does not have a valid name")
+		}
+	}
 
 	return nil
 

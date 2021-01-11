@@ -204,10 +204,14 @@ func (e *Executor) SetupConnection(timeout time.Duration) error {
 		return e.executor.TestConnection(), nil
 	}
 
+	var err error
 	if timeout <= 0 {
-		return wait.PollImmediateInfinite(constants.PollValidConnectionInterval, conditionFn)
+		err = wait.PollImmediateInfinite(constants.PollValidConnectionInterval, conditionFn)
+	} else {
+		err = wait.PollImmediate(constants.PollValidConnectionInterval, timeout, conditionFn)
 	}
-	return wait.PollImmediate(constants.PollValidConnectionInterval, timeout, conditionFn)
+	time.Sleep(constants.SetupConnectionDelay)
+	return err
 }
 
 func (e *Executor) RemoteExecute(timeout time.Duration) error {

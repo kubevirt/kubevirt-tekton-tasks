@@ -16,3 +16,6 @@ const PollValidConnectionInterval = 3 * time.Second
 const CheckSSHConnectionTimeout = 3 * time.Second
 const PollVMtoDeleteInterval = 1 * time.Second
 const PollVMItoStopInterval = 1 * time.Second
+const SetupConnectionDelay = 2 * time.Second
+
+const EmptyConnectionSecretName = "__empty__"

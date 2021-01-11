@@ -73,6 +73,8 @@ spec:
       env:
         - name: EXECUTE_SCRIPT
           value: $(params.script)
+        - name: CONNECTION_SECRET_NAME
+          value: $(params.secretName)
       volumeMounts:
         - mountPath: /data/connectionsecret/
           name: connectionsecret

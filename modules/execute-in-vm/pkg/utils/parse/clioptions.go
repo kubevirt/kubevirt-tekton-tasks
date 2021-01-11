@@ -23,6 +23,7 @@ type CLIOptions struct {
 	Delete                   string   `arg:"--delete" placeholder:"true|false" help:"Deletes the VM after executing the action"`
 	Timeout                  string   `arg:"--timeout" help:"Timeout for the command/script (includes potential VM start). The VM will be stoped or deleted accordingly once the timout expires. Should be in a 3h2m1s format."`
 	Script                   string   `arg:"--script,env:EXECUTE_SCRIPT" placeholder:"SCRIPT" help:"Script to execute in a VM (can be set by EXECUTE_SCRIPT env variable)"`
+	ConnectionSecretName     string   `arg:"--connectionSecretName,env:CONNECTION_SECRET_NAME" placeholder:"NAME" help:"Name of the connection secret (used only for validation)"`
 	Debug                    bool     `arg:"--debug" help:"Sets DEBUG log level"`
 	Command                  []string `arg:"positional" placeholder:"COMMAND" help:"Command to execute in a VM"`
 }
@@ -78,6 +79,10 @@ func (c *CLIOptions) Init() error {
 	}
 
 	if err := c.resolveExecutionScript(); err != nil {
+		return err
+	}
+
+	if err := c.validateConnectionSecretName(); err != nil {
 		return err
 	}
 

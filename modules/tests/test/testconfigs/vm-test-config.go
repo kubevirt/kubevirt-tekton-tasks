@@ -132,8 +132,7 @@ type CreateVMFromTemplateTestConfig struct {
 func (c *CreateVMFromTemplateTestConfig) Init(options *testoptions.TestOptions) {
 	c.deploymentNamespace = options.DeployNamespace
 	c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace)
-	if c.TaskData.Template != nil {
-		tmpl := c.TaskData.Template
+	if tmpl := c.TaskData.Template; tmpl != nil {
 		if tmpl.Name != "" {
 			tmpl.Name = E2ETestsRandomName(tmpl.Name)
 		}

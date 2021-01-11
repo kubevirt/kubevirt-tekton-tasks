@@ -20,7 +20,7 @@ var _ = Describe("VM", func() {
 	var vm *kubevirtv1.VirtualMachine
 
 	BeforeEach(func() {
-		vm = shtestobjects.NewTestVM()
+		vm = shtestobjects.NewTestVM().Build()
 	})
 
 	It("Creates owner reference", func() {
@@ -34,7 +34,7 @@ var _ = Describe("VM", func() {
 		var cliOptions *parse.CLIOptions
 
 		BeforeEach(func() {
-			vm = shtestobjects.NewTestVM()
+			vm = shtestobjects.NewTestVM().Build()
 			emptyValidations = validations.NewTemplateValidations(nil)
 			cliOptions = &parse.CLIOptions{
 				TemplateName:              "test",

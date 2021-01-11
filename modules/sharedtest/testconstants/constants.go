@@ -5,3 +5,5 @@ const (
 	Scsi   = "scsi"
 	Sata   = "sata"
 )
+
+const NamespaceTestDefault = "default"

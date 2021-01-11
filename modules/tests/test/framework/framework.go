@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	templatev1 "github.com/openshift/api/template/v1"
 	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	cdiv1beta1 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1beta1"
@@ -21,6 +22,7 @@ type ManagedResources struct {
 	dataVolumes []*cdiv1beta1.DataVolume
 	vms         []*kubevirtv1.VirtualMachine
 	templates   []*templatev1.Template
+	secrets     []*corev1.Secret
 }
 type Framework struct {
 	*testoptions.TestOptions
@@ -84,6 +86,9 @@ func (f *Framework) AfterEach() {
 	for _, t := range f.managedResources.templates {
 		defer f.TemplateClient.Templates(t.Namespace).Delete(t.Name, &metav1.DeleteOptions{})
 	}
+	for _, s := range f.managedResources.secrets {
+		defer f.KubevirtClient.CoreV1().Secrets(s.Namespace).Delete(s.Name, &metav1.DeleteOptions{})
+	}
 }
 
 func (f *Framework) ManageTaskRun(taskRun *pipev1beta1.TaskRun) *Framework {
@@ -109,10 +114,19 @@ func (f *Framework) ManageVMs(vms ...*kubevirtv1.VirtualMachine) *Framework {
 	return f
 }
 
-func (f *Framework) ManageTemplates(templatest ...*templatev1.Template) *Framework {
-	for _, t := range templatest {
+func (f *Framework) ManageTemplates(templates ...*templatev1.Template) *Framework {
+	for _, t := range templates {
 		if t != nil && t.Name != "" && t.Namespace != "" {
 			f.managedResources.templates = append(f.managedResources.templates, t)
+		}
+	}
+	return f
+}
+
+func (f *Framework) ManageSecrets(secrets ...*corev1.Secret) *Framework {
+	for _, s := range secrets {
+		if s != nil && s.Name != "" && s.Namespace != "" {
+			f.managedResources.secrets = append(f.managedResources.secrets, s)
 		}
 	}
 	return f

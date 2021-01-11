@@ -32,20 +32,37 @@ var _ = Describe("CLIOptions", func() {
 			Script:                   script,
 			Command:                  commandArr,
 		}),
+		table.Entry("no connection secret", "connection secret should not be empty", &parse.CLIOptions{
+			VirtualMachineNamespaces: defaultNSArr,
+			Script:                   script,
+		}),
+		table.Entry("empty connection secret", "connection secret should not be empty", &parse.CLIOptions{
+			VirtualMachineNamespaces: defaultNSArr,
+			Script:                   script,
+			ConnectionSecretName:     "__empty__",
+		}),
+		table.Entry("invalid connection secret", "connection secret does not have a valid name", &parse.CLIOptions{
+			VirtualMachineNamespaces: defaultNSArr,
+			Script:                   script,
+			ConnectionSecretName:     "secret!",
+		}),
 		table.Entry("invalid timeout", "could not parse timeout: time: unknown unit \"q\" in duration \"1h5q\"", &parse.CLIOptions{
 			VirtualMachineNamespaces: defaultNSArr,
 			Script:                   script,
 			Timeout:                  "1h5q",
+			ConnectionSecretName:     "my-secret",
 		}),
 		table.Entry("invalid stop", "invalid option stop stahp, only true|false is allowed", &parse.CLIOptions{
 			VirtualMachineNamespaces: defaultNSArr,
 			Script:                   script,
 			Stop:                     "stahp",
+			ConnectionSecretName:     "my-secret",
 		}),
 		table.Entry("invalid delete", "invalid option delete yes, only true|false is allowed", &parse.CLIOptions{
 			VirtualMachineNamespaces: defaultNSArr,
 			Script:                   script,
 			Delete:                   "yes",
+			ConnectionSecretName:     "my-secret",
 		}),
 	)
 	//
@@ -60,6 +77,7 @@ var _ = Describe("CLIOptions", func() {
 		table.Entry("returns valid defaults", &parse.CLIOptions{
 			VirtualMachineNamespaces: defaultNSArr,
 			Script:                   script,
+			ConnectionSecretName:     "my-secret",
 		}, map[string]interface{}{
 			"GetVirtualMachineNamespace": defaultNS,
 			"GetScript":                  script,
@@ -71,6 +89,7 @@ var _ = Describe("CLIOptions", func() {
 		table.Entry("handles multiple ns from cli", &parse.CLIOptions{
 			VirtualMachineNamespaces: multipleNSArr,
 			Script:                   script,
+			ConnectionSecretName:     "my-secret",
 		}, map[string]interface{}{
 			"GetVirtualMachineNamespace": defaultNS,
 		}),
@@ -82,6 +101,7 @@ var _ = Describe("CLIOptions", func() {
 			Timeout:                  "5m10s",
 			Stop:                     "true",
 			Delete:                   "false",
+			ConnectionSecretName:     "my-secret",
 		}, map[string]interface{}{
 			"GetVirtualMachineNamespace": defaultNS,
 			"GetScript":                  script,
@@ -94,6 +114,7 @@ var _ = Describe("CLIOptions", func() {
 			VirtualMachineName:       "vm",
 			VirtualMachineNamespaces: defaultNSArr,
 			Command:                  []string{"ls"},
+			ConnectionSecretName:     "my-secret",
 		}, map[string]interface{}{
 			"GetVirtualMachineNamespace": defaultNS,
 			"GetScript":                  "ls",
@@ -106,6 +127,7 @@ var _ = Describe("CLIOptions", func() {
 			Timeout:                  "12h5m10s",
 			Stop:                     "true",
 			Delete:                   "true",
+			ConnectionSecretName:     "my-secret",
 		}, map[string]interface{}{
 			"GetVirtualMachineNamespace": defaultNS,
 			"GetScript":                  expectedCommand,

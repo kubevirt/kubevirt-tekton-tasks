@@ -6,11 +6,17 @@ import (
 	"time"
 )
 
+type TaskRunExpectedTermination struct {
+	ExitCode int32
+}
+
 type TaskRunTestConfig struct {
-	ServiceAccount string
-	Timeout        *metav1.Duration
-	LimitScope     constants.TestScope
-	ExpectedLogs   string
+	ServiceAccount      string
+	Timeout             *metav1.Duration
+	LimitScope          constants.TestScope
+	ExpectSuccess       bool
+	ExpectedLogs        string
+	ExpectedTermination *TaskRunExpectedTermination
 }
 
 func (t *TaskRunTestConfig) GetTaskRunTimeout() time.Duration {

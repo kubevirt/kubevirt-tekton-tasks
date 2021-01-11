@@ -45,6 +45,8 @@ e2e-tests:
 onboard-new-task-with-ci-stub:
 	./scripts/onboard-new-task-with-ci-stub.sh
 
+vendor:
+	./scripts/vendor.sh
 
 .PHONY: \
 	all \
@@ -62,4 +64,5 @@ onboard-new-task-with-ci-stub:
 	cluster-clean \
 	cluster-clean-and-skip-images \
 	e2e-tests \
-	onboard-new-task-with-ci-stub
+	onboard-new-task-with-ci-stub \
+	vendor
