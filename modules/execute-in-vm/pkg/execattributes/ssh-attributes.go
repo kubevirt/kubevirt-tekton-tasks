@@ -29,6 +29,7 @@ const (
 
 const (
 	acceptNew = "accept-new"
+	no        = "no"
 	yes       = "yes"
 )
 
@@ -134,7 +135,8 @@ func (s *sshAttributes) AddAdditionalSSHOption(name, value string) {
 
 func (s *sshAttributes) GetStrictHostKeyCheckingMode() string {
 	if s.disableStrictHostKeyChecking {
-		return acceptNew
+		// TODO change to safer acceptNew once a newer version of ssh which supports this option is available in CI
+		return no
 	}
 	return yes
 }

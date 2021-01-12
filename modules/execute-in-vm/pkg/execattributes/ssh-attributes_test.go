@@ -140,12 +140,14 @@ var _ = Describe("SSHAttributes", func() {
 			"disable-strict-host-key-checking": "true",
 			"additional-ssh-options":           "-C -p 8022",
 		}, map[string]interface{}{
-			"GetUser":                      "fedora",
-			"GetPort":                      8022,
-			"GetAdditionalSSHOptions":      "-C -p 8022 -oStrictHostKeyChecking=accept-new",
-			"GetPrivateKey":                testPrivateKey,
-			"GetHostPublicKey":             "",
-			"GetStrictHostKeyCheckingMode": "accept-new",
+			"GetUser": "fedora",
+			"GetPort": 8022,
+			// TODO change to safer acceptNew once a newer version of ssh which supports this option is available in CI
+			"GetAdditionalSSHOptions": "-C -p 8022 -oStrictHostKeyChecking=no",
+			"GetPrivateKey":           testPrivateKey,
+			"GetHostPublicKey":        "",
+			// TODO same here
+			"GetStrictHostKeyCheckingMode": "no",
 		}),
 		table.Entry("invalid disable-strict-host-key-checking value", map[string]string{
 			"user":                             "fedora",

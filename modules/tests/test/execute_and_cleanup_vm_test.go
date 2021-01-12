@@ -347,10 +347,11 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM: testobjects.NewTestFedoraCloudVM("execute-script-with-options").WithCloudConfig(fedoraCloudConfig).Build(),
 					Secret: testobjects.NewTestSecret(map[string]string{
-						"type":                             "ssh",
-						"user":                             "fedora",
-						"private-key":                      testconstants.SSHTestPrivateKey,
-						"additional-ssh-options":           "-oStrictHostKeyChecking=accept-new -C",
+						"type":        "ssh",
+						"user":        "fedora",
+						"private-key": testconstants.SSHTestPrivateKey,
+						// TODO change to safer accept-new once a newer version of ssh which supports this option is available in CI
+						"additional-ssh-options":           "-oStrictHostKeyChecking=no -C",
 						"disable-strict-host-key-checking": "true",
 					}),
 					Script: helloWorldScript,
