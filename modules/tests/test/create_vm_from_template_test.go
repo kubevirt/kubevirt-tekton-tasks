@@ -38,7 +38,7 @@ var _ = Describe("Create VM from template", func() {
 			ExpectResults(nil)
 
 		_, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
-			"", config.TaskData.ArePVCsDataVolumes(), config.GetTaskRunTimeout())
+			"", config.GetTaskRunTimeout(), false)
 		Expect(err).Should(HaveOccurred())
 	},
 		table.Entry("no service account", &testconfigs.CreateVMFromTemplateTestConfig{
@@ -231,7 +231,7 @@ var _ = Describe("Create VM from template", func() {
 			})
 
 		_, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
-			"", config.TaskData.ArePVCsDataVolumes(), config.GetTaskRunTimeout())
+			"", config.GetTaskRunTimeout(), false)
 		Expect(err).ShouldNot(HaveOccurred())
 	},
 		table.Entry("simple vm", &testconfigs.CreateVMFromTemplateTestConfig{
@@ -304,22 +304,6 @@ var _ = Describe("Create VM from template", func() {
 				},
 			},
 		}),
-		table.Entry("vm from common templates + test trim", &testconfigs.CreateVMFromTemplateTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
-			},
-			TaskData: testconfigs.CreateVMFromTemplateTaskData{
-				TemplateName:      spaces + "fedora-server-tiny",
-				TemplateNamespace: spaces + "openshift" + spaces,
-				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-from-common-template")),
-					templ.TemplateParam(spaces+templ.PvcNameParam, "pvc-name"),
-				},
-				PVCsAreNotDataVolumes: true,
-				IsCommonTemplate:      true,
-			},
-		}),
 		table.Entry("[CLUSTER SCOPED] works also in the same namespace as deploy", &testconfigs.CreateVMFromTemplateTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
@@ -336,6 +320,52 @@ var _ = Describe("Create VM from template", func() {
 			},
 		}),
 	)
+
+	It("VM from common template is created successfully + test trim", func() {
+		config := &testconfigs.CreateVMFromTemplateTestConfig{
+			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+				ServiceAccount: CreateVMFromTemplateServiceAccountName,
+				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+			},
+			TaskData: testconfigs.CreateVMFromTemplateTaskData{
+				TemplateName:      spaces + "fedora-server-tiny",
+				TemplateNamespace: spaces + "openshift" + spaces,
+				TemplateParams: []string{
+					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-from-common-template")),
+				},
+				IsCommonTemplate: true,
+				DataVolumesToCreate: []*dv.TestDataVolume{
+					dv.NewBlankDataVolume("common-templates-src-dv"),
+				},
+			},
+		}
+		f.TestSetup(config)
+
+		expectedVM := config.TaskData.GetExpectedVMStubMeta()
+		f.ManageVMs(expectedVM)
+
+		for _, dvWrapper := range config.TaskData.DataVolumesToCreate {
+			dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(dvWrapper.Data)
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageDataVolumes(dataVolume)
+			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, templ.TemplateParam(spaces+templ.SrcPvcNameParam, dataVolume.Name))
+			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, templ.TemplateParam(spaces+templ.SrcPvcNamespaceParam, dataVolume.Namespace))
+		}
+
+		runner.NewTaskRunRunner(f, config.GetTaskRun()).
+			CreateTaskRun().
+			ExpectSuccess().
+			ExpectLogs(config.ExpectedLogs).
+			ExpectResults(map[string]string{
+				CreateVMFromManifestResults.Name:      expectedVM.Name,
+				CreateVMFromManifestResults.Namespace: expectedVM.Namespace,
+			})
+
+		// don't wait for the DV (just VM creation), because it could take a long time and the size is pretty big
+		_, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
+			"", config.GetTaskRunTimeout(), true)
+		Expect(err).ShouldNot(HaveOccurred())
+	})
 
 	Describe("VM with attached PVCs/DV is created successfully ", func() {
 		runConfigurations := []map[dv.TestDataVolumeAttachmentType]int{
@@ -428,7 +458,7 @@ var _ = Describe("Create VM from template", func() {
 					})
 
 				vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
-					"", config.TaskData.ArePVCsDataVolumes(), config.GetTaskRunTimeout())
+					"", config.GetTaskRunTimeout(), false)
 				Expect(err).ShouldNot(HaveOccurred())
 				// check all disks are present
 				Expect(vm.Spec.Template.Spec.Volumes).To(ConsistOf(expectedVM.Spec.Template.Spec.Volumes))
@@ -469,7 +499,7 @@ var _ = Describe("Create VM from template", func() {
 			})
 
 		vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
-			"", config.TaskData.ArePVCsDataVolumes(), config.GetTaskRunTimeout())
+			"", config.GetTaskRunTimeout(), false)
 		Expect(err).ShouldNot(HaveOccurred())
 
 		vmName := expectedVMStub.Name

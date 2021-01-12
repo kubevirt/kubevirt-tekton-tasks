@@ -13,7 +13,8 @@ const (
 	validationsAnnotation = "validations"
 	DescriptionParam      = "DESCRIPTION"
 	NameParam             = "NAME"
-	PvcNameParam          = "PVCNAME"
+	SrcPvcNameParam       = "SRC_PVC_NAME"
+	SrcPvcNamespaceParam  = "SRC_PVC_NAMESPACE"
 )
 
 type TestTemplate struct {

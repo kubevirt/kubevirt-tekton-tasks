@@ -20,7 +20,6 @@ type CreateVMFromTemplateTaskData struct {
 	VMTargetNamespace       TargetNamespace
 
 	DataVolumesToCreate                      []*dv.TestDataVolume
-	PVCsAreNotDataVolumes                    bool
 	IsCommonTemplate                         bool
 	UseDefaultTemplateNamespacesInTaskParams bool
 	UseDefaultVMNamespacesInTaskParams       bool
@@ -47,10 +46,6 @@ func (c *CreateVMFromTemplateTaskData) GetTemplateParam(key string) string {
 		}
 	}
 	return ""
-}
-
-func (c *CreateVMFromTemplateTaskData) ArePVCsDataVolumes() bool {
-	return !c.PVCsAreNotDataVolumes
 }
 
 func (c *CreateVMFromTemplateTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
