@@ -41,10 +41,12 @@ func BuildTestSuite() {
 
 func getCommonTemplatesVersion(templateList *v1.TemplateList) string {
 	var commonTemplatesVersion []int
+	found := false
 	requiredTemplate := "fedora-server-tiny"
 
 	for _, template := range templateList.Items {
 		if strings.HasPrefix(template.Name, requiredTemplate) {
+			found = true
 			parts := strings.Split(template.Name, fmt.Sprintf("%v-v", requiredTemplate))
 			if len(parts) == 2 {
 				nextVersion, err := utils.ConvertStringSliceToInt(strings.Split(parts[1], "."))
@@ -52,16 +54,23 @@ func getCommonTemplatesVersion(templateList *v1.TemplateList) string {
 				if utils.IsBVersionHigher(commonTemplatesVersion, nextVersion) {
 					commonTemplatesVersion = nextVersion
 				}
+			} else {
+				// no version suffix
+				commonTemplatesVersion = nil
+				break
 			}
 		}
 	}
 
 	if len(commonTemplatesVersion) == 0 {
+		if found {
+			return "" // no version suffix
+		}
 		Expect(templateList).ShouldNot(BeNil())
 		Fail(fmt.Sprintf("Could not compute common templates version. Number of found templates = %v", len(templateList.Items)))
 	}
 
-	return fmt.Sprintf("v%v", utils.JoinIntSlice(commonTemplatesVersion, "."))
+	return fmt.Sprintf("-v%v", utils.JoinIntSlice(commonTemplatesVersion, "."))
 }
 
 func noErr(err error) {

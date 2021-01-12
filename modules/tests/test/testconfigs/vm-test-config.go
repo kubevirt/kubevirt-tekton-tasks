@@ -146,7 +146,7 @@ func (c *CreateVMFromTemplateTestConfig) Init(options *testoptions.TestOptions) 
 			c.TaskData.TemplateNamespace = options.ResolveNamespace(c.TaskData.TemplateTargetNamespace)
 		}
 		if c.TaskData.TemplateName != "" && c.TaskData.IsCommonTemplate {
-			c.TaskData.TemplateName += "-" + options.CommonTemplatesVersion
+			c.TaskData.TemplateName += options.CommonTemplatesVersion
 		}
 	}
 
