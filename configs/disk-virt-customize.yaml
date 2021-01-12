@@ -1,0 +1,2 @@
+task_name: disk-virt-customize
+main_image: quay.io/kubevirt/disk-virt-customize:v0.0.1
