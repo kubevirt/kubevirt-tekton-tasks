@@ -35,7 +35,7 @@ if [ ! -f "${CONFIG_FILE}" ]; then
 echo "creating ${CONFIG_FILE}"
 cat <<EOF > "${CONFIG_FILE}"
 task_name: ${TASK_NAME}
-main_image: quay.io/kubevirt/${TASK_NAME}:v0.0.1
+main_image: quay.io/kubevirt/tekton-task-${TASK_NAME}:v0.0.1
 EOF
 fi
 
