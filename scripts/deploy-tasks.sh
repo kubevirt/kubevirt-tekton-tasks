@@ -33,9 +33,13 @@ visit "${REPO_DIR}/tasks"
     visit "${TASK_NAME}"
       kubectl delete -f manifests 2> /dev/null || true
       if [[ $SCOPE == "cluster" ]]; then
-        sed "s/TARGET_NAMESPACE/${DEPLOY_NAMESPACE}/" "manifests/${TASK_NAME}-cluster-rbac.yaml" | kubectl apply -f -
+        if [ -f "manifests/${TASK_NAME}-cluster-rbac.yaml"  ]; then
+          sed "s/TARGET_NAMESPACE/${DEPLOY_NAMESPACE}/" "manifests/${TASK_NAME}-cluster-rbac.yaml" | kubectl apply -f -
+        fi
       else
-        kubectl apply -f "manifests/${TASK_NAME}-namespace-rbac.yaml"
+        if [ -f "manifests/${TASK_NAME}-namespace-rbac.yaml"  ]; then
+          kubectl apply -f "manifests/${TASK_NAME}-namespace-rbac.yaml"
+        fi
       fi
 
       for SUBTASK_NAME in $(ls manifests | grep -v rbac); do
