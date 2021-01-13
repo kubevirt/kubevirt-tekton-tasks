@@ -1,0 +1,91 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
+    vmNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    secretName.params.task.kubevirt.io/type: {{ task_param_types.execute_in_vm_secret }}
+    script.params.task.kubevirt.io/type: {{ task_param_types.script }}
+{% if is_cleanup %}
+    delete.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
+    stop.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
+    timeout.params.task.kubevirt.io/type: {{ task_param_types.duration }}
+{% endif %}
+  labels:
+    task.kubevirt.io/type: {{ task_name }}
+    task.kubevirt.io/category: {{ execute_in_vm_task_name }}
+  name: {{ task_name }}
+spec:
+  params:
+    - description: Name of a VM to execute the action in.
+      name: vmName
+      type: string
+    - description: Namespace of a VM to execute the action in. (defaults to active namespace)
+      name: vmNamespace
+      type: string
+      default: ""
+{% if is_cleanup %}
+    - description: Stops the VM after executing the commands when set to true.
+      name: stop
+      type: string
+      default: "true"
+    - description: Deletes the VM after executing the commands when set to true.
+      name: delete
+      type: string
+      default: "false"
+    - description: Timeout for the command/script (includes potential VM start). The VM will be stoped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
+      name: timeout
+      type: string
+      default: "30m"
+{% endif %}
+    - description: Secret to use when connecting to a VM.
+      name: secretName
+      type: string
+      default: "__empty__"
+    - description: Command to execute in a VM.
+      name: command
+      type: array
+      default: []
+    - description: Arguments of a command.
+      name: args
+      type: array
+      default: []
+    - description: Script to execute in a VM.
+      name: script
+      type: string
+      default: ""
+  steps:
+    - name: execute-in-vm
+      image: {{ main_image }}
+      command:
+        - entrypoint
+      args:
+        - '--vm-name'
+        - $(params.vmName)
+        - '--vm-namespace'
+        - $(params.vmNamespace)
+{% if is_cleanup %}
+        - '--stop'
+        - $(params.stop)
+        - '--delete'
+        - $(params.delete)
+        - '--timeout'
+        - $(params.timeout)
+{% endif %}
+        - '--'
+        - $(params.command)
+        - $(params.args)
+      env:
+        - name: EXECUTE_SCRIPT
+          value: $(params.script)
+        - name: CONNECTION_SECRET_NAME
+          value: $(params.secretName)
+      volumeMounts:
+        - mountPath: /data/connectionsecret/
+          name: connectionsecret
+  volumes:
+    - name: connectionsecret
+      secret:
+        secretName: $(params.secretName)
+        optional: true

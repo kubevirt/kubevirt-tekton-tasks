@@ -3,6 +3,7 @@ module github.com/kubevirt/kubevirt-tekton-tasks/modules/tests
 go 1.15
 
 require (
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0
 	github.com/onsi/ginkgo v1.14.0
 	github.com/onsi/gomega v1.10.1
 	github.com/openshift/api v0.0.0
@@ -15,6 +16,9 @@ require (
 	kubevirt.io/containerized-data-importer v1.25.0
 	sigs.k8s.io/yaml v1.2.0
 )
+
+// locally referenced modules
+replace github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
 
 // Pinned to kubernetes-1.16.4 (due to kubevirt/client-go v0.35.0)
 replace (

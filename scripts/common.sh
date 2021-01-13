@@ -9,6 +9,7 @@ function leave() {
 }
 
 export EXCLUDED_NON_IMAGE_MODULES="shared|sharedtest|tests"
+export DEPENDENCY_MODULES="shared|sharedtest"
 
 declare -A TASK_NAME_TO_ENV_NAME
 declare -A TASK_NAME_TO_IMAGE

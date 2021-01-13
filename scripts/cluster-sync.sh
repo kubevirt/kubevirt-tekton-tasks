@@ -20,19 +20,29 @@ podman login -u kubeadmin -p "$(oc whoami -t)" --tls-verify=false "$IMAGE_REGIST
 
 visit "${REPO_DIR}"
   visit modules
+    if [[ $# -eq 0 ]]; then
+      TASK_NAMES=(*)
+    else
+      TASK_NAMES=("$@")
+    fi
     for TASK_NAME in $(ls | grep -vE "^(${EXCLUDED_NON_IMAGE_MODULES})$"); do
-      visit "${TASK_NAME}"
-        IMAGE_NAME_AND_TAG="tekton-task-${TASK_NAME}:latest"
-        export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
-        podman build -f "build/${TASK_NAME}/Dockerfile" -t "${IMAGE}" .
-        podman push "${IMAGE}" --tls-verify=false
+      if echo "${TASK_NAME}" | grep -vqE "^(shared|tests)$"; then
+        if [ ! -d  "${TASK_NAME}" ]; then
+          continue
+        fi
+        visit "${TASK_NAME}"
+          IMAGE_NAME_AND_TAG="tekton-task-${TASK_NAME}:latest"
+          export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
+          podman build -f "build/${TASK_NAME}/Dockerfile" -t "${IMAGE}" .
+          podman push "${IMAGE}" --tls-verify=false
 
-        # set inside-cluster registry
-        export IMAGE="image-registry.openshift-image-registry.svc:5000/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
-        export ${TASK_NAME_TO_ENV_NAME[${TASK_NAME}]}="${IMAGE}"
-      leave
+          # set inside-cluster registry
+          export IMAGE="image-registry.openshift-image-registry.svc:5000/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
+          export ${TASK_NAME_TO_ENV_NAME[${TASK_NAME}]}="${IMAGE}"
+        leave
+      fi
     done
   leave
 leave
 
-"${REPO_DIR}/scripts/deploy-tasks.sh"
+"${REPO_DIR}/scripts/deploy-tasks.sh" "$@"

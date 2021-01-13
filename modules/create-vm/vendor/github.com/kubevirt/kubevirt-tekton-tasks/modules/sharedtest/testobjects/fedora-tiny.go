@@ -113,8 +113,8 @@ objects:
         - cloudInitNoCloud:
             userData: |-
               #cloud-config
-              password: fedora
-              chpasswd: { expire: False }
+              Password: fedora
+              Chpasswd: { Expire: False }
           name: cloudinitdisk
 parameters:
 - description: VM name

@@ -20,7 +20,6 @@ type CreateVMFromTemplateTaskData struct {
 	VMTargetNamespace       TargetNamespace
 
 	DataVolumesToCreate                      []*dv.TestDataVolume
-	PVCsAreNotDataVolumes                    bool
 	IsCommonTemplate                         bool
 	UseDefaultTemplateNamespacesInTaskParams bool
 	UseDefaultVMNamespacesInTaskParams       bool
@@ -47,10 +46,6 @@ func (c *CreateVMFromTemplateTaskData) GetTemplateParam(key string) string {
 		}
 	}
 	return ""
-}
-
-func (c *CreateVMFromTemplateTaskData) ArePVCsDataVolumes() bool {
-	return !c.PVCsAreNotDataVolumes
 }
 
 func (c *CreateVMFromTemplateTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
@@ -132,8 +127,7 @@ type CreateVMFromTemplateTestConfig struct {
 func (c *CreateVMFromTemplateTestConfig) Init(options *testoptions.TestOptions) {
 	c.deploymentNamespace = options.DeployNamespace
 	c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace)
-	if c.TaskData.Template != nil {
-		tmpl := c.TaskData.Template
+	if tmpl := c.TaskData.Template; tmpl != nil {
 		if tmpl.Name != "" {
 			tmpl.Name = E2ETestsRandomName(tmpl.Name)
 		}
@@ -147,7 +141,7 @@ func (c *CreateVMFromTemplateTestConfig) Init(options *testoptions.TestOptions) 
 			c.TaskData.TemplateNamespace = options.ResolveNamespace(c.TaskData.TemplateTargetNamespace)
 		}
 		if c.TaskData.TemplateName != "" && c.TaskData.IsCommonTemplate {
-			c.TaskData.TemplateName += "-" + options.CommonTemplatesVersion
+			c.TaskData.TemplateName += options.CommonTemplatesVersion
 		}
 	}
 

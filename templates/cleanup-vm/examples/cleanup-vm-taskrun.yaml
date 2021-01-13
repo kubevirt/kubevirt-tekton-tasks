@@ -1,0 +1,34 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: {{ item.taskrun_with_flavor_name }}
+spec:
+  serviceAccountName: {{ sa_name }}
+  taskRef:
+    kind: ClusterTask
+    name: {{ task_name }}
+  params:
+    - name: vmName
+      value: vm-example
+{% if item.taskrun_type == "SSH" %}
+    - name: secretName
+      value: {{ item.secret_name }}
+    - name: stop
+      value: "true"
+    - name: delete
+      value: "false"
+    - name: timeout
+      value: 10m
+    - name: command
+      value:
+        - systemctl
+    - name: args
+      value:
+        - 'stop'
+        - 'postgresql'
+{% endif %}
+{% if item.taskrun_type == "Simple" %}
+    - name: delete
+      value: "true"
+{% endif %}

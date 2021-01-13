@@ -1,0 +1,4 @@
+task_name: cleanup-vm
+main_image: quay.io/kubevirt/execute-in-vm:v0.0.1
+subtask_names:
+  - cleanup-vm

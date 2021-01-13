@@ -1,0 +1,43 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: execute-in-vm-task
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - kubevirt.io
+    resources:
+      - virtualmachines
+      - virtualmachineinstances
+  - verbs:
+      - update
+    apiGroups:
+      - subresources.kubevirt.io
+    resources:
+      - virtualmachines/start
+      - virtualmachines/stop
+      - virtualmachines/restart
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: execute-in-vm-task
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: execute-in-vm-task
+roleRef:
+  kind: ClusterRole
+  name: execute-in-vm-task
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: execute-in-vm-task
+    namespace: TARGET_NAMESPACE

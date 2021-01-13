@@ -11,6 +11,8 @@ type timeouts struct {
 	SmallBlankDVCreation  *metav1.Duration
 	DefaultTaskRun        *metav1.Duration
 	TaskRunExtraWaitDelay *metav1.Duration
+	WaitBeforeExecutingVM *metav1.Duration
+	WaitForVMStart        *metav1.Duration
 }
 
 var Timeouts = timeouts{
@@ -19,4 +21,6 @@ var Timeouts = timeouts{
 	SmallBlankDVCreation:  &metav1.Duration{15 * time.Minute},
 	QuickTaskRun:          &metav1.Duration{5 * time.Minute},
 	DefaultTaskRun:        &metav1.Duration{10 * time.Minute},
+	WaitBeforeExecutingVM: &metav1.Duration{30 * time.Second},
+	WaitForVMStart:        &metav1.Duration{5 * time.Minute},
 }

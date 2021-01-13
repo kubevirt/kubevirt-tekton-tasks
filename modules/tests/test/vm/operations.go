@@ -15,8 +15,8 @@ func WaitForVM(kubevirtClient kubevirtcliv1.KubevirtClient,
 	cdiClientSet cdicliv1beta1.CdiV1beta1Interface,
 	namespace, name string,
 	vmiPhase kubevirtv1.VirtualMachineInstancePhase,
-	pvcsAreDataVolumes bool,
-	timeout time.Duration) (*kubevirtv1.VirtualMachine, error) {
+	timeout time.Duration,
+	skipStorage bool) (*kubevirtv1.VirtualMachine, error) {
 	var numOfVMPollsBeforeError = 5 / (constants.PollInterval / time.Second) // 5 sec
 
 	var vm *kubevirtv1.VirtualMachine
@@ -32,18 +32,17 @@ func WaitForVM(kubevirtClient kubevirtcliv1.KubevirtClient,
 			return false, nil
 		}
 
-		// check DataVolumes' successes
-		for _, volume := range vm.Spec.Template.Spec.Volumes {
-			var name string
-			if dataVolume := volume.DataVolume; dataVolume != nil {
-				name = dataVolume.Name
-			}
-			if pvc := volume.PersistentVolumeClaim; pvcsAreDataVolumes && pvc != nil {
-				name = pvc.ClaimName
-			}
+		if !skipStorage {
+			// check DataVolumes' successes
+			for _, volume := range vm.Spec.Template.Spec.Volumes {
+				var name string
+				if dataVolume := volume.DataVolume; dataVolume != nil {
+					name = dataVolume.Name
+				}
 
-			if name != "" && !dv.IsDataVolumeImportSuccessful(cdiClientSet, namespace, name) {
-				return false, nil
+				if name != "" && !dv.IsDataVolumeImportSuccessful(cdiClientSet, namespace, name) {
+					return false, nil
+				}
 			}
 		}
 
