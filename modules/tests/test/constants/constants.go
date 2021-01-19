@@ -23,8 +23,15 @@ const (
 type TestScope string
 
 const (
-	ClusterScope   TestScope = "cluster"
-	NamespaceScope TestScope = "namespace"
+	ClusterTestScope   TestScope = "cluster"
+	NamespaceTestScope TestScope = "namespace"
+)
+
+type EnvScope string
+
+const (
+	OpenshiftEnvScope  EnvScope = "openshift"
+	KubernetesEnvScope EnvScope = "kubernetes"
 )
 
 func E2ETestsRandomName(name string) string {

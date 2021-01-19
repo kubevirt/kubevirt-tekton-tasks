@@ -19,7 +19,7 @@ Install one of the following rbac permissions to the active namespace
   ```
 - Permissions for creating DataVolumes in the cluster
   ```bash
-  TARGET_NAMESPACE="$(kubectl config current-context | cut -d/ -f1)"
+  TARGET_NAMESPACE="$(kubectl config view --minify --output 'jsonpath={..namespace}')"
   wget -qO - https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/{{ task_name }}/manifests/{{ task_name }}-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
   ```
 

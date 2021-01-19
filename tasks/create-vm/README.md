@@ -19,7 +19,7 @@ Install one of the following rbac permissions to the active namespace
   ```
 - Permissions for using templates/VMs in the cluster
   ```bash
-  TARGET_NAMESPACE="$(kubectl config current-context | cut -d/ -f1)"
+  TARGET_NAMESPACE="$(kubectl config view --minify --output 'jsonpath={..namespace}')"
   wget -qO - https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm/manifests/create-vm-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
   ```
 

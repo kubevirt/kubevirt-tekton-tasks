@@ -2,17 +2,20 @@
 
 set -e
 
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+
+source "${SCRIPT_DIR}/common.sh"
+
 RET_CODE=0
 
 SCOPE="${SCOPE:-cluster}"
 DEBUG="${DEBUG:-false}"
 STORAGE_CLASS="${STORAGE_CLASS:-}"
 NUM_NODES="${NUM_NODES:-2}"
-DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(oc project --short)}"
+DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --output 'jsonpath={..namespace}')}"
 ARTIFACT_DIR="${ARTIFACT_DIR:=dist}"
 ARTIFACT_DIR="$(readlink -m "${ARTIFACT_DIR}")"
 TEST_OUT="${ARTIFACT_DIR}/test.out"
-
 
 rm -rf "${TEST_OUT}" "${ARTIFACT_DIR}/"junit*
 mkdir -p "${ARTIFACT_DIR}"
@@ -23,10 +26,10 @@ else
     export TEST_NAMESPACE="${TEST_NAMESPACE:-$DEPLOY_NAMESPACE}"
 fi
 
-oc get namespaces -o name | grep -Eq "^namespace/$TEST_NAMESPACE$" || oc new-project "$TEST_NAMESPACE" > /dev/null
-oc get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || oc new-project "$DEPLOY_NAMESPACE" > /dev/null
+kubectl get namespaces -o name | grep -Eq "^namespace/$TEST_NAMESPACE$" || kubectl create namespace "$TEST_NAMESPACE" > /dev/null
+kubectl get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || kubectl create namespace "$DEPLOY_NAMESPACE" > /dev/null
 
-oc project "$DEPLOY_NAMESPACE"
+kubectl config set-context --current --namespace="$DEPLOY_NAMESPACE"
 
 pushd modules/tests || exit
   rm -rf dist
@@ -37,6 +40,7 @@ pushd modules/tests || exit
     --deploy-namespace="${DEPLOY_NAMESPACE}" \
     --test-namespace="${TEST_NAMESPACE}" \
     --kubeconfig-path="${KUBECONFIG}" \
+    --is-openshift="${IS_OPENSHIFT}" \
     --scope="${SCOPE}" \
     --storage-class="${STORAGE_CLASS}" \
     --debug="${DEBUG}" | tee "${TEST_OUT}"

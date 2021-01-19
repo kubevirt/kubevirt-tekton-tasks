@@ -13,7 +13,8 @@ type TaskRunExpectedTermination struct {
 type TaskRunTestConfig struct {
 	ServiceAccount      string
 	Timeout             *metav1.Duration
-	LimitScope          constants.TestScope
+	LimitTestScope      constants.TestScope
+	LimitEnvScope       constants.EnvScope
 	ExpectSuccess       bool
 	ExpectedLogs        string
 	ExpectedTermination *TaskRunExpectedTermination
@@ -26,6 +27,10 @@ func (t *TaskRunTestConfig) GetTaskRunTimeout() time.Duration {
 	return constants.Timeouts.DefaultTaskRun.Duration
 }
 
-func (t *TaskRunTestConfig) GetLimitScope() constants.TestScope {
-	return t.LimitScope
+func (t *TaskRunTestConfig) GetLimitTestScope() constants.TestScope {
+	return t.LimitTestScope
+}
+
+func (t *TaskRunTestConfig) GetLimitEnvScope() constants.EnvScope {
+	return t.LimitEnvScope
 }

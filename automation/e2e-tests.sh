@@ -12,7 +12,7 @@ export NUM_NODES=${NUM_NODES:-2}
 
 ./automation/e2e-deploy-resources.sh
 
-oc get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || oc new-project "$DEPLOY_NAMESPACE"
+kubectl get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || kubectl create namespace "$DEPLOY_NAMESPACE"
 
 if [[ "$DEV_MODE" == "true" ]]; then
   make cluster-sync
