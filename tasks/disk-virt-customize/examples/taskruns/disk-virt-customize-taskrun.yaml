@@ -10,7 +10,7 @@ spec:
   params:
     - name: pvc
       value: example-pvc
-    - name: script
+    - name: customizeCommands
       value: |
         update
         install make,ansible

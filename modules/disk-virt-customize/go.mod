@@ -1,6 +1,20 @@
-module github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm
+module github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-customize
 
 go 1.15
+
+require (
+	github.com/alexflint/go-arg v1.3.0
+	github.com/gogo/protobuf v1.3.0 // indirect
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0
+	github.com/onsi/ginkgo v1.14.0
+	github.com/onsi/gomega v1.10.1
+	github.com/spf13/pflag v1.0.5 // indirect
+	go.uber.org/zap v1.15.0
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/inf.v0 v0.9.1 // indirect
+	k8s.io/klog v1.0.0 // indirect
+	sigs.k8s.io/yaml v1.2.0 // indirect
+)
 
 // locally referenced modules
 replace (

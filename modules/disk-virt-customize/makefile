@@ -14,7 +14,7 @@ release-dev-with-push: release-dev
 	$(CONTAINER_ENGINE) push $(IMAGE) $(ARGS)
 
 release: lint test
-	$(CONTAINER_ENGINE) build -f build/$(IMAGE_NAME)/Dockerfile -t $(MAIN_IMAGE) .
+	$(CONTAINER_ENGINE) build --no-cache --pull -f build/$(IMAGE_NAME)/Dockerfile -t $(MAIN_IMAGE) .
 
 release-with-push: release
 	$(CONTAINER_ENGINE) push $(MAIN_IMAGE) $(ARGS)

@@ -37,7 +37,7 @@ pushd modules
     kubectl config set-context --current --namespace="$TEST_NS"
     if [ -n "${IMAGE_REGISTRY}" ]; then
       for MODULE_DIR in $(ls | grep -vE "^(${EXCLUDED_NON_IMAGE_MODULES})$"); do
-        podman rmi $(podman images --format "{{.Repository}}" | grep "${IMAGE_REGISTRY}.*tekton-task-$(basename "${MODULE_DIR}")") || true
+        podman rmi -f $(podman images --format "{{.Repository}}" | grep "$(basename "${MODULE_DIR}")") || true
       done
     fi
 

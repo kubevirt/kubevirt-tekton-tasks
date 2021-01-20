@@ -40,7 +40,7 @@ visit "${REPO_DIR}"
     else
       TASK_NAMES=("$@")
     fi
-   for TASK_NAME in ${TASK_NAMES[*]}; do
+    for TASK_NAME in ${TASK_NAMES[*]}; do
       if echo "${TASK_NAME}" | grep -vqE "^(${EXCLUDED_NON_IMAGE_MODULES})$"; then
         if [ ! -d  "${TASK_NAME}" ]; then
           continue
