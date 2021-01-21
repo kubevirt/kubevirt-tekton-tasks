@@ -17,7 +17,7 @@ import (
 const spaces = "  "
 
 var _ = Describe("Create VM from template", func() {
-	f := framework.NewFramework()
+	f := framework.NewFramework().LimitEnvScope(OpenshiftEnvScope)
 
 	table.DescribeTable("taskrun fails and no VM is created", func(config *testconfigs.CreateVMFromTemplateTestConfig) {
 		f.TestSetup(config)
@@ -184,7 +184,7 @@ var _ = Describe("Create VM from template", func() {
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "processedtemplates.template.openshift.io is forbidden",
-				LimitScope:     NamespaceScope,
+				LimitTestScope: NamespaceTestScope,
 			},
 			TaskData: testconfigs.CreateVMFromTemplateTaskData{
 				Template: templ.NewCirrosServerTinyTemplate().Build(),
@@ -198,7 +198,7 @@ var _ = Describe("Create VM from template", func() {
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "templates.template.openshift.io \"unreachable-template\" is forbidden",
-				LimitScope:     NamespaceScope,
+				LimitTestScope: NamespaceTestScope,
 			},
 			TaskData: testconfigs.CreateVMFromTemplateTaskData{
 				TemplateTargetNamespace: SystemTargetNS,
@@ -307,7 +307,7 @@ var _ = Describe("Create VM from template", func() {
 		table.Entry("[CLUSTER SCOPED] works also in the same namespace as deploy", &testconfigs.CreateVMFromTemplateTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				LimitScope:     ClusterScope,
+				LimitTestScope: ClusterTestScope,
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMFromTemplateTaskData{

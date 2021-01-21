@@ -29,10 +29,12 @@ type Framework struct {
 	*Clients
 
 	managedResources ManagedResources
+	limitEnvScope    constants.EnvScope
 }
 
 type TestConfig interface {
-	GetLimitScope() constants.TestScope
+	GetLimitTestScope() constants.TestScope
+	GetLimitEnvScope() constants.EnvScope
 	Init(options *testoptions.TestOptions)
 }
 
@@ -46,9 +48,31 @@ func NewFramework() *Framework {
 	return f
 }
 
+func (f *Framework) LimitEnvScope(limitEnvScope constants.EnvScope) *Framework {
+	if f.limitEnvScope != "" {
+		Fail("limitEnvScope was already set")
+	}
+	f.limitEnvScope = limitEnvScope
+
+	return f
+}
+
 func (f *Framework) TestSetup(config TestConfig) {
-	limitScope := config.GetLimitScope()
-	if limitScope != "" && limitScope != f.Scope {
+	limitScope := config.GetLimitTestScope()
+	limitEnvScope := config.GetLimitEnvScope()
+
+	// check global env limit first
+	if f.limitEnvScope != "" && f.limitEnvScope != f.EnvScope {
+		Skip(fmt.Sprintf("runs only in %v", f.limitEnvScope))
+	}
+
+	// check test case env limit
+	if limitEnvScope != "" && limitEnvScope != f.EnvScope {
+		Skip(fmt.Sprintf("runs only in %v", limitEnvScope))
+	}
+
+	// check test case test scope limit
+	if limitScope != "" && limitScope != f.TestScope {
 		Skip(fmt.Sprintf("runs only in %v scope", limitScope))
 	}
 	config.Init(f.TestOptions)

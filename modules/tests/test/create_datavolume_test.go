@@ -70,7 +70,7 @@ var _ = Describe("Create DataVolume", func() {
 		table.Entry("[NAMESPACE SCOPED] cannot create a DataVolume in different namespace", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateDataVolumeServiceAccountName,
-				LimitScope:     NamespaceScope,
+				LimitTestScope: NamespaceTestScope,
 				ExpectedLogs:   "datavolumes.cdi.kubevirt.io is forbidden",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
@@ -123,7 +123,7 @@ var _ = Describe("Create DataVolume", func() {
 		table.Entry("[CLUSTER SCOPED] works also in the same namespace as deploy", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateDataVolumeServiceAccountName,
-				LimitScope:     ClusterScope,
+				LimitTestScope: ClusterTestScope,
 				Timeout:        Timeouts.SmallBlankDVCreation,
 				ExpectedLogs:   "Created",
 			},

@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/utils"
@@ -30,12 +31,14 @@ func BuildTestSuite() {
 		err = framework.InitClients(framework.ClientsInstance, framework.TestOptionsInstance)
 		noErr(err)
 
-		templateList, err := framework.ClientsInstance.TemplateClient.Templates("openshift").List(metav1.ListOptions{
-			LabelSelector: "template.kubevirt.io/type=base",
-		})
-		noErr(err)
+		if framework.TestOptionsInstance.EnvScope == constants.OpenshiftEnvScope {
+			templateList, err := framework.ClientsInstance.TemplateClient.Templates("openshift").List(metav1.ListOptions{
+				LabelSelector: "template.kubevirt.io/type=base",
+			})
+			noErr(err)
 
-		framework.TestOptionsInstance.CommonTemplatesVersion = getCommonTemplatesVersion(templateList)
+			framework.TestOptionsInstance.CommonTemplatesVersion = getCommonTemplatesVersion(templateList)
+		}
 	})
 }
 

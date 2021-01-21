@@ -12,9 +12,9 @@ source "${SCRIPT_DIR}/common.sh"
 # or default to all if no arguments specified
 
 SCOPE="${SCOPE:-cluster}"
-DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(oc project --short)}"
+DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --output 'jsonpath={..namespace}')}"
 
-oc project "${DEPLOY_NAMESPACE}" || true
+kubectl config set-context --current --namespace="${DEPLOY_NAMESPACE}" || true
 
 visit "${REPO_DIR}/tasks"
   if [[ $# -eq 0 ]]; then
@@ -23,30 +23,28 @@ visit "${REPO_DIR}/tasks"
     TASK_NAMES=("$@")
   fi
   for TASK_NAME in ${TASK_NAMES[*]}; do
-    if echo "${TASK_NAME}" | grep -vE "^(${EXCLUDED_NON_IMAGE_MODULES})$"; then
-      if [ ! -d  "${TASK_NAME}" ]; then
-        continue
-      fi
-      CONFIG_FILE="${REPO_DIR}/configs/${TASK_NAME}.yaml"
-      MAIN_IMAGE="$(sed -n  's/^main_image *: *//p' "${CONFIG_FILE}")"
-      CUSTOM_IMAGE="${TASK_NAME_TO_IMAGE[${TASK_NAME}]}"
-
-      visit "${TASK_NAME}"
-        oc delete -f manifests 2> /dev/null || true
-        if [[ $SCOPE == "cluster" ]]; then
-          sed "s/TARGET_NAMESPACE/${DEPLOY_NAMESPACE}/" "manifests/${TASK_NAME}-cluster-rbac.yaml" | oc apply -f -
-        else
-          oc apply -f "manifests/${TASK_NAME}-namespace-rbac.yaml"
-        fi
-
-        for SUBTASK_NAME in $(ls manifests | grep -v rbac); do
-          if [[ -z ${CUSTOM_IMAGE} ]]; then
-            oc apply -f "manifests/${SUBTASK_NAME}"
-          else
-            sed "s!${MAIN_IMAGE}!${CUSTOM_IMAGE}!g" "manifests/${SUBTASK_NAME}" | oc apply -f -
-          fi
-        done
-      leave
+    if [ ! -d  "${TASK_NAME}" ]; then
+      continue
     fi
+    CONFIG_FILE="${REPO_DIR}/configs/${TASK_NAME}.yaml"
+    MAIN_IMAGE="$(sed -n  's/^main_image *: *//p' "${CONFIG_FILE}")"
+    CUSTOM_IMAGE="${TASK_NAME_TO_IMAGE[${TASK_NAME}]}"
+
+    visit "${TASK_NAME}"
+      kubectl delete -f manifests 2> /dev/null || true
+      if [[ $SCOPE == "cluster" ]]; then
+        sed "s/TARGET_NAMESPACE/${DEPLOY_NAMESPACE}/" "manifests/${TASK_NAME}-cluster-rbac.yaml" | kubectl apply -f -
+      else
+        kubectl apply -f "manifests/${TASK_NAME}-namespace-rbac.yaml"
+      fi
+
+      for SUBTASK_NAME in $(ls manifests | grep -v rbac); do
+        if [[ -z ${CUSTOM_IMAGE} ]]; then
+          kubectl apply -f "manifests/${SUBTASK_NAME}"
+        else
+          sed "s!${MAIN_IMAGE}!${CUSTOM_IMAGE}!g" "manifests/${SUBTASK_NAME}" | kubectl apply -f -
+        fi
+      done
+    leave
   done
 leave

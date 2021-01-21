@@ -8,7 +8,7 @@ source "${SCRIPT_DIR}/common.sh"
 visit "${REPO_DIR}/tasks"
   for TASK_NAME in *; do
     visit "${TASK_NAME}"
-      oc delete -f manifests 2> /dev/null
+      kubectl delete -f manifests 2> /dev/null
     leave
   done
 leave

@@ -275,7 +275,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			table.Entry("[NAMESPACE SCOPED] cannot execute command in different namespace", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
-					LimitScope:     NamespaceScope,
+					LimitTestScope: NamespaceTestScope,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM:                testobjects.NewTestFedoraCloudVM("execute-command-in-different-ns").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -329,7 +329,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "hello world",
 					ExpectSuccess:  true,
-					LimitScope:     ClusterScope,
+					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM:                testobjects.NewTestFedoraCloudVM("execute-command-in-same-ns").WithCloudConfig(fedoraCloudConfig).Build(),
