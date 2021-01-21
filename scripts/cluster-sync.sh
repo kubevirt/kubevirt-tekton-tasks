@@ -40,8 +40,8 @@ visit "${REPO_DIR}"
     else
       TASK_NAMES=("$@")
     fi
-    for TASK_NAME in $(ls | grep -vE "^(${EXCLUDED_NON_IMAGE_MODULES})$"); do
-      if echo "${TASK_NAME}" | grep -vqE "^(shared|tests)$"; then
+   for TASK_NAME in ${TASK_NAMES[*]}; do
+      if echo "${TASK_NAME}" | grep -vqE "^(${EXCLUDED_NON_IMAGE_MODULES})$"; then
         if [ ! -d  "${TASK_NAME}" ]; then
           continue
         fi
