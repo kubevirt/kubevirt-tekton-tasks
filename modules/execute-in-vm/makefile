@@ -1,6 +1,6 @@
 all: clean build
 
-CONFIG_FILE ?= ../../configs/execute-in-vm.yaml
+CONFIG_FILE ?= ../../configs/execute-in-vm.yaml # cleanup-vm.yaml as well
 include ../../scripts/makefile-snippets/makefile-common.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean

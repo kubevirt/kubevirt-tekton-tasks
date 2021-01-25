@@ -1,7 +1,7 @@
 package constants
 
 const CreateVMFromTemplateClusterTaskName = "create-vm-from-template"
-const CreateVMFromTemplateServiceAccountName = "create-vm-task"
+const CreateVMFromTemplateServiceAccountName = "create-vm-from-template-task"
 
 type createVMFromTemplateParams struct {
 	TemplateName              string

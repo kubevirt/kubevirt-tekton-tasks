@@ -2,11 +2,9 @@
 
 This task can execute a script, or a command in a Virtual Machine
 
-## `execute-in-vm`
-
 ### Installation
 
-Install the Task
+Install the `execute-in-vm` task
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/execute-in-vm/manifests/execute-in-vm.yaml

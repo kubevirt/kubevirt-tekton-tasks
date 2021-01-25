@@ -1,0 +1,84 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: create-vm-from-template-task
+    templateName.params.task.kubevirt.io/type: vm-template-name
+    templateName.params.task.kubevirt.io/kind: Template
+    templateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
+    templateNamespace.params.task.kubevirt.io/type: namespace
+    templateParams.params.task.kubevirt.io/type: template-params-array
+    vmNamespace.params.task.kubevirt.io/type: namespace
+    dataVolumes.params.task.kubevirt.io/kind: DataVolume
+    dataVolumes.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
+    ownDataVolumes.params.task.kubevirt.io/kind: DataVolume
+    ownDataVolumes.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
+    persistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
+    persistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
+    ownPersistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
+    ownPersistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
+  labels:
+    task.kubevirt.io/type: create-vm-from-template
+    task.kubevirt.io/category: create-vm
+  name: create-vm-from-template
+spec:
+  params:
+    - name: templateName
+      description: Name of a template to create VM from.
+      type: string
+    - name: templateNamespace
+      description: Namespace of a template to create VM from. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: templateParams
+      description: Template params to pass when processing the template manifest. Each param should have KEY:VAL format. Eg ["NAME:my-vm", "DESC:blue"]
+      default: []
+      type: array
+    - name: vmNamespace
+      description: Namespace where to create the VM. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: dataVolumes
+      description: Add DVs to VM Volumes.
+      default: []
+      type: array
+    - name: ownDataVolumes
+      description: Add DVs to VM Volumes and add VM to DV ownerReferences. These DataVolumes will be deleted once the created VM gets deleted.
+      default: []
+      type: array
+    - name: persistentVolumeClaims
+      description: Add PVCs to VM Volumes.
+      default: []
+      type: array
+    - name: ownPersistentVolumeClaims
+      description: Add PVCs to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted.
+      default: []
+      type: array
+  results:
+    - name: name
+      description: The name of a VM that was created.
+    - name: namespace
+      description: The namespace of a VM that was created.
+  steps:
+    - name: createvm
+      image: quay.io/kubevirt/tekton-task-create-vm:v0.0.2
+      command:
+        - create-vm
+        - "--output=yaml"
+        - '--template-name'
+        - $(params.templateName)
+        - '--template-namespace'
+        - $(params.templateNamespace)
+        - '--template-params'
+        - $(params.templateParams)
+        - '--vm-namespace'
+        - $(params.vmNamespace)
+        - '--dvs'
+        - $(params.dataVolumes)
+        - '--own-dvs'
+        - $(params.ownDataVolumes)
+        - '--pvcs'
+        - $(params.persistentVolumeClaims)
+        - '--own-pvcs'
+        - $(params.ownPersistentVolumeClaims)

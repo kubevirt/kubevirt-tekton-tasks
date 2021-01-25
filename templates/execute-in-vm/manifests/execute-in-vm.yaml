@@ -14,7 +14,7 @@ metadata:
 {% endif %}
   labels:
     task.kubevirt.io/type: {{ task_name }}
-    task.kubevirt.io/category: {{ execute_in_vm_task_name }}
+    task.kubevirt.io/category: {{ task_category }}
   name: {{ task_name }}
 spec:
   params:

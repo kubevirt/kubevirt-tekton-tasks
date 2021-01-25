@@ -3,8 +3,8 @@ VM specific tasks for Tekton Pipelines
 
 ## Usage and Deployment
 
-- [create-datavolume](tasks/create-datavolume) 
-- [create-vm](tasks/create-vm) 
+- [create-datavolume-from-manifest](tasks/create-datavolume-from-manifest)
+- [create-vm-from-template](tasks/create-vm-from-template) 
 - [execute-in-vm](tasks/execute-in-vm)
 - [cleanup-vm](tasks/cleanup-vm) 
 
