@@ -1,7 +1,7 @@
 FROM golang:1.15 AS builder
-ENV TASK_NAME=create-vm
-ENV GOFLAGS="-mod=vendor"
-ENV GO111MODULE=on
+ENV TASK_NAME=create-vm \
+    GOFLAGS="-mod=vendor" \
+    GO111MODULE=on
 WORKDIR /src/${TASK_NAME}
 COPY . .
 RUN	CGO_ENABLED=0 GOOS=linux go build -o /${TASK_NAME} cmd/${TASK_NAME}/main.go
