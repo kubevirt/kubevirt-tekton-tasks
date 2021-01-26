@@ -34,7 +34,7 @@ var _ = Describe("Create DataVolume", func() {
 	},
 		table.Entry("empty dv", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
 				ExpectedLogs:   "manifest does not contain DataVolume kind",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
@@ -43,7 +43,7 @@ var _ = Describe("Create DataVolume", func() {
 		}),
 		table.Entry("malformed dv", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
 				ExpectedLogs:   "manifest does not contain DataVolume kind",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
@@ -60,7 +60,7 @@ var _ = Describe("Create DataVolume", func() {
 		}),
 		table.Entry("missing name", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
 				ExpectedLogs:   "invalid: metadata.name: Required value: name",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
@@ -69,7 +69,7 @@ var _ = Describe("Create DataVolume", func() {
 		}),
 		table.Entry("[NAMESPACE SCOPED] cannot create a DataVolume in different namespace", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
 				LimitTestScope: NamespaceTestScope,
 				ExpectedLogs:   "datavolumes.cdi.kubevirt.io is forbidden",
 			},
@@ -100,7 +100,7 @@ var _ = Describe("Create DataVolume", func() {
 	},
 		table.Entry("blank wait", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
 				Timeout:        Timeouts.SmallBlankDVCreation,
 				ExpectedLogs:   "Created",
 			},
@@ -111,7 +111,7 @@ var _ = Describe("Create DataVolume", func() {
 		}),
 		table.Entry("blank no wait", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
 				Timeout:        Timeouts.SmallBlankDVCreation,
 				ExpectedLogs:   "Created",
 			},
@@ -122,7 +122,7 @@ var _ = Describe("Create DataVolume", func() {
 		}),
 		table.Entry("[CLUSTER SCOPED] works also in the same namespace as deploy", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
 				LimitTestScope: ClusterTestScope,
 				Timeout:        Timeouts.SmallBlankDVCreation,
 				ExpectedLogs:   "Created",
@@ -138,7 +138,7 @@ var _ = Describe("Create DataVolume", func() {
 	It("taskrun fails and DataVolume is created but does not import successfully", func() {
 		config := &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateDataVolumeServiceAccountName,
+				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
 				Timeout:        Timeouts.QuickTaskRun,
 			},
 			TaskData: testconfigs.CreateDVTaskData{

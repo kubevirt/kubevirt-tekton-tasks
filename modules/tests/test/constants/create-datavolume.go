@@ -1,8 +1,8 @@
 package constants
 
 const (
-	CreateDataVolumeFromManifestClusterTaskName = "create-datavolume-from-manifest"
-	CreateDataVolumeServiceAccountName          = "create-datavolume-task"
+	CreateDataVolumeFromManifestClusterTaskName    = "create-datavolume-from-manifest"
+	CreateDataVolumeFromManifestServiceAccountName = "create-datavolume-from-manifest-task"
 )
 
 const (

@@ -1,2 +1,0 @@
-task_name: create-vm
-main_image: quay.io/kubevirt/tekton-task-create-vm:v0.0.2

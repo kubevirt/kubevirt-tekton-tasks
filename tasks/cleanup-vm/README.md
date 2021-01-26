@@ -3,11 +3,9 @@
 This task can execute a script, or a command in a Virtual Machine and stop/delete 
 the VM afterwards. Best used together with tekton pipelines finally construct.
 
-## `cleanup-vm`
-
 ### Installation
 
-Install the Task
+Install the `cleanup-vm` task
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/cleanup-vm/manifests/cleanup-vm.yaml

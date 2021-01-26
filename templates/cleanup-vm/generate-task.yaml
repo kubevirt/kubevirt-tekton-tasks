@@ -5,22 +5,12 @@
   vars_files:
     - ../../configs/cleanup-vm.yaml
     - ../../scripts/ansible/enums.yaml
+    - ../../scripts/ansible/common.yaml
   vars:
-    output_dir: ./dist
-    manifests_output_dir: "{{ output_dir }}/manifests"
-    examples_output_dir: "{{ output_dir }}/examples"
-    examples_secrets_output_dir: "{{ examples_output_dir }}/secrets"
-    examples_taskruns_output_dir: "{{ examples_output_dir }}/taskruns"
-    manifest_templates_dir: ./manifests
-    examples_templates_dir: ./examples
     execute_in_vm_manifest_templates_dir: ../execute-in-vm/manifests
     execute_in_vm_examples_templates_dir: ../execute-in-vm/examples
     execute_in_vm_readmes_templates_dir: ../execute-in-vm/readmes
-    repo_dir: ../..
-    role_name: "{{ task_name }}-task"
-    sa_name: "{{ role_name }}"
-    role_binding_name: "{{ role_name }}"
-    default_file_mode: "0644"
+    examples_secrets_output_dir: "{{ examples_output_dir }}/secrets"
     ssh_secret_name: "ssh-secret"
   tasks:
     - name: load execute-in-vm task vars
@@ -37,10 +27,9 @@
         dest: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
         mode: "{{ default_file_mode }}"
       vars:
-        execute_in_vm_task_name: "{{ execute_in_vm_vars.task_name }}"
         is_cleanup: true
     - name: Generate roles
-      include: "{{ repo_dir }}/scripts/ansible/generate-roles-subtasks.yaml"
+      include: "{{ repo_dir }}/scripts/ansible/generate-roles.yaml"
       with_items:
         - { role_type: Role, role_id: 'namespace', sa_namespace: null }
         - { role_type: ClusterRole, role_id: 'cluster', sa_namespace: 'TARGET_NAMESPACE' }
@@ -77,5 +66,5 @@
         mode: "{{ default_file_mode }}"
       vars:
         is_cleanup: true
-        main_task_path: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
-        main_task_yaml: "{{ lookup('file', main_task_path) | from_yaml }}"
+        task_path: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
+        task_yaml: "{{ lookup('file', task_path) | from_yaml }}"

@@ -9,11 +9,9 @@ the VM afterwards. Best used together with tekton pipelines finally construct.
 This task can execute a script, or a command in a Virtual Machine
 {% endif %}
 
-## `{{ task_name }}`
-
 ### Installation
 
-Install the Task
+Install the `{{ task_name }}` task
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/{{ task_name }}/manifests/{{ task_name }}.yaml
@@ -40,11 +38,11 @@ Install one of the following rbac permissions to the active namespace
 
 ### Service Account
 
-This task should be run with `{{main_task_yaml.metadata.annotations['task.kubevirt.io/associatedServiceAccount']}}` serviceAccount.
+This task should be run with `{{task_yaml.metadata.annotations['task.kubevirt.io/associatedServiceAccount']}}` serviceAccount.
 
 ### Parameters
 
-{% for item in main_task_yaml.spec.params %}
+{% for item in task_yaml.spec.params %}
 - **{{ item.name }}**: {{ item.description | replace('"', '`') }}
 {% endfor %}
 

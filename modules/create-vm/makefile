@@ -1,6 +1,6 @@
 all: clean build
 
-CONFIG_FILE ?= ../../configs/create-vm.yaml
+CONFIG_FILE ?= ../../configs/create-vm-from-template.yaml
 include ../../scripts/makefile-snippets/makefile-common.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean

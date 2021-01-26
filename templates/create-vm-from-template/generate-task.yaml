@@ -3,24 +3,23 @@
   hosts: 127.0.0.1
   gather_facts: no
   vars_files:
-    - ../../configs/execute-in-vm.yaml
+    - ../../configs/create-vm-from-template.yaml
     - ../../scripts/ansible/enums.yaml
     - ../../scripts/ansible/common.yaml
-  vars:
-    examples_secrets_output_dir: "{{ examples_output_dir }}/secrets"
-    ssh_secret_name: "ssh-secret"
   tasks:
-    - name: Prepare manifests dist directory
+    - name: Clean dist directory
+      file:
+        path: "{{ manifests_output_dir }}"
+        state: absent
+    - name: Prepare dist directory
       file:
         path: "{{ manifests_output_dir }}"
         state: directory
     - name: Generate task
       template:
-        src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
+        src: "{{ manifest_templates_dir }}/{{ task_category }}.yaml"
         dest: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
         mode: "{{ default_file_mode }}"
-      vars:
-        is_cleanup: false
     - name: Generate roles
       include: "{{ repo_dir }}/scripts/ansible/generate-roles.yaml"
       with_items:
@@ -34,29 +33,19 @@
         state: directory
       with_items:
         - "{{ examples_output_dir }}"
-        - "{{ examples_secrets_output_dir }}"
         - "{{ examples_taskruns_output_dir }}"
-    - name: Generate example secrets
-      template:
-        src: "{{ examples_templates_dir }}/{{ ssh_secret_name }}.yaml"
-        dest: "{{ examples_secrets_output_dir }}/{{ item.secret_with_flavor_name }}.yaml"
-        mode: "{{ default_file_mode }}"
-      with_items:
-        - { task_type: Manual, advanced: false, secret_with_flavor_name: "{{ ssh_secret_name }}" }
-        - { task_type: Manual, advanced: true, secret_with_flavor_name: "{{ ssh_secret_name }}-with-options" }
-    - name: Generate example ssh task runs
+    - name: Generate example task runs
       template:
         src: "{{ examples_templates_dir }}/{{ task_name }}-taskrun.yaml"
         dest: "{{ examples_taskruns_output_dir }}/{{ item.taskrun_with_flavor_name }}.yaml"
         mode: "{{ default_file_mode }}"
       with_items:
-        - { taskrun_with_flavor_name: "{{ task_name }}-with-ssh-taskrun", secret_name: "{{ ssh_secret_name }}" }
+        - { taskrun_with_flavor_name: "{{ task_name }}-taskrun" }
     - name: Generate README
       template:
         src: "{{ readmes_templates_dir }}/README.md"
         dest: "{{ output_dir }}/README.md"
         mode: "{{ default_file_mode }}"
       vars:
-        is_cleanup: false
         task_path: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
         task_yaml: "{{ lookup('file', task_path) | from_yaml }}"

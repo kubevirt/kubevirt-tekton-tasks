@@ -1,0 +1,12 @@
+repo_dir: ../..
+output_dir: ./dist
+manifests_output_dir: "{{ output_dir }}/manifests"
+examples_output_dir: "{{ output_dir }}/examples"
+examples_taskruns_output_dir: "{{ examples_output_dir }}/taskruns"
+manifest_templates_dir: ./manifests
+examples_templates_dir: ./examples
+readmes_templates_dir: ./readmes
+role_name: "{{ task_name }}-task"
+sa_name: "{{ role_name }}"
+role_binding_name: "{{ role_name }}"
+default_file_mode: "0644"

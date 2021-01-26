@@ -1,0 +1,36 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
+    manifest.params.task.kubevirt.io/type: {{ task_param_types.resource_yaml }}
+    manifest.params.task.kubevirt.io/kind: {{ task_param_types.datavolume_kind }}
+    manifest.params.task.kubevirt.io/apiVersion: {{ task_param_types.cdi_beta_api_version }}
+    waitForSuccess.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
+  labels:
+    task.kubevirt.io/type: {{ task_name }}
+    task.kubevirt.io/category: {{ task_category }}
+  name: {{ task_name }}
+spec:
+  description: >-
+    This task creates a DataVolume with oc client. It can optionally wait until
+    CDI imports finishes.
+  params:
+    - name: manifest
+      description: YAML manifest of a DataVolume resource to be created.
+      type: string
+    - name: waitForSuccess
+      description: Set to "true" or "false" if container should wait for Ready condition of a DataVolume.
+      default: 'false'
+      type: string
+  results:
+    - name: name
+      description: The name of DataVolume that was created.
+    - name: namespace
+      description: The namespace of DataVolume that was created.
+  steps:
+    - name: create
+      image: {{ main_image }}
+      script: |
+        {{ create_dv_script | indent( width=8 ) }}

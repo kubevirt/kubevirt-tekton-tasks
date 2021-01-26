@@ -2,7 +2,7 @@ ifndef CONFIG_FILE
 $(error CONFIG_FILE is not set)
 endif
 
-TASK_NAME ?= $(shell sed -n  's/^task_name *: *//p' $(CONFIG_FILE))
+TASK_NAME ?= $(shell sed -n  's/^task_category *: *//p' $(CONFIG_FILE))
 
 ifeq ($(strip $(TASK_NAME)),)
 $(error TASK_NAME is empty)

@@ -1,0 +1,55 @@
+---
+- connection: local
+  hosts: 127.0.0.1
+  gather_facts: no
+  vars_files:
+  - ../../configs/create-datavolume-from-manifest.yaml
+  - ../../scripts/ansible/enums.yaml
+  - ../../scripts/ansible/common.yaml
+  vars:
+    additional_scripts_dir: .
+  tasks:
+  - name: Clean dist directory
+    file:
+      path: "{{ manifests_output_dir }}"
+      state: absent
+  - name: Prepare dist directory
+    file:
+      path: "{{ manifests_output_dir }}"
+      state: directory
+  - name: Generate task
+    template:
+      src: "{{ manifest_templates_dir }}/{{ task_category }}.yaml"
+      dest: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
+      mode: "{{ default_file_mode }}"
+    vars:
+      create_dv_script: "{{ lookup('file', '{{ additional_scripts_dir }}/create-datavolume-script.sh') }}"
+  - name: Generate roles
+    include: "{{ repo_dir }}/scripts/ansible/generate-roles.yaml"
+    with_items:
+    - { role_type: Role, role_id: 'namespace', sa_namespace: null }
+    - { role_type: ClusterRole, role_id: 'cluster', sa_namespace: 'TARGET_NAMESPACE' }
+    vars:
+      role_output_dir: "{{ manifests_output_dir }}"
+  - name: Prepare examples dist directory
+    file:
+      path: "{{ item }}"
+      state: directory
+    with_items:
+      - "{{ examples_output_dir }}"
+      - "{{ examples_taskruns_output_dir }}"
+  - name: Generate example task runs
+    template:
+      src: "{{ examples_templates_dir }}/{{ task_name }}-taskrun.yaml"
+      dest: "{{ examples_taskruns_output_dir }}/{{ item.taskrun_with_flavor_name }}.yaml"
+      mode: "{{ default_file_mode }}"
+    with_items:
+      - { taskrun_with_flavor_name: "create-dv-from-manifest-taskrun" }
+  - name: Generate README
+    template:
+      src: "{{ readmes_templates_dir }}/README.md"
+      dest: "{{ output_dir }}/README.md"
+      mode: "{{ default_file_mode }}"
+    vars:
+      task_path: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
+      task_yaml: "{{ lookup('file', task_path) | from_yaml }}"
