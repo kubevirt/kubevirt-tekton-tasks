@@ -14,8 +14,8 @@ fi
 
 read -p "What is the name of the env variable for this task: " TASK_ENV_VAR
 
-if ! echo "${TASK_ENV_VAR}" |  grep -qE "^[A-Z_]+$"; then
-  echo "Invalid env variable name! Should comply with ^[A-Z_]+$ regex" 1>&2
+if ! echo "${TASK_ENV_VAR}" |  grep -qE "^[A-Z_]+_IMAGE$"; then
+  echo "Invalid env variable name! Should comply with ^[A-Z_]+_IMAGE$ regex" 1>&2
   exit 1
 fi
 
@@ -35,6 +35,7 @@ if [ ! -f "${CONFIG_FILE}" ]; then
 echo "creating ${CONFIG_FILE}"
 cat <<EOF > "${CONFIG_FILE}"
 task_name: ${TASK_NAME}
+task_category: ${TASK_NAME}
 main_image: quay.io/kubevirt/tekton-task-${TASK_NAME}:v0.0.1
 EOF
 fi
