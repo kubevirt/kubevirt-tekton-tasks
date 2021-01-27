@@ -1,0 +1,69 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
+    publicKeySecretName.params.task.kubevirt.io/kind: {{ task_param_types.secret_kind }}
+    publicKeySecretName.params.task.kubevirt.io/apiVersion: {{ task_param_types.v1_version }}
+    publicKeySecretNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    privateKeySecretName.params.task.kubevirt.io/kind: {{ task_param_types.secret_kind }}
+    privateKeySecretName.params.task.kubevirt.io/apiVersion: {{ task_param_types.v1_version }}
+    privateKeySecretNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    privateKeyConnectionOptions.params.task.kubevirt.io/type: {{ task_param_types.private_key_options_array }}
+  labels:
+    task.kubevirt.io/type: {{ task_name }}
+    task.kubevirt.io/category: {{ task_category }}
+  name: {{ task_name }}
+spec:
+  params:
+    - name: publicKeySecretName
+      description: Name of a new or existing secret to append the generated public key to. The name will be generated and new secret created if not specified.
+      default: ""
+      type: string
+    - name: publicKeySecretNamespace
+      description: Namespace of publicKeySecretName. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: privateKeySecretName
+      description: Name of a new secret to add the generated private key to. The name will be generated if not specified. The secret uses format of execute-in-vm task.
+      default: ""
+      type: string
+    - name: privateKeySecretNamespace
+      description: Namespace of privateKeySecretName. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: privateKeyConnectionOptions
+      description: Additional options to use in SSH client. Please see execute-in-vm task SSH section for more details. Eg ["host-public-key:ssh-rsa AAAAB...", "additional-ssh-options:-p 8022"].
+      default: []
+      type: array
+    - name: additionalSSHKeygenOptions
+      description: Additional options to pass to the ssh-keygen command.
+      default: ""
+      type: string
+  results:
+    - name: publicKeySecretName
+      description: The name of a public key secret.
+    - name: publicKeySecretNamespace
+      description: The namespace of a public key secret.
+    - name: privateKeySecretName
+      description: The name of a private key secret.
+    - name: privateKeySecretNamespace
+      description: The namespace of a private key secret.
+  steps:
+    - name: generate-ssh-keys
+      image: {{ main_image }}
+      command:
+        - generate-ssh-keys
+        - '--public-key-secret-name'
+        - $(params.publicKeySecretName)
+        - '--public-key-secret-namespace'
+        - $(params.publicKeySecretNamespace)
+        - '--private-key-secret-name'
+        - $(params.privateKeySecretName)
+        - '--private-key-secret-namespace'
+        - $(params.privateKeySecretNamespace)
+        - '--additional-ssh-keygen-options'
+        - $(params.additionalSSHKeygenOptions)
+        - '--private-key-connection-options'
+        - $(params.privateKeyConnectionOptions)

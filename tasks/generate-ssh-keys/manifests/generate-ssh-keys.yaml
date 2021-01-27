@@ -1,0 +1,69 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: generate-ssh-keys-task
+    publicKeySecretName.params.task.kubevirt.io/kind: Secret
+    publicKeySecretName.params.task.kubevirt.io/apiVersion: v1
+    publicKeySecretNamespace.params.task.kubevirt.io/type: namespace
+    privateKeySecretName.params.task.kubevirt.io/kind: Secret
+    privateKeySecretName.params.task.kubevirt.io/apiVersion: v1
+    privateKeySecretNamespace.params.task.kubevirt.io/type: namespace
+    privateKeyConnectionOptions.params.task.kubevirt.io/type: private-key-options-array
+  labels:
+    task.kubevirt.io/type: generate-ssh-keys
+    task.kubevirt.io/category: generate-ssh-keys
+  name: generate-ssh-keys
+spec:
+  params:
+    - name: publicKeySecretName
+      description: Name of a new or existing secret to append the generated public key to. The name will be generated and new secret created if not specified.
+      default: ""
+      type: string
+    - name: publicKeySecretNamespace
+      description: Namespace of publicKeySecretName. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: privateKeySecretName
+      description: Name of a new secret to add the generated private key to. The name will be generated if not specified. The secret uses format of execute-in-vm task.
+      default: ""
+      type: string
+    - name: privateKeySecretNamespace
+      description: Namespace of privateKeySecretName. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: privateKeyConnectionOptions
+      description: Additional options to use in SSH client. Please see execute-in-vm task SSH section for more details. Eg ["host-public-key:ssh-rsa AAAAB...", "additional-ssh-options:-p 8022"].
+      default: []
+      type: array
+    - name: additionalSSHKeygenOptions
+      description: Additional options to pass to the ssh-keygen command.
+      default: ""
+      type: string
+  results:
+    - name: publicKeySecretName
+      description: The name of a public key secret.
+    - name: publicKeySecretNamespace
+      description: The namespace of a public key secret.
+    - name: privateKeySecretName
+      description: The name of a private key secret.
+    - name: privateKeySecretNamespace
+      description: The namespace of a private key secret.
+  steps:
+    - name: generate-ssh-keys
+      image: quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.0.1
+      command:
+        - generate-ssh-keys
+        - '--public-key-secret-name'
+        - $(params.publicKeySecretName)
+        - '--public-key-secret-namespace'
+        - $(params.publicKeySecretNamespace)
+        - '--private-key-secret-name'
+        - $(params.privateKeySecretName)
+        - '--private-key-secret-namespace'
+        - $(params.privateKeySecretNamespace)
+        - '--additional-ssh-keygen-options'
+        - $(params.additionalSSHKeygenOptions)
+        - '--private-key-connection-options'
+        - $(params.privateKeyConnectionOptions)

@@ -1,0 +1,26 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: {{ item.taskrun_with_flavor_name }}
+spec:
+  serviceAccountName: {{ sa_name }}
+  taskRef:
+    kind: ClusterTask
+    name: {{ task_name }}
+{% if item.type == "advanced" %}
+  params:
+    - name: publicKeySecretName
+      value: my-client-public-secret
+    - name: privateKeySecretName
+      value: my-client-private-secret
+    - name: privateKeyConnectionOptions
+      value:
+        - 'user:root'
+        - 'disable-strict-host-key-checking:true'
+        - 'additional-ssh-options:-p 8022'
+    - name: additionalSSHKeygenOptions
+      value: '-t rsa-sha2-512 -b 4096'
+{% else %}
+  params: []
+{% endif %}
