@@ -1,6 +1,6 @@
 # Create VirtualMachine from Template Task
 
-Flavors of this task create a VirtualMachine from different sources
+This task creates a VirtualMachine from different sources
 
 ### Installation
 

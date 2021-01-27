@@ -4,7 +4,12 @@ kind: ClusterTask
 metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
-{% if task_name == "create-vm-from-template" %}
+{% if task_name == "create-vm-from-manifest" %}
+    manifest.params.task.kubevirt.io/type: {{ task_param_types.resource_yaml }}
+    manifest.params.task.kubevirt.io/kind: {{ task_param_types.vm_kind}}
+    manifest.params.task.kubevirt.io/apiVersion: {{ task_param_types.vm_version }}
+    namespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+{% elif task_name == "create-vm-from-template" %}
     templateName.params.task.kubevirt.io/type: {{ task_param_types.vm_template_name }}
     templateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
     templateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
@@ -26,7 +31,15 @@ metadata:
   name: {{ task_name }}
 spec:
   params:
-{% if task_name == "create-vm-from-template" %}
+{% if task_name == "create-vm-from-manifest" %}
+    - name: manifest
+      description: YAML manifest of a VirtualMachine resource to be created.
+      type: string
+    - name: namespace
+      description: Namespace where to create the VM. (defaults to manifest namespace or active namespace)
+      default: ""
+      type: string
+{% elif task_name == "create-vm-from-template" %}
     - name: templateName
       description: Name of a template to create VM from.
       type: string
@@ -69,8 +82,12 @@ spec:
       image: {{ main_image }}
       command:
         - create-vm
+      args:
         - "--output=yaml"
-{% if task_name == "create-vm-from-template" %}
+{% if task_name == "create-vm-from-manifest" %}
+        - '--vm-namespace'
+        - $(params.namespace)
+{% elif task_name == "create-vm-from-template" %}
         - '--template-name'
         - $(params.templateName)
         - '--template-namespace'
@@ -88,3 +105,8 @@ spec:
         - $(params.persistentVolumeClaims)
         - '--own-pvcs'
         - $(params.ownPersistentVolumeClaims)
+{% if task_name == "create-vm-from-manifest" %}
+      env:
+        - name: VM_MANIFEST
+          value: $(params.manifest)
+{% endif %}

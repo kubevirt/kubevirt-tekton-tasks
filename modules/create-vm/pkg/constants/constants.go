@@ -15,3 +15,10 @@ const (
 	NameResultName      = "name"
 	NamespaceResultName = "namespace"
 )
+
+type CreationMode string
+
+const (
+	TemplateCreationMode   CreationMode = "TemplateCreationMode"
+	VMManifestCreationMode CreationMode = "VMManifestCreationMode"
+)

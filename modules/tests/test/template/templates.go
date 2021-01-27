@@ -63,7 +63,7 @@ func (t *TestTemplate) WithDescriptionParam() *TestTemplate {
 	return t
 }
 
-func (t *TestTemplate) WitNonMatchingDisk() *TestTemplate {
+func (t *TestTemplate) WithNonMatchingDisk() *TestTemplate {
 	t.modifyVM(func(vm *kubevirtv1.VirtualMachine) {
 		vm.Spec.Template.Spec.Domain.Devices.Disks[0].Name = "non-matching-name"
 	})

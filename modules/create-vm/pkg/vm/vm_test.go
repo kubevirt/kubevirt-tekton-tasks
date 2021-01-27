@@ -71,7 +71,7 @@ var _ = Describe("VM", func() {
 		})
 	})
 
-	It("Adds correct metadata", func() {
+	It("Adds correct metadata from template", func() {
 		vm2.AddMetadata(vm, shtestobjects.NewFedoraServerTinyTemplate())
 
 		Expect(vm.Labels).To(Equal(map[string]string{
@@ -92,6 +92,16 @@ var _ = Describe("VM", func() {
 			"os.template.kubevirt.io/fedora29":     "true",
 			"flavor.template.kubevirt.io/tiny":     "true",
 			"workload.template.kubevirt.io/server": "true",
+		}))
+
+	})
+
+	It("Adds correct default metadata", func() {
+		vm2.AddMetadata(vm, nil)
+
+		Expect(vm.Spec.Template.ObjectMeta.Labels).To(Equal(map[string]string{
+			"vm.kubevirt.io/name": vm.Name,
+			"name":                vm.Name,
 		}))
 
 	})

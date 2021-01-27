@@ -1,23 +1,30 @@
 package testconfigs
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/template"
+	"github.com/onsi/ginkgo"
 	v1 "github.com/openshift/api/template/v1"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	"sigs.k8s.io/yaml"
 	"strings"
 )
 
-type CreateVMFromTemplateTaskData struct {
-	Template *v1.Template
+type CreateVMTaskData struct {
+	CreateMode CreateVMMode
 
+	Template                *v1.Template
 	TemplateTargetNamespace TargetNamespace
-	VMTargetNamespace       TargetNamespace
+
+	VM                        *kubevirtv1.VirtualMachine
+	VMTargetNamespace         TargetNamespace
+	VMManifestTargetNamespace TargetNamespace
 
 	DataVolumesToCreate                      []*dv.TestDataVolume
 	IsCommonTemplate                         bool
@@ -30,6 +37,9 @@ type CreateVMFromTemplateTaskData struct {
 	TemplateName      string
 	TemplateNamespace string
 
+	// this is set if VM is not nil
+	VMManifest string
+
 	TemplateParams            []string
 	VMNamespace               string
 	DataVolumes               []string
@@ -38,7 +48,7 @@ type CreateVMFromTemplateTaskData struct {
 	OwnPersistentVolumeClaims []string
 }
 
-func (c *CreateVMFromTemplateTaskData) GetTemplateParam(key string) string {
+func (c *CreateVMTaskData) GetTemplateParam(key string) string {
 	for _, param := range c.TemplateParams {
 		fragments := strings.SplitN(param, ":", 2)
 		if len(fragments) == 2 && fragments[0] == key {
@@ -48,13 +58,35 @@ func (c *CreateVMFromTemplateTaskData) GetTemplateParam(key string) string {
 	return ""
 }
 
-func (c *CreateVMFromTemplateTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
+func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
 	var disks []kubevirtv1.Disk
 	var volumes []kubevirtv1.Volume
+	var vmName, vmNamespace string
 
-	if c.Template != nil && c.Template.Objects != nil {
-		disks = append(disks, template.GetVM(c.Template).Spec.Template.Spec.Domain.Devices.Disks...)
-		volumes = append(volumes, template.GetVM(c.Template).Spec.Template.Spec.Volumes...)
+	var vm *kubevirtv1.VirtualMachine
+
+	switch c.CreateMode {
+	case CreateVMVMManifestMode:
+		if err := yaml.Unmarshal([]byte(c.VMManifest), &vm); err != nil || vm == nil {
+			vm = nil
+		} else {
+			if c.VMNamespace != "" {
+				vm.Namespace = c.VMNamespace
+			}
+			vmName = vm.Name
+			vmNamespace = vm.Namespace
+		}
+	case CreateVMTemplateMode:
+		if c.Template != nil && c.Template.Objects != nil {
+			vm = template.GetVM(c.Template)
+		}
+
+		vmName = c.GetTemplateParam(template.NameParam)
+		vmNamespace = c.VMNamespace
+	}
+	if vm != nil {
+		disks = append(disks, vm.Spec.Template.Spec.Domain.Devices.Disks...)
+		volumes = append(volumes, vm.Spec.Template.Spec.Volumes...)
 	}
 
 	for _, dataVolume := range c.DataVolumesToCreate {
@@ -86,8 +118,8 @@ func (c *CreateVMFromTemplateTaskData) GetExpectedVMStubMeta() *kubevirtv1.Virtu
 
 	return &kubevirtv1.VirtualMachine{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      c.GetTemplateParam(template.NameParam),
-			Namespace: c.VMNamespace,
+			Name:      vmName,
+			Namespace: vmNamespace,
 		},
 		Spec: kubevirtv1.VirtualMachineSpec{
 			Template: &kubevirtv1.VirtualMachineInstanceTemplateSpec{
@@ -104,7 +136,7 @@ func (c *CreateVMFromTemplateTaskData) GetExpectedVMStubMeta() *kubevirtv1.Virtu
 	}
 }
 
-func (c *CreateVMFromTemplateTaskData) SetDVorPVC(name string, attachmentType dv.TestDataVolumeAttachmentType) {
+func (c *CreateVMTaskData) SetDVorPVC(name string, attachmentType dv.TestDataVolumeAttachmentType) {
 	switch attachmentType {
 	case dv.DV:
 		c.DataVolumes = append(c.DataVolumes, name)
@@ -117,15 +149,72 @@ func (c *CreateVMFromTemplateTaskData) SetDVorPVC(name string, attachmentType dv
 	}
 }
 
-type CreateVMFromTemplateTestConfig struct {
+type CreateVMTestConfig struct {
 	TaskRunTestConfig
-	TaskData CreateVMFromTemplateTaskData
+	TaskData CreateVMTaskData
 
 	deploymentNamespace string
 }
 
-func (c *CreateVMFromTemplateTestConfig) Init(options *testoptions.TestOptions) {
+func (c *CreateVMTestConfig) Init(options *testoptions.TestOptions) {
 	c.deploymentNamespace = options.DeployNamespace
+
+	switch c.TaskData.CreateMode {
+	case CreateVMVMManifestMode:
+		c.initCreateVMManifest(options)
+	case CreateVMTemplateMode:
+		c.initCreateVMTemplate(options)
+	default:
+		panic("unknown VM create mode")
+	}
+
+	for _, dataVolume := range c.TaskData.DataVolumesToCreate {
+		dataVolume.Data.Name = E2ETestsRandomName(dataVolume.Data.Name)
+		dataVolume.Data.Namespace = c.TaskData.VMNamespace
+		if options.StorageClass != "" {
+			dataVolume.Data.Spec.PVC.StorageClassName = &options.StorageClass
+		}
+	}
+
+	if c.TaskData.ExpectedAdditionalDiskBus == "" {
+		c.TaskData.ExpectedAdditionalDiskBus = "virtio"
+	}
+}
+
+func (c *CreateVMTestConfig) initCreateVMManifest(options *testoptions.TestOptions) {
+	if c.TaskData.VMTargetNamespace != "" && c.TaskData.VMManifestTargetNamespace != "" {
+		ginkgo.Fail("only one of VMTargetNamespace|VMManifestTargetNamespace can be set")
+	}
+
+	if vm := c.TaskData.VM; vm != nil {
+		if vm.Name != "" {
+			vm.Name = E2ETestsRandomName(vm.Name)
+			vm.Spec.Template.ObjectMeta.Name = vm.Name
+		}
+
+		vm.Spec.Template.ObjectMeta.Namespace = ""
+
+		if c.TaskData.VMManifestTargetNamespace != "" {
+			vm.Namespace = options.ResolveNamespace(c.TaskData.VMManifestTargetNamespace)
+			c.TaskData.VMNamespace = ""
+		} else {
+			vm.Namespace = ""
+			c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace)
+		}
+
+		c.TaskData.VMManifest = (&testobjects.TestVM{Data: vm}).ToString()
+	} else {
+		// just for invalid YAMLs - otherwise use TaskData.VM
+		if c.TaskData.VMManifestTargetNamespace != "" {
+			ginkgo.Fail("VMManifestTargetNamespace cannot be set for manifest")
+		}
+		if c.TaskData.VMTargetNamespace != "" {
+			ginkgo.Fail("VMTargetNamespace cannot be set for manifest")
+		}
+	}
+}
+
+func (c *CreateVMTestConfig) initCreateVMTemplate(options *testoptions.TestOptions) {
 	c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace)
 	if tmpl := c.TaskData.Template; tmpl != nil {
 		if tmpl.Name != "" {
@@ -144,101 +233,122 @@ func (c *CreateVMFromTemplateTestConfig) Init(options *testoptions.TestOptions) 
 			c.TaskData.TemplateName += options.CommonTemplatesVersion
 		}
 	}
-
-	for _, dataVolume := range c.TaskData.DataVolumesToCreate {
-		dataVolume.Data.Name = E2ETestsRandomName(dataVolume.Data.Name)
-		dataVolume.Data.Namespace = c.TaskData.VMNamespace
-		if options.StorageClass != "" {
-			dataVolume.Data.Spec.PVC.StorageClassName = &options.StorageClass
-		}
-	}
-
-	if c.TaskData.ExpectedAdditionalDiskBus == "" {
-		c.TaskData.ExpectedAdditionalDiskBus = "virtio"
-	}
 }
 
-func (c *CreateVMFromTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
-	var templateNamespace, vmNamespace string
+func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
+	var taskName, taskRunName string
 
-	if !c.TaskData.UseDefaultTemplateNamespacesInTaskParams {
-		templateNamespace = c.TaskData.TemplateNamespace
+	params := []v1beta1.Param{
+		{
+			Name: CreateVMParams.DataVolumes,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: c.TaskData.DataVolumes,
+			},
+		},
+		{
+			Name: CreateVMParams.OwnDataVolumes,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: c.TaskData.OwnDataVolumes,
+			},
+		},
+		{
+			Name: CreateVMParams.PersistentVolumeClaims,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: c.TaskData.PersistentVolumeClaims,
+			},
+		},
+		{
+			Name: CreateVMParams.OwnPersistentVolumeClaims,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: c.TaskData.OwnPersistentVolumeClaims,
+			},
+		},
 	}
-
+	var vmNamespace string
 	if !c.TaskData.UseDefaultVMNamespacesInTaskParams {
 		vmNamespace = c.TaskData.VMNamespace
 	}
 
+	switch c.TaskData.CreateMode {
+	case CreateVMVMManifestMode:
+		taskName = CreateVMFromManifestClusterTaskName
+		taskRunName = "taskrun-vm-create-from-manifest"
+
+		params = append(params,
+			v1beta1.Param{
+				Name: CreateVMFromManifestParams.Manifest,
+				Value: v1beta1.ArrayOrString{
+					Type:      v1beta1.ParamTypeString,
+					StringVal: c.TaskData.VMManifest,
+				},
+			},
+			v1beta1.Param{
+				Name: CreateVMFromManifestParams.Namespace,
+				Value: v1beta1.ArrayOrString{
+					Type:      v1beta1.ParamTypeString,
+					StringVal: vmNamespace,
+				},
+			},
+		)
+	case CreateVMTemplateMode:
+		taskName = CreateVMFromTemplateClusterTaskName
+		taskRunName = "taskrun-vm-create-from-template"
+
+		var templateNamespace string
+
+		if !c.TaskData.UseDefaultTemplateNamespacesInTaskParams {
+			templateNamespace = c.TaskData.TemplateNamespace
+		}
+
+		params = append(params,
+			v1beta1.Param{
+				Name: CreateVMFromTemplateParams.TemplateName,
+				Value: v1beta1.ArrayOrString{
+					Type:      v1beta1.ParamTypeString,
+					StringVal: c.TaskData.TemplateName,
+				},
+			},
+			v1beta1.Param{
+				Name: CreateVMFromTemplateParams.TemplateNamespace,
+				Value: v1beta1.ArrayOrString{
+					Type:      v1beta1.ParamTypeString,
+					StringVal: templateNamespace,
+				},
+			},
+			v1beta1.Param{
+				Name: CreateVMFromTemplateParams.TemplateParams,
+				Value: v1beta1.ArrayOrString{
+					Type:     v1beta1.ParamTypeArray,
+					ArrayVal: c.TaskData.TemplateParams,
+				},
+			},
+			v1beta1.Param{
+				Name: CreateVMFromTemplateParams.VmNamespace,
+				Value: v1beta1.ArrayOrString{
+					Type:      v1beta1.ParamTypeString,
+					StringVal: vmNamespace,
+				},
+			},
+		)
+	}
+
 	return &v1beta1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      E2ETestsRandomName("taskrun-vm-create-from-template"),
+			Name:      E2ETestsRandomName(taskRunName),
 			Namespace: c.deploymentNamespace,
 		},
 		Spec: v1beta1.TaskRunSpec{
 			TaskRef: &v1beta1.TaskRef{
-				Name: CreateVMFromTemplateClusterTaskName,
+				Name: taskName,
 				Kind: v1beta1.ClusterTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: c.ServiceAccount,
-			Params: []v1beta1.Param{
-				{
-					Name: CreateVMFromTemplateParams.TemplateName,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
-						StringVal: c.TaskData.TemplateName,
-					},
-				},
-				{
-					Name: CreateVMFromTemplateParams.TemplateNamespace,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
-						StringVal: templateNamespace,
-					},
-				},
-				{
-					Name: CreateVMFromTemplateParams.TemplateParams,
-					Value: v1beta1.ArrayOrString{
-						Type:     v1beta1.ParamTypeArray,
-						ArrayVal: c.TaskData.TemplateParams,
-					},
-				},
-				{
-					Name: CreateVMFromTemplateParams.VmNamespace,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
-						StringVal: vmNamespace,
-					},
-				},
-				{
-					Name: CreateVMFromTemplateParams.DataVolumes,
-					Value: v1beta1.ArrayOrString{
-						Type:     v1beta1.ParamTypeArray,
-						ArrayVal: c.TaskData.DataVolumes,
-					},
-				},
-				{
-					Name: CreateVMFromTemplateParams.OwnDataVolumes,
-					Value: v1beta1.ArrayOrString{
-						Type:     v1beta1.ParamTypeArray,
-						ArrayVal: c.TaskData.OwnDataVolumes,
-					},
-				},
-				{
-					Name: CreateVMFromTemplateParams.PersistentVolumeClaims,
-					Value: v1beta1.ArrayOrString{
-						Type:     v1beta1.ParamTypeArray,
-						ArrayVal: c.TaskData.PersistentVolumeClaims,
-					},
-				},
-				{
-					Name: CreateVMFromTemplateParams.OwnPersistentVolumeClaims,
-					Value: v1beta1.ArrayOrString{
-						Type:     v1beta1.ParamTypeArray,
-						ArrayVal: c.TaskData.OwnPersistentVolumeClaims,
-					},
-				},
-			},
+			Params:             params,
 		},
 	}
 }

@@ -1,6 +1,8 @@
 package vmcreator
 
 import (
+	"fmt"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/datavolume"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/pvc"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
@@ -12,7 +14,6 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -22,6 +23,7 @@ import (
 	kubevirtcliv1 "kubevirt.io/client-go/kubecli"
 	datavolumeclientv1beta1 "kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/core/v1beta1"
 	"path/filepath"
+	"sigs.k8s.io/yaml"
 )
 
 type VMCreator struct {
@@ -52,17 +54,20 @@ func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
 
 	// clients
 	kubeClient := kubernetes.NewForConfigOrDie(config)
-	templateClient := templatev1.NewForConfigOrDie(config)
 	cdiClient := datavolumeclientv1beta1.NewForConfigOrDie(config)
 	kubevirtClient, err := kubevirtcliv1.GetKubevirtClientFromRESTConfig(config)
 	if err != nil {
-		return nil, errors.WithMessage(err, "Cannot create kubevirt client")
+		return nil, fmt.Errorf("cannot create kubevirt client: %v", err.Error())
 	}
 
-	templateProvider := templates.NewTemplateProvider(templateClient)
+	var templateProvider templates.TemplateProvider
 	virtualMachineProvider := virtualMachine.NewVirtualMachineProvider(kubevirtClient)
 	dataVolumeProvider := datavolume.NewDataVolumeProvider(cdiClient)
 	pvcProvider := pvc.NewPersistentVolumeClaimProvider(kubeClient.CoreV1())
+
+	if cliOptions.GetCreationMode() == constants.TemplateCreationMode {
+		templateProvider = templates.NewTemplateProvider(templatev1.NewForConfigOrDie(config))
+	}
 
 	return &VMCreator{
 		targetNamespace:        targetNS,
@@ -76,6 +81,33 @@ func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
 }
 
 func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
+	switch v.cliOptions.GetCreationMode() {
+	case constants.TemplateCreationMode:
+		return v.createVMFromTemplate()
+	case constants.VMManifestCreationMode:
+		return v.createVMFromManifest()
+	}
+	return nil, zerrors.NewMissingRequiredError("unknown creation mode: %v", v.cliOptions.GetCreationMode())
+}
+
+func (v *VMCreator) createVMFromManifest() (*kubevirtv1.VirtualMachine, error) {
+	var vm kubevirtv1.VirtualMachine
+
+	if err := yaml.Unmarshal([]byte(v.cliOptions.VirtualMachineManifest), &vm); err != nil {
+		return nil, zerrors.NewSoftError("could not read VM manifest: %v", err.Error())
+	}
+
+	vm.Namespace = v.targetNamespace
+	virtualMachine.AddMetadata(&vm, nil)
+
+	templateValidations := validations.NewTemplateValidations(nil) // fallback to defaults
+	virtualMachine.AddVolumes(&vm, templateValidations, v.cliOptions)
+
+	log.GetLogger().Debug("creating VM", zap.Reflect("vm", vm))
+	return v.virtualMachineProvider.Create(v.targetNamespace, &vm)
+}
+
+func (v *VMCreator) createVMFromTemplate() (*kubevirtv1.VirtualMachine, error) {
 	log.GetLogger().Debug("retrieving template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.cliOptions.GetTemplateNamespace()))
 	template, err := v.templateProvider.Get(v.cliOptions.GetTemplateNamespace(), v.cliOptions.TemplateName)
 	if err != nil {
@@ -143,7 +175,7 @@ func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
 		}
 
 		if _, err := v.dataVolumeProvider.AddOwnerReferences(dvs[idx], virtualMachine.AsVMOwnerReference(vm)); err != nil {
-			multiError.Add(dvName, errors.Wrapf(err, "could not add owner reference to %v DataVolume", dvName))
+			multiError.Add(dvName, fmt.Errorf("could not add owner reference to %v DataVolume: %v", dvName, err.Error()))
 		}
 
 	}
@@ -164,7 +196,7 @@ func (v *VMCreator) ownPersistentVolumeClaims(vm *kubevirtv1.VirtualMachine) err
 		}
 
 		if _, err := v.pvcProvider.AddOwnerReferences(pvcs[idx], virtualMachine.AsVMOwnerReference(vm)); err != nil {
-			multiError.Add(pvcName, errors.Wrapf(err, "could not add owner reference to %v PersistentVolumeClaim", pvcName))
+			multiError.Add(pvcName, fmt.Errorf("could not add owner reference to %v PersistentVolumeClaim: %v", pvcName, err.Error()))
 		}
 
 	}

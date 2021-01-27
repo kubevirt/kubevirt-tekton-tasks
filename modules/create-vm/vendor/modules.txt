@@ -157,9 +157,6 @@ github.com/openshift/client-go/template/clientset/versioned/typed/template/v1
 github.com/openshift/custom-resource-status/conditions/v1
 # github.com/pborman/uuid v1.2.0
 github.com/pborman/uuid
-# github.com/pkg/errors v0.9.1
-## explicit
-github.com/pkg/errors
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # go.uber.org/atomic v1.6.0

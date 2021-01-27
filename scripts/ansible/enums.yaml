@@ -9,6 +9,8 @@ task_param_types:
   pvc_kind: PersistentVolumeClaim
   template_version: template.openshift.io/v1
   template_kind: Template
+  vm_version: kubevirt.io/v1
+  vm_kind: VirtualMachine
   cdi_beta_api_version: cdi.kubevirt.io/v1beta1
   datavolume_kind: DataVolume
   vm_template_name: vm-template-name
