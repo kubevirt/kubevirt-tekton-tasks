@@ -14,7 +14,7 @@ ENV ENTRY_CMD=/usr/local/bin/${TASK_NAME} \
     HOME=/home/${TASK_NAME}
 
 # install ssh client
-RUN yum update -y --disableplugin=subscription-manager --exclude=filesystem && \
+RUN yum update -y --disableplugin=subscription-manager && \
     yum install openssh-clients -y --disableplugin=subscription-manager && \
     yum clean all --disableplugin=subscription-manager && \
     rm -rf /var/cache/yum /var/cache/dnf /var/lib/rpm
