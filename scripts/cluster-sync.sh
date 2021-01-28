@@ -53,7 +53,7 @@ visit "${REPO_DIR}"
 
           # set inside-cluster registry
           export IMAGE="${IN_CLUSTER_IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
-          export ${TASK_NAME_TO_ENV_NAME[${TASK_NAME}]}="${IMAGE}"
+          export ${IMAGE_MODULE_NAME_TO_ENV_NAME[${TASK_NAME}]}="${IMAGE}"
         leave
       fi
     done

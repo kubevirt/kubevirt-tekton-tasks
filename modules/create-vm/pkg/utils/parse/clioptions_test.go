@@ -1,8 +1,10 @@
 package parse_test
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -11,9 +13,10 @@ import (
 )
 
 var (
-	defaultNS     = "default"
-	defaultNSArr  = []string{defaultNS}
-	multipleNSArr = []string{"overriden-ns", defaultNS}
+	defaultNS      = "default"
+	defaultNSArr   = []string{defaultNS}
+	multipleNSArr  = []string{"overriden-ns", defaultNS}
+	testVMManifest = testobjects.NewTestVM().ToString()
 )
 
 var _ = Describe("CLIOptions", func() {
@@ -22,13 +25,32 @@ var _ = Describe("CLIOptions", func() {
 		Expect(err).Should(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring(expectedErrMessage))
 	},
+		table.Entry("no mode", "one of vm-manifest, template-name should be specified", &parse.CLIOptions{}),
+		table.Entry("both modes", "only one of vm-manifest, template-name should be specified", &parse.CLIOptions{
+			TemplateName:           "test",
+			VirtualMachineManifest: testVMManifest,
+		}),
+		table.Entry("useless template ns", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
+			VirtualMachineManifest: testVMManifest,
+			TemplateNamespaces:     defaultNSArr,
+		}),
+		table.Entry("useless template params", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
+			VirtualMachineManifest: testVMManifest,
+			TemplateParams:         []string{":V1"},
+		}),
+		table.Entry("invalidManifest", "could not read VM manifest", &parse.CLIOptions{
+			VirtualMachineManifest: "blabla",
+		}),
 		table.Entry("invalid output", "not a valid output type", &parse.CLIOptions{
-			Output: "incorrect-fmt",
+			TemplateName: "test",
+			Output:       "incorrect-fmt",
 		}),
 		table.Entry("invalid template params 1", "parameters have incorrect format", &parse.CLIOptions{
+			TemplateName:   "test",
 			TemplateParams: []string{"K1:V1", "K2=V2"},
 		}),
 		table.Entry("invalid template params 2", "parameters have incorrect format", &parse.CLIOptions{
+			TemplateName:   "test",
 			TemplateParams: []string{":V1"},
 		}),
 	)
@@ -42,25 +64,29 @@ var _ = Describe("CLIOptions", func() {
 		}
 	},
 		table.Entry("returns valid defaults", &parse.CLIOptions{
+			TemplateName:             "test",
 			TemplateNamespaces:       defaultNSArr,
 			VirtualMachineNamespaces: defaultNSArr,
 		}, map[string]interface{}{
 			"GetTemplateNamespace":       defaultNS,
 			"GetVirtualMachineNamespace": defaultNS,
+			"GetVirtualMachineManifest":  "",
 			"GetAllPVCNames":             []string(nil),
 			"GetAllDVNames":              []string(nil),
 			"GetAllDiskNames":            []string(nil),
 			"GetTemplateParams":          map[string]string{},
 			"GetDebugLevel":              zapcore.InfoLevel,
+			"GetCreationMode":            constants.TemplateCreationMode,
 		}),
 		table.Entry("handles multiple ns from cli", &parse.CLIOptions{
+			TemplateName:             "test",
 			TemplateNamespaces:       multipleNSArr,
 			VirtualMachineNamespaces: multipleNSArr,
 		}, map[string]interface{}{
 			"GetTemplateNamespace":       defaultNS,
 			"GetVirtualMachineNamespace": defaultNS,
 		}),
-		table.Entry("handles cli arguments", &parse.CLIOptions{
+		table.Entry("handles template cli arguments", &parse.CLIOptions{
 			TemplateName:              "test",
 			TemplateNamespaces:        defaultNSArr,
 			TemplateParams:            []string{"K1:V1", "K2:V2"},
@@ -74,6 +100,7 @@ var _ = Describe("CLIOptions", func() {
 		}, map[string]interface{}{
 			"GetTemplateNamespace":       defaultNS,
 			"GetVirtualMachineNamespace": defaultNS,
+			"GetVirtualMachineManifest":  "",
 			"GetAllPVCNames":             []string{"pvc1", "pvc2", "pvc3"},
 			"GetAllDVNames":              []string{"dv1", "dv2", "dv3"},
 			"GetAllDiskNames":            []string{"pvc1", "pvc2", "pvc3", "dv1", "dv2", "dv3"},
@@ -81,7 +108,41 @@ var _ = Describe("CLIOptions", func() {
 				"K1": "V1",
 				"K2": "V2",
 			},
-			"GetDebugLevel": zapcore.DebugLevel,
+			"GetDebugLevel":   zapcore.DebugLevel,
+			"GetCreationMode": constants.TemplateCreationMode,
+		}),
+		table.Entry("handles vm cli arguments", &parse.CLIOptions{
+			VirtualMachineManifest:    testVMManifest,
+			VirtualMachineNamespaces:  defaultNSArr,
+			Output:                    output.YamlOutput, // check if passes validation
+			OwnDataVolumes:            []string{"dv1"},
+			DataVolumes:               []string{"dv2", "dv3"},
+			OwnPersistentVolumeClaims: []string{"pvc1", "pvc2"},
+			PersistentVolumeClaims:    []string{"pvc3"},
+			Debug:                     true,
+		}, map[string]interface{}{
+			"GetTemplateNamespace":       "",
+			"GetVirtualMachineNamespace": defaultNS,
+			"GetVirtualMachineManifest":  testVMManifest,
+			"GetAllPVCNames":             []string{"pvc1", "pvc2", "pvc3"},
+			"GetAllDVNames":              []string{"dv1", "dv2", "dv3"},
+			"GetAllDiskNames":            []string{"pvc1", "pvc2", "pvc3", "dv1", "dv2", "dv3"},
+			"GetTemplateParams":          map[string]string{},
+			"GetDebugLevel":              zapcore.DebugLevel,
+			"GetCreationMode":            constants.VMManifestCreationMode,
+		}),
+		table.Entry("handles trim", &parse.CLIOptions{
+			TemplateName:              "test",
+			TemplateNamespaces:        []string{"  " + defaultNS + " "},
+			VirtualMachineNamespaces:  []string{"" + defaultNS + "  "},
+			OwnDataVolumes:            []string{" dv1     "},
+			DataVolumes:               []string{" dv2", "dv3"},
+			OwnPersistentVolumeClaims: []string{" pvc1", " pvc2  "},
+			PersistentVolumeClaims:    []string{"pvc3 "},
+		}, map[string]interface{}{
+			"GetTemplateNamespace":       defaultNS,
+			"GetVirtualMachineNamespace": defaultNS,
+			"GetAllDiskNames":            []string{"pvc1", "pvc2", "pvc3", "dv1", "dv2", "dv3"},
 		}),
 	)
 

@@ -7,6 +7,7 @@ import (
 )
 
 const e2eNamespacePrefix = "e2e-tests"
+const SpacesSmall = "  "
 
 const (
 	PollInterval = 1 * time.Second

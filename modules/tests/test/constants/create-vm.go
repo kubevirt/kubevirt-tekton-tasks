@@ -3,36 +3,62 @@ package constants
 const CreateVMFromTemplateClusterTaskName = "create-vm-from-template"
 const CreateVMFromTemplateServiceAccountName = "create-vm-from-template-task"
 
-type createVMFromTemplateParams struct {
-	TemplateName              string
-	TemplateNamespace         string
-	TemplateParams            string
-	VmNamespace               string
+const CreateVMFromManifestClusterTaskName = "create-vm-from-manifest"
+const CreateVMFromManifestServiceAccountName = "create-vm-from-manifest-task"
+
+type createVMParams struct {
 	DataVolumes               string
 	OwnDataVolumes            string
 	PersistentVolumeClaims    string
 	OwnPersistentVolumeClaims string
 }
 
-var CreateVMFromTemplateParams = createVMFromTemplateParams{
-	TemplateName:              "templateName",
-	TemplateNamespace:         "templateNamespace",
-	TemplateParams:            "templateParams",
-	VmNamespace:               "vmNamespace",
+type createVMFromManifestParams struct {
+	Namespace string
+	Manifest  string
+}
+
+type createVMFromTemplateParams struct {
+	TemplateName      string
+	TemplateNamespace string
+	TemplateParams    string
+	VmNamespace       string
+}
+
+var CreateVMParams = createVMParams{
 	DataVolumes:               "dataVolumes",
 	OwnDataVolumes:            "ownDataVolumes",
 	PersistentVolumeClaims:    "persistentVolumeClaims",
 	OwnPersistentVolumeClaims: "ownPersistentVolumeClaims",
 }
 
-type createVMFromManifestResults struct {
+var CreateVMFromManifestParams = createVMFromManifestParams{
+	Namespace: "namespace",
+	Manifest:  "manifest",
+}
+
+var CreateVMFromTemplateParams = createVMFromTemplateParams{
+	TemplateName:      "templateName",
+	TemplateNamespace: "templateNamespace",
+	TemplateParams:    "templateParams",
+	VmNamespace:       "vmNamespace",
+}
+
+type createVMResults struct {
 	Name      string
 	Namespace string
 }
 
-var CreateVMFromManifestResults = createVMFromManifestResults{
+var CreateVMResults = createVMResults{
 	Name:      "name",
 	Namespace: "namespace",
 }
+
+type CreateVMMode string
+
+const (
+	CreateVMTemplateMode   CreateVMMode = "CreateVMTemplateMode"
+	CreateVMVMManifestMode CreateVMMode = "CreateVMVMManifestMode"
+)
 
 const ExpectedSuccessfulVMCreation = "apiVersion: kubevirt.io/v1alpha3\nkind: VirtualMachine\n"

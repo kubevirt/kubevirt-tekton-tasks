@@ -19,12 +19,12 @@ if ! echo "${TASK_ENV_VAR}" |  grep -qE "^[A-Z_]+$"; then
   exit 1
 fi
 
-if ! grep -Fq "TASK_NAME_TO_ENV_NAME[\"${TASK_NAME}\"]" "${SCRIPT_DIR}/common.sh"; then
+if ! grep -Fq "IMAGE_MODULE_NAME_TO_ENV_NAME[\"${TASK_NAME}\"]" "${SCRIPT_DIR}/common.sh"; then
 echo "editing common.sh"
 cat <<EOF >> "${SCRIPT_DIR}/common.sh"
 
 export ${TASK_ENV_VAR}="\${${TASK_ENV_VAR}:-}"
-TASK_NAME_TO_ENV_NAME["${TASK_NAME}"]="${TASK_ENV_VAR}"
+IMAGE_MODULE_NAME_TO_ENV_NAME["${TASK_NAME}"]="${TASK_ENV_VAR}"
 TASK_NAME_TO_IMAGE["${TASK_NAME}"]="\${${TASK_ENV_VAR}}"
 EOF
 fi

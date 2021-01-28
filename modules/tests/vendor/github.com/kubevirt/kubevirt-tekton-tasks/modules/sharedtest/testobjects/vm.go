@@ -8,6 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/rand"
 	v1 "kubevirt.io/client-go/api/v1"
+	"sigs.k8s.io/yaml"
 )
 
 type TestVM struct {
@@ -76,10 +77,36 @@ func (t *TestVM) Build() *v1.VirtualMachine {
 	return t.Data
 }
 
+func (t *TestVM) ToString() string {
+	outBytes, _ := yaml.Marshal(t.Data)
+	return string(outBytes)
+}
+
 func (t *TestVM) WithMemory(memory string) *TestVM {
 	t.Data.Spec.Template.Spec.Domain.Resources.Requests = corev1.ResourceList{
 		corev1.ResourceMemory: resource.MustParse(memory),
 	}
+	return t
+}
+
+func (t *TestVM) WithNonMatchingDisk() *TestVM {
+	t.Data.Spec.Template.Spec.Domain.Devices.Disks[0].Name = "non-matching-name"
+	return t
+}
+
+func (t *TestVM) WithLabel(key, value string) *TestVM {
+	if t.Data.Labels == nil {
+		t.Data.Labels = map[string]string{}
+	}
+	t.Data.Labels[key] = value
+	return t
+}
+
+func (t *TestVM) WithVMILabel(key, value string) *TestVM {
+	if t.Data.Labels == nil {
+		t.Data.Spec.Template.ObjectMeta.Labels = map[string]string{}
+	}
+	t.Data.Spec.Template.ObjectMeta.Labels[key] = value
 	return t
 }
 

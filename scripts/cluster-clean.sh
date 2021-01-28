@@ -7,22 +7,27 @@ SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 source "${SCRIPT_DIR}/common.sh"
 
 PRUNE_IMAGES="${PRUNE_IMAGES:-true}"
+FORCE="${FORCE:-true}"
 MINIKUBE_CONTAINER_RUNTIME="${MINIKUBE_CONTAINER_RUNTIME:-docker}"
 IMAGE_REGISTRY=""
 
 if [[ "${PRUNE_IMAGES}" == "true" ]]; then
   if [[ "$IS_OPENSHIFT" == "true" ]]; then
     IMAGE_REGISTRY="$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')"
-    oc adm prune images --registry-url=$IMAGE_REGISTRY  --all=false  --keep-younger-than=0s --keep-tag-revisions=0 --confirm
+    if [[ "$FORCE" == "true" ]]; then
+      oc adm prune images --registry-url=$IMAGE_REGISTRY  --all=false  --keep-younger-than=0s --keep-tag-revisions=0 --confirm
+    fi
   elif [[ "${IS_MINIKUBE}" == "true" ]]; then
     IMAGE_REGISTRY="$(minikube ip):5000"
-    IN_CLUSTER_IMAGE_REGISTRY="$(kubectl get service registry -n kube-system --output 'jsonpath={.spec.clusterIP}')"
-    if [ -n "${IN_CLUSTER_IMAGE_REGISTRY}" ]; then
-      minikube ssh -- "${MINIKUBE_CONTAINER_RUNTIME}"' rmi $('"${MINIKUBE_CONTAINER_RUNTIME}"' images --format "{{.Repository}}" | grep '"${IN_CLUSTER_IMAGE_REGISTRY})" > /dev/null 2>&1 || true
-    fi
-    if minikube addons list | grep -q "registry .*enabled"; then
-      minikube addons disable registry
-      minikube addons enable registry
+    if [[ "$FORCE" == "true" ]]; then
+      IN_CLUSTER_IMAGE_REGISTRY="$(kubectl get service registry -n kube-system --output 'jsonpath={.spec.clusterIP}')"
+      if [ -n "${IN_CLUSTER_IMAGE_REGISTRY}" ]; then
+        minikube ssh -- "${MINIKUBE_CONTAINER_RUNTIME}"' rmi $('"${MINIKUBE_CONTAINER_RUNTIME}"' images --format "{{.Repository}}" | grep '"${IN_CLUSTER_IMAGE_REGISTRY})" > /dev/null 2>&1 || true
+      fi
+      if minikube addons list | grep -q "registry .*enabled"; then
+        minikube addons disable registry
+        minikube addons enable registry
+      fi
     fi
   fi
 fi

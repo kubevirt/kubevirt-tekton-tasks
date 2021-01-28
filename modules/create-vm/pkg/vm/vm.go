@@ -1,6 +1,8 @@
 package vm
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	templatev1 "github.com/openshift/api/template/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -8,39 +10,40 @@ import (
 
 	lab "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants/labels"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 )
 
 func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {
-	labels := k8s.EnsureLabels(&vm.ObjectMeta)
 	tempLabels := k8s.EnsureLabels(&vm.Spec.Template.ObjectMeta)
 
-	// reference origin template
-	labels[lab.TemplateNameLabel] = template.GetName()
-	labels[lab.TemplateNamespace] = template.GetNamespace()
+	if template != nil {
+		labels := k8s.EnsureLabels(&vm.ObjectMeta)
 
-	// set template flavor
-	if flavorKey, flavorValue := templates.GetFlagLabelByPrefix(template, lab.TemplateFlavorLabel); flavorKey != "" {
-		labels[flavorKey] = flavorValue
-		tempLabels[flavorKey] = flavorValue
-	}
+		// reference origin template
+		labels[lab.TemplateNameLabel] = template.GetName()
+		labels[lab.TemplateNamespace] = template.GetNamespace()
 
-	// set template workload
-	if workloadKey, workloadValue := templates.GetFlagLabelByPrefix(template, lab.TemplateWorkloadLabel); workloadKey != "" {
-		labels[workloadKey] = workloadValue
-		tempLabels[workloadKey] = workloadValue
-	}
+		// set template flavor
+		if flavorKey, flavorValue := templates.GetFlagLabelByPrefix(template, lab.TemplateFlavorLabel); flavorKey != "" {
+			labels[flavorKey] = flavorValue
+			tempLabels[flavorKey] = flavorValue
+		}
 
-	if osID, osName := templates.GetOs(template); osID != "" {
-		osIDLabel := lab.TemplateOsLabel + "/" + osID
-		labels[osIDLabel] = zconstants.True
-		tempLabels[osIDLabel] = zconstants.True
-		if osName != "" {
-			osIdAnnotation := lab.TemplateNameOsAnnotation + "/" + osID
-			k8s.EnsureAnnotations(&vm.ObjectMeta)[osIdAnnotation] = osName
+		// set template workload
+		if workloadKey, workloadValue := templates.GetFlagLabelByPrefix(template, lab.TemplateWorkloadLabel); workloadKey != "" {
+			labels[workloadKey] = workloadValue
+			tempLabels[workloadKey] = workloadValue
+		}
+
+		if osID, osName := templates.GetOs(template); osID != "" {
+			osIDLabel := lab.TemplateOsLabel + "/" + osID
+			labels[osIDLabel] = zconstants.True
+			tempLabels[osIDLabel] = zconstants.True
+			if osName != "" {
+				osIdAnnotation := lab.TemplateNameOsAnnotation + "/" + osID
+				k8s.EnsureAnnotations(&vm.ObjectMeta)[osIdAnnotation] = osName
+			}
 		}
 	}
 

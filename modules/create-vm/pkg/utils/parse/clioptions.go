@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap/zapcore"
@@ -8,17 +9,21 @@ import (
 )
 
 const (
+	vmManifestOptionName        = "vm-manifest"
 	vmNamespaceOptionName       = "vm-namespace"
+	templateNameOptionName      = "template-name"
 	templateNamespaceOptionName = "template-namespace"
+	templateParamsOptionName    = "template-params"
 )
 
 const templateParamSep = ":"
 
 // TemplateNamespaces and VirtualMachineNamespaces: arrays allow to have these options without option argument
 type CLIOptions struct {
-	TemplateName              string            `arg:"--template-name,required" placeholder:"NAME" help:"Name of a template to create VM from"`
+	TemplateName              string            `arg:"--template-name" placeholder:"NAME" help:"Name of a template to create VM from"`
 	TemplateNamespaces        []string          `arg:"--template-namespace" placeholder:"NAMESPACE" help:"Namespace of a template to create VM from"`
 	TemplateParams            []string          `arg:"--template-params" placeholder:"KEY2:VAL1 KEY2:VAL2" help:"Template params to pass when processing the template manifest"`
+	VirtualMachineManifest    string            `arg:"--vm-manifest,env:VM_MANIFEST" placeholder:"MANIFEST" help:"YAML manifest of a VirtualMachine resource to be created (can be set by VM_MANIFEST env variable)."`
 	VirtualMachineNamespaces  []string          `arg:"--vm-namespace" placeholder:"NAMESPACE" help:"Namespace where to create the VM"`
 	DataVolumes               []string          `arg:"--dvs" placeholder:"DV1 DV2" help:"Add DataVolumes to VM Volumes"`
 	OwnDataVolumes            []string          `arg:"--own-dvs" placeholder:"DV1 DV2" help:"Add DataVolumes to VM Volumes and add VM to DV ownerReferences. These DVs will be deleted once the created VM gets deleted."`
@@ -59,8 +64,27 @@ func (c *CLIOptions) GetDebugLevel() zapcore.Level {
 	return zapcore.InfoLevel
 }
 
+func (c *CLIOptions) GetCreationMode() constants.CreationMode {
+	if c.VirtualMachineManifest != "" && c.TemplateName != "" {
+		return ""
+	}
+	if c.VirtualMachineManifest != "" {
+		return constants.VMManifestCreationMode
+	}
+
+	if c.TemplateName != "" {
+		return constants.TemplateCreationMode
+	}
+
+	return ""
+}
+
 func (c *CLIOptions) GetTemplateNamespace() string {
 	return zutils.GetLast(c.TemplateNamespaces)
+}
+
+func (c *CLIOptions) GetVirtualMachineManifest() string {
+	return c.VirtualMachineManifest
 }
 
 func (c *CLIOptions) GetVirtualMachineNamespace() string {
@@ -76,6 +100,10 @@ func (c *CLIOptions) setVirtualMachineNamespace(namespace string) {
 }
 
 func (c *CLIOptions) Init() error {
+	if err := c.assertValidMode(); err != nil {
+		return err
+	}
+
 	if err := c.assertValidTypes(); err != nil {
 		return err
 	}
@@ -84,7 +112,7 @@ func (c *CLIOptions) Init() error {
 		return err
 	}
 
-	if err := c.resolveDefaultNamespaces(); err != nil {
+	if err := c.resolveDefaultNamespacesAndManifests(); err != nil {
 		return err
 	}
 
