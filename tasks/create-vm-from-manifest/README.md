@@ -1,6 +1,6 @@
-# Create VirtualMachine from Template Task
+# Create VirtualMachine from Manifest Task
 
-This task creates a VirtualMachine from different sources
+This task creates a VirtualMachine from YAML manifest
 
 ### Installation
 
@@ -11,11 +11,11 @@ kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-task
 ```
 
 Install one of the following rbac permissions to the active namespace
-- Permissions for using templates/VMs in active namespace
+- Permissions for using VMs and storage in active namespace
   ```bash
   kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm-from-manifest/manifests/create-vm-from-manifest-namespace-rbac.yaml
   ```
-- Permissions for using templates/VMs in the cluster
+- Permissions for using VMs and storage in the cluster
   ```bash
   TARGET_NAMESPACE="$(kubectl config view --minify --output 'jsonpath={..namespace}')"
   wget -qO - https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm-from-manifest/manifests/create-vm-from-manifest-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -

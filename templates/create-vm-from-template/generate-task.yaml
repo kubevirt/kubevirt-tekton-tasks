@@ -8,7 +8,6 @@
     - ../../scripts/ansible/common.yaml
   vars:
     create_vm_from_manifest_manifest_templates_dir: ../create-vm-from-manifest/manifests
-    create_vm_from_manifest_readmes_templates_dir: ../create-vm-from-manifest/readmes
   tasks:
     - name: Clean dist directory
       file:
@@ -46,7 +45,7 @@
         - { taskrun_with_flavor_name: "{{ task_name }}-taskrun" }
     - name: Generate README
       template:
-        src: "{{ create_vm_from_manifest_readmes_templates_dir }}/README.md"
+        src: "{{ readmes_templates_dir }}/README.md"
         dest: "{{ output_dir }}/README.md"
         mode: "{{ default_file_mode }}"
       vars:
