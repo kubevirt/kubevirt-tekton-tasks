@@ -2,6 +2,17 @@ module github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys
 
 go 1.15
 
+require (
+	github.com/alexflint/go-arg v1.3.0
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0
+	github.com/onsi/ginkgo v1.14.0
+	github.com/onsi/gomega v1.10.1
+	go.uber.org/zap v1.15.0
+	k8s.io/api v0.19.4
+	k8s.io/apimachinery v0.19.4
+	k8s.io/client-go v0.19.4
+)
+
 // locally referenced modules
 replace (
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ../shared

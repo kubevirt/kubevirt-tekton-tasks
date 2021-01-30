@@ -5,6 +5,9 @@ github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
 # github.com/google/gofuzz v1.0.0
 github.com/google/gofuzz
+# github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+## explicit
+github.com/google/shlex
 # github.com/nxadm/tail v1.4.4
 github.com/nxadm/tail
 github.com/nxadm/tail/ratelimiter

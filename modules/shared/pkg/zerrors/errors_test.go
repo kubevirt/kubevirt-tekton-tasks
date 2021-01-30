@@ -20,7 +20,7 @@ var _ = Describe("Errors", func() {
 	)
 
 	table.DescribeTable("should detect status errors to be soft", func(tested error, allowedCodes []int32, result bool) {
-		Expect(zerrors.IsStatusErrorSoft(tested, allowedCodes...)).To(Equal(result))
+		Expect(zerrors.IsStatusError(tested, allowedCodes...)).To(Equal(result))
 	},
 		table.Entry("nil", nil, nil, false),
 		table.Entry("not status error", errors.New("not soft"), nil, false),

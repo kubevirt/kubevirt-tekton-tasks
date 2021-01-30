@@ -1,4 +1,4 @@
-package zconstants_test
+package options_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestConstants(t *testing.T) {
+func TestExit(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Constants Suite")
+	RunSpecs(t, "Options Suite")
 }

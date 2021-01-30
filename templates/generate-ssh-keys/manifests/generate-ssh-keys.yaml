@@ -54,16 +54,17 @@ spec:
     - name: generate-ssh-keys
       image: {{ main_image }}
       command:
-        - generate-ssh-keys
-        - '--public-key-secret-name'
-        - $(params.publicKeySecretName)
-        - '--public-key-secret-namespace'
-        - $(params.publicKeySecretNamespace)
-        - '--private-key-secret-name'
-        - $(params.privateKeySecretName)
-        - '--private-key-secret-namespace'
-        - $(params.privateKeySecretNamespace)
-        - '--additional-ssh-keygen-options'
-        - $(params.additionalSSHKeygenOptions)
-        - '--private-key-connection-options'
+        - entrypoint
+        - '--'
         - $(params.privateKeyConnectionOptions)
+      env:
+        - name: PUBLIC_KEY_SECRET_NAME
+          value: $(params.publicKeySecretName)
+        - name: PUBLIC_KEY_SECRET_NAMESPACE
+          value: $(params.publicKeySecretNamespace)
+        - name: PRIVATE_KEY_SECRET_NAME
+          value: $(params.privateKeySecretName)
+        - name: PRIVATE_KEY_SECRET_NAMESPACE
+          value: $(params.privateKeySecretNamespace)
+        - name: ADDITIONAL_SSH_KEYGEN_OPTIONS
+          value: $(params.additionalSSHKeygenOptions)

@@ -42,7 +42,7 @@ func main() {
 
 	if err != nil {
 		exit.ExitOrDieFromError(CreateVMErrorExitCode, err,
-			zerrors.IsStatusErrorSoft(err, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity),
+			zerrors.IsStatusError(err, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity),
 		)
 	}
 
