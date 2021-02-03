@@ -4,7 +4,7 @@ import (
 	goarg "github.com/alexflint/go-arg"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/generate"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/secretcreator"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/secret"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
@@ -31,24 +31,46 @@ func main() {
 		exit.ExitOrDieFromError(SshKeysGenerationFailed, err)
 	}
 
-	secretCreator, err := secretcreator.NewSecretCreator(cliOptions, *keys)
+	secretFacade, err := secret.NewSecretFacade(cliOptions, *keys)
 	if err != nil {
 		exit.ExitOrDieFromError(SecretCreatorInitFailed, err)
 	}
 
-	err = secretCreator.CheckPrivateKeySecretExistence()
+	err = secretFacade.CheckPrivateKeySecretExistence()
 	if err != nil {
 		exit.ExitOrDieFromError(PrivateKeyAlreadyExists, err)
 	}
 
-	publicKeySecret, err := secretCreator.AppendPublicKeySecret()
+	publicKeySecret, err := secretFacade.GetPublicKeySecret()
+	if err != nil {
+		exit.ExitOrDieFromError(PublicKeySecretFetchFailed, err)
+	}
+	isAppendingPublicKey := publicKeySecret != nil
+
+	if isAppendingPublicKey {
+		publicKeySecret, err = secretFacade.AppendPublicKeySecret(publicKeySecret)
+	} else {
+		publicKeySecret, err = secretFacade.CreatePublicKeySecret()
+	}
+
 	if err != nil {
 		exit.ExitOrDieFromError(PublicKeySecretCreationFailed, err)
 	}
 
-	privateKeySecret, err := secretCreator.CreatePrivateKeySecret()
+	cleanupPublicKey := func() {
+		if !isAppendingPublicKey {
+			_ = secretFacade.DeleteSecret(publicKeySecret)
+		}
+	}
+
+	privateKeySecret, err := secretFacade.CreatePrivateKeySecret()
 	if err != nil {
+		defer cleanupPublicKey()
 		exit.ExitOrDieFromError(PrivateKeySecretCreationFailed, err)
+	}
+
+	cleanupPrivateKey := func() {
+		_ = secretFacade.DeleteSecret(privateKeySecret)
 	}
 
 	results := map[string]string{
@@ -60,6 +82,10 @@ func main() {
 
 	log.GetLogger().Debug("recording results", zap.Reflect("results", results))
 	if err := res.RecordResults(results); err != nil {
+		defer func() {
+			defer cleanupPublicKey()
+			defer cleanupPrivateKey()
+		}()
 		exit.ExitOrDieFromError(WriteResultsExitCode, err)
 	}
 }
