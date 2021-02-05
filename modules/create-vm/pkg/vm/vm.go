@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	"sort"
 
 	lab "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants/labels"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
@@ -103,4 +104,38 @@ func AsVMOwnerReference(vm *kubevirtv1.VirtualMachine) metav1.OwnerReference {
 		BlockOwnerDeletion: &blockOwnerDeletion,
 		Controller:         &isController,
 	}
+}
+
+func SortDisksAndVolumes(vm *kubevirtv1.VirtualMachine) {
+	sort.SliceStable(vm.Spec.Template.Spec.Volumes, func(i, j int) bool {
+		iBootable := isVolumeBootable(vm.Spec.Template.Spec.Volumes[i])
+		jBootable := isVolumeBootable(vm.Spec.Template.Spec.Volumes[j])
+		return iBootable != jBootable && iBootable
+	})
+
+	diskMap := map[string]kubevirtv1.Disk{}
+
+	for _, disk := range vm.Spec.Template.Spec.Domain.Devices.Disks {
+		diskMap[disk.Name] = disk
+	}
+
+	var disks []kubevirtv1.Disk
+
+	for _, volume := range vm.Spec.Template.Spec.Volumes {
+		disk := diskMap[volume.Name]
+		disks = append(disks, disk)
+	}
+
+	vm.Spec.Template.Spec.Domain.Devices.Disks = disks
+}
+
+func isVolumeBootable(volume kubevirtv1.Volume) bool {
+	isNotBootable := volume.Secret != nil ||
+		volume.CloudInitConfigDrive != nil ||
+		volume.CloudInitNoCloud != nil ||
+		volume.ConfigMap != nil ||
+		volume.EmptyDisk != nil ||
+		volume.ServiceAccount != nil
+
+	return !isNotBootable
 }

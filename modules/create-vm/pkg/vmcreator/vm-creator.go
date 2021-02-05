@@ -102,6 +102,7 @@ func (v *VMCreator) createVMFromManifest() (*kubevirtv1.VirtualMachine, error) {
 
 	templateValidations := validations.NewTemplateValidations(nil) // fallback to defaults
 	virtualMachine.AddVolumes(&vm, templateValidations, v.cliOptions)
+	virtualMachine.SortDisksAndVolumes(&vm)
 
 	log.GetLogger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, &vm)
@@ -136,6 +137,7 @@ func (v *VMCreator) createVMFromTemplate() (*kubevirtv1.VirtualMachine, error) {
 	vm.Namespace = v.targetNamespace
 	virtualMachine.AddMetadata(vm, processedTemplate)
 	virtualMachine.AddVolumes(vm, templateValidations, v.cliOptions)
+	virtualMachine.SortDisksAndVolumes(vm)
 
 	log.GetLogger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, vm)
