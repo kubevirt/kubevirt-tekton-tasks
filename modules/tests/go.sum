@@ -1740,8 +1740,8 @@ knative.dev/pkg v0.0.0-20200831162708-14fb2347fb77 h1:GVzuZIcWF2FqflS8gEwSYWO3bF
 knative.dev/pkg v0.0.0-20200831162708-14fb2347fb77/go.mod h1:xLMZC5ct0Sx3QQDWHMa1WZggjR6lpJt/S7mXEED6ONo=
 knative.dev/test-infra v0.0.0-20200707183444-aed09e56ddc7/go.mod h1:RjYAhXnZqeHw9+B0zsbqSPlae0lCvjekO/nw5ZMpLCs=
 knative.dev/test-infra v0.0.0-20200828171708-f68cb78c80a9/go.mod h1:0uZ4scq51k4xUTJe8zK+wnODCEM+v7pKM6iTKk0Oqo8=
-kubevirt.io/client-go v0.35.0 h1:S0FjlxdMsXuUiXCkFBGIkQYeMjoR+F6gHjZ1O7c3uUQ=
-kubevirt.io/client-go v0.35.0/go.mod h1:H7w/toi2lEbJ1K6EK3hd2ZatVvm793iZOKFVxx18hzg=
+kubevirt.io/client-go v0.37.2 h1:mi6RH+xq8OIS+hOp/LOrD43BGgjp8hUlLjr+ayEn4sQ=
+kubevirt.io/client-go v0.37.2/go.mod h1:ZR+pS7E7iROhKVSGO4y6PCMGy/iEYzMAUEo4Ky0/I6A=
 kubevirt.io/containerized-data-importer v1.21.0 h1:DQzBREhtXrqL6zoyYjgJBagyiXGQ+DNQuOR2XDuZeUU=
 kubevirt.io/containerized-data-importer v1.21.0/go.mod h1:cc4y/6lg+Y6W9bUhrXPZgFJxoe3dA+EbSwKBTjBDO3I=
 kubevirt.io/qe-tools v0.1.3/go.mod h1:PJyH/YXC4W0AmxfheDmXWMbLNsMSboVGXKpMAwfKzVE=

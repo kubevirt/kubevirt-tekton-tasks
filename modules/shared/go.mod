@@ -8,7 +8,7 @@ require (
 	k8s.io/apimachinery v0.19.4
 )
 
-// Pinned to kubernetes-1.16.4 (due to kubevirt/client-go v0.35.0)
+// Pinned to kubernetes-1.16.4 (due to kubevirt/client-go v0.37.2)
 replace (
 	k8s.io/api => k8s.io/api v0.16.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.16.4

@@ -40,7 +40,7 @@ parameters:
     description: Name for the new VM
     required: true
 objects:
-  - apiVersion: kubevirt.io/v1alpha3
+  - apiVersion: kubevirt.io/v1
     kind: VirtualMachine
     metadata:
       labels:
