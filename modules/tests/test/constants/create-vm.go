@@ -61,4 +61,4 @@ const (
 	CreateVMVMManifestMode CreateVMMode = "CreateVMVMManifestMode"
 )
 
-const ExpectedSuccessfulVMCreation = "apiVersion: kubevirt.io/v1alpha3\nkind: VirtualMachine\n"
+const ExpectedSuccessfulVMCreation = "apiVersion: kubevirt.io/v1\nkind: VirtualMachine\n"

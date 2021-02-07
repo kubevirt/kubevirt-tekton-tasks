@@ -64,7 +64,7 @@ metadata:
   selfLink: /apis/template.openshift.io/v1/namespaces/openshift/templates/fedora-server-tiny-v0.7.0
   uid: fdab5553-7ba8-47af-9b01-9320927406e6
 objects:
-- apiVersion: kubevirt.io/v1alpha3
+- apiVersion: kubevirt.io/v1
   kind: VirtualMachine
   metadata:
     labels:

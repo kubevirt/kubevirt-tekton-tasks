@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	"sort"
@@ -69,6 +70,53 @@ var _ = Describe("VM", func() {
 			cliOptions.PersistentVolumeClaims = nil
 			addsVolumesCorrectly(vm, emptyValidations, cliOptions, Virtio)
 		})
+	})
+
+	It("sorts disks and volumes", func() {
+		vm = shtestobjects.NewTestVM().Build()
+
+		for _, name := range []string{"c", "a", "b", "d"} {
+			disk := kubevirtv1.Disk{
+				Name: name,
+				DiskDevice: kubevirtv1.DiskDevice{
+					Disk: &kubevirtv1.DiskTarget{Bus: Virtio},
+				},
+			}
+			vm.Spec.Template.Spec.Domain.Devices.Disks = append(vm.Spec.Template.Spec.Domain.Devices.Disks, disk)
+		}
+
+		vm.Spec.Template.Spec.Volumes = []kubevirtv1.Volume{
+			{
+				Name: "c",
+				VolumeSource: kubevirtv1.VolumeSource{
+					Secret: &kubevirtv1.SecretVolumeSource{SecretName: "test-c"},
+				},
+			},
+			{
+				Name: "a",
+				VolumeSource: kubevirtv1.VolumeSource{
+					PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{ClaimName: "test-a"},
+				},
+			},
+			{
+				Name: "d",
+				VolumeSource: kubevirtv1.VolumeSource{
+					CloudInitConfigDrive: &kubevirtv1.CloudInitConfigDriveSource{UserData: "test-d"},
+				},
+			},
+			{
+				Name: "b",
+				VolumeSource: kubevirtv1.VolumeSource{
+					DataVolume: &kubevirtv1.DataVolumeSource{Name: "test-b"},
+				},
+			},
+		}
+
+		vm2.SortDisksAndVolumes(vm)
+		for idx, name := range []string{"a", "b", "c", "d"} {
+			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[idx].Name).To(Equal(name))
+			Expect(vm.Spec.Template.Spec.Volumes[idx].Name).To(Equal(name))
+		}
 	})
 
 	It("Adds correct metadata from template", func() {

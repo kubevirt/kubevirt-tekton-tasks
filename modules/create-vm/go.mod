@@ -15,8 +15,8 @@ require (
 	k8s.io/api v0.19.4
 	k8s.io/apimachinery v0.19.4
 	k8s.io/client-go v12.0.0+incompatible
-	kubevirt.io/client-go v0.35.0
-	kubevirt.io/containerized-data-importer v1.25.0
+	kubevirt.io/client-go v0.37.2
+	kubevirt.io/containerized-data-importer v1.26.1
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -26,7 +26,7 @@ replace (
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
 )
 
-// Pinned to kubernetes-1.16.4 (due to kubevirt/client-go v0.35.0)
+// Pinned to kubernetes-1.16.4 (due to kubevirt/client-go v0.37.2)
 replace (
 	k8s.io/api => k8s.io/api v0.16.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.16.4
