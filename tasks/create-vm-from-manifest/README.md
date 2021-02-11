@@ -41,4 +41,4 @@ This task should be run with `create-vm-from-manifest-task` serviceAccount.
 
 ### Usage
 
-Please see [examples](examples)
+Please see [examples](examples) on how to create VMs.

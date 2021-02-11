@@ -15,8 +15,8 @@ spec:
       value: {{ item.secret_name }}
     - name: command
       value:
-        - ls
+        - systemctl
     - name: args
       value:
-        - '-al'
-        - '/'
+        - 'start'
+        - 'postgresql.service'

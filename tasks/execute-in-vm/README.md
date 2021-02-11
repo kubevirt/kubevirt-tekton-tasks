@@ -46,8 +46,12 @@ The secret is used for storing credentials and options used in VM authentication
 - **disable-strict-host-key-checking**: host-public-key (authorized-key) does not have to be supplied when this value is set to true.
 - **additional-ssh-options**: Additional arguments to pass to the SSH command.
 
-Please see [secret](examples/secrets) examples 
+Please see [secret](examples/secrets) examples.
 
 ### Usage
 
-Please see [examples](examples)
+Please see [examples](examples).
+
+#### Specific examples
+
+- [start postgresql service over ssh](examples/taskruns/execute-in-vm-with-ssh-taskrun.yaml)

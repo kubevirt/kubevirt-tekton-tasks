@@ -39,4 +39,4 @@ This task should be run with `{{task_yaml.metadata.annotations['task.kubevirt.io
 
 ### Usage
 
-Please see [examples](examples)
+Please see [examples](examples) on how to create DataVolumes.
