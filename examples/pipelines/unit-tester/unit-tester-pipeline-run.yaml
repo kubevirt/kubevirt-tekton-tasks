@@ -1,0 +1,16 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: unit-tester-run-
+  labels:
+    tekton.dev/pipeline: unit-tester
+spec:
+  pipelineRef:
+    name: unit-tester
+  serviceAccountNames:
+    - serviceAccountName: create-vm-from-manifest-task
+      taskName: create-vm-from-manifest
+    - serviceAccountName: execute-in-vm-task
+      taskName: execute-in-vm
+    - serviceAccountName: cleanup-vm-task
+      taskName: cleanup-vm

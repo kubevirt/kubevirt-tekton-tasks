@@ -24,6 +24,9 @@ Tasks focus on:
 - [execute-in-vm](tasks/execute-in-vm): execute commands over SSH
 - [cleanup-vm](tasks/cleanup-vm): execute commands and/or stop/delete VMs
 
+## Examples
+
+- [Unit Tester](examples/pipelines/unit-tester) pipeline creates a VM and runs unit tests over SSH. Also showcases finally construct.
 
 ## Development Guide
 

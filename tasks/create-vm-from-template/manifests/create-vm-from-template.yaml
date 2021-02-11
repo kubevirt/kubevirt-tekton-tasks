@@ -25,10 +25,10 @@ metadata:
 spec:
   params:
     - name: templateName
-      description: Name of a template to create VM from.
+      description: Name of an OpenShift template to create VM from.
       type: string
     - name: templateNamespace
-      description: Namespace of a template to create VM from. (defaults to active namespace)
+      description: Namespace of an OpenShift template to create VM from. (defaults to active namespace)
       default: ""
       type: string
     - name: templateParams

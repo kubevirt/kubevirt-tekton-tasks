@@ -46,7 +46,7 @@ var _ = Describe("CLIOptions", func() {
 			Script:                   script,
 			ConnectionSecretName:     "secret!",
 		}),
-		table.Entry("invalid timeout", "could not parse timeout: time: unknown unit \"q\" in duration \"1h5q\"", &parse.CLIOptions{
+		table.Entry("invalid timeout", "could not parse timeout: time: unknown unit", &parse.CLIOptions{
 			VirtualMachineNamespaces: defaultNSArr,
 			Script:                   script,
 			Timeout:                  "1h5q",
