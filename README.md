@@ -1,6 +1,12 @@
 # Kubevirt Tekton Tasks
 
-VM specific tasks for Tekton Pipelines
+Kubevirt specific tasks for [Tekton Pipelines](https://github.com/tektoncd/pipeline) (CI/CD-style pipelines for k8s).
+
+Tasks focus on:
+
+- creating and managing resources (VMs, DataVolumes)
+- executing commands in VM's
+- manipulating disk images with virt-customize [WIP]
 
 ## Usage and Deployment
 

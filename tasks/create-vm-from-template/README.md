@@ -43,4 +43,4 @@ This task should be run with `create-vm-from-template-task` serviceAccount.
 
 ### Usage
 
-Please see [examples](examples)
+Please see [examples](examples) on how to create VMs from a template.
