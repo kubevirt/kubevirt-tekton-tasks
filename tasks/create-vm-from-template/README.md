@@ -27,8 +27,8 @@ This task should be run with `create-vm-from-template-task` serviceAccount.
 
 ### Parameters
 
-- **templateName**: Name of a template to create VM from.
-- **templateNamespace**: Namespace of a template to create VM from. (defaults to active namespace)
+- **templateName**: Name of an OpenShift template to create VM from.
+- **templateNamespace**: Namespace of an OpenShift template to create VM from. (defaults to active namespace)
 - **templateParams**: Template params to pass when processing the template manifest. Each param should have KEY:VAL format. Eg `["NAME:my-vm", "DESC:blue"]`
 - **vmNamespace**: Namespace where to create the VM. (defaults to active namespace)
 - **dataVolumes**: Add DVs to VM Volumes.
