@@ -1,12 +1,11 @@
-# Kubevirt Tekton Tasks
+# KubeVirt Tekton Tasks
 
-Kubevirt specific tasks for [Tekton Pipelines](https://github.com/tektoncd/pipeline) (CI/CD-style pipelines for k8s).
+[Tekton Pipelines](https://github.com/tektoncd/pipeline) are CI/CD-style pipelines for Kubernetes.
+This repository provides KubeVirt-specific Tekton tasks, which focus on:
 
-Tasks focus on:
-
-- creating and managing resources (VMs, DataVolumes)
-- executing commands in VM's
-- manipulating disk images with virt-customize [WIP]
+- Creating and managing resources (VMs, DataVolumes)
+- Executing commands in VMs
+- Manipulating disk images with virt-customize [WIP]
 
 ## Usage and Deployment
 
@@ -26,7 +25,12 @@ Tasks focus on:
 
 ## Examples
 
-- [Unit Tester](examples/pipelines/unit-tester) pipeline creates a VM and runs unit tests over SSH. Also showcases finally construct.
+- Good unit tests are detached from the operating system and can run everywhere.
+  However, this is not always the case. Your tests may require access to entire operating system, or run as root,
+  or need a specific kernel.
+  The [Unit Tester](examples/pipelines/unit-tester) example shows how you can run your tests in your VM of choice.
+  The pipeline creates a VM, connects to it over SSH and runs tests inside it.
+  It also showcases the `finally` construct.
 
 ## Development Guide
 
