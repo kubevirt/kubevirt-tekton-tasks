@@ -2,6 +2,17 @@
 
 set -e
 
+function testConsistency() {
+  set +e
+    diff -r "${SOURCE_DIR}" "${DESTINATION_DIR}"| tee -a "${TEST_OUT}"
+    CURRENT_RET_CODE=${PIPESTATUS[0]}
+    if [ "${CURRENT_RET_CODE}" -ne 0 ]; then
+      RET_CODE=${CURRENT_RET_CODE}
+      echo -e "\n${DESTINATION_DIR} yaml files are not fresh and should be regenerated!" | tee -a "${TEST_OUT}" 1>&2
+    fi
+  set -e
+}
+
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 
@@ -26,18 +37,21 @@ visit "${REPO_DIR}"
           for RESOURCE_TYPE in *; do
             DESTINATION_DIR="${REPO_DIR}/tasks/${TASK_NAME}/${RESOURCE_TYPE}"
             SOURCE_DIR="${REPO_DIR}/templates/${TASK_NAME}/dist/${RESOURCE_TYPE}"
-
-            set +e
-              diff -r "${SOURCE_DIR}" "${DESTINATION_DIR}"| tee -a "${TEST_OUT}"
-              CURRENT_RET_CODE=${PIPESTATUS[0]}
-              if [ "${CURRENT_RET_CODE}" -ne 0 ]; then
-                RET_CODE=${CURRENT_RET_CODE}
-                echo -e "\n${TASK_NAME} yaml files are not fresh and should be regenerated!" | tee -a "${TEST_OUT}" 1>&2
-              fi
-            set -e
+            testConsistency
           done
         leave
         rm -rf dist
+      leave
+    done
+  leave
+
+  visit manifests
+    for RELEASE_TYPE in kubernetes openshift; do
+      visit "${RELEASE_TYPE}"
+        DESTINATION_DIR="${REPO_DIR}/manifests/${RELEASE_TYPE}"
+        SOURCE_DIR="${DESTINATION_DIR}-dist"
+        testConsistency
+        rm -rf "${SOURCE_DIR}"
       leave
     done
   leave
