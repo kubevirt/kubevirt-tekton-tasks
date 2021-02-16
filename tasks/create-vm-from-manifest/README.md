@@ -2,16 +2,6 @@
 
 This task creates a VirtualMachine from YAML manifest
 
-### Installation
-
-Install the `create-vm-from-manifest` task in active namespace. You have to repeat this for every namespace in which you'd like to run the tasks.
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm-from-manifest/manifests/create-vm-from-manifest.yaml
-```
-
-For more information on how to utilize this task in different namespaces, please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md).
-
 ### Service Account
 
 This task should be run with `create-vm-from-manifest-task` serviceAccount.
