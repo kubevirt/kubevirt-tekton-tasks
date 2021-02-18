@@ -14,5 +14,5 @@ so the real image can be tested by it.
     - All new base images have to be added.
     - A new task image has to be added & pointing to the stub `Dockerfile`.
     - The name of this image has to be passed in the already registered ENV variable.
-4. Implement the functionality and create a new PR against https://github.com/kubevirt/kubevirt-tekton-tasks.
+4. Implement the task functionality and create a new PR against https://github.com/kubevirt/kubevirt-tekton-tasks.
 5. The CI should build the task image before the tests run and then it should be ready to use.
