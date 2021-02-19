@@ -1,6 +1,8 @@
-# Create VirtualMachine from Template Task
+# Create VirtualMachine from OpenShift Template Task
 
-This task creates a VirtualMachine from OpenShift Template
+This task creates a VirtualMachine from OpenShift Template.
+Virtual machines can be described and parametrized in a generic form with these templates.
+A bundle of predefined templates to use can be found in [Common Templates](https://github.com/kubevirt/common-templates) project.
 
 ### Installation
 

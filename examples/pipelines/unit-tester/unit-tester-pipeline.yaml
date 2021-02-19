@@ -2,7 +2,7 @@
 kind: Secret
 apiVersion: v1
 metadata:
-  name: fedora-unit-tester-private-key
+  name: unit-tester-client-private-key
 type: Opaque
 stringData:
   type: ssh
@@ -51,7 +51,7 @@ stringData:
 kind: Secret
 apiVersion: v1
 metadata:
-  name: fedora-unit-tester-public-key
+  name: unit-tester-client-public-key
 type: Opaque
 stringData:
   public-key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7nkqvSU0JHqtIZTZfhKaiQZeZAPsVg7RwZxSnSnvUxL8hj+G/MpefM8B3ctReJ6lM80JUJO62dKiHvON3QNF14ig4aquGlg15czMPvG8QSyAMxzRZs0dBiLXFvUy+6/6+cNERY3QkbH6pjc3GUON4c/5oRvgXhHHQx+darr6VnZcHGu8h3CwR3IDBnfuhEkeCaIPqZ5RSW1b+znWHRM728gv6A7b4XXUaqwNiF0xkdAdzMwK2/d1hJ9QVRqzfrIcJeK3FRoZfM4QEEv7IlufjdJ0RquRgK+E/bbnHTS+K2T+JrvLyerGgMCv5NOX1Z7GvJKvgLdpeGLW+WTzGnyFtD7ZVn0tnhYQhBAbbChzMYD16yykbxXpn3EV7Bcy4gMB5jVAOgy6t26EuDts27EEQCGbT4NZyQ3chlAI9nTy8bFxH2RznU1u2u3MsBDhe8z0QHGT0u2H6jDWHq8BD5JTRt3gMbjoST0izEXAkn8QjDnAhhJGF3IrpAUQsb+NrTCk= fedora@sshclient
@@ -66,10 +66,10 @@ spec:
       default: fedora-unit-tester
       type: string
     - name: privateKeySecretName
-      default: fedora-unit-tester-private-key
+      default: unit-tester-client-private-key
       type: string
     - name: publicKeySecretName
-      default: fedora-unit-tester-public-key
+      default: unit-tester-client-public-key
       type: string
   tasks:
     - name: create-vm-from-manifest

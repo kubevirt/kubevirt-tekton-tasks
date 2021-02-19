@@ -3,7 +3,12 @@
 Clones kubevirt-tekton-tasks repository and executes unit tests in a VM and then deletes the VM at the end.
 
 
-## `Pipeline Description`
+## Prerequisites
+
+- KubeVirt `v0.36.0`
+- Tekton Pipelines `v0.19.0`
+
+## Pipeline Description
 
 ```
   create-vm-from-manifest --- execute-in-vm --- cleanup-vm (finally)
@@ -20,9 +25,9 @@ Clones kubevirt-tekton-tasks repository and executes unit tests in a VM and then
     - deletes the VM
 
 
-## `How to run`
+## How to run
 
 ```bash
 kubectl create -f unit-tester-pipeline.yaml
-kubectl create -f unit-tester-pipeline-run.yaml
+kubectl create -f unit-tester-pipelinerun.yaml
 ```
