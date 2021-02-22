@@ -98,10 +98,15 @@ func (f *TestOptions) resolveNamespaces() map[constants.TargetNamespace]string {
 		constants.DeployTargetNS: f.DeployNamespace,
 		constants.TestTargetNS:   f.TestNamespace,
 		constants.SystemTargetNS: systemNS,
+		constants.EmptyTargetNS:  "",
 	}
 }
 
 func (f *TestOptions) ResolveNamespace(namespace constants.TargetNamespace) string {
+	if namespace == constants.EmptyTargetNS {
+		return ""
+	}
+
 	ns := f.targetNamespaces[namespace]
 
 	if ns != "" {

@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	tkntest "github.com/tektoncd/pipeline/test"
+	"knative.dev/pkg/apis"
 )
 
 type TaskRunRunner struct {
@@ -42,6 +43,16 @@ func (r *TaskRunRunner) ExpectFailure() *TaskRunRunner {
 	return r
 }
 
+func (r *TaskRunRunner) WaitForTaskRunFinish() *TaskRunRunner {
+	r.taskRun = tekton.WaitForTaskRunState(r.framework.TknClient, r.taskRun.Namespace, r.taskRun.Name,
+		r.taskRun.GetTimeout()+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
+		func(accessor apis.ConditionAccessor) (bool, error) {
+			succeeded, _ := tkntest.TaskRunSucceed(r.taskRun.Name)(accessor)
+			return succeeded, nil
+		})
+	return r
+}
+
 func (r *TaskRunRunner) ExpectSuccess() *TaskRunRunner {
 	r.taskRun = tekton.WaitForTaskRunState(r.framework.TknClient, r.taskRun.Namespace, r.taskRun.Name,
 		r.taskRun.GetTimeout()+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
@@ -73,10 +84,18 @@ func (r *TaskRunRunner) ExpectTermination(termination *testconfigs.TaskRunExpect
 	return r
 }
 
-func (r *TaskRunRunner) ExpectResults(results map[string]string) *TaskRunRunner {
-	receivedResults := tekton.TaskResultsToMap(r.taskRun.Status.TaskRunResults)
+func (r *TaskRunRunner) GetResults() map[string]string {
+	return tekton.TaskResultsToMap(r.taskRun.Status.TaskRunResults)
+}
 
-	Expect(receivedResults).Should(HaveLen(len(results)))
+func (r *TaskRunRunner) ExpectResults(results map[string]string) *TaskRunRunner {
+	return r.ExpectResultsWithLen(results, len(results))
+}
+
+func (r *TaskRunRunner) ExpectResultsWithLen(results map[string]string, expectedLen int) *TaskRunRunner {
+	receivedResults := r.GetResults()
+
+	Expect(receivedResults).Should(HaveLen(expectedLen))
 
 	for resultKey, resultValue := range results {
 		Expect(receivedResults[resultKey]).To(Equal(resultValue))
