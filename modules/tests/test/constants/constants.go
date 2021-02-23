@@ -19,6 +19,7 @@ const (
 	DeployTargetNS TargetNamespace = "deploy"
 	TestTargetNS   TargetNamespace = "test"
 	SystemTargetNS TargetNamespace = "system"
+	EmptyTargetNS  TargetNamespace = "empty"
 )
 
 type TestScope string

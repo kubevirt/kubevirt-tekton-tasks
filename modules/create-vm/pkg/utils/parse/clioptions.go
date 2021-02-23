@@ -22,7 +22,7 @@ const templateParamSep = ":"
 type CLIOptions struct {
 	TemplateName              string            `arg:"--template-name" placeholder:"NAME" help:"Name of a template to create VM from"`
 	TemplateNamespaces        []string          `arg:"--template-namespace" placeholder:"NAMESPACE" help:"Namespace of a template to create VM from"`
-	TemplateParams            []string          `arg:"--template-params" placeholder:"KEY2:VAL1 KEY2:VAL2" help:"Template params to pass when processing the template manifest"`
+	TemplateParams            []string          `arg:"--template-params" placeholder:"KEY1:VAL1 KEY2:VAL2" help:"Template params to pass when processing the template manifest"`
 	VirtualMachineManifest    string            `arg:"--vm-manifest,env:VM_MANIFEST" placeholder:"MANIFEST" help:"YAML manifest of a VirtualMachine resource to be created (can be set by VM_MANIFEST env variable)."`
 	VirtualMachineNamespaces  []string          `arg:"--vm-namespace" placeholder:"NAMESPACE" help:"Namespace where to create the VM"`
 	DataVolumes               []string          `arg:"--dvs" placeholder:"DV1 DV2" help:"Add DataVolumes to VM Volumes"`

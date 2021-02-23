@@ -1,0 +1,11 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: generate-ssh-keys-simple-taskrun
+spec:
+  serviceAccountName: generate-ssh-keys-task
+  taskRef:
+    kind: ClusterTask
+    name: generate-ssh-keys
+  params: []

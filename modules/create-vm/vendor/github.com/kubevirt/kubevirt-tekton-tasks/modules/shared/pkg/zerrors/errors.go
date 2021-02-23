@@ -15,7 +15,7 @@ func IsErrorSoft(err error) bool {
 	return ok && softErr.IsSoft()
 }
 
-func IsStatusErrorSoft(err error, allowedStatusCodes ...int32) bool {
+func IsStatusError(err error, allowedStatusCodes ...int32) bool {
 	if err == nil {
 		return false
 	}

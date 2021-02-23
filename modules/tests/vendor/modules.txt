@@ -906,6 +906,7 @@ k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/trace
 # knative.dev/pkg v0.0.0-20200831162708-14fb2347fb77
+## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
 knative.dev/pkg/apis/duck/ducktypes
