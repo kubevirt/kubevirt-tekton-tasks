@@ -18,6 +18,10 @@ This repository provides KubeVirt-specific Tekton tasks, which focus on:
 
 - [create-datavolume-from-manifest](tasks/create-datavolume-from-manifest)
 
+#### Generate SSH Keys
+
+- [generate-ssh-keys](tasks/generate-ssh-keys)
+
 #### Execute Commands in Virtual Machines
 
 - [execute-in-vm](tasks/execute-in-vm): execute commands over SSH
