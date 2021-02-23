@@ -1,61 +1,3 @@
----
-kind: Secret
-apiVersion: v1
-metadata:
-  name: unit-tester-client-private-key
-type: Opaque
-stringData:
-  type: ssh
-  user: fedora
-  disable-strict-host-key-checking: "true"
-  private-key: |
-    -----BEGIN OPENSSH PRIVATE KEY-----
-    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
-    7L+0PcJVDWJ+1jAAAACWFuc3lAYW5zeQE=
-    -----END OPENSSH PRIVATE KEY-----
----
-kind: Secret
-apiVersion: v1
-metadata:
-  name: unit-tester-client-public-key
-type: Opaque
-stringData:
-  public-key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7nkqvSU0JHqtIZTZfhKaiQZeZAPsVg7RwZxSnSnvUxL8hj+G/MpefM8B3ctReJ6lM80JUJO62dKiHvON3QNF14ig4aquGlg15czMPvG8QSyAMxzRZs0dBiLXFvUy+6/6+cNERY3QkbH6pjc3GUON4c/5oRvgXhHHQx+darr6VnZcHGu8h3CwR3IDBnfuhEkeCaIPqZ5RSW1b+znWHRM728gv6A7b4XXUaqwNiF0xkdAdzMwK2/d1hJ9QVRqzfrIcJeK3FRoZfM4QEEv7IlufjdJ0RquRgK+E/bbnHTS+K2T+JrvLyerGgMCv5NOX1Z7GvJKvgLdpeGLW+WTzGnyFtD7ZVn0tnhYQhBAbbChzMYD16yykbxXpn3EV7Bcy4gMB5jVAOgy6t26EuDts27EEQCGbT4NZyQ3chlAI9nTy8bFxH2RznU1u2u3MsBDhe8z0QHGT0u2H6jDWHq8BD5JTRt3gMbjoST0izEXAkn8QjDnAhhJGF3IrpAUQsb+NrTCk= fedora@sshclient
----
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
@@ -72,6 +14,19 @@ spec:
       default: unit-tester-client-public-key
       type: string
   tasks:
+    - name: generate-ssh-keys
+      params:
+        - name: publicKeySecretName
+          value: $(params.publicKeySecretName)
+        - name: privateKeySecretName
+          value: $(params.privateKeySecretName)
+        - name: privateKeyConnectionOptions
+          value:
+            - 'user:fedora'
+            - 'disable-strict-host-key-checking:true'
+      taskRef:
+        kind: ClusterTask
+        name: generate-ssh-keys
     - name: create-vm-from-manifest
       params:
         - name: manifest
@@ -129,6 +84,8 @@ spec:
                       cloudInitConfigDrive:
                         userData: |
                           #cloud-config
+      runAfter:
+        - generate-ssh-keys
       taskRef:
         kind: ClusterTask
         name: create-vm-from-manifest

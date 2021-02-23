@@ -8,6 +8,8 @@ spec:
   pipelineRef:
     name: unit-tester
   serviceAccountNames:
+    - serviceAccountName: generate-ssh-keys-task
+      taskName: generate-ssh-keys
     - serviceAccountName: create-vm-from-manifest-task
       taskName: create-vm-from-manifest
     - serviceAccountName: execute-in-vm-task
