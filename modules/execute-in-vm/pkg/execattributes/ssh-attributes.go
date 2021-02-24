@@ -103,6 +103,10 @@ func (s *sshAttributes) initSSH(execSecretPath string) error {
 	}
 	s.port = port
 
+	if !strings.HasSuffix(s.privateKey, "\n") {
+		s.privateKey += "\n"
+	}
+
 	if !s.IncludesSSHOption(sshStrictHostKeyCheckingOption) {
 		s.AddAdditionalSSHOption(sshStrictHostKeyCheckingOption, s.GetStrictHostKeyCheckingMode())
 	}

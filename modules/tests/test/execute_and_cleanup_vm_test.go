@@ -382,6 +382,23 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
+			table.Entry("execute with malformed private key", &testconfigs.ExecuteOrCleanupVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ExecuteInVMServiceAccountName,
+					ExpectedLogs:   "hello world",
+					ExpectSuccess:  true,
+				},
+				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
+					VM: testobjects.NewTestFedoraCloudVM("execute-with-malformed-private-key").WithCloudConfig(fedoraCloudConfig).Build(),
+					Secret: testobjects.NewTestSecret(map[string]string{
+						"type":                             "ssh",
+						"user":                             "fedora",
+						"private-key":                      testconstants.SSHTestPrivateKeyWithoutLastNewLine,
+						"disable-strict-host-key-checking": "true",
+					}),
+					Script: helloWorldScript,
+				},
+			}),
 		)
 	}
 
