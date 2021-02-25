@@ -3,17 +3,12 @@ package execattributes
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env/fileoptions"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants/connectionsecret"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap/zapcore"
 	"os"
 	"path"
 	"strings"
-)
-
-// General options
-const (
-	// supported values: ExecSecretType.SSH (ssh)
-	secretTypeOption = "type"
 )
 
 type attributes struct {
@@ -39,9 +34,17 @@ func (s *attributes) Init(execAttributesPath string) error {
 	}
 	s.secretPath = execAttributesPath
 
-	var secretTypeRaw string
-	if err := fileoptions.ReadFileOption(&secretTypeRaw, path.Join(s.secretPath, secretTypeOption)); err != nil {
-		return err
+	var secretTypeRaw, sshPrivateKey, sshPrivateKeyAlternativeFormat string
+	secretOptions := map[string]*string{
+		connectionsecret.ConnectionSecretTypeKey:                             &secretTypeRaw,
+		connectionsecret.SSHConnectionSecretKeys.PrivateKey:                  &sshPrivateKey,
+		connectionsecret.SSHConnectionSecretKeys.PrivateKeyAlternativeFormat: &sshPrivateKeyAlternativeFormat,
+	}
+
+	for optionName, output := range secretOptions {
+		if err := fileoptions.ReadFileOption(output, path.Join(s.secretPath, optionName)); err != nil {
+			return err
+		}
 	}
 
 	secretTypeRaw = strings.TrimSpace(secretTypeRaw)
@@ -50,10 +53,14 @@ func (s *attributes) Init(execAttributesPath string) error {
 	case string(constants.SSHSecretType):
 		s.secretType = constants.ExecSecretType(secretTypeRaw)
 	default:
-		if secretTypeRaw == "" {
-			return zerrors.NewMissingRequiredError("%v secret attribute is required", secretTypeOption)
+		if sshPrivateKey != "" || sshPrivateKeyAlternativeFormat != "" {
+			s.secretType = constants.SSHSecretType
+		} else {
+			if secretTypeRaw == "" {
+				return zerrors.NewMissingRequiredError("%v secret attribute is required", connectionsecret.ConnectionSecretTypeKey)
+			}
+			return zerrors.NewMissingRequiredError("%v is invalid %v", secretTypeRaw, connectionsecret.ConnectionSecretTypeKey)
 		}
-		return zerrors.NewMissingRequiredError("%v is invalid %v", secretTypeRaw, secretTypeOption)
 	}
 
 	switch s.secretType {

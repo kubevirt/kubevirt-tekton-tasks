@@ -33,6 +33,7 @@ github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants/connectionsecret
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd

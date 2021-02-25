@@ -36,10 +36,20 @@ This task should be run with `execute-in-vm-task` serviceAccount.
 
 ### Secret format
 
-The secret is used for storing credentials and options used in VM authentication. Following fields are recognized: 
+The secret is used for storing credentials and options used in VM authentication.
 
-- **type** (required): One of: ssh.
+##### Specifying a type
+
+The secret should be of one of the following types:
+
+- `kubernetes.io/ssh-auth`
+- `Opaque`: Secret data should include the following key.
+    - **type**: One of: ssh.
+
 ##### SSH section
+
+Following secret data keys are recognized for SSH connections:
+
 - **user**: User to log in as.
 - **private-key**: Private key to use for authentication.
 - **host-public-key**: Public key of known host to connect to.

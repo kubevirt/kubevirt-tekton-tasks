@@ -27,26 +27,7 @@ var Results = results{
 	PrivateKeySecretNamespace: "privateKeySecretNamespace",
 }
 
-type connectionOptions struct {
-	Type                             string
-	User                             string
-	PrivateKey                       string
-	HostPublicKey                    string
-	DisableStrictHostKeyCheckingAttr string
-	AdditionalSSHOptionsAttr         string
-}
-
-var ConnectionOptions = connectionOptions{
-	Type:                             "type",
-	User:                             "user",
-	PrivateKey:                       "private-key",
-	HostPublicKey:                    "host-public-key",
-	DisableStrictHostKeyCheckingAttr: "disable-strict-host-key-checking",
-	AdditionalSSHOptionsAttr:         "additional-ssh-options",
-}
-
 const SshKeyGenExecutableName = "ssh-keygen"
-const ConnectionSSHType = "ssh"
 
 const (
 	PrivateKeyGenerateName = "private-key-"

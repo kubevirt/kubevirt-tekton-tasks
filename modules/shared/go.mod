@@ -6,6 +6,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/onsi/ginkgo v1.14.0
 	github.com/onsi/gomega v1.10.1
+	k8s.io/api v0.19.4
 	k8s.io/apimachinery v0.19.4
 )
 

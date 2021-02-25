@@ -78,6 +78,7 @@ spec:
       volumeMounts:
         - mountPath: /data/connectionsecret/
           name: connectionsecret
+          readOnly: true
   volumes:
     - name: connectionsecret
       secret:

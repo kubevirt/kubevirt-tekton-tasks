@@ -2,9 +2,9 @@ package generate
 
 import (
 	"fmt"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants/connectionsecret"
 )
 
 func ensureComment(opts *options.CommandOptions, cliOptions *parse.CLIOptions) {
@@ -13,7 +13,7 @@ func ensureComment(opts *options.CommandOptions, cliOptions *parse.CLIOptions) {
 		connectionOptions := cliOptions.GetPrivateKeyConnectionOptions()
 		user := "default"
 
-		if u := connectionOptions[constants.ConnectionOptions.User]; u != "" {
+		if u := connectionOptions[connectionsecret.SSHConnectionSecretKeys.User]; u != "" {
 			user = u
 		}
 

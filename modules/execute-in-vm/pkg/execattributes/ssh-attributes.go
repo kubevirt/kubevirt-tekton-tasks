@@ -3,19 +3,12 @@ package execattributes
 import (
 	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env/fileoptions"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants/connectionsecret"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap/zapcore"
 	"os/user"
 	"path"
 	"strings"
-)
-
-const (
-	sshUserAttr                         = "user"
-	sshPrivateKeyAttr                   = "private-key"
-	sshHostPublicKeyAttr                = "host-public-key"
-	sshDisableStrictHostKeyCheckingAttr = "disable-strict-host-key-checking"
-	sshAdditionalSSHOptionsAttr         = "additional-ssh-options"
 )
 
 const (
@@ -63,15 +56,17 @@ func NewSSHAttributes() SSHAttributes {
 }
 
 func (s *sshAttributes) initSSH(execSecretPath string) error {
+	var privateKeyAlternativeFormat string
 
 	stringOptions := map[string]*string{
-		sshUserAttr:                 &s.user,
-		sshAdditionalSSHOptionsAttr: &s.additionalSSHOptions,
-		sshPrivateKeyAttr:           &s.privateKey,
-		sshHostPublicKeyAttr:        &s.hostPublicKey,
+		connectionsecret.SSHConnectionSecretKeys.User:                        &s.user,
+		connectionsecret.SSHConnectionSecretKeys.AdditionalSSHOptions:        &s.additionalSSHOptions,
+		connectionsecret.SSHConnectionSecretKeys.PrivateKey:                  &s.privateKey,
+		connectionsecret.SSHConnectionSecretKeys.PrivateKeyAlternativeFormat: &privateKeyAlternativeFormat,
+		connectionsecret.SSHConnectionSecretKeys.HostPublicKey:               &s.hostPublicKey,
 	}
 	boolOptions := map[string]*bool{
-		sshDisableStrictHostKeyCheckingAttr: &s.disableStrictHostKeyChecking,
+		connectionsecret.SSHConnectionSecretKeys.DisableStrictHostKeyChecking: &s.disableStrictHostKeyChecking,
 	}
 
 	for optionName, output := range stringOptions {
@@ -86,16 +81,20 @@ func (s *sshAttributes) initSSH(execSecretPath string) error {
 		}
 	}
 
-	if s.user == "" {
-		return zerrors.NewMissingRequiredError("%v secret attribute is required", sshUserAttr)
+	if strings.TrimSpace(s.privateKey) == "" {
+		if strings.TrimSpace(privateKeyAlternativeFormat) != "" {
+			s.privateKey = privateKeyAlternativeFormat
+		} else {
+			return zerrors.NewMissingRequiredError("%v secret attribute is required", connectionsecret.SSHConnectionSecretKeys.PrivateKey)
+		}
 	}
 
-	if strings.TrimSpace(s.privateKey) == "" {
-		return zerrors.NewMissingRequiredError("%v secret attribute is required", sshPrivateKeyAttr)
+	if s.user == "" {
+		return zerrors.NewMissingRequiredError("%v secret attribute is required", connectionsecret.SSHConnectionSecretKeys.User)
 	}
 
 	if strings.TrimSpace(s.hostPublicKey) == "" && !s.disableStrictHostKeyChecking {
-		return zerrors.NewMissingRequiredError("%v or %v=true secret attribute is required", sshHostPublicKeyAttr, sshDisableStrictHostKeyCheckingAttr)
+		return zerrors.NewMissingRequiredError("%v or %v=true secret attribute is required", connectionsecret.SSHConnectionSecretKeys.HostPublicKey, connectionsecret.SSHConnectionSecretKeys.DisableStrictHostKeyChecking)
 	}
 	port, err := parsePort(s.additionalSSHOptions)
 	if err != nil {
