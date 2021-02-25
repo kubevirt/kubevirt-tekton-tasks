@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	descriptionLabel      = "description"
+	descriptionAnnotation = "description"
 	validationsAnnotation = "validations"
 	DescriptionParam      = "DESCRIPTION"
 	NameParam             = "NAME"
@@ -54,7 +54,7 @@ func (t *TestTemplate) WithDescriptionParam() *TestTemplate {
 		if vm.Annotations == nil {
 			vm.Annotations = map[string]string{}
 		}
-		vm.Annotations[descriptionLabel] = fmt.Sprintf("${%v}", DescriptionParam)
+		vm.Annotations[descriptionAnnotation] = fmt.Sprintf("${%v}", DescriptionParam)
 	})
 	t.Data.Parameters = append(t.Data.Parameters, v1.Parameter{
 		Name:        DescriptionParam,
