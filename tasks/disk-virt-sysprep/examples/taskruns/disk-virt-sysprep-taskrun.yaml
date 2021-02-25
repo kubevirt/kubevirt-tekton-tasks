@@ -1,0 +1,17 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: disk-virt-sysprep-taskrun
+spec:
+  taskRef:
+    kind: ClusterTask
+    name: disk-virt-sysprep
+  params:
+    - name: pvc
+      value: example-pvc
+    - name: sysprepCommands
+      value: |
+        update
+        install make,ansible
+        operations firewall-rules,defaults
