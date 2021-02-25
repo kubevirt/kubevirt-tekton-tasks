@@ -16,9 +16,9 @@ const connectionOptionsSep = ":"
 
 type CLIOptions struct {
 	PublicKeySecretName         string   `arg:"--public-key-secret-name,env:PUBLIC_KEY_SECRET_NAME" placeholder:"NAME" help:"Name of a new or existing secret to append the generated public key to. The name will be generated and new secret created if not specified."`
-	PublicKeySecretNamespace    string   `arg:"--public-key-secret-namespace,env:PUBLIC_KEY_SECRET_NAMESPACE" placeholder:"NAME" help:"Namespace of public-key-secret-name. (defaults to active namespace)"`
+	PublicKeySecretNamespace    string   `arg:"--public-key-secret-namespace,env:PUBLIC_KEY_SECRET_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of public-key-secret-name. (defaults to active namespace)"`
 	PrivateKeySecretName        string   `arg:"--private-key-secret-name,env:PRIVATE_KEY_SECRET_NAME" placeholder:"NAME" help:"Name of a new secret to add the generated private key to. The name will be generated if not specified. The secret uses format of execute-in-vm task."`
-	PrivateKeySecretNamespace   string   `arg:"--private-key-secret-namespace,env:PRIVATE_KEY_SECRET_NAMESPACE" placeholder:"NAME" help:"Namespace of private-key-secret-name. (defaults to active namespace)"`
+	PrivateKeySecretNamespace   string   `arg:"--private-key-secret-namespace,env:PRIVATE_KEY_SECRET_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of private-key-secret-name. (defaults to active namespace)"`
 	SshKeygenOptions            string   `arg:"--additional-ssh-keygen-options,env:ADDITIONAL_SSH_KEYGEN_OPTIONS" placeholder:"OPTIONS" help:"Additional options to pass to the ssh-keygen command."`
 	Debug                       bool     `arg:"--debug" help:"Sets DEBUG log level"`
 	PrivateKeyConnectionOptions []string `arg:"positional" placeholder:"KEY1:VAL1 KEY2:VAL2" help:"Additional private-key connection options to use in SSH client. Please see execute-in-vm task SSH section for more details. Eg [\"host-public-key:ssh-rsa AAAAB...\", \"additional-ssh-options:-p 8022\"]."`

@@ -67,14 +67,6 @@ spec:
         - create-vm
       args:
         - "--output=yaml"
-        - '--template-name'
-        - $(params.templateName)
-        - '--template-namespace'
-        - $(params.templateNamespace)
-        - '--template-params'
-        - $(params.templateParams)
-        - '--vm-namespace'
-        - $(params.vmNamespace)
         - '--dvs'
         - $(params.dataVolumes)
         - '--own-dvs'
@@ -83,3 +75,12 @@ spec:
         - $(params.persistentVolumeClaims)
         - '--own-pvcs'
         - $(params.ownPersistentVolumeClaims)
+        - '--template-params'
+        - $(params.templateParams)
+      env:
+        - name: TEMPLATE_NAME
+          value: $(params.templateName)
+        - name: TEMPLATE_NAMESPACE
+          value: $(params.templateNamespace)
+        - name: VM_NAMESPACE
+          value: $(params.vmNamespace)

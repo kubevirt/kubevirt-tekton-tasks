@@ -88,13 +88,13 @@ var _ = Describe("Create VM from template", func() {
 		table.Entry("invalid template params", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "parameters have incorrect format",
+				ExpectedLogs:   "param InvalidDescription should be in KEY:VAL format and include \":\"",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: templ.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("invalid-template-params")),
 					"InvalidDescription",
+					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("invalid-template-params")),
 				},
 			},
 		}),
@@ -297,14 +297,15 @@ var _ = Describe("Create VM from template", func() {
 		table.Entry("vm with multiple params with template in deploy NS", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "description: e2e-description",
+				ExpectedLogs:   "description: e2e description with spaces",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template:                templ.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
 				TemplateTargetNamespace: DeployTargetNS,
 				TemplateParams: []string{
+					templ.TemplateParam(templ.DescriptionParam, "e2e description with spaces"),
 					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-with-params")),
-					templ.TemplateParam(templ.DescriptionParam, "e2e-description"),
+					templ.TemplateParam("test", "test test"),
 				},
 			},
 		}),

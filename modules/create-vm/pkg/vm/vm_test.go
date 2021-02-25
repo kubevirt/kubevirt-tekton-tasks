@@ -39,8 +39,8 @@ var _ = Describe("VM", func() {
 			emptyValidations = validations.NewTemplateValidations(nil)
 			cliOptions = &parse.CLIOptions{
 				TemplateName:              "test",
-				TemplateNamespaces:        []string{"default"},
-				VirtualMachineNamespaces:  []string{"default"},
+				TemplateNamespace:         "default",
+				VirtualMachineNamespace:   "default",
 				OwnDataVolumes:            []string{"dv1"},
 				DataVolumes:               []string{"dv2", "dv3"},
 				OwnPersistentVolumeClaims: []string{"pvc1", "pvc2"},

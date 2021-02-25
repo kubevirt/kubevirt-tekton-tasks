@@ -14,8 +14,6 @@ import (
 
 var (
 	defaultNS      = "default"
-	defaultNSArr   = []string{defaultNS}
-	multipleNSArr  = []string{"overriden-ns", defaultNS}
 	testVMManifest = testobjects.NewTestVM().ToString()
 )
 
@@ -32,7 +30,7 @@ var _ = Describe("CLIOptions", func() {
 		}),
 		table.Entry("useless template ns", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
 			VirtualMachineManifest: testVMManifest,
-			TemplateNamespaces:     defaultNSArr,
+			TemplateNamespace:      defaultNS,
 		}),
 		table.Entry("useless template params", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
 			VirtualMachineManifest: testVMManifest,
@@ -45,11 +43,11 @@ var _ = Describe("CLIOptions", func() {
 			TemplateName: "test",
 			Output:       "incorrect-fmt",
 		}),
-		table.Entry("invalid template params 1", "parameters have incorrect format", &parse.CLIOptions{
+		table.Entry("invalid template params 1", "param V1 should be in KEY:VAL format and include \":\"", &parse.CLIOptions{
 			TemplateName:   "test",
-			TemplateParams: []string{"K1:V1", "K2=V2"},
+			TemplateParams: []string{"V1", "K2=V2"},
 		}),
-		table.Entry("invalid template params 2", "parameters have incorrect format", &parse.CLIOptions{
+		table.Entry("invalid template params 2", "param :V1 should be in KEY:VAL format and include \":\"", &parse.CLIOptions{
 			TemplateName:   "test",
 			TemplateParams: []string{":V1"},
 		}),
@@ -64,9 +62,9 @@ var _ = Describe("CLIOptions", func() {
 		}
 	},
 		table.Entry("returns valid defaults", &parse.CLIOptions{
-			TemplateName:             "test",
-			TemplateNamespaces:       defaultNSArr,
-			VirtualMachineNamespaces: defaultNSArr,
+			TemplateName:            "test",
+			TemplateNamespace:       defaultNS,
+			VirtualMachineNamespace: defaultNS,
 		}, map[string]interface{}{
 			"GetTemplateNamespace":       defaultNS,
 			"GetVirtualMachineNamespace": defaultNS,
@@ -78,19 +76,11 @@ var _ = Describe("CLIOptions", func() {
 			"GetDebugLevel":              zapcore.InfoLevel,
 			"GetCreationMode":            constants.TemplateCreationMode,
 		}),
-		table.Entry("handles multiple ns from cli", &parse.CLIOptions{
-			TemplateName:             "test",
-			TemplateNamespaces:       multipleNSArr,
-			VirtualMachineNamespaces: multipleNSArr,
-		}, map[string]interface{}{
-			"GetTemplateNamespace":       defaultNS,
-			"GetVirtualMachineNamespace": defaultNS,
-		}),
 		table.Entry("handles template cli arguments", &parse.CLIOptions{
 			TemplateName:              "test",
-			TemplateNamespaces:        defaultNSArr,
-			TemplateParams:            []string{"K1:V1", "K2:V2"},
-			VirtualMachineNamespaces:  defaultNSArr,
+			TemplateNamespace:         defaultNS,
+			TemplateParams:            []string{"K1:V1", "with", "space", "K2:V2"},
+			VirtualMachineNamespace:   defaultNS,
 			Output:                    output.YamlOutput, // check if passes validation
 			OwnDataVolumes:            []string{"dv1"},
 			DataVolumes:               []string{"dv2", "dv3"},
@@ -105,7 +95,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetAllDVNames":              []string{"dv1", "dv2", "dv3"},
 			"GetAllDiskNames":            []string{"pvc1", "pvc2", "pvc3", "dv1", "dv2", "dv3"},
 			"GetTemplateParams": map[string]string{
-				"K1": "V1",
+				"K1": "V1 with space",
 				"K2": "V2",
 			},
 			"GetDebugLevel":   zapcore.DebugLevel,
@@ -113,7 +103,7 @@ var _ = Describe("CLIOptions", func() {
 		}),
 		table.Entry("handles vm cli arguments", &parse.CLIOptions{
 			VirtualMachineManifest:    testVMManifest,
-			VirtualMachineNamespaces:  defaultNSArr,
+			VirtualMachineNamespace:   defaultNS,
 			Output:                    output.YamlOutput, // check if passes validation
 			OwnDataVolumes:            []string{"dv1"},
 			DataVolumes:               []string{"dv2", "dv3"},
@@ -133,8 +123,8 @@ var _ = Describe("CLIOptions", func() {
 		}),
 		table.Entry("handles trim", &parse.CLIOptions{
 			TemplateName:              "test",
-			TemplateNamespaces:        []string{"  " + defaultNS + " "},
-			VirtualMachineNamespaces:  []string{"" + defaultNS + "  "},
+			TemplateNamespace:         "  " + defaultNS + " ",
+			VirtualMachineNamespace:   defaultNS + "  ",
 			OwnDataVolumes:            []string{" dv1     "},
 			DataVolumes:               []string{" dv2", "dv3"},
 			OwnPersistentVolumeClaims: []string{" pvc1", " pvc2  "},
