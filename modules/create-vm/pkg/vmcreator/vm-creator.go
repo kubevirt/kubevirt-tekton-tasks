@@ -10,19 +10,14 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
 	virtualMachine "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	kubevirtcliv1 "kubevirt.io/client-go/kubecli"
 	datavolumeclientv1beta1 "kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/core/v1beta1"
-	"path/filepath"
 	"sigs.k8s.io/yaml"
 )
 
@@ -36,18 +31,11 @@ type VMCreator struct {
 	pvcProvider            pvc.PersistentVolumeClaimProvider
 }
 
-func getConfig() (*rest.Config, error) {
-	if env.IsEnvVarTrue(zconstants.OutOfClusterENV) {
-		return clientcmd.BuildConfigFromFlags("", filepath.Join(homedir.HomeDir(), ".kube", "config"))
-	}
-	return rest.InClusterConfig()
-}
-
 func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
 	log.GetLogger().Debug("initialized clients and providers")
 	targetNS := cliOptions.GetVirtualMachineNamespace()
 
-	config, err := getConfig()
+	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
 	}

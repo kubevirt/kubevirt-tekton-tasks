@@ -81,7 +81,6 @@ github.com/kubernetes-csi/external-snapshotter/v2/pkg/apis/volumesnapshot/v1beta
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results
-github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/utilstest
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils
