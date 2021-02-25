@@ -2,3 +2,5 @@
 tasks/** linguist-generated
 manifests/** linguist-generated
 **/vendor/ linguist-vendored
+# TODO: just for a RFE PR - remove later
+templates/** linguist-generated
