@@ -39,31 +39,29 @@ var _ = Describe("SSHAttributes", func() {
 		Expect(err.Error()).To(ContainSubstring(expectedErrMessage))
 		log.GetLogger().Debug(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
 	},
-		table.Entry("user missing", "user secret attribute is required", map[string]string{}),
-		table.Entry("private-key missing", "private-key secret attribute is required", map[string]string{
-			"user": "root",
+		table.Entry("privatekey missing", "ssh-privatekey secret attribute is required", map[string]string{}),
+		table.Entry("user missing", "user secret attribute is required", map[string]string{
+			"ssh-privatekey": SSHTestPrivateKey,
 		}),
 		table.Entry("public key missing", "host-public-key or disable-strict-host-key-checking=true secret attribute is required", map[string]string{
-			"user":        "root",
-			"private-key": SSHTestPrivateKey,
+			"user":           "root",
+			"ssh-privatekey": SSHTestPrivateKey,
 		}),
 		table.Entry("no port argument", "ssh option requires an argument -- p", map[string]string{
 			"user":                   "fedora",
-			"private-key":            SSHTestPrivateKey,
+			"ssh-privatekey":         SSHTestPrivateKey,
 			"host-public-key":        SSHTestPublicKey,
 			"additional-ssh-options": "-C -p",
 		}),
 		table.Entry("bad port argument", "Bad port '22.0'", map[string]string{
 			"user":                   "fedora",
-			"private-key":            SSHTestPrivateKey,
+			"ssh-privatekey":         SSHTestPrivateKey,
 			"host-public-key":        SSHTestPublicKey,
 			"additional-ssh-options": "-C -p 22.0",
 		}),
 	)
 
 	table.DescribeTable("test various sshAttributes", func(secretSetup map[string]string, expectedAttributes map[string]interface{}) {
-		secretSetup["type"] = "ssh"
-
 		PrepareTestSecret(testSecretPath, secretSetup)
 		attributes := execattributes.NewExecAttributes()
 
@@ -81,8 +79,21 @@ var _ = Describe("SSHAttributes", func() {
 
 	},
 		table.Entry("minimal setup", map[string]string{
+			"type":            "ssh",
 			"user":            "fedora",
-			"private-key":     SSHTestPrivateKey,
+			"ssh-privatekey":  SSHTestPrivateKey,
+			"host-public-key": SSHTestPublicKey,
+		}, map[string]interface{}{
+			"GetUser":                      "fedora",
+			"GetPort":                      22,
+			"GetAdditionalSSHOptions":      "-oStrictHostKeyChecking=yes",
+			"GetPrivateKey":                SSHTestPrivateKey,
+			"GetHostPublicKey":             SSHTestPublicKey,
+			"GetStrictHostKeyCheckingMode": "yes",
+		}),
+		table.Entry("minimal setup with alternative private key format", map[string]string{
+			"user":            "fedora",
+			"ssh-private-key": SSHTestPrivateKey,
 			"host-public-key": SSHTestPublicKey,
 		}, map[string]interface{}{
 			"GetUser":                      "fedora",
@@ -93,8 +104,9 @@ var _ = Describe("SSHAttributes", func() {
 			"GetStrictHostKeyCheckingMode": "yes",
 		}),
 		table.Entry("disable strict host key checking + custom options", map[string]string{
+			"type":                             "ssh",
 			"user":                             "fedora",
-			"private-key":                      SSHTestPrivateKey,
+			"ssh-privatekey":                   SSHTestPrivateKey,
 			"disable-strict-host-key-checking": "true",
 			"additional-ssh-options":           "-C -p 8022",
 		}, map[string]interface{}{
@@ -108,8 +120,9 @@ var _ = Describe("SSHAttributes", func() {
 			"GetStrictHostKeyCheckingMode": "no",
 		}),
 		table.Entry("invalid disable-strict-host-key-checking value", map[string]string{
+			"type":                             "ssh",
 			"user":                             "fedora",
-			"private-key":                      SSHTestPrivateKey,
+			"ssh-privatekey":                   SSHTestPrivateKey,
 			"host-public-key":                  SSHTestPublicKey,
 			"disable-strict-host-key-checking": "yes", // should be true
 		}, map[string]interface{}{
@@ -121,8 +134,9 @@ var _ = Describe("SSHAttributes", func() {
 			"GetStrictHostKeyCheckingMode": "yes",
 		}),
 		table.Entry("end newline in private key", map[string]string{
+			"type":            "ssh",
 			"user":            "fedora",
-			"private-key":     SSHTestPrivateKeyWithoutLastNewLine,
+			"ssh-privatekey":  SSHTestPrivateKeyWithoutLastNewLine,
 			"host-public-key": SSHTestPublicKey,
 		}, map[string]interface{}{
 			"GetPrivateKey": SSHTestPrivateKey,
@@ -133,7 +147,7 @@ var _ = Describe("SSHAttributes", func() {
 		PrepareTestSecret(testSecretPath, map[string]string{
 			"type":            "ssh",
 			"user":            "fedora",
-			"private-key":     SSHTestPrivateKey,
+			"ssh-privatekey":  SSHTestPrivateKey,
 			"host-public-key": SSHTestPublicKey,
 		})
 		attributes := execattributes.NewExecAttributes()

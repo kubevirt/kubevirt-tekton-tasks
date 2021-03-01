@@ -12,6 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 )
 
@@ -35,7 +36,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 	sshConnectionInfo := map[string]string{
 		"type":                             "ssh",
 		"user":                             "fedora",
-		"private-key":                      testconstants.SSHTestPrivateKey,
+		"ssh-privatekey":                   testconstants.SSHTestPrivateKey,
 		"disable-strict-host-key-checking": "true",
 	}
 	fedoraCloudConfig := testobjects.CloudConfig{
@@ -158,6 +159,18 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
+			table.Entry("no secret private-key", &testconfigs.ExecuteOrCleanupVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ExpectedLogs: "ssh-privatekey secret attribute is required",
+				},
+				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
+					VM: testobjects.NewTestFedoraCloudVM("no-secret-private-key").Build(),
+					Secret: testobjects.NewTestSecret(map[string]string{
+						"type": "ssh",
+					}),
+					Script: helloWorldScript,
+				},
+			}),
 			table.Entry("no secret user", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "user secret attribute is required",
@@ -165,20 +178,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM: testobjects.NewTestFedoraCloudVM("no-secret-user").Build(),
 					Secret: testobjects.NewTestSecret(map[string]string{
-						"type": "ssh",
-					}),
-					Script: helloWorldScript,
-				},
-			}),
-			table.Entry("no secret private-key", &testconfigs.ExecuteOrCleanupVMTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ExpectedLogs: "private-key secret attribute is required",
-				},
-				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
-					VM: testobjects.NewTestFedoraCloudVM("no-secret-private-key").Build(),
-					Secret: testobjects.NewTestSecret(map[string]string{
-						"type": "ssh",
-						"user": "fedora",
+						"type":           "ssh",
+						"ssh-privatekey": testconstants.SSHTestPrivateKey,
 					}),
 					Script: helloWorldScript,
 				},
@@ -190,9 +191,9 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM: testobjects.NewTestFedoraCloudVM("no-secret-host-key").Build(),
 					Secret: testobjects.NewTestSecret(map[string]string{
-						"type":        "ssh",
-						"user":        "fedora",
-						"private-key": testconstants.SSHTestPrivateKey,
+						"type":           "ssh",
+						"user":           "fedora",
+						"ssh-privatekey": testconstants.SSHTestPrivateKey,
 					}),
 					Script: helloWorldScript,
 				},
@@ -266,7 +267,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Secret: testobjects.NewTestSecret(map[string]string{
 						"type":            "ssh",
 						"user":            "fedora",
-						"private-key":     testconstants.SSHTestPrivateKey,
+						"ssh-privatekey":  testconstants.SSHTestPrivateKey,
 						"host-public-key": testconstants.SSHTestPublicKey2,
 					}),
 					Script: helloWorldScript,
@@ -347,9 +348,9 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM: testobjects.NewTestFedoraCloudVM("execute-script-with-options").WithCloudConfig(fedoraCloudConfig).Build(),
 					Secret: testobjects.NewTestSecret(map[string]string{
-						"type":        "ssh",
-						"user":        "fedora",
-						"private-key": testconstants.SSHTestPrivateKey,
+						"type":           "ssh",
+						"user":           "fedora",
+						"ssh-privatekey": testconstants.SSHTestPrivateKey,
 						// TODO change to safer accept-new once a newer version of ssh which supports this option is available in CI
 						"additional-ssh-options":           "-oStrictHostKeyChecking=no -C",
 						"disable-strict-host-key-checking": "true",
@@ -376,7 +377,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Secret: testobjects.NewTestSecret(map[string]string{
 						"type":            "ssh",
 						"user":            "fedora",
-						"private-key":     testconstants.SSHTestPrivateKey,
+						"ssh-privatekey":  testconstants.SSHTestPrivateKey,
 						"host-public-key": testconstants.SSHTestPublicKey2,
 					}),
 					Script: helloWorldScript,
@@ -393,9 +394,32 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Secret: testobjects.NewTestSecret(map[string]string{
 						"type":                             "ssh",
 						"user":                             "fedora",
-						"private-key":                      testconstants.SSHTestPrivateKeyWithoutLastNewLine,
+						"ssh-private-key":                  testconstants.SSHTestPrivateKeyWithoutLastNewLine,
 						"disable-strict-host-key-checking": "true",
 					}),
+					Script: helloWorldScript,
+				},
+			}),
+			table.Entry("execute with kubernetes.io/ssh-auth secret type", &testconfigs.ExecuteOrCleanupVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ExecuteInVMServiceAccountName,
+					ExpectedLogs:   "hello world",
+					ExpectSuccess:  true,
+				},
+				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
+					VM: testobjects.NewTestFedoraCloudVM("execute-with-kubernetes-ssh-secret-type").WithCloudConfig(fedoraCloudConfig).Build(),
+					Secret: &corev1.Secret{
+						ObjectMeta: v1.ObjectMeta{
+							Name:      "testsecret",
+							Namespace: testconstants.NamespaceTestDefault,
+						},
+						StringData: map[string]string{
+							"user":                             "fedora",
+							corev1.SSHAuthPrivateKey:           testconstants.SSHTestPrivateKey,
+							"disable-strict-host-key-checking": "true",
+						},
+						Type: corev1.SecretTypeSSHAuth,
+					},
 					Script: helloWorldScript,
 				},
 			}),

@@ -70,12 +70,12 @@ func (s *SecretFacade) CreatePrivateKeySecret() (*corev1.Secret, error) {
 		data[key] = value
 	}
 
-	data[constants.ConnectionOptions.Type] = constants.ConnectionSSHType
-	data[constants.ConnectionOptions.PrivateKey] = s.keys.PrivateKey
+	data[corev1.SSHAuthPrivateKey] = s.keys.PrivateKey
 
 	secret := &corev1.Secret{
 		ObjectMeta: v1.ObjectMeta{},
 		StringData: data,
+		Type:       corev1.SecretTypeSSHAuth,
 	}
 
 	if secretName := s.clioptions.GetPrivateKeySecretName(); secretName != "" {

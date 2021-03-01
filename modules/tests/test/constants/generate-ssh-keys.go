@@ -49,7 +49,7 @@ type privateKeyConnectionOptions struct {
 var PrivateKeyConnectionOptions = privateKeyConnectionOptions{
 	Type:                             "type",
 	User:                             "user",
-	PrivateKey:                       "private-key",
+	PrivateKey:                       "ssh-privatekey",
 	HostPublicKey:                    "host-public-key",
 	DisableStrictHostKeyCheckingAttr: "disable-strict-host-key-checking",
 	AdditionalSSHOptionsAttr:         "additional-ssh-options",

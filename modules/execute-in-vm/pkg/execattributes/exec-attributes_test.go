@@ -14,6 +14,8 @@ import (
 	"reflect"
 )
 
+type resultChecker func(result interface{})
+
 var _ = Describe("ExecAttributes", func() {
 	var testSecretPath string
 
@@ -44,6 +46,12 @@ var _ = Describe("ExecAttributes", func() {
 			results := reflect.ValueOf(attributes).MethodByName(methodName).Call([]reflect.Value{})
 			if expectedValue == nil {
 				Expect(results[0].Interface()).To(BeNil())
+			} else if reflect.TypeOf(expectedValue).Kind() == reflect.Func {
+				if receive, ok := expectedValue.(resultChecker); ok {
+					receive(results[0].Interface())
+				} else {
+					Fail("invalid expectedValue func")
+				}
 			} else {
 				Expect(results[0].Interface()).To(Equal(expectedValue))
 			}
@@ -75,6 +83,17 @@ var _ = Describe("ExecAttributes", func() {
 		}, map[string]interface{}{
 			"GetType":          constants.SSHSecretType,
 			"GetSSHAttributes": execattributes.NewSSHAttributes(),
+		}),
+		table.Entry("empty ssh type detected via ssh-privatekey", "", "", map[string]string{
+			"ssh-privatekey": testconstants.SSHTestPrivateKey,
+		}, map[string]interface{}{
+			"GetType": constants.SSHSecretType,
+			"GetSSHAttributes": resultChecker(func(result interface{}) {
+				if sshAttributes, ok := result.(execattributes.SSHAttributes); ok {
+					Expect(sshAttributes).ShouldNot(BeNil())
+					Expect(sshAttributes.GetPrivateKey()).Should(Equal(testconstants.SSHTestPrivateKey))
+				}
+			}),
 		}),
 	)
 })

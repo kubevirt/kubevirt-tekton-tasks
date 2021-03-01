@@ -132,9 +132,10 @@ var _ = Describe("Generate SSH Keys", func() {
 
 		privateSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PrivateKeySecretNamespace]).Get(results[GenerateSshKeysResults.PrivateKeySecretName], metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
+		Expect(privateSecret.Type).Should(Equal(corev1.SecretTypeSSHAuth))
 		Expect(string(privateSecret.Data[PrivateKeyConnectionOptions.PrivateKey])).Should(ContainSubstring("PRIVATE KEY-----"))
 		Expect(len(string(privateSecret.Data[PrivateKeyConnectionOptions.PrivateKey]))).Should(BeNumerically(">", 200))
-		Expect(string(privateSecret.Data[PrivateKeyConnectionOptions.Type])).Should(Equal("ssh"))
+		Expect(string(privateSecret.Data[PrivateKeyConnectionOptions.Type])).Should(BeEmpty())
 		Expect(string(privateSecret.Data[PrivateKeyConnectionOptions.User])).Should(Equal(connectionOptions[PrivateKeyConnectionOptions.User]))
 		Expect(string(privateSecret.Data[PrivateKeyConnectionOptions.HostPublicKey])).Should(Equal(connectionOptions[PrivateKeyConnectionOptions.HostPublicKey]))
 		Expect(string(privateSecret.Data[PrivateKeyConnectionOptions.DisableStrictHostKeyCheckingAttr])).Should(Equal(connectionOptions[PrivateKeyConnectionOptions.DisableStrictHostKeyCheckingAttr]))
@@ -185,7 +186,6 @@ var _ = Describe("Generate SSH Keys", func() {
 				PublicKeySecretName:            "complex-public-key",
 				PublicKeySecretTargetNamespace: DeployTargetNS,
 				PrivateKeyConnectionOptions: []string{
-					fmt.Sprintf("%v:%v", PrivateKeyConnectionOptions.Type, "ssh"),
 					fmt.Sprintf("%v:%v", PrivateKeyConnectionOptions.User, "root"),
 					fmt.Sprintf("%v:%v", PrivateKeyConnectionOptions.DisableStrictHostKeyCheckingAttr, "false"),
 					fmt.Sprintf("%v:%v", PrivateKeyConnectionOptions.HostPublicKey, testconstants.SSHTestPublicKey),
