@@ -39,7 +39,7 @@ func NewSecretFacade(clioptions *parse.CLIOptions, keys types.SshKeys) (*SecretF
 
 func (s SecretFacade) CheckPrivateKeySecretExistence() error {
 	if secretName := s.clioptions.GetPrivateKeySecretName(); secretName != "" {
-		log.GetLogger().Debug("checking private key existence arguments", zap.String("secretName", secretName))
+		log.Logger().Debug("checking private key existence arguments", zap.String("secretName", secretName))
 		if _, err := s.kubeClient.CoreV1().Secrets(s.clioptions.GetPrivateKeySecretNamespace()).Get(secretName, v1.GetOptions{}); !zerrors.IsStatusError(err, http.StatusNotFound) {
 			return zerrors.NewMissingRequiredError("%v secret already exists", secretName)
 		}
@@ -84,7 +84,7 @@ func (s *SecretFacade) CreatePrivateKeySecret() (*corev1.Secret, error) {
 		secret.GenerateName = constants.PrivateKeyGenerateName
 	}
 
-	log.GetLogger().Debug("creating private key secret")
+	log.Logger().Debug("creating private key secret")
 	return s.kubeClient.CoreV1().Secrets(s.clioptions.GetPrivateKeySecretNamespace()).Create(secret)
 
 }
@@ -115,7 +115,7 @@ func (s *SecretFacade) AppendPublicKeySecret(secret *corev1.Secret) (*corev1.Sec
 		return nil, err
 	}
 
-	log.GetLogger().Debug("appending public key secret")
+	log.Logger().Debug("appending public key secret")
 	return s.kubeClient.CoreV1().Secrets(s.clioptions.GetPublicKeySecretNamespace()).Patch(secret.Name, machinerytypes.JSONPatchType, patchBytes)
 }
 
@@ -134,7 +134,7 @@ func (s *SecretFacade) CreatePublicKeySecret() (*corev1.Secret, error) {
 		secret.GenerateName = constants.PublicKeyGenerateName
 	}
 
-	log.GetLogger().Debug("creating public key secret")
+	log.Logger().Debug("creating public key secret")
 	return s.kubeClient.CoreV1().Secrets(s.clioptions.GetPublicKeySecretNamespace()).Create(secret)
 }
 
@@ -142,7 +142,7 @@ func (s *SecretFacade) DeleteSecret(secret *corev1.Secret) error {
 	if secret == nil {
 		return nil
 	}
-	log.GetLogger().Debug("deleting secret", zap.String("namespace", secret.Namespace), zap.String("name", secret.Name))
+	log.Logger().Debug("deleting secret", zap.String("namespace", secret.Namespace), zap.String("name", secret.Name))
 	return s.kubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &v1.DeleteOptions{})
 }
 

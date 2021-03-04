@@ -10,11 +10,11 @@ import (
 var _ = Describe("Log", func() {
 
 	It("creates and returns logger", func() {
-		Expect(log.GetLogger()).To(BeNil())
+		Expect(log.Logger()).To(BeNil())
 		first := log.InitLogger(zapcore.DebugLevel)
 		Expect(first).ToNot(BeNil())
 		Expect(log.InitLogger(zapcore.DebugLevel)).To(Equal(first))
-		Expect(log.GetLogger()).ToNot(BeNil())
-		Expect(log.GetLogger()).To(Equal(first))
+		Expect(log.Logger()).ToNot(BeNil())
+		Expect(log.Logger()).To(Equal(first))
 	})
 })

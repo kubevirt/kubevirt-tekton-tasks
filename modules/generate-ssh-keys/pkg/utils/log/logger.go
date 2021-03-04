@@ -28,6 +28,6 @@ func InitLogger(level zapcore.Level) *zap.Logger {
 	return logger
 }
 
-func GetLogger() *zap.Logger {
+func Logger() *zap.Logger {
 	return logger
 }

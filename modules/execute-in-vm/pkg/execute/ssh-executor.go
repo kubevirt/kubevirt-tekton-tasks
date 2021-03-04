@@ -40,7 +40,7 @@ func newSSHExecutor(clioptions *parse.CLIOptions, execAttributes execattributes.
 func (e *sshExecutor) Init(ipAddress string) error {
 	e.ipAddress = ipAddress
 
-	log.GetLogger().Debug("preparing ssh files")
+	log.Logger().Debug("preparing ssh files")
 	if err := os.MkdirAll(e.ssh.GetSSHDir(), defaultDirMode); err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (e *sshExecutor) TestConnection() bool {
 	if conn != nil {
 		defer conn.Close()
 	} else {
-		log.GetLogger().Debug("connection not found: " + address)
+		log.Logger().Debug("connection not found: " + address)
 	}
 
 	return conn != nil && err == nil
@@ -80,7 +80,7 @@ func (e *sshExecutor) RemoteExecute(timeout time.Duration) error {
 	destination := e.ssh.GetUser() + "@" + e.ipAddress
 	opts.AddValue(destination)
 
-	log.GetLogger().Debug("executing ssh command with options: " + strings.Join(opts.GetAll(), " "))
+	log.Logger().Debug("executing ssh command with options: " + strings.Join(opts.GetAll(), " "))
 
 	// do not log script
 	opts.AddValue("--")

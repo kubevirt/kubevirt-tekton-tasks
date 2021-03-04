@@ -32,7 +32,7 @@ func GenerateSshKeys(clioptions parse.CLIOptions) (*types.SshKeys, error) {
 	ensureComment(opts, &clioptions)
 	opts.AddOption("-f", privateKeyFilename)
 
-	log.GetLogger().Debug("executing ssh-keygen command with options: " + opts.ToString())
+	log.Logger().Debug("executing ssh-keygen command with options: " + opts.ToString())
 	cmd := exec.Command(constants.SshKeyGenExecutableName, opts.GetAll()...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

@@ -37,7 +37,7 @@ var _ = Describe("SSHAttributes", func() {
 		err := attributes.Init(testSecretPath)
 		Expect(err).Should(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring(expectedErrMessage))
-		log.GetLogger().Debug(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
+		log.Logger().Debug(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
 	},
 		table.Entry("privatekey missing", "ssh-privatekey secret attribute is required", map[string]string{}),
 		table.Entry("user missing", "user secret attribute is required", map[string]string{
@@ -75,7 +75,7 @@ var _ = Describe("SSHAttributes", func() {
 			Expect(results[0].Interface()).To(Equal(expectedValue))
 		}
 
-		log.GetLogger().Info(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
+		log.Logger().Info(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
 
 	},
 		table.Entry("minimal setup", map[string]string{
@@ -176,6 +176,6 @@ var _ = Describe("SSHAttributes", func() {
 		// GetSSHExecutableName
 		Expect(sshAttributes.GetSSHExecutableName()).To(Equal("ssh"))
 
-		log.GetLogger().Info(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
+		log.Logger().Info(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
 	})
 })
