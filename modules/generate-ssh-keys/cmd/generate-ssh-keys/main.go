@@ -21,7 +21,7 @@ func main() {
 	logger := log.InitLogger(cliOptions.GetDebugLevel())
 	defer logger.Sync()
 
-	log.GetLogger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
+	log.Logger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
 	if err := cliOptions.Init(); err != nil {
 		exit.ExitOrDieFromError(InvalidArguments, err)
 	}
@@ -80,7 +80,7 @@ func main() {
 		Results.PrivateKeySecretNamespace: privateKeySecret.Namespace,
 	}
 
-	log.GetLogger().Debug("recording results", zap.Reflect("results", results))
+	log.Logger().Debug("recording results", zap.Reflect("results", results))
 	if err := res.RecordResults(results); err != nil {
 		defer func() {
 			defer cleanupPublicKey()

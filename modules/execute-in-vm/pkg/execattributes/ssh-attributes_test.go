@@ -37,7 +37,7 @@ var _ = Describe("SSHAttributes", func() {
 		err := attributes.Init(testSecretPath)
 		Expect(err).Should(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring(expectedErrMessage))
-		log.GetLogger().Debug(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
+		log.Logger().Debug(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
 	},
 		table.Entry("privatekey missing", "ssh-privatekey secret attribute is required", map[string]string{}),
 		table.Entry("user missing", "user secret attribute is required", map[string]string{
@@ -75,7 +75,7 @@ var _ = Describe("SSHAttributes", func() {
 			Expect(results[0].Interface()).To(Equal(expectedValue))
 		}
 
-		log.GetLogger().Info(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
+		log.Logger().Info(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
 
 	},
 		table.Entry("minimal setup", map[string]string{
@@ -86,7 +86,7 @@ var _ = Describe("SSHAttributes", func() {
 		}, map[string]interface{}{
 			"GetUser":                      "fedora",
 			"GetPort":                      22,
-			"GetAdditionalSSHOptions":      "-oStrictHostKeyChecking=yes",
+			"GetAdditionalSSHOptions":      []string{"-o", "StrictHostKeyChecking=yes"},
 			"GetPrivateKey":                SSHTestPrivateKey,
 			"GetHostPublicKey":             SSHTestPublicKey,
 			"GetStrictHostKeyCheckingMode": "yes",
@@ -98,7 +98,7 @@ var _ = Describe("SSHAttributes", func() {
 		}, map[string]interface{}{
 			"GetUser":                      "fedora",
 			"GetPort":                      22,
-			"GetAdditionalSSHOptions":      "-oStrictHostKeyChecking=yes",
+			"GetAdditionalSSHOptions":      []string{"-o", "StrictHostKeyChecking=yes"},
 			"GetPrivateKey":                SSHTestPrivateKey,
 			"GetHostPublicKey":             SSHTestPublicKey,
 			"GetStrictHostKeyCheckingMode": "yes",
@@ -113,7 +113,7 @@ var _ = Describe("SSHAttributes", func() {
 			"GetUser": "fedora",
 			"GetPort": 8022,
 			// TODO change to safer acceptNew once a newer version of ssh which supports this option is available in CI
-			"GetAdditionalSSHOptions": "-C -p 8022 -oStrictHostKeyChecking=no",
+			"GetAdditionalSSHOptions": []string{"-C", "-p", "8022", "-o", "StrictHostKeyChecking=no"},
 			"GetPrivateKey":           SSHTestPrivateKey,
 			"GetHostPublicKey":        "",
 			// TODO same here
@@ -128,7 +128,7 @@ var _ = Describe("SSHAttributes", func() {
 		}, map[string]interface{}{
 			"GetUser":                      "fedora",
 			"GetPort":                      22,
-			"GetAdditionalSSHOptions":      "-oStrictHostKeyChecking=yes",
+			"GetAdditionalSSHOptions":      []string{"-o", "StrictHostKeyChecking=yes"},
 			"GetPrivateKey":                SSHTestPrivateKey,
 			"GetHostPublicKey":             SSHTestPublicKey,
 			"GetStrictHostKeyCheckingMode": "yes",
@@ -140,6 +140,16 @@ var _ = Describe("SSHAttributes", func() {
 			"host-public-key": SSHTestPublicKey,
 		}, map[string]interface{}{
 			"GetPrivateKey": SSHTestPrivateKey,
+		}),
+		table.Entry("parse port newline in private key", map[string]string{
+			"type":                   "ssh",
+			"user":                   "fedora",
+			"ssh-privatekey":         SSHTestPrivateKeyWithoutLastNewLine,
+			"host-public-key":        SSHTestPublicKey,
+			"additional-ssh-options": "-C -p8022 -l=test",
+		}, map[string]interface{}{
+			"GetPort":                 8022,
+			"GetAdditionalSSHOptions": []string{"-C", "-p8022", "-l=test", "-o", "StrictHostKeyChecking=yes"},
 		}),
 	)
 
@@ -166,16 +176,6 @@ var _ = Describe("SSHAttributes", func() {
 		// GetSSHExecutableName
 		Expect(sshAttributes.GetSSHExecutableName()).To(Equal("ssh"))
 
-		// IncludesSSHOption
-		Expect(sshAttributes.IncludesSSHOption("StrictHostKeyChecking")).To(BeTrue())
-		Expect(sshAttributes.IncludesSSHOption("CheckHostIP")).To(BeFalse())
-
-		// IncludesSSHOption and AddAdditionalSSHOption
-		sshAttributes.AddAdditionalSSHOption("CheckHostIP", "yes")
-		Expect(sshAttributes.IncludesSSHOption("StrictHostKeyChecking")).To(BeTrue())
-		Expect(sshAttributes.IncludesSSHOption("CheckHostIP")).To(BeTrue())
-		Expect(sshAttributes.GetAdditionalSSHOptions()).Should(Equal("-oStrictHostKeyChecking=yes -oCheckHostIP=yes"))
-
-		log.GetLogger().Info(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
+		log.Logger().Info(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
 	})
 })

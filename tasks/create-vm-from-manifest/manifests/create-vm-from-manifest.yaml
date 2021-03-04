@@ -57,8 +57,6 @@ spec:
         - create-vm
       args:
         - "--output=yaml"
-        - '--vm-namespace'
-        - $(params.namespace)
         - '--dvs'
         - $(params.dataVolumes)
         - '--own-dvs'
@@ -70,3 +68,5 @@ spec:
       env:
         - name: VM_MANIFEST
           value: $(params.manifest)
+        - name: VM_NAMESPACE
+          value: $(params.namespace)

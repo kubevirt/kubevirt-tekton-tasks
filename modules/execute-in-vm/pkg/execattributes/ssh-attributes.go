@@ -3,6 +3,7 @@ package execattributes
 import (
 	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env/fileoptions"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants/connectionsecret"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap/zapcore"
@@ -30,7 +31,7 @@ const (
 type sshAttributes struct {
 	user                         string
 	port                         int
-	additionalSSHOptions         string
+	additionalSSHOptions         []string
 	privateKey                   string
 	hostPublicKey                string
 	disableStrictHostKeyChecking bool
@@ -41,9 +42,7 @@ type SSHAttributes interface {
 	initSSH(execSecretPath string) error
 	GetUser() string
 	GetPort() int
-	GetAdditionalSSHOptions() string
-	IncludesSSHOption(option string) bool
-	AddAdditionalSSHOption(name, value string)
+	GetAdditionalSSHOptions() []string
 	GetPrivateKey() string
 	GetHostPublicKey() string
 	GetStrictHostKeyCheckingMode() string
@@ -56,11 +55,11 @@ func NewSSHAttributes() SSHAttributes {
 }
 
 func (s *sshAttributes) initSSH(execSecretPath string) error {
-	var privateKeyAlternativeFormat string
+	var privateKeyAlternativeFormat, additionalSSHOptionsString string
 
 	stringOptions := map[string]*string{
 		connectionsecret.SSHConnectionSecretKeys.User:                        &s.user,
-		connectionsecret.SSHConnectionSecretKeys.AdditionalSSHOptions:        &s.additionalSSHOptions,
+		connectionsecret.SSHConnectionSecretKeys.AdditionalSSHOptions:        &additionalSSHOptionsString,
 		connectionsecret.SSHConnectionSecretKeys.PrivateKey:                  &s.privateKey,
 		connectionsecret.SSHConnectionSecretKeys.PrivateKeyAlternativeFormat: &privateKeyAlternativeFormat,
 		connectionsecret.SSHConnectionSecretKeys.HostPublicKey:               &s.hostPublicKey,
@@ -96,7 +95,12 @@ func (s *sshAttributes) initSSH(execSecretPath string) error {
 	if strings.TrimSpace(s.hostPublicKey) == "" && !s.disableStrictHostKeyChecking {
 		return zerrors.NewMissingRequiredError("%v or %v=true secret attribute is required", connectionsecret.SSHConnectionSecretKeys.HostPublicKey, connectionsecret.SSHConnectionSecretKeys.DisableStrictHostKeyChecking)
 	}
-	port, err := parsePort(s.additionalSSHOptions)
+	additionalSSHOptions, err := options.NewCommandOptions(additionalSSHOptionsString)
+	if err != nil {
+		return err
+	}
+
+	port, err := parsePort(additionalSSHOptions)
 	if err != nil {
 		return err
 	}
@@ -106,9 +110,11 @@ func (s *sshAttributes) initSSH(execSecretPath string) error {
 		s.privateKey += "\n"
 	}
 
-	if !s.IncludesSSHOption(sshStrictHostKeyCheckingOption) {
-		s.AddAdditionalSSHOption(sshStrictHostKeyCheckingOption, s.GetStrictHostKeyCheckingMode())
+	if !additionalSSHOptions.IncludesString(sshStrictHostKeyCheckingOption) {
+		additionalSSHOptions.AddOption("-o", fmt.Sprintf("%v=%v", sshStrictHostKeyCheckingOption, s.GetStrictHostKeyCheckingMode()))
 	}
+
+	s.additionalSSHOptions = additionalSSHOptions.GetAll()
 
 	return nil
 }
@@ -121,19 +127,8 @@ func (s *sshAttributes) GetPort() int {
 	return s.port
 }
 
-func (s *sshAttributes) GetAdditionalSSHOptions() string {
+func (s *sshAttributes) GetAdditionalSSHOptions() []string {
 	return s.additionalSSHOptions
-}
-
-func (s *sshAttributes) IncludesSSHOption(option string) bool {
-	return strings.Contains(s.additionalSSHOptions, option)
-}
-
-func (s *sshAttributes) AddAdditionalSSHOption(name, value string) {
-	if s.additionalSSHOptions != "" {
-		s.additionalSSHOptions += " "
-	}
-	s.additionalSSHOptions += fmt.Sprintf("-o%v=%v", name, value)
 }
 
 func (s *sshAttributes) GetStrictHostKeyCheckingMode() string {
@@ -169,7 +164,7 @@ func (s *sshAttributes) GetSSHExecutableName() string {
 func (s *sshAttributes) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	// do not print private/public key
 	encoder.AddString("user", s.user)
-	encoder.AddString("additionalSSHOptions", s.additionalSSHOptions)
+	encoder.AddString("additionalSSHOptions", strings.Join(s.additionalSSHOptions, " "))
 	encoder.AddBool("disableStrictHostKeyChecking", s.disableStrictHostKeyChecking)
 	return nil
 }

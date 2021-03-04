@@ -1,11 +1,12 @@
 package parse
 
 import (
+	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap/zapcore"
-	"strings"
 )
 
 const (
@@ -18,13 +19,12 @@ const (
 
 const templateParamSep = ":"
 
-// TemplateNamespaces and VirtualMachineNamespaces: arrays allow to have these options without option argument
 type CLIOptions struct {
-	TemplateName              string            `arg:"--template-name" placeholder:"NAME" help:"Name of a template to create VM from"`
-	TemplateNamespaces        []string          `arg:"--template-namespace" placeholder:"NAMESPACE" help:"Namespace of a template to create VM from"`
+	TemplateName              string            `arg:"--template-name,env:TEMPLATE_NAME" placeholder:"NAME" help:"Name of a template to create VM from"`
+	TemplateNamespace         string            `arg:"--template-namespace,env:TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a template to create VM from"`
 	TemplateParams            []string          `arg:"--template-params" placeholder:"KEY1:VAL1 KEY2:VAL2" help:"Template params to pass when processing the template manifest"`
 	VirtualMachineManifest    string            `arg:"--vm-manifest,env:VM_MANIFEST" placeholder:"MANIFEST" help:"YAML manifest of a VirtualMachine resource to be created (can be set by VM_MANIFEST env variable)."`
-	VirtualMachineNamespaces  []string          `arg:"--vm-namespace" placeholder:"NAMESPACE" help:"Namespace where to create the VM"`
+	VirtualMachineNamespace   string            `arg:"--vm-namespace,env:VM_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace where to create the VM"`
 	DataVolumes               []string          `arg:"--dvs" placeholder:"DV1 DV2" help:"Add DataVolumes to VM Volumes"`
 	OwnDataVolumes            []string          `arg:"--own-dvs" placeholder:"DV1 DV2" help:"Add DataVolumes to VM Volumes and add VM to DV ownerReferences. These DVs will be deleted once the created VM gets deleted."`
 	PersistentVolumeClaims    []string          `arg:"--pvcs" placeholder:"PVC1 PVC2" help:"Add PersistentVolumeClaims to VM Volumes."`
@@ -46,13 +46,10 @@ func (c *CLIOptions) GetAllDiskNames() []string {
 }
 
 func (c *CLIOptions) GetTemplateParams() map[string]string {
-	result := make(map[string]string, len(c.TemplateParams))
+	result, err := zutils.ExtractKeysAndValuesByLastKnownKey(c.TemplateParams, templateParamSep)
 
-	for _, keyVal := range c.TemplateParams {
-		split := strings.SplitN(keyVal, templateParamSep, 2)
-		if len(split) == 2 {
-			result[split[0]] = split[1]
-		}
+	if err != nil {
+		panic(fmt.Errorf("init was not called: %v", err.Error()))
 	}
 	return result
 }
@@ -80,7 +77,7 @@ func (c *CLIOptions) GetCreationMode() constants.CreationMode {
 }
 
 func (c *CLIOptions) GetTemplateNamespace() string {
-	return zutils.GetLast(c.TemplateNamespaces)
+	return c.TemplateNamespace
 }
 
 func (c *CLIOptions) GetVirtualMachineManifest() string {
@@ -88,15 +85,7 @@ func (c *CLIOptions) GetVirtualMachineManifest() string {
 }
 
 func (c *CLIOptions) GetVirtualMachineNamespace() string {
-	return zutils.GetLast(c.VirtualMachineNamespaces)
-}
-
-func (c *CLIOptions) setTemplateNamespace(namespace string) {
-	c.TemplateNamespaces = []string{namespace}
-}
-
-func (c *CLIOptions) setVirtualMachineNamespace(namespace string) {
-	c.VirtualMachineNamespaces = []string{namespace}
+	return c.VirtualMachineNamespace
 }
 
 func (c *CLIOptions) Init() error {
@@ -108,15 +97,15 @@ func (c *CLIOptions) Init() error {
 		return err
 	}
 
-	if err := c.resolveTemplateParams(); err != nil {
-		return err
+	if _, err := zutils.ExtractKeysAndValuesByLastKnownKey(c.TemplateParams, templateParamSep); err != nil {
+		return zerrors.NewMissingRequiredError("invalid %v: %v", templateParamsOptionName, err.Error())
 	}
 
 	if err := c.resolveDefaultNamespacesAndManifests(); err != nil {
 		return err
 	}
 
-	c.trimSpacesAndReduceCount()
+	c.trimSpaces()
 
 	return nil
 }

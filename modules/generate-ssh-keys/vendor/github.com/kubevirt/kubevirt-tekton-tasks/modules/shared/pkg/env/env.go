@@ -2,11 +2,9 @@ package env
 
 import (
 	"errors"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 )
 
 const (
@@ -30,17 +28,6 @@ func GetActiveNamespace() (string, error) {
 	return "", errors.New("could not detect active namespace")
 }
 
-func GetWorkingDir() string {
-	ex, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
-	return filepath.Dir(ex)
-}
-
 func GetTektonResultsDir() string {
-	if IsEnvVarTrue(zconstants.OutOfClusterENV) {
-		return GetWorkingDir()
-	}
 	return tektonResultsDirPath
 }

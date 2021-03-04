@@ -1,7 +1,6 @@
 package results_test
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	results2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
@@ -21,18 +20,24 @@ const (
 
 var _ = Describe("Results", func() {
 	Describe("Records results", func() {
-		AfterEach(func() {
-			for _, name := range []string{filenameA, filenameB} {
-				_ = os.Remove(name) // allow not found
-			}
+		var tempDir string
+
+		BeforeEach(func() {
+			var err error
+			tempDir, err = ioutil.TempDir("", "test-record-results-")
+			Expect(err).Should(Succeed())
 		})
+		AfterEach(func() {
+			_ = os.Remove(tempDir) // allow not found
+		})
+
 		table.DescribeTable("writes to correct file", func(results map[string]string) {
-			Expect(results2.RecordResults(results)).Should(Succeed())
-			files, err := filepath.Glob(env.GetTektonResultsDir() + "/*" + testSuffix)
+			Expect(results2.RecordResultsIn(tempDir, results)).Should(Succeed())
+			files, err := filepath.Glob(filepath.Join(tempDir, "*"+testSuffix))
 			Expect(err).Should(Succeed())
 			Expect(files).Should(HaveLen(len(results)))
 			for filename, expectedContent := range results {
-				content, err := ioutil.ReadFile(env.GetTektonResultsDir() + "/" + filename)
+				content, err := ioutil.ReadFile(filepath.Join(tempDir, filename))
 				Expect(err).Should(Succeed())
 				Expect(string(content)).To(Equal(expectedContent))
 			}
@@ -47,6 +52,10 @@ var _ = Describe("Results", func() {
 				filenameB: contentB,
 			}),
 		)
+
+		It("recordResults works without destination and results", func() {
+			Expect(results2.RecordResults(nil)).Should(Succeed())
+		})
 	})
 
 })

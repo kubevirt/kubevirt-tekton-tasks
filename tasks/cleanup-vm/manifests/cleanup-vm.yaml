@@ -59,8 +59,6 @@ spec:
       args:
         - '--vm-name'
         - $(params.vmName)
-        - '--vm-namespace'
-        - $(params.vmNamespace)
         - '--stop'
         - $(params.stop)
         - '--delete'
@@ -71,6 +69,8 @@ spec:
         - $(params.command)
         - $(params.args)
       env:
+        - name: VM_NAMESPACE
+          value: $(params.vmNamespace)
         - name: EXECUTE_SCRIPT
           value: $(params.script)
         - name: CONNECTION_SECRET_NAME

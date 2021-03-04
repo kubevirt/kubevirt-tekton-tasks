@@ -26,7 +26,7 @@ func main() {
 	if err := cliOptions.Init(); err != nil {
 		exit.ExitOrDieFromError(InvalidCLIInputExitCode, err)
 	}
-	log.GetLogger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
+	log.Logger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
 
 	vmCreator, err := vmcreator.NewVMCreator(cliOptions)
 
@@ -55,7 +55,7 @@ func main() {
 		NamespaceResultName: vm.Namespace,
 	}
 
-	log.GetLogger().Debug("recording results", zap.Reflect("results", results))
+	log.Logger().Debug("recording results", zap.Reflect("results", results))
 	if err := res.RecordResults(results); err != nil {
 		exit.ExitOrDieFromError(WriteResultsExitCode, err)
 	}

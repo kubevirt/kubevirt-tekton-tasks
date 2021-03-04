@@ -1,8 +1,6 @@
 package log
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -18,11 +16,7 @@ func InitLogger(level zapcore.Level) *zap.Logger {
 	var config zap.Config
 
 	// set opinionated presets
-	if env.IsEnvVarTrue(zconstants.OutOfClusterENV) {
-		config = zap.NewDevelopmentConfig()
-	} else {
-		config = zap.NewProductionConfig()
-	}
+	config = zap.NewProductionConfig()
 
 	config.Level.SetLevel(level)
 
@@ -34,6 +28,6 @@ func InitLogger(level zapcore.Level) *zap.Logger {
 	return logger
 }
 
-func GetLogger() *zap.Logger {
+func Logger() *zap.Logger {
 	return logger
 }

@@ -23,7 +23,7 @@ func main() {
 	logger := log.InitLogger(cliOptions.GetDebugLevel())
 	defer logger.Sync()
 
-	log.GetLogger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
+	log.Logger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
 	if err := cliOptions.Init(); err != nil {
 		exit.ExitOrDieFromError(InvalidArguments, err)
 	}
@@ -100,12 +100,12 @@ func main() {
 		if exitError != nil {
 			multiError.Add("command exit", *exitError)
 		}
-		log.GetLogger().Debug("finished", zap.String("errMsg", multiError.Error()))
+		log.Logger().Debug("finished", zap.String("errMsg", multiError.Error()))
 		exit.ExitOrDieFromError(ExecutorActionsFailed, multiError)
 	}
 
 	if exitError != nil {
-		log.GetLogger().Debug("finished", zap.Reflect("err", exitError))
+		log.Logger().Debug("finished", zap.Reflect("err", exitError))
 		exit.ExitOrDieFromError(exitError.Code, exitError)
 	}
 }

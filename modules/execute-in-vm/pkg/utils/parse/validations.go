@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-func (c *CLIOptions) trimSpacesAndReduceCount() {
-	c.setVirtualMachineNamespace(strings.TrimSpace(c.GetVirtualMachineNamespace())) // reduce count to 1
+func (c *CLIOptions) trimSpaces() {
+	c.VirtualMachineNamespace = strings.TrimSpace(c.VirtualMachineNamespace)
 }
 
 func (c *CLIOptions) resolveDefaultNamespaces() error {
@@ -23,7 +23,7 @@ func (c *CLIOptions) resolveDefaultNamespaces() error {
 			return zerrors.NewMissingRequiredError("%v: %v option is empty", err.Error(), vmNamespaceOptionName)
 		}
 		if vmNamespace == "" {
-			c.setVirtualMachineNamespace(activeNamespace)
+			c.VirtualMachineNamespace = activeNamespace
 		}
 	}
 	return nil

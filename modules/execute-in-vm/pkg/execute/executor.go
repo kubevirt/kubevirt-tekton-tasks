@@ -39,7 +39,7 @@ func NewExecutor(clioptions *parse.CLIOptions, connectionSecretPath string) (*Ex
 		if err := execAttributes.Init(connectionSecretPath); err != nil {
 			return nil, err
 		}
-		log.GetLogger().Debug("retrieved connection secret exec attributes", zap.Object("execAttributes", execAttributes))
+		log.Logger().Debug("retrieved connection secret exec attributes", zap.Object("execAttributes", execAttributes))
 
 		switch execAttributes.GetType() {
 		case constants.SSHSecretType:
@@ -71,14 +71,14 @@ func (e *Executor) EnsureVMRunning(timeout time.Duration) error {
 		vmInstance, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(vmName, &v1.GetOptions{})
 
 		if err != nil {
-			log.GetLogger().Debug("could not obtain a vm instance", logFields[0], logFields[1], zap.Error(err))
+			log.Logger().Debug("could not obtain a vm instance", logFields[0], logFields[1], zap.Error(err))
 			switch t := err.(type) {
 			case *errors.StatusError:
 				if t.Status().Reason == v1.StatusReasonNotFound {
 					if err := e.ensureVMStarted(); err != nil {
 						return false, err
 					}
-					log.GetLogger().Debug(" waiting for a VMI to start", logFields...)
+					log.Logger().Debug(" waiting for a VMI to start", logFields...)
 					return false, nil
 				}
 				return false, err
@@ -89,18 +89,18 @@ func (e *Executor) EnsureVMRunning(timeout time.Duration) error {
 
 		switch vmInstance.Status.Phase {
 		case kubevirtv1.Failed:
-			log.GetLogger().Debug("vm instance failed", logFields[0], logFields[1], zap.Reflect("status", vmInstance.Status))
+			log.Logger().Debug("vm instance failed", logFields[0], logFields[1], zap.Reflect("status", vmInstance.Status))
 			// maybe the vm just stopped so let's try to start it again
 			if err := e.ensureVMStarted(); err != nil {
 				return false, err
 			}
-			log.GetLogger().Debug("waiting for a VMI to recover", logFields...)
+			log.Logger().Debug("waiting for a VMI to recover", logFields...)
 			return false, nil
 		case kubevirtv1.Running:
 			ipAddress, ipError := vmi.GetPodIPAddress(vmInstance)
 
 			if ipAddress == "" || ipError != nil {
-				log.GetLogger().Debug("ip address not found", logFields[0], logFields[1], zap.Reflect("status", vmInstance.Status))
+				log.Logger().Debug("ip address not found", logFields[0], logFields[1], zap.Reflect("status", vmInstance.Status))
 
 				if ipError != nil {
 					return false, zerrors.NewMissingRequiredError(ipError.Error())
@@ -108,13 +108,13 @@ func (e *Executor) EnsureVMRunning(timeout time.Duration) error {
 				// wait for ipAddress
 				return false, nil
 			}
-			log.GetLogger().Debug("ip address found", zap.String("ipAddress", ipAddress))
+			log.Logger().Debug("ip address found", zap.String("ipAddress", ipAddress))
 			e.ipAddress = ipAddress
 
 			return true, nil
 
 		default:
-			log.GetLogger().Debug("waiting for a VMI to start", logFields...)
+			log.Logger().Debug("waiting for a VMI to start", logFields...)
 			return false, nil
 		}
 	}
@@ -146,7 +146,7 @@ func (e *Executor) EnsureVMStopped() error {
 				}
 			}
 
-			log.GetLogger().Debug(" waiting for a VM to stop", zap.String("name", vmName), zap.String("namespace", vmNamespace))
+			log.Logger().Debug(" waiting for a VM to stop", zap.String("name", vmName), zap.String("namespace", vmNamespace))
 			return false, nil
 		}
 
@@ -174,7 +174,7 @@ func (e *Executor) EnsureVMDeleted() error {
 			if err := e.ensureVMDelete(); err != nil {
 				return false, err
 			}
-			log.GetLogger().Debug(" waiting for a VM to be deleted", zap.String("name", vmName), zap.String("namespace", vmNamespace))
+			log.Logger().Debug(" waiting for a VM to be deleted", zap.String("name", vmName), zap.String("namespace", vmNamespace))
 			return false, nil
 		}
 
@@ -226,7 +226,7 @@ func (e *Executor) ensureVMStarted() error {
 	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
 	if !e.attemptedStart {
 		e.attemptedStart = true
-		log.GetLogger().Debug("starting a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
+		log.Logger().Debug("starting a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
 		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Start(vmName); err != nil {
 			return err
 		}
@@ -240,7 +240,7 @@ func (e *Executor) ensureVMStop() error {
 	if !e.attemptedStop {
 		e.attemptedStop = true
 
-		log.GetLogger().Debug("stopping a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
+		log.Logger().Debug("stopping a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
 		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Stop(vmName); err != nil {
 			return err
 		}
@@ -255,7 +255,7 @@ func (e *Executor) ensureVMDelete() error {
 	if !e.attemptedDelete {
 		e.attemptedDelete = true
 
-		log.GetLogger().Debug("deleting a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
+		log.Logger().Debug("deleting a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
 		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Delete(vmName, &v1.DeleteOptions{}); err != nil {
 			return err
 		}

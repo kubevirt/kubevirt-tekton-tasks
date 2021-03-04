@@ -29,6 +29,12 @@ var _ = Describe("CLIOptions", func() {
 		table.Entry("invalid private secret namespace", "invalid private-key-secret-namespace value: a DNS-1123 subdomain must consist of", &parse.CLIOptions{
 			PrivateKeySecretNamespace: "(-invalid-ns",
 		}),
+		table.Entry("invalid connection options 1", "invalid private-key connection options: no key found before \"root\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
+			PrivateKeyConnectionOptions: []string{"root", "K2=V2"},
+		}),
+		table.Entry("invalid connection options 2", "invalid private-key connection options: no key found before \":root\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
+			PrivateKeyConnectionOptions: []string{":root"},
+		}),
 	)
 
 	table.DescribeTable("Parses and returns correct values", func(options *parse.CLIOptions, expectedOptions map[string]interface{}) {

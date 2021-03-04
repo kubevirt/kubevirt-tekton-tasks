@@ -9,7 +9,7 @@ import (
 
 func ensureComment(opts *options.CommandOptions, cliOptions *parse.CLIOptions) {
 	// comment
-	if !opts.Includes("-C") {
+	if !opts.IncludesOption("-C") {
 		connectionOptions := cliOptions.GetPrivateKeyConnectionOptions()
 		user := "default"
 
@@ -17,22 +17,22 @@ func ensureComment(opts *options.CommandOptions, cliOptions *parse.CLIOptions) {
 			user = u
 		}
 
-		opts.AddOpt("-C", fmt.Sprintf("%v@generated", user))
+		opts.AddOption("-C", fmt.Sprintf("%v@generated", user))
 	}
 }
 func setDefaultOptions(opts *options.CommandOptions) {
 	// type of key
-	if !opts.Includes("-t") {
-		opts.AddOpt("-t", "rsa")
+	if !opts.IncludesOption("-t") {
+		opts.AddOption("-t", "rsa")
 	}
 
 	// number of bits in the key
-	if opts.GetOptionValue("-t") == "rsa" && !opts.Includes("-b") {
-		opts.AddOpt("-b", "4096")
+	if opts.GetOptionValue("-t") == "rsa" && !opts.IncludesOption("-b") {
+		opts.AddOption("-b", "4096")
 	}
 
 	// new passphrase
-	if !opts.Includes("-N") {
-		opts.AddOpt("-N", "")
+	if !opts.IncludesOption("-N") {
+		opts.AddOption("-N", "")
 	}
 }

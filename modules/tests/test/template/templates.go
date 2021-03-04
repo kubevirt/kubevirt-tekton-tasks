@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	descriptionLabel      = "description"
+	descriptionAnnotation = "description"
 	validationsAnnotation = "validations"
 	DescriptionParam      = "DESCRIPTION"
 	NameParam             = "NAME"
@@ -51,7 +51,10 @@ func (t *TestTemplate) modifyVM(processVM func(vm *kubevirtv1.VirtualMachine)) {
 
 func (t *TestTemplate) WithDescriptionParam() *TestTemplate {
 	t.modifyVM(func(vm *kubevirtv1.VirtualMachine) {
-		vm.Labels[descriptionLabel] = fmt.Sprintf("${%v}", DescriptionParam)
+		if vm.Annotations == nil {
+			vm.Annotations = map[string]string{}
+		}
+		vm.Annotations[descriptionAnnotation] = fmt.Sprintf("${%v}", DescriptionParam)
 	})
 	t.Data.Parameters = append(t.Data.Parameters, v1.Parameter{
 		Name:        DescriptionParam,

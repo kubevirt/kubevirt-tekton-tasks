@@ -14,4 +14,3 @@ func TestParse(t *testing.T) {
 }
 
 var _ = BeforeSuite(utilstest.SetupTestSuite)
-var _ = AfterSuite(utilstest.TearDownSuite)

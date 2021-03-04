@@ -56,7 +56,7 @@ var _ = Describe("ExecAttributes", func() {
 				Expect(results[0].Interface()).To(Equal(expectedValue))
 			}
 		}
-		log.GetLogger().Debug(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
+		log.Logger().Debug(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
 	},
 		table.Entry("secret missing", "secret does not exist", "invalid/path/to/secret", map[string]string{}, map[string]interface{}{
 			"GetType":          constants.ExecSecretType(""),
