@@ -37,17 +37,6 @@ func (c *CLIOptions) assertValidTypes() error {
 	return nil
 }
 
-func (c *CLIOptions) resolveTemplateParams() error {
-	if len(c.TemplateParams) > 0 {
-		param := strings.TrimSpace(c.TemplateParams[0])
-		if strings.HasPrefix(param, templateParamSep) || !strings.Contains(param, templateParamSep) {
-			return zerrors.NewMissingRequiredError("param %v should be in KEY:VAL format and include \"%v\"", param, templateParamSep)
-		}
-	}
-
-	return nil
-}
-
 func (c *CLIOptions) trimSpaces() {
 	c.TemplateName = strings.TrimSpace(c.TemplateName)
 	c.TemplateNamespace = strings.TrimSpace(c.TemplateNamespace)

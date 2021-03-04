@@ -34,7 +34,7 @@ var _ = Describe("CLIOptions", func() {
 		}),
 		table.Entry("useless template params", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
 			VirtualMachineManifest: testVMManifest,
-			TemplateParams:         []string{":V1"},
+			TemplateParams:         []string{"K1:V1"},
 		}),
 		table.Entry("invalidManifest", "could not read VM manifest", &parse.CLIOptions{
 			VirtualMachineManifest: "blabla",
@@ -43,11 +43,11 @@ var _ = Describe("CLIOptions", func() {
 			TemplateName: "test",
 			Output:       "incorrect-fmt",
 		}),
-		table.Entry("invalid template params 1", "param V1 should be in KEY:VAL format and include \":\"", &parse.CLIOptions{
+		table.Entry("invalid template params 1", "invalid template-params: no key found before \"V1\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
 			TemplateName:   "test",
 			TemplateParams: []string{"V1", "K2=V2"},
 		}),
-		table.Entry("invalid template params 2", "param :V1 should be in KEY:VAL format and include \":\"", &parse.CLIOptions{
+		table.Entry("invalid template params 2", "invalid template-params: no key found before \":V1\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
 			TemplateName:   "test",
 			TemplateParams: []string{":V1"},
 		}),

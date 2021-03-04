@@ -1,11 +1,12 @@
 package parse
 
 import (
+	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap/zapcore"
-	"strings"
 )
 
 const (
@@ -45,23 +46,10 @@ func (c *CLIOptions) GetAllDiskNames() []string {
 }
 
 func (c *CLIOptions) GetTemplateParams() map[string]string {
-	result := make(map[string]string, len(c.TemplateParams))
+	result, err := zutils.ExtractKeysAndValuesByLastKnownKey(c.TemplateParams, templateParamSep)
 
-	lastKey := ""
-
-	for _, keyVal := range c.TemplateParams {
-		split := strings.SplitN(keyVal, templateParamSep, 2)
-
-		switch len(split) {
-		case 1:
-			// expect space between values and append to the last key seen
-			if lastKey != "" {
-				result[lastKey] += " " + split[0]
-			}
-		case 2:
-			lastKey = strings.TrimSpace(split[0])
-			result[lastKey] = split[1]
-		}
+	if err != nil {
+		panic(fmt.Errorf("init was not called: %v", err.Error()))
 	}
 	return result
 }
@@ -109,8 +97,8 @@ func (c *CLIOptions) Init() error {
 		return err
 	}
 
-	if err := c.resolveTemplateParams(); err != nil {
-		return err
+	if _, err := zutils.ExtractKeysAndValuesByLastKnownKey(c.TemplateParams, templateParamSep); err != nil {
+		return zerrors.NewMissingRequiredError("invalid %v: %v", templateParamsOptionName, err.Error())
 	}
 
 	if err := c.resolveDefaultNamespacesAndManifests(); err != nil {

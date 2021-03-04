@@ -88,7 +88,7 @@ var _ = Describe("Create VM from template", func() {
 		table.Entry("invalid template params", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "param InvalidDescription should be in KEY:VAL format and include \":\"",
+				ExpectedLogs:   "invalid template-params: no key found before \"InvalidDescription\"; pair should be in \"KEY:VAL\" format",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: templ.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),

@@ -1,8 +1,10 @@
 package parse
 
 import (
+	"fmt"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap/zapcore"
-	"strings"
 )
 
 const (
@@ -50,23 +52,10 @@ func (c *CLIOptions) GetSshKeygenOptions() string {
 }
 
 func (c *CLIOptions) GetPrivateKeyConnectionOptions() map[string]string {
-	result := make(map[string]string, len(c.PrivateKeyConnectionOptions))
+	result, err := zutils.ExtractKeysAndValuesByLastKnownKey(c.PrivateKeyConnectionOptions, connectionOptionsSep)
 
-	lastKey := ""
-
-	for _, keyVal := range c.PrivateKeyConnectionOptions {
-		split := strings.SplitN(keyVal, connectionOptionsSep, 2)
-
-		switch len(split) {
-		case 1:
-			// expect space between values and append to the last key seen
-			if lastKey != "" {
-				result[lastKey] += " " + split[0]
-			}
-		case 2:
-			lastKey = strings.TrimSpace(split[0])
-			result[lastKey] = split[1]
-		}
+	if err != nil {
+		panic(fmt.Errorf("init was not called: %v", err.Error()))
 	}
 	return result
 }
@@ -76,6 +65,10 @@ func (c *CLIOptions) Init() error {
 
 	if err := c.validateNames(); err != nil {
 		return err
+	}
+
+	if _, err := zutils.ExtractKeysAndValuesByLastKnownKey(c.PrivateKeyConnectionOptions, connectionOptionsSep); err != nil {
+		return zerrors.NewMissingRequiredError("invalid private-key connection options: %v", err.Error())
 	}
 
 	if err := c.resolveDefaultNamespaces(); err != nil {
