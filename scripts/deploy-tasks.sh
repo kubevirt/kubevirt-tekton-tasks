@@ -30,25 +30,35 @@ visit "${REPO_DIR}/tasks"
     MAIN_IMAGE="$(sed -n  's/^main_image *: *//p' "${CONFIG_FILE}")"
     CUSTOM_IMAGE="${TASK_NAME_TO_IMAGE[${TASK_NAME}]}"
 
+    # cleanup first
+    kubectl delete -f manifests 2> /dev/null || true
+    kubectl delete clusterrolebinding "${TASK_NAME}-task" 2> /dev/null || true
+
     visit "${TASK_NAME}"
-      kubectl delete -f manifests 2> /dev/null || true
-      if [[ $SCOPE == "cluster" ]]; then
-        if [ -f "manifests/${TASK_NAME}-cluster-rbac.yaml"  ]; then
-          sed "s/TARGET_NAMESPACE/${DEPLOY_NAMESPACE}/" "manifests/${TASK_NAME}-cluster-rbac.yaml" | kubectl apply -f -
-        fi
+
+      if [[ -z ${CUSTOM_IMAGE} ]]; then
+        kubectl apply -f "manifests/${TASK_NAME}.yaml"
       else
-        if [ -f "manifests/${TASK_NAME}-namespace-rbac.yaml"  ]; then
-          kubectl apply -f "manifests/${TASK_NAME}-namespace-rbac.yaml"
-        fi
+        sed "s!${MAIN_IMAGE}!${CUSTOM_IMAGE}!g" "manifests/${TASK_NAME}.yaml" | kubectl apply -f -
       fi
 
-      for SUBTASK_NAME in $(ls manifests | grep -v rbac); do
-        if [[ -z ${CUSTOM_IMAGE} ]]; then
-          kubectl apply -f "manifests/${SUBTASK_NAME}"
-        else
-          sed "s!${MAIN_IMAGE}!${CUSTOM_IMAGE}!g" "manifests/${SUBTASK_NAME}" | kubectl apply -f -
-        fi
-      done
+      # add cluster privileges if needed
+      if [[ "${SCOPE}" == "cluster" ]] && grep -q ClusterRole "manifests/${TASK_NAME}.yaml"; then
+        kubectl apply -f - << EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ${TASK_NAME}-task
+roleRef:
+  kind: ClusterRole
+  name: ${TASK_NAME}-task
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name:  ${TASK_NAME}-task
+    namespace: ${DEPLOY_NAMESPACE}
+EOF
+      fi
     leave
   done
 leave

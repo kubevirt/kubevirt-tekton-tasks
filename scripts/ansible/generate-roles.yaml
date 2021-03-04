@@ -1,29 +1,29 @@
-- name: "Prepare {{ item.role_id }} role tmp directory"
+- name: "Prepare role tmp directory"
   file:
-    path: "{{ role_output_dir }}/tmp-role-{{ item.role_id }}"
+    path: "{{ role_output_dir }}/tmp-role"
     state: directory
 - name: Generate role
   template:
     src: "{{ manifest_templates_dir }}/{{ task_name }}-role.yaml"
-    dest: "{{ role_output_dir }}/tmp-role-{{ item.role_id }}/00-{{ task_name }}-role.yaml"
+    dest: "{{ role_output_dir }}/tmp-role/00-{{ task_name }}-role.yaml"
     mode: "{{ default_file_mode }}"
 - name: Generate service account
   template:
     src: "{{ manifest_templates_dir }}/{{ task_name }}-sa.yaml"
-    dest: "{{ role_output_dir }}/tmp-role-{{ item.role_id }}/01-{{ task_name }}-sa.yaml"
+    dest: "{{ role_output_dir }}/tmp-role/01-{{ task_name }}-sa.yaml"
     mode: "{{ default_file_mode }}"
 - name: Generate role binding
   template:
     src: "{{ manifest_templates_dir }}/{{ task_name }}-role-binding.yaml"
-    dest: "{{ role_output_dir }}/tmp-role-{{ item.role_id }}/02-{{ task_name }}-role-binding.yaml"
+    dest: "{{ role_output_dir }}/tmp-role/02-{{ task_name }}-role-binding.yaml"
     mode: "{{ default_file_mode }}"
-- name: Make rbac bundle
+- name: Assemble rbac bundle
   assemble:
-    src: "{{ role_output_dir }}/tmp-role-{{ item.role_id }}"
-    dest: "{{ role_output_dir }}/{{ task_name }}-{{ item.role_id }}-rbac.yaml"
+    src: "{{ role_output_dir }}/tmp-role"
+    dest: "{{ role_output_dir }}/{{ item.prefix if item.prefix is defined else '' }}{{ task_name }}-rbac.yaml"
     mode: "{{ default_file_mode }}"
     delimiter: '\n'
-- name: "Delete {{ item.role_id }} role tmp directory"
+- name: "Delete role tmp directory"
   file:
-    path: "{{ role_output_dir }}/tmp-role-{{ item.role_id }}"
+    path: "{{ role_output_dir }}/tmp-role"
     state: absent

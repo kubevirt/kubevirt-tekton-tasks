@@ -6,22 +6,11 @@ A bundle of predefined templates to use can be found in [Common Templates](https
 
 ### Installation
 
-Install the `create-vm-from-template` task
+Install the `create-vm-from-template` task in active namespace. You have to repeat this for every namespace in which you'd like to run the tasks.
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm-from-template/manifests/create-vm-from-template.yaml
 ```
-
-Install one of the following rbac permissions to the active namespace
-- Permissions for using templates/VMs and storage in active namespace
-  ```bash
-  kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm-from-template/manifests/create-vm-from-template-namespace-rbac.yaml
-  ```
-- Permissions for using templates/VMs and storagein the cluster
-  ```bash
-  TARGET_NAMESPACE="$(kubectl config view --minify --output 'jsonpath={..namespace}')"
-  wget -qO - https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm-from-template/manifests/create-vm-from-template-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
-  ```
 
 ### Service Account
 

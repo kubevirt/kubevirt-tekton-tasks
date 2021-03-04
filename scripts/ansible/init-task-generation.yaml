@@ -1,0 +1,9 @@
+- name: Clean dist directory
+  file:
+    path: "{{ manifests_output_dir }}"
+    state: absent
+- name: Prepare dist directory
+  file:
+    # includes also manifests_output_dir
+    path: "{{ manifests_output_dir }}/tmp"
+    state: directory
