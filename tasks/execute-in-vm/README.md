@@ -51,7 +51,7 @@ The secret should be of one of the following types:
 Following secret data keys are recognized for SSH connections:
 
 - **user**: User to log in as.
-- **private-key**: Private key to use for authentication.
+- **ssh-privatekey**: Private key to use for authentication.
 - **host-public-key**: Public key of known host to connect to.
 - **disable-strict-host-key-checking**: host-public-key (authorized-key) does not have to be supplied when this value is set to true.
 - **additional-ssh-options**: Additional arguments to pass to the SSH command.
