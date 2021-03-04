@@ -7,6 +7,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/execattributes"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
 	"net"
 	"os"
 	"os/exec"
@@ -74,23 +75,18 @@ func (e *sshExecutor) TestConnection() bool {
 }
 
 func (e *sshExecutor) RemoteExecute(timeout time.Duration) error {
+	opts := options.NewCommandOptionsFromArray(e.ssh.GetAdditionalSSHOptions())
+
 	destination := e.ssh.GetUser() + "@" + e.ipAddress
+	opts.AddValue(destination)
 
-	var opts []string
-	if additionalOpts := e.ssh.GetAdditionalSSHOptions(); additionalOpts != "" {
-		for _, additionalOpt := range strings.Fields(additionalOpts) {
-			if additionalOpt != "" {
-				opts = append(opts, additionalOpt)
-			}
-		}
-	}
-	opts = append(opts, destination)
-	log.GetLogger().Debug("executing ssh command with options: " + strings.Join(opts, " "))
+	log.GetLogger().Debug("executing ssh command with options: " + strings.Join(opts.GetAll(), " "))
+
 	// do not log script
-	opts = append(opts, "--")
-	opts = append(opts, e.clioptions.GetScript())
+	opts.AddValue("--")
+	opts.AddValue(e.clioptions.GetScript())
 
-	cmd := exec.Command(e.ssh.GetSSHExecutableName(), opts...)
+	cmd := exec.Command(e.ssh.GetSSHExecutableName(), opts.GetAll()...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

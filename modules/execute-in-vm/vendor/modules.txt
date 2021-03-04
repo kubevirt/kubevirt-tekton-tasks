@@ -54,6 +54,8 @@ github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
 # github.com/google/gofuzz v1.0.0
 github.com/google/gofuzz
+# github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+github.com/google/shlex
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
 # github.com/googleapis/gnostic v0.3.1 => github.com/googleapis/gnostic v0.3.1
@@ -81,6 +83,7 @@ github.com/kubernetes-csi/external-snapshotter/v2/pkg/apis/volumesnapshot/v1beta
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env/fileoptions
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants/connectionsecret
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors
