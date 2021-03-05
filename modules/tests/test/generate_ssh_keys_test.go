@@ -27,7 +27,7 @@ var _ = Describe("Generate SSH Keys", func() {
 		f.ManageSecrets(asManagedSecrets(runner.GetResults())...)
 
 		runner.ExpectFailure().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(nil)
 	},
 		table.Entry("no service account", &testconfigs.GenerateSshKeysTestConfig{
@@ -114,7 +114,7 @@ var _ = Describe("Generate SSH Keys", func() {
 		f.ManageSecrets(asManagedSecrets(results)...)
 
 		runner.ExpectSuccess().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResultsWithLen(config.GetExpectedResults(), 4)
 
 		publicSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PublicKeySecretNamespace]).Get(results[GenerateSshKeysResults.PublicKeySecretName], metav1.GetOptions{})
@@ -259,7 +259,7 @@ var _ = Describe("Generate SSH Keys", func() {
 		f.ManageSecrets(asManagedSecrets(results)...)
 
 		runner.ExpectSuccess().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResultsWithLen(config.GetExpectedResults(), 4)
 
 		publicSecret, err = f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PublicKeySecretNamespace]).Get(results[GenerateSshKeysResults.PublicKeySecretName], metav1.GetOptions{})

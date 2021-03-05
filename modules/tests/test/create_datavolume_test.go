@@ -24,7 +24,7 @@ var _ = Describe("Create DataVolume", func() {
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectFailure().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(nil)
 
 		if dataVolume != nil && dataVolume.Name != "" && dataVolume.Namespace != "" {
@@ -89,7 +89,7 @@ var _ = Describe("Create DataVolume", func() {
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectSuccess().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(map[string]string{
 				CreateDataVolumeFromManifestResults.Name:      dataVolume.Name,
 				CreateDataVolumeFromManifestResults.Namespace: dataVolume.Namespace,

@@ -17,6 +17,7 @@ type TaskRunTestConfig struct {
 	LimitEnvScope       constants.EnvScope
 	ExpectSuccess       bool
 	ExpectedLogs        string
+	ExpectedLogsList    []string
 	ExpectedTermination *TaskRunExpectedTermination
 }
 
@@ -33,4 +34,18 @@ func (t *TaskRunTestConfig) GetLimitTestScope() constants.TestScope {
 
 func (t *TaskRunTestConfig) GetLimitEnvScope() constants.EnvScope {
 	return t.LimitEnvScope
+}
+
+func (t *TaskRunTestConfig) GetAllExpectedLogs() []string {
+	var allLogs []string
+
+	if t.ExpectedLogs != "" {
+		allLogs = append(allLogs, t.ExpectedLogs)
+	}
+
+	if t.ExpectedLogsList != nil {
+		allLogs = append(allLogs, t.ExpectedLogsList...)
+	}
+
+	return allLogs
 }
