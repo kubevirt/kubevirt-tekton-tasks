@@ -43,18 +43,19 @@ To support such use cases additional bindings need to be created.
 ### Multi Namespace RBAC permissions
 
 Let's assume the tasks and thus their service accounts are deployed in `task-ns1` namespace.
-To allow access to `vm-ns1` namespace, the following `RoleBinding` should be created for each task.
+To allow access to `vm-ns1` and `vm-ns2` namespaces, the following `RoleBinding` should be created for each task.
 Only two tasks are used for simplicity in the following example.
 
 ```bash
 #!/usr/bin/env bash
-for TASK_NAME in generate-ssh-keys create-vm-from-manifest; do
-    kubectl apply -f - << EOF
+for NAMESPACE in vm-ns1 vm-ns2; do
+    for TASK_NAME in generate-ssh-keys create-vm-from-manifest; do
+        kubectl apply -f - << EOF
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: ${TASK_NAME}-task
-  namespace: vm-ns1
+  namespace: ${NAMESPACE}
 roleRef:
   kind: ClusterRole
   name: ${TASK_NAME}-task
@@ -64,12 +65,13 @@ subjects:
     name:  ${TASK_NAME}-task
     namespace: task-ns1
 EOF
+    done
 done
 ```
 
-This example enables `generate-ssh-keys` and `create-vm-from-manifest` tasks to create secrets/VMs in `vm-ns1` from a pipeline started in `task-ns1`.
+This example enables `generate-ssh-keys` and `create-vm-from-manifest` tasks to create secrets/VMs in `vm-ns1` and `vm-ns2` namespace from a pipeline started in `task-ns1`.
 
-Warning: this will allow users with access to `generate-ssh-keys-task` and `create-vm-from-manifest-task` service accounts to run pods which can access `vm-ns1`.
+Warning: this will allow users with access to `generate-ssh-keys-task` and `create-vm-from-manifest-task` service accounts to run pods which can access `vm-ns1` and `vm-ns2` namespaces.
 
 
 ### Cluster RBAC permissions
