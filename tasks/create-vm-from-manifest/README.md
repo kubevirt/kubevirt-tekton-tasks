@@ -9,6 +9,9 @@ Install the `create-vm-from-manifest` task in active namespace. You have to repe
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm-from-manifest/manifests/create-vm-from-manifest.yaml
 ```
+
+For more information on how to utilize this task in different namespaces, please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md).
+
 ### Service Account
 
 This task should be run with `create-vm-from-manifest-task` serviceAccount.

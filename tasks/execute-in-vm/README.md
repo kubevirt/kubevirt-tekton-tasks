@@ -10,6 +10,8 @@ Install the `execute-in-vm` task in active namespace. You have to repeat this fo
 kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/execute-in-vm/manifests/execute-in-vm.yaml
 ```
 
+For more information on how to utilize this task in different namespaces, please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md).
+
 ### Service Account
 
 This task should be run with `execute-in-vm-task` serviceAccount.

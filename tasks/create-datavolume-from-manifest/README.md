@@ -10,6 +10,8 @@ Install the `create-datavolume-from-manifest` task in active namespace. You have
 kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-datavolume-from-manifest/manifests/create-datavolume-from-manifest.yaml
 ```
 
+For more information on how to utilize this task in different namespaces, please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md).
+
 ### Service Account
 
 This task should be run with `create-datavolume-from-manifest-task` serviceAccount.

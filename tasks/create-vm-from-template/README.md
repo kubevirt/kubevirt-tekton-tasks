@@ -12,6 +12,8 @@ Install the `create-vm-from-template` task in active namespace. You have to repe
 kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/create-vm-from-template/manifests/create-vm-from-template.yaml
 ```
 
+For more information on how to utilize this task in different namespaces, please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md).
+
 ### Service Account
 
 This task should be run with `create-vm-from-template-task` serviceAccount.
