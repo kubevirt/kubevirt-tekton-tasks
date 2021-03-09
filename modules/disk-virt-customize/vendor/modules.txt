@@ -11,10 +11,15 @@ github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
 # github.com/google/gofuzz v1.0.0
 github.com/google/gofuzz
+# github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+github.com/google/shlex
 # github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ./../shared
 ## explicit
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils
 # github.com/nxadm/tail v1.4.4
 github.com/nxadm/tail
 github.com/nxadm/tail/ratelimiter
