@@ -1,6 +1,6 @@
-# Virt Customize Task
+# Disk Virt Customize Task
 
-This task uses `virt-customize` to run a customize script on a target pvc.
+This task uses [virt-customize](https://libguestfs.org/virt-customize.1.html) to run a customize script on a target pvc.
 
 
 ### Parameters
@@ -10,14 +10,13 @@ This task uses `virt-customize` to run a customize script on a target pvc.
 - **verbose**: Enable verbose mode and tracing of libguestfs API calls.
 - **additionalOptions**: Additional options to pass to virt-customize.
 
-
 ### Usage
 
 Please see [examples](examples)
 
 #### Common Errors
 
-- The input PVC disk should not be accessed by a running VM or other tools like virt-customize task concurrently.
+- The input PVC disk should not be accessed by a running VM or other tools like virt-customize concurrently.
 The task will fail with a generic `...guestfs_launch failed...` message.
 Verbose parameter can be set to true for more information.
 

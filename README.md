@@ -5,7 +5,7 @@ This repository provides KubeVirt-specific Tekton tasks, which focus on:
 
 - Creating and managing resources (VMs, DataVolumes)
 - Executing commands in VMs
-- Manipulating disk images with libguestfs tools [WIP]
+- Manipulating disk images with libguestfs tools
 
 ## Deployment
 
@@ -51,6 +51,10 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 
 - [execute-in-vm](tasks/execute-in-vm): execute commands over SSH
 - [cleanup-vm](tasks/cleanup-vm): execute commands and/or stop/delete VMs
+
+#### Manipulate PVCs with libguestfs tools
+
+- [disk-virt-customize](tasks/disk-virt-customize): execute virt-customize commands in PVCs
 
 ## Examples
 
