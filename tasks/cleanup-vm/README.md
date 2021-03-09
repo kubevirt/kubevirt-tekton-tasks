@@ -5,22 +5,13 @@ the VM afterwards. Best used together with tekton pipelines finally construct.
 
 ### Installation
 
-Install the `cleanup-vm` task
+Install the `cleanup-vm` task in active namespace. You have to repeat this for every namespace in which you'd like to run the tasks.
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/cleanup-vm/manifests/cleanup-vm.yaml
 ```
 
-Install one of the following rbac permissions to the active namespace
-  - Permissions for executing/stopping/deleting VMs from active namespace
-    ```bash
-    kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/cleanup-vm/manifests/cleanup-vm-namespace-rbac.yaml
-    ```
-  - Permissions for executing/stopping/deleting VMs from the cluster
-    ```bash
-    TARGET_NAMESPACE="$(kubectl config view --minify --output 'jsonpath={..namespace}')"
-    wget -qO - https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/cleanup-vm/manifests/cleanup-vm-cluster-rbac.yaml | sed "s/TARGET_NAMESPACE/$TARGET_NAMESPACE/" | kubectl apply -f -
-    ```
+For more information on how to utilize this task in different namespaces, please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md).
 
 ### Service Account
 

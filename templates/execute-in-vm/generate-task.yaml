@@ -10,24 +10,21 @@
     examples_secrets_output_dir: "{{ examples_output_dir }}/secrets"
     ssh_secret_name: "ssh-secret"
   tasks:
-    - name: Prepare manifests dist directory
-      file:
-        path: "{{ manifests_output_dir }}"
-        state: directory
-    - name: Generate task
+    - name: Init
+      include: "{{ repo_dir }}/scripts/ansible/init-task-generation.yaml"
+    - name: "Generate {{ task_name }} task"
       template:
         src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
-        dest: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
+        dest: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
         mode: "{{ default_file_mode }}"
       vars:
         is_cleanup: false
     - name: Generate roles
       include: "{{ repo_dir }}/scripts/ansible/generate-roles.yaml"
       with_items:
-        - { role_type: Role, role_id: 'namespace', sa_namespace: null }
-        - { role_type: ClusterRole, role_id: 'cluster', sa_namespace: 'TARGET_NAMESPACE' }
+        - { role_type: ClusterRole, prefix: zz- }
       vars:
-        role_output_dir: "{{ manifests_output_dir }}"
+        role_output_dir: "{{ manifests_output_dir_tmp }}"
     - name: Prepare examples dist directory
       file:
         path: "{{ item }}"
@@ -58,5 +55,7 @@
         mode: "{{ default_file_mode }}"
       vars:
         is_cleanup: false
-        task_path: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
+        task_path: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
         task_yaml: "{{ lookup('file', task_path) | from_yaml }}"
+    - name: Assemble task
+      include: "{{ repo_dir }}/scripts/ansible/assemble-task.yaml"

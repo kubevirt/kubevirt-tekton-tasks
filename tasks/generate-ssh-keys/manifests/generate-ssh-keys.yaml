@@ -68,3 +68,35 @@ spec:
           value: $(params.privateKeySecretNamespace)
         - name: ADDITIONAL_SSH_KEYGEN_OPTIONS
           value: $(params.additionalSSHKeygenOptions)
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: generate-ssh-keys-task
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - ''
+    resources:
+      - secrets
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: generate-ssh-keys-task
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: generate-ssh-keys-task
+roleRef:
+  kind: ClusterRole
+  name: generate-ssh-keys-task
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: generate-ssh-keys-task

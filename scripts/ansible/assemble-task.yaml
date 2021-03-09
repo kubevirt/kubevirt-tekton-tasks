@@ -1,0 +1,10 @@
+- name: Assemble task
+  assemble:
+    src: "{{ manifests_output_dir_tmp }}"
+    dest: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
+    mode: "{{ default_file_mode }}"
+    delimiter: '\n'
+- name: Delete Assemble task tmp directory
+  file:
+    path: "{{ manifests_output_dir_tmp }}"
+    state: absent
