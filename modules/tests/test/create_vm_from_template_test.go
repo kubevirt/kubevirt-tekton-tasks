@@ -426,7 +426,7 @@ var _ = Describe("Create VM from template", func() {
 					TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 						ServiceAccount: CreateVMFromTemplateServiceAccountName,
 						ExpectedLogs:   ExpectedSuccessfulVMCreation,
-						Timeout:        Timeouts.SmallBlankDVCreation,
+						Timeout:        Timeouts.SmallDVCreation,
 					},
 					TaskData: testconfigs.CreateVMTaskData{
 						Template: testTemplate.Build(),

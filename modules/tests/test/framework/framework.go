@@ -18,7 +18,7 @@ var TestOptionsInstance = &testoptions.TestOptions{}
 var ClientsInstance = &Clients{}
 
 type ManagedResources struct {
-	taskRun     *pipev1beta1.TaskRun
+	taskRuns    []*pipev1beta1.TaskRun
 	dataVolumes []*cdiv1beta1.DataVolume
 	vms         []*kubevirtv1.VirtualMachine
 	templates   []*templatev1.Template
@@ -89,15 +89,18 @@ func (f *Framework) TestSetup(config TestConfig) {
 
 func (f *Framework) AfterEach() {
 	failed := CurrentGinkgoTestDescription().Failed
-	taskRun := f.managedResources.taskRun
-	hasTaskRun := taskRun != nil
+	taskRuns := f.managedResources.taskRuns
 
 	if failed {
 		defer func() {
-			if hasTaskRun && !f.Debug {
-				defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(taskRun.Name, &metav1.DeleteOptions{})
+			if !f.Debug {
+				for _, taskRun := range taskRuns {
+					defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(taskRun.Name, &metav1.DeleteOptions{})
+				}
 			}
-			tekton.PrintTaskRunDebugInfo(f.TknClient, f.CoreV1Client, taskRun.Namespace, taskRun.Name)
+			for _, taskRun := range taskRuns {
+				tekton.PrintTaskRunDebugInfo(f.TknClient, f.CoreV1Client, taskRun.Namespace, taskRun.Name)
+			}
 		}()
 	}
 
@@ -106,8 +109,10 @@ func (f *Framework) AfterEach() {
 		return
 	}
 
-	if hasTaskRun && !failed { // failed has its own cleanup
-		defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(taskRun.Name, &metav1.DeleteOptions{})
+	if !failed { // failed has its own cleanup
+		for _, taskRun := range taskRuns {
+			defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(taskRun.Name, &metav1.DeleteOptions{})
+		}
 	}
 
 	for _, dv := range f.managedResources.dataVolumes {
@@ -124,8 +129,8 @@ func (f *Framework) AfterEach() {
 	}
 }
 
-func (f *Framework) ManageTaskRun(taskRun *pipev1beta1.TaskRun) *Framework {
-	f.managedResources.taskRun = taskRun
+func (f *Framework) ManageTaskRuns(taskRuns ...*pipev1beta1.TaskRun) *Framework {
+	f.managedResources.taskRuns = append(f.managedResources.taskRuns, taskRuns...)
 	return f
 }
 

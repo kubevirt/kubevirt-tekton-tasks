@@ -3,7 +3,6 @@ package parse
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap/zapcore"
-	"strings"
 )
 
 const (
@@ -36,30 +35,9 @@ func (c *CLIOptions) GetAdditionalVirtCustomizeOptions() string {
 	return c.AdditionalVirtCustomizeOptions
 }
 
-func (c *CLIOptions) IncludesVirtCustomizeOption(option string) bool {
-	return strings.HasPrefix(c.AdditionalVirtCustomizeOptions, option) || strings.Contains(c.AdditionalVirtCustomizeOptions, " "+option)
-}
-
-func (c *CLIOptions) AddAdditionalVirtCustomizeOption(value string) {
-	if c.AdditionalVirtCustomizeOptions != "" {
-		c.AdditionalVirtCustomizeOptions += " "
-	}
-	c.AdditionalVirtCustomizeOptions += value
-}
-
 func (c *CLIOptions) Init() error {
 	if err := c.validateExecutionScript(); err != nil {
 		return err
-	}
-
-	if c.IsVerbose() {
-		if !c.IncludesVirtCustomizeOption("-v") && !c.IncludesVirtCustomizeOption("--verbose") {
-			c.AddAdditionalVirtCustomizeOption("--verbose")
-		}
-
-		if !c.IncludesVirtCustomizeOption("-x") {
-			c.AddAdditionalVirtCustomizeOption("-x")
-		}
 	}
 
 	return nil

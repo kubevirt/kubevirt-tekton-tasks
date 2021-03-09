@@ -1,4 +1,4 @@
-package parse_test
+package execute_test
 
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-customize/pkg/utilstest"
@@ -10,7 +10,7 @@ import (
 
 func TestParse(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Parse Suite")
+	RunSpecs(t, "Execute Suite")
 }
 
 var _ = BeforeSuite(utilstest.SetupTestSuite)

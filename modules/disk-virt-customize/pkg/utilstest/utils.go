@@ -8,6 +8,3 @@ import (
 func SetupTestSuite() {
 	log.InitLogger(zap.InfoLevel)
 }
-
-func TearDownSuite() {
-}

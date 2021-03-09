@@ -32,7 +32,7 @@ func (r *TaskRunRunner) CreateTaskRun() *TaskRunRunner {
 	taskRun, err := r.framework.TknClient.TaskRuns(r.taskRun.Namespace).Create(r.taskRun)
 	Expect(err).ShouldNot(HaveOccurred())
 	r.taskRun = taskRun
-	r.framework.ManageTaskRun(r.taskRun)
+	r.framework.ManageTaskRuns(r.taskRun)
 	return r
 }
 

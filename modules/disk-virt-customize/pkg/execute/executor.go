@@ -5,6 +5,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-customize/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-customize/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"io/ioutil"
 	"os"
@@ -13,12 +14,12 @@ import (
 )
 
 type Executor struct {
-	clioptions    *parse.CLIOptions
+	cliOptions    *parse.CLIOptions
 	diskImagePath string
 }
 
 func NewExecutor(clioptions *parse.CLIOptions, diskImagePath string) *Executor {
-	return &Executor{clioptions: clioptions, diskImagePath: diskImagePath}
+	return &Executor{cliOptions: clioptions, diskImagePath: diskImagePath}
 }
 
 func (e *Executor) PrepareGuestFSAppliance() error {
@@ -47,28 +48,27 @@ func (e *Executor) PrepareGuestFSAppliance() error {
 }
 
 func (e *Executor) Execute() error {
-	virtCustomizeScriptFileName, err := writeToTmpFile(e.clioptions.GetCustomizeCommands())
+	virtCustomizeScriptFileName, err := writeToTmpFile(e.cliOptions.GetCustomizeCommands())
 	if err != nil {
 		return err
 	}
 
-	opts := []string{
+	opts := options.NewCommandOptionsFromArray([]string{
 		"--add",
 		e.diskImagePath,
 		"--commands-from-file",
 		virtCustomizeScriptFileName,
-	}
+	})
 
-	if additionalOpts := e.clioptions.GetAdditionalVirtCustomizeOptions(); additionalOpts != "" {
-		for _, additionalOpt := range strings.Fields(additionalOpts) {
-			if additionalOpt != "" {
-				opts = append(opts, additionalOpt)
-			}
-		}
+	additionalVirtCustomizeOpts, err := options.NewCommandOptions(e.cliOptions.GetAdditionalVirtCustomizeOptions())
+	if err != nil {
+		return err
 	}
+	opts.AddOptions(additionalVirtCustomizeOpts.GetAll()...)
+	SetupVirtCustomizeOptions(opts, e.cliOptions)
 
-	log.GetLogger().Debug("executing virt-customize command with options: " + strings.Join(opts, " "))
-	cmd := exec.Command("virt-customize", opts...)
+	log.GetLogger().Debug("executing virt-customize command with options: " + strings.Join(opts.GetAll(), " "))
+	cmd := exec.Command("virt-customize", opts.GetAll()...)
 	cmd.Env = os.Environ()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

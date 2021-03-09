@@ -44,40 +44,9 @@ var _ = Describe("CLIOptions", func() {
 			Verbose:                        "true",
 		}, map[string]interface{}{
 			"GetCustomizeCommands":              customizeCommands,
-			"GetAdditionalVirtCustomizeOptions": "--smp 4 --memsize 2048 -q -v -x",
-			"GetDebugLevel":                     zapcore.DebugLevel,
-			"IsVerbose":                         true,
-		}),
-		table.Entry("adds verbose cli arguments", &parse.CLIOptions{
-			CustomizeCommands: customizeCommands,
-			Verbose:           "true",
-		}, map[string]interface{}{
-			"GetCustomizeCommands":              customizeCommands,
-			"GetAdditionalVirtCustomizeOptions": "--verbose -x",
+			"GetAdditionalVirtCustomizeOptions": "--smp 4 --memsize 2048 -q -v",
 			"GetDebugLevel":                     zapcore.DebugLevel,
 			"IsVerbose":                         true,
 		}),
 	)
-
-	It("does common operations correctly", func() {
-		cliOptions := &parse.CLIOptions{
-			CustomizeCommands:              customizeCommands,
-			AdditionalVirtCustomizeOptions: "-v --let-x 4",
-			Verbose:                        "false",
-		}
-
-		err := cliOptions.Init()
-		Expect(err).Should(Succeed())
-
-		// IncludesSSHOption
-		Expect(cliOptions.IncludesVirtCustomizeOption("-v")).To(BeTrue())
-		Expect(cliOptions.IncludesVirtCustomizeOption("-x")).To(BeFalse())
-
-		// IncludesSSHOption and AddAdditionalSSHOption
-		cliOptions.AddAdditionalVirtCustomizeOption("-x")
-		Expect(cliOptions.IncludesVirtCustomizeOption("-v")).To(BeTrue())
-		Expect(cliOptions.IncludesVirtCustomizeOption("-x")).To(BeTrue())
-		Expect(cliOptions.GetAdditionalVirtCustomizeOptions()).Should(Equal("-v --let-x 4 -x"))
-	})
-
 })
