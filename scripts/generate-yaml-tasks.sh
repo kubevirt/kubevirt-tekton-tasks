@@ -16,16 +16,19 @@ DRY_RUN="${DRY_RUN:=false}"
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 RESOURCE_TYPES=(manifests examples README.md)
+RELEASE_TYPES=(kubernetes openshift)
 
-visit "${REPO_DIR}/templates"
-  if [[ $# -eq 0 ]]; then
+if [[ $# -eq 0 ]]; then
+  visit "${REPO_DIR}/templates"
     TASK_NAMES=(*)
-  else
-    TASK_NAMES=("$@")
-  fi
+  leave
+else
+  TASK_NAMES=("$@")
+fi
 
+function generateTaskResources() {
   for TASK_NAME in ${TASK_NAMES[*]}; do
-    visit "${TASK_NAME}"
+    visit "${REPO_DIR}/templates/${TASK_NAME}"
       ansible-playbook generate-task.yaml
       for RESOURCE_TYPE in ${RESOURCE_TYPES[*]}; do
         DESTINATION_PARENT_DIR="${REPO_DIR}/tasks/${TASK_NAME}"
@@ -43,4 +46,32 @@ visit "${REPO_DIR}/templates"
       fi
     leave
   done
-leave
+}
+
+function combineTaskManifestsIntoRelease() {
+  for RELEASE_TYPE in ${RELEASE_TYPES[*]}; do
+    RESULT_DIR="${REPO_DIR}/manifests/${RELEASE_TYPE}"
+    if [ "${DRY_RUN}" == "false" ]; then
+      rm -rf "${RESULT_DIR}"
+    else
+      RESULT_DIR="${RESULT_DIR}-dist"
+    fi
+
+    mkdir -p "${RESULT_DIR}"
+    RESULT_FILE="${RESULT_DIR}/kubevirt-tekton-tasks.yaml"
+    visit "${REPO_DIR}/tasks"
+      for TASK_NAME in *; do
+        CONFIG_FILE="../configs/${TASK_NAME}.yaml"
+        IS_TASK_OPENSHIFT="$(sed -n  's/^is_openshift *: *//p' ${CONFIG_FILE})"
+        if [ "${RELEASE_TYPE}" != openshift ] && [ "${IS_TASK_OPENSHIFT}" == true ]; then
+          continue
+        fi
+
+        cat "${TASK_NAME}"/manifests/* >> "${RESULT_FILE}"
+      done
+    leave
+  done
+}
+
+generateTaskResources
+combineTaskManifestsIntoRelease

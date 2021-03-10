@@ -2,16 +2,6 @@
 
 This task uses `ssh-keygen` to generate a private and public key pair
 
-### Installation
-
-Install the `generate-ssh-keys` task in active namespace. You have to repeat this for every namespace in which you'd like to run the tasks.
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/generate-ssh-keys/manifests/generate-ssh-keys.yaml
-```
-
-For more information on how to utilize this task in different namespaces, please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md).
-
 ### Service Account
 
 This task should be run with `generate-ssh-keys-task` serviceAccount.

@@ -3,16 +3,6 @@
 This task can execute a script, or a command in a Virtual Machine and stop/delete 
 the VM afterwards. Best used together with tekton pipelines finally construct.
 
-### Installation
-
-Install the `cleanup-vm` task in active namespace. You have to repeat this for every namespace in which you'd like to run the tasks.
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/tasks/cleanup-vm/manifests/cleanup-vm.yaml
-```
-
-For more information on how to utilize this task in different namespaces, please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md).
-
 ### Service Account
 
 This task should be run with `cleanup-vm-task` serviceAccount.
