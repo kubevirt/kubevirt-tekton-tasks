@@ -8,7 +8,7 @@ import (
 type timeouts struct {
 	Zero                  *metav1.Duration
 	QuickTaskRun          *metav1.Duration
-	SmallBlankDVCreation  *metav1.Duration
+	SmallDVCreation       *metav1.Duration
 	DefaultTaskRun        *metav1.Duration
 	TaskRunExtraWaitDelay *metav1.Duration
 	WaitBeforeExecutingVM *metav1.Duration
@@ -18,7 +18,7 @@ type timeouts struct {
 var Timeouts = timeouts{
 	Zero:                  &metav1.Duration{0 * time.Second},
 	TaskRunExtraWaitDelay: &metav1.Duration{80 * time.Second},
-	SmallBlankDVCreation:  &metav1.Duration{15 * time.Minute},
+	SmallDVCreation:       &metav1.Duration{15 * time.Minute},
 	QuickTaskRun:          &metav1.Duration{5 * time.Minute},
 	DefaultTaskRun:        &metav1.Duration{10 * time.Minute},
 	WaitBeforeExecutingVM: &metav1.Duration{30 * time.Second},

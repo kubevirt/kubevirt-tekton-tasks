@@ -28,12 +28,7 @@ func (c *CreateDVTestConfig) GetWaitForDVTimeout() time.Duration {
 	if c.TaskData.WaitForSuccess {
 		return Timeouts.Zero.Duration
 	}
-
-	if c.Timeout != nil {
-		return c.Timeout.Duration
-
-	}
-	return Timeouts.DefaultTaskRun.Duration
+	return c.GetTaskRunTimeout()
 }
 
 func (c *CreateDVTestConfig) Init(options *testoptions.TestOptions) {

@@ -94,7 +94,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			runner.NewTaskRunRunner(f, config.GetTaskRun()).
 				CreateTaskRun().
 				ExpectSuccessOrFailure(config.ExpectSuccess).
-				ExpectLogs(config.ExpectedLogs).
+				ExpectLogs(config.GetAllExpectedLogs()...).
 				ExpectTermination(config.ExpectedTermination).
 				ExpectResults(nil)
 		},
@@ -450,7 +450,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectSuccessOrFailure(config.ExpectSuccess).
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectTermination(config.ExpectedTermination).
 			ExpectResults(nil)
 

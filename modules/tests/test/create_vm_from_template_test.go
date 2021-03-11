@@ -38,7 +38,7 @@ var _ = Describe("Create VM from template", func() {
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectFailure().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(nil)
 
 		_, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
@@ -228,7 +228,7 @@ var _ = Describe("Create VM from template", func() {
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectSuccess().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(map[string]string{
 				CreateVMResults.Name:      expectedVM.Name,
 				CreateVMResults.Namespace: expectedVM.Namespace,
@@ -360,7 +360,7 @@ var _ = Describe("Create VM from template", func() {
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectSuccess().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(map[string]string{
 				CreateVMResults.Name:      expectedVM.Name,
 				CreateVMResults.Namespace: expectedVM.Namespace,
@@ -426,7 +426,7 @@ var _ = Describe("Create VM from template", func() {
 					TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 						ServiceAccount: CreateVMFromTemplateServiceAccountName,
 						ExpectedLogs:   ExpectedSuccessfulVMCreation,
-						Timeout:        Timeouts.SmallBlankDVCreation,
+						Timeout:        Timeouts.SmallDVCreation,
 					},
 					TaskData: testconfigs.CreateVMTaskData{
 						Template: testTemplate.Build(),
@@ -456,7 +456,7 @@ var _ = Describe("Create VM from template", func() {
 				runner.NewTaskRunRunner(f, config.GetTaskRun()).
 					CreateTaskRun().
 					ExpectSuccess().
-					ExpectLogs(config.ExpectedLogs).
+					ExpectLogs(config.GetAllExpectedLogs()...).
 					ExpectResults(map[string]string{
 						CreateVMResults.Name:      expectedVM.Name,
 						CreateVMResults.Namespace: expectedVM.Namespace,
@@ -497,7 +497,7 @@ var _ = Describe("Create VM from template", func() {
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectSuccess().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(map[string]string{
 				CreateVMResults.Name:      expectedVMStub.Name,
 				CreateVMResults.Namespace: expectedVMStub.Namespace,

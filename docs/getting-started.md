@@ -31,6 +31,8 @@ make generate-yaml-tasks
 # builds all images (only podman supported ATM) and pushes them to the cluster registry.
 # Then it deploys all tasks (which include the registry images) with required RBAC.
 make cluster-sync
+# to sync only one task
+./scripts/cluster-sync.sh execute-in-vm
 ```
 
 You can also change the scope of the tasks to be single namespace only:

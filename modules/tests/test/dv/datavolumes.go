@@ -73,6 +73,19 @@ func (d *TestDataVolume) WithURLSource(url string) *TestDataVolume {
 	return d
 }
 
+func (d *TestDataVolume) WithRegistrySource(registryURL string) *TestDataVolume {
+	d.Data.Spec.Source.Blank = nil
+	d.Data.Spec.Source.Registry = &v1beta12.DataVolumeSourceRegistry{
+		URL: registryURL,
+	}
+	return d
+}
+
+func (d *TestDataVolume) WithSize(size int64, scale resource.Scale) *TestDataVolume {
+	d.Data.Spec.PVC.Resources.Requests[v1.ResourceStorage] = *resource.NewScaledQuantity(size, scale)
+	return d
+}
+
 func (d *TestDataVolume) Build() *v1beta12.DataVolume {
 	return d.Data
 }

@@ -24,7 +24,7 @@ var _ = Describe("Create DataVolume", func() {
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectFailure().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(nil)
 
 		if dataVolume != nil && dataVolume.Name != "" && dataVolume.Namespace != "" {
@@ -89,7 +89,7 @@ var _ = Describe("Create DataVolume", func() {
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectSuccess().
-			ExpectLogs(config.ExpectedLogs).
+			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(map[string]string{
 				CreateDataVolumeFromManifestResults.Name:      dataVolume.Name,
 				CreateDataVolumeFromManifestResults.Namespace: dataVolume.Namespace,
@@ -101,7 +101,7 @@ var _ = Describe("Create DataVolume", func() {
 		table.Entry("blank wait", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
-				Timeout:        Timeouts.SmallBlankDVCreation,
+				Timeout:        Timeouts.SmallDVCreation,
 				ExpectedLogs:   "Created",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
@@ -112,7 +112,7 @@ var _ = Describe("Create DataVolume", func() {
 		table.Entry("blank no wait", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
-				Timeout:        Timeouts.SmallBlankDVCreation,
+				Timeout:        Timeouts.SmallDVCreation,
 				ExpectedLogs:   "Created",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
@@ -124,7 +124,7 @@ var _ = Describe("Create DataVolume", func() {
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
 				LimitTestScope: ClusterTestScope,
-				Timeout:        Timeouts.SmallBlankDVCreation,
+				Timeout:        Timeouts.SmallDVCreation,
 				ExpectedLogs:   "Created",
 			},
 			TaskData: testconfigs.CreateDVTaskData{

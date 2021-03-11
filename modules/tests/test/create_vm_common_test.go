@@ -63,7 +63,7 @@ var _ = Describe("Create VM", func() {
 								TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 									ServiceAccount: CreateVMFromManifestServiceAccountName,
 									ExpectedLogs:   ExpectedSuccessfulVMCreation,
-									Timeout:        Timeouts.SmallBlankDVCreation,
+									Timeout:        Timeouts.SmallDVCreation,
 								},
 								TaskData: testconfigs.CreateVMTaskData{
 									CreateMode:                createMode,
@@ -89,7 +89,7 @@ var _ = Describe("Create VM", func() {
 								TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 									ServiceAccount: CreateVMFromTemplateServiceAccountName,
 									ExpectedLogs:   ExpectedSuccessfulVMCreation,
-									Timeout:        Timeouts.SmallBlankDVCreation,
+									Timeout:        Timeouts.SmallDVCreation,
 									LimitEnvScope:  OpenshiftEnvScope,
 								},
 								TaskData: testconfigs.CreateVMTaskData{
@@ -125,7 +125,7 @@ var _ = Describe("Create VM", func() {
 						runner.NewTaskRunRunner(f, config.GetTaskRun()).
 							CreateTaskRun().
 							ExpectSuccess().
-							ExpectLogs(config.ExpectedLogs).
+							ExpectLogs(config.GetAllExpectedLogs()...).
 							ExpectResults(map[string]string{
 								CreateVMResults.Name:      expectedVM.Name,
 								CreateVMResults.Namespace: expectedVM.Namespace,

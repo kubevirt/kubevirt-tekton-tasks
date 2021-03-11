@@ -68,6 +68,10 @@ func (c *CommandOptions) AddOption(name, value string) {
 	c.opts = append(c.opts, name, value)
 }
 
+func (c *CommandOptions) AddOptions(values ...string) {
+	c.opts = append(c.opts, values...)
+}
+
 func (c *CommandOptions) AddFlag(flag string) {
 	c.opts = append(c.opts, flag)
 }

@@ -32,7 +32,7 @@ func (r *TaskRunRunner) CreateTaskRun() *TaskRunRunner {
 	taskRun, err := r.framework.TknClient.TaskRuns(r.taskRun.Namespace).Create(r.taskRun)
 	Expect(err).ShouldNot(HaveOccurred())
 	r.taskRun = taskRun
-	r.framework.ManageTaskRun(r.taskRun)
+	r.framework.ManageTaskRuns(r.taskRun)
 	return r
 }
 
@@ -69,9 +69,12 @@ func (r *TaskRunRunner) ExpectSuccessOrFailure(expectSuccess bool) *TaskRunRunne
 	return r
 }
 
-func (r *TaskRunRunner) ExpectLogs(logs string) *TaskRunRunner {
-	if logs != "" {
-		Expect(tekton.GetTaskRunLogs(r.framework.CoreV1Client, r.taskRun)).Should(ContainSubstring(logs))
+func (r *TaskRunRunner) ExpectLogs(logs ...string) *TaskRunRunner {
+	if len(logs) > 0 {
+		taskRunLogs := tekton.GetTaskRunLogs(r.framework.CoreV1Client, r.taskRun)
+		for _, snippet := range logs {
+			Expect(taskRunLogs).Should(ContainSubstring(snippet))
+		}
 	}
 	return r
 }

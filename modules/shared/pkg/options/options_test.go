@@ -49,6 +49,9 @@ var _ = Describe("Options", func() {
 
 		opts.AddValue("false")
 		Expect(opts.GetOptionValue("--verbose")).To(Equal("false"))
+
+		opts.AddOptions("1", "2", "3")
+		Expect(opts.IncludesString("1 2 3")).To(BeTrue())
 	})
 
 	It("bad input", func() {

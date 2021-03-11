@@ -1,0 +1,20 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: {{ item.taskrun_with_flavor_name }}
+spec:
+{% if task_yaml.metadata.annotations['task.kubevirt.io/associatedServiceAccount'] is defined %}
+  serviceAccountName: {{ sa_name }}
+{% endif %}
+  taskRef:
+    kind: ClusterTask
+    name: {{ task_name }}
+  params:
+    - name: pvc
+      value: example-pvc
+    - name: customizeCommands
+      value: |
+        update
+        install make,ansible
+        delete /var/cache/dnf
