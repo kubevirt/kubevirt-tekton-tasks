@@ -1,0 +1,17 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: server-deployer-run-
+spec:
+  pipelineRef:
+    name: server-deployer
+  serviceAccountNames:
+    - taskName: create-datavolume-from-manifest
+      serviceAccountName: create-datavolume-from-manifest-task
+    - taskName: generate-ssh-keys
+      serviceAccountName: generate-ssh-keys-task
+    - taskName: create-vm-from-manifest
+      serviceAccountName: create-vm-from-manifest-task
+    - taskName: execute-in-vm
+      serviceAccountName: execute-in-vm-task
