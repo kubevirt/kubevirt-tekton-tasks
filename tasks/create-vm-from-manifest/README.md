@@ -5,6 +5,7 @@ This task creates a VirtualMachine from YAML manifest
 ### Service Account
 
 This task should be run with `create-vm-from-manifest-task` serviceAccount.
+Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
 
 ### Parameters
 

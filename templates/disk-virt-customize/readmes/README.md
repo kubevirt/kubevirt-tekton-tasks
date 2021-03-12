@@ -6,6 +6,7 @@ This task uses [virt-customize](https://libguestfs.org/virt-customize.1.html) to
 ### Service Account
 
 This task should be run with `{{task_yaml.metadata.annotations['task.kubevirt.io/associatedServiceAccount']}}` serviceAccount.
+Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
 {% endif %}
 
 ### Parameters
