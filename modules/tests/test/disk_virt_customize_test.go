@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
@@ -31,7 +32,7 @@ var _ = Describe("Run disk virt-customize", func() {
 		f.TestSetup(config)
 
 		if dataVolume := config.TaskData.Datavolume; dataVolume != nil {
-			dataVolume, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Create(dataVolume)
+			dataVolume, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Create(context.TODO(), dataVolume, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dataVolume)
 			err = dv.WaitForSuccessfulDataVolume(f.CdiClient, dataVolume.Namespace, dataVolume.Name, constants.Timeouts.SmallDVCreation.Duration)
@@ -121,7 +122,7 @@ var _ = Describe("Run disk virt-customize", func() {
 
 		dataVolume := testConfig.TaskData.Datavolume
 		// prepare DataVolume
-		dataVolume, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Create(dataVolume)
+		dataVolume, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Create(context.TODO(), dataVolume, metav1.CreateOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		f.ManageDataVolumes(dataVolume)
 		err = dv.WaitForSuccessfulDataVolume(f.CdiClient, dataVolume.Namespace, dataVolume.Name, constants.Timeouts.SmallDVCreation.Duration)

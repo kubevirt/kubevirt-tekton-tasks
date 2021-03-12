@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"context"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	framework2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
@@ -8,6 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	tkntest "github.com/tektoncd/pipeline/test"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 )
 
@@ -29,7 +31,7 @@ func (r *TaskRunRunner) GetTaskRun() *pipev1beta1.TaskRun {
 }
 
 func (r *TaskRunRunner) CreateTaskRun() *TaskRunRunner {
-	taskRun, err := r.framework.TknClient.TaskRuns(r.taskRun.Namespace).Create(r.taskRun)
+	taskRun, err := r.framework.TknClient.TaskRuns(r.taskRun.Namespace).Create(context.TODO(), r.taskRun, v1.CreateOptions{})
 	Expect(err).ShouldNot(HaveOccurred())
 	r.taskRun = taskRun
 	r.framework.ManageTaskRuns(r.taskRun)
@@ -38,14 +40,14 @@ func (r *TaskRunRunner) CreateTaskRun() *TaskRunRunner {
 
 func (r *TaskRunRunner) ExpectFailure() *TaskRunRunner {
 	r.taskRun = tekton.WaitForTaskRunState(r.framework.TknClient, r.taskRun.Namespace, r.taskRun.Name,
-		r.taskRun.GetTimeout()+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
+		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		tkntest.TaskRunFailed(r.taskRun.Name))
 	return r
 }
 
 func (r *TaskRunRunner) WaitForTaskRunFinish() *TaskRunRunner {
 	r.taskRun = tekton.WaitForTaskRunState(r.framework.TknClient, r.taskRun.Namespace, r.taskRun.Name,
-		r.taskRun.GetTimeout()+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
+		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		func(accessor apis.ConditionAccessor) (bool, error) {
 			succeeded, _ := tkntest.TaskRunSucceed(r.taskRun.Name)(accessor)
 			return succeeded, nil
@@ -55,7 +57,7 @@ func (r *TaskRunRunner) WaitForTaskRunFinish() *TaskRunRunner {
 
 func (r *TaskRunRunner) ExpectSuccess() *TaskRunRunner {
 	r.taskRun = tekton.WaitForTaskRunState(r.framework.TknClient, r.taskRun.Namespace, r.taskRun.Name,
-		r.taskRun.GetTimeout()+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
+		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		tkntest.TaskRunSucceed(r.taskRun.Name))
 	return r
 }

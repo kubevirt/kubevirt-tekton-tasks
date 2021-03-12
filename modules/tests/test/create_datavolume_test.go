@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
@@ -28,7 +29,7 @@ var _ = Describe("Create DataVolume", func() {
 			ExpectResults(nil)
 
 		if dataVolume != nil && dataVolume.Name != "" && dataVolume.Namespace != "" {
-			_, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Get(dataVolume.Name, metav1.GetOptions{})
+			_, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Get(context.TODO(), dataVolume.Name, metav1.GetOptions{})
 			Expect(err).Should(HaveOccurred())
 		}
 	},
@@ -156,7 +157,7 @@ var _ = Describe("Create DataVolume", func() {
 			CreateTaskRun().
 			ExpectFailure()
 
-		d, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Get(dataVolume.Name, metav1.GetOptions{})
+		d, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Get(context.TODO(), dataVolume.Name, metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(d.Spec.Source.HTTP.URL).To(Equal(dataVolume.Spec.Source.HTTP.URL))
 		Expect(dv.HasDataVolumeFailedToImport(d)).To(BeTrue())

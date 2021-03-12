@@ -45,6 +45,9 @@ func newOpenCensusExporter(config *metricsConfig, logger *zap.SugaredLogger) (vi
 	} else {
 		opts = append(opts, ocagent.WithInsecure())
 	}
+	if TestOverrideBundleCount > 0 {
+		opts = append(opts, ocagent.WithDataBundlerOptions(0, TestOverrideBundleCount))
+	}
 	e, err := ocagent.NewExporter(opts...)
 	if err != nil {
 		logger.Errorw("Failed to create the OpenCensus exporter.", zap.Error(err))
@@ -82,7 +85,7 @@ func getOpenCensusSecret(component string, lister SecretFetcher) (*corev1.Secret
 		secret, err = lister("opencensus")
 	}
 	if err != nil {
-		return nil, fmt.Errorf("unable to fetch opencensus secret for %q, cannot use requireSecure=true: %+v", component, err)
+		return nil, fmt.Errorf("unable to fetch opencensus secret for %q, cannot use requireSecure=true: %w", component, err)
 	}
 
 	return secret, nil
@@ -96,6 +99,7 @@ func getCredentials(component string, secret *corev1.Secret, logger *zap.Sugared
 		return nil
 	}
 	return credentials.NewTLS(&tls.Config{
+		MinVersion: tls.VersionTLS12,
 		GetClientCertificate: func(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
 			cert, err := tls.X509KeyPair(secret.Data["client-cert.pem"], secret.Data["client-key.pem"])
 			if err != nil {

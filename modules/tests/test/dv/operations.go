@@ -1,6 +1,7 @@
 package dv
 
 import (
+	"context"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,7 +13,7 @@ import (
 
 func WaitForSuccessfulDataVolume(cdiClientSet cdicliv1beta1.CdiV1beta1Interface, namespace, name string, timeout time.Duration) error {
 	return wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
-		dataVolume, err := cdiClientSet.DataVolumes(namespace).Get(name, metav1.GetOptions{})
+		dataVolume, err := cdiClientSet.DataVolumes(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
 			return true, err
 		}
@@ -21,7 +22,7 @@ func WaitForSuccessfulDataVolume(cdiClientSet cdicliv1beta1.CdiV1beta1Interface,
 }
 
 func IsDataVolumeImportSuccessful(cdiClientSet cdicliv1beta1.CdiV1beta1Interface, namespace string, name string) bool {
-	dataVolume, err := cdiClientSet.DataVolumes(namespace).Get(name, metav1.GetOptions{})
+	dataVolume, err := cdiClientSet.DataVolumes(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}

@@ -45,7 +45,9 @@ func AsString(key string, target *string) ParseFunc {
 func AsBool(key string, target *bool) ParseFunc {
 	return func(data map[string]string) error {
 		if raw, ok := data[key]; ok {
-			*target = strings.EqualFold(raw, "true")
+			val, err := strconv.ParseBool(raw)
+			*target = val // If err != nil — this is always false.
+			return err
 		}
 		return nil
 	}
@@ -70,6 +72,20 @@ func AsInt64(key string, target *int64) ParseFunc {
 	return func(data map[string]string) error {
 		if raw, ok := data[key]; ok {
 			val, err := strconv.ParseInt(raw, 10, 64)
+			if err != nil {
+				return fmt.Errorf("failed to parse %q: %w", key, err)
+			}
+			*target = val
+		}
+		return nil
+	}
+}
+
+// AsInt parses the value at key as an int into the target, if it exists.
+func AsInt(key string, target *int) ParseFunc {
+	return func(data map[string]string) error {
+		if raw, ok := data[key]; ok {
+			val, err := strconv.Atoi(raw)
 			if err != nil {
 				return fmt.Errorf("failed to parse %q: %w", key, err)
 			}

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
@@ -12,6 +13,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/vm"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("Create VM", func() {
@@ -108,12 +110,12 @@ var _ = Describe("Create VM", func() {
 
 						f.TestSetup(config)
 						if template := config.TaskData.Template; template != nil {
-							template, err := f.TemplateClient.Templates(template.Namespace).Create(template)
+							template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
 							Expect(err).ShouldNot(HaveOccurred())
 							f.ManageTemplates(template)
 						}
 						for _, dvWrapper := range config.TaskData.DataVolumesToCreate {
-							dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(dvWrapper.Data)
+							dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
 							Expect(err).ShouldNot(HaveOccurred())
 							f.ManageDataVolumes(dataVolume)
 							config.TaskData.SetDVorPVC(dataVolume.Name, dvWrapper.AttachmentType)
