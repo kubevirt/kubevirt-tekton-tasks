@@ -7,6 +7,7 @@ A bundle of predefined templates to use can be found in [Common Templates](https
 ### Service Account
 
 This task should be run with `create-vm-from-template-task` serviceAccount.
+Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
 
 ### Parameters
 

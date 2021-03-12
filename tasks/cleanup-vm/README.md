@@ -6,6 +6,7 @@ the VM afterwards. Best used together with tekton pipelines finally construct.
 ### Service Account
 
 This task should be run with `cleanup-vm-task` serviceAccount.
+Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
 
 ### Parameters
 

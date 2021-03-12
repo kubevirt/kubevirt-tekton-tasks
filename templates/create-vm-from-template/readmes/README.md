@@ -7,6 +7,7 @@ A bundle of predefined templates to use can be found in [Common Templates](https
 ### Service Account
 
 This task should be run with `{{task_yaml.metadata.annotations['task.kubevirt.io/associatedServiceAccount']}}` serviceAccount.
+Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
 
 ### Parameters
 

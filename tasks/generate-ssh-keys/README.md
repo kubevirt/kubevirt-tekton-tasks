@@ -5,6 +5,7 @@ This task uses `ssh-keygen` to generate a private and public key pair
 ### Service Account
 
 This task should be run with `generate-ssh-keys-task` serviceAccount.
+Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
 
 ### Parameters
 
