@@ -11,22 +11,24 @@ This repository provides KubeVirt-specific Tekton tasks, which focus on:
 
 ### On Kubernetes
 
-In order to install the KubeVirt Tekton tasks in the active namespace you need to apply [this manifest](https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/manifests/kubernetes/kubevirt-tekton-tasks.yaml).
+In order to install the KubeVirt Tekton tasks in the active namespace you need to apply the following manifest.
 You have to repeat this for every namespace in which you'd like to run the tasks.
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/manifests/kubernetes/kubevirt-tekton-tasks.yaml
+VERSION=$(curl -s https://github.com/kubevirt/kubevirt-tekton-tasks/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
+kubectl apply -f "https://github.com/kubevirt/kubevirt-tekton-tasks/releases/download/${VERSION}/kubevirt-tekton-tasks-kubernetes.yaml"
 ```
 
 Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) if the pipeline needs to create/access resources (VMs, PVCs, etc.) in a different namespace other than the one the pipeline runs in.
 
 ### On OpenShift
 
-In order to install the KubeVirt Tekton tasks with additional OpenShift-specific tasks in the active namespace you need to apply [this manifest](https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/manifests/openshift/kubevirt-tekton-tasks.yaml).
+In order to install the KubeVirt Tekton tasks with additional OpenShift-specific tasks in the active namespace you need to apply the following manifest.
 You have to repeat this for every namespace in which you'd like to run the tasks.
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/manifests/openshift/kubevirt-tekton-tasks.yaml
+VERSION=$(curl -s https://github.com/kubevirt/kubevirt-tekton-tasks/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
+kubectl apply -f "https://github.com/kubevirt/kubevirt-tekton-tasks/releases/download/${VERSION}/kubevirt-tekton-tasks-openshift.yaml"
 ```
 
 Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) if the pipeline needs to create/access resources (VMs, PVCs, etc.) in a different namespace other than the one the pipeline runs in.
