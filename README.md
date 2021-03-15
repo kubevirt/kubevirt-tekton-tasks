@@ -58,12 +58,22 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 
 ## Examples
 
-- Good unit tests are detached from the operating system and can run everywhere.
-  However, this is not always the case. Your tests may require access to entire operating system, or run as root,
-  or need a specific kernel.
-  The [Unit Tester](examples/pipelines/unit-tester) example shows how you can run your tests in your VM of choice.
-  The pipeline creates a VM, connects to it over SSH and runs tests inside it.
-  It also showcases the `finally` construct.
+#### [Unit Tester Pipeline](examples/pipelines/unit-tester) 
+
+Good unit tests are detached from the operating system and can run everywhere.
+However, this is not always the case. Your tests may require access to entire operating system, or run as root,
+or need a specific kernel.
+
+This example shows how you can run your tests in your VM of choice.
+The pipeline creates a VM, connects to it over SSH and runs tests inside it.
+It also showcases the `finally` construct.
+
+
+#### [Server Deployer Pipeline](examples/pipelines/server-deployer)
+
+For complex application server deployments it might be easier to start the server as is in a VM rather than converting it to cloud-native application.
+
+This example shows how you could initialize/modify a PVC and deploy such an application in a VM.
 
 ## Development Guide
 

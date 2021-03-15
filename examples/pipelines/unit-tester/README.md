@@ -15,12 +15,12 @@ Clones kubevirt-tekton-tasks repository and executes unit tests in a VM and then
 ```
 
 1. `generate-ssh-keys` task generates unit-tester-client-private-key and unit-tester-client-public-key secrets with private and public keys.
-2. `create-vm-from-manifest` task creates a VM called fedora-unit-tester with a public key attached
-3. `execute-in-vm` starts a VM and makes SSH connection to it
+2. `create-vm-from-manifest` task creates a VM called fedora-unit-tester with a public key attached.
+3. `execute-in-vm` task starts a VM and makes SSH connection to it.
     - installs dependencies
     - clones kubevirt-tekton-tasks repository
     - runs unit tests
-4. `cleanup-vm` attempts to connect to the VM
+4. `cleanup-vm` task attempts to connect to the VM.
     - prints unit tests results or `failure` if no test results found
     - deletes the VM
 
@@ -28,6 +28,6 @@ Clones kubevirt-tekton-tasks repository and executes unit tests in a VM and then
 ## How to run
 
 ```bash
-kubectl create -f unit-tester-pipeline.yaml
+kubectl apply -f unit-tester-pipeline.yaml
 kubectl create -f unit-tester-pipelinerun.yaml
 ```
