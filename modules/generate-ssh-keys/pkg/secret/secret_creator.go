@@ -1,6 +1,7 @@
 package secret
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -40,7 +41,7 @@ func NewSecretFacade(clioptions *parse.CLIOptions, keys types.SshKeys) (*SecretF
 func (s SecretFacade) CheckPrivateKeySecretExistence() error {
 	if secretName := s.clioptions.GetPrivateKeySecretName(); secretName != "" {
 		log.Logger().Debug("checking private key existence arguments", zap.String("secretName", secretName))
-		if _, err := s.kubeClient.CoreV1().Secrets(s.clioptions.GetPrivateKeySecretNamespace()).Get(secretName, v1.GetOptions{}); !zerrors.IsStatusError(err, http.StatusNotFound) {
+		if _, err := s.kubeClient.CoreV1().Secrets(s.clioptions.GetPrivateKeySecretNamespace()).Get(context.TODO(), secretName, v1.GetOptions{}); !zerrors.IsStatusError(err, http.StatusNotFound) {
 			return zerrors.NewMissingRequiredError("%v secret already exists", secretName)
 		}
 	}
@@ -51,7 +52,7 @@ func (s *SecretFacade) GetPublicKeySecret() (*corev1.Secret, error) {
 	var secret *corev1.Secret
 	if secretName := s.clioptions.GetPublicKeySecretName(); secretName != "" {
 		var err error
-		secret, err = s.kubeClient.CoreV1().Secrets(s.clioptions.GetPublicKeySecretNamespace()).Get(secretName, v1.GetOptions{})
+		secret, err = s.kubeClient.CoreV1().Secrets(s.clioptions.GetPublicKeySecretNamespace()).Get(context.TODO(), secretName, v1.GetOptions{})
 		if err != nil {
 			secret = nil
 			if !zerrors.IsStatusError(err, http.StatusNotFound) {
@@ -85,7 +86,7 @@ func (s *SecretFacade) CreatePrivateKeySecret() (*corev1.Secret, error) {
 	}
 
 	log.Logger().Debug("creating private key secret")
-	return s.kubeClient.CoreV1().Secrets(s.clioptions.GetPrivateKeySecretNamespace()).Create(secret)
+	return s.kubeClient.CoreV1().Secrets(s.clioptions.GetPrivateKeySecretNamespace()).Create(context.TODO(), secret, v1.CreateOptions{})
 
 }
 
@@ -116,7 +117,7 @@ func (s *SecretFacade) AppendPublicKeySecret(secret *corev1.Secret) (*corev1.Sec
 	}
 
 	log.Logger().Debug("appending public key secret")
-	return s.kubeClient.CoreV1().Secrets(s.clioptions.GetPublicKeySecretNamespace()).Patch(secret.Name, machinerytypes.JSONPatchType, patchBytes)
+	return s.kubeClient.CoreV1().Secrets(s.clioptions.GetPublicKeySecretNamespace()).Patch(context.TODO(), secret.Name, machinerytypes.JSONPatchType, patchBytes, v1.PatchOptions{})
 }
 
 func (s *SecretFacade) CreatePublicKeySecret() (*corev1.Secret, error) {
@@ -135,7 +136,7 @@ func (s *SecretFacade) CreatePublicKeySecret() (*corev1.Secret, error) {
 	}
 
 	log.Logger().Debug("creating public key secret")
-	return s.kubeClient.CoreV1().Secrets(s.clioptions.GetPublicKeySecretNamespace()).Create(secret)
+	return s.kubeClient.CoreV1().Secrets(s.clioptions.GetPublicKeySecretNamespace()).Create(context.TODO(), secret, v1.CreateOptions{})
 }
 
 func (s *SecretFacade) DeleteSecret(secret *corev1.Secret) error {
@@ -143,7 +144,7 @@ func (s *SecretFacade) DeleteSecret(secret *corev1.Secret) error {
 		return nil
 	}
 	log.Logger().Debug("deleting secret", zap.String("namespace", secret.Namespace), zap.String("name", secret.Name))
-	return s.kubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &v1.DeleteOptions{})
+	return s.kubeClient.CoreV1().Secrets(secret.Namespace).Delete(context.TODO(), secret.Name, v1.DeleteOptions{})
 }
 
 func generatePublicKeyId() string {

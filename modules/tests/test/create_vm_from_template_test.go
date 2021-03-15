@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
@@ -12,6 +13,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("Create VM from template", func() {
@@ -27,7 +29,7 @@ var _ = Describe("Create VM from template", func() {
 		f.TestSetup(config)
 
 		if template := config.TaskData.Template; template != nil {
-			template, err := f.TemplateClient.Templates(template.Namespace).Create(template)
+			template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(template)
 		}
@@ -217,7 +219,7 @@ var _ = Describe("Create VM from template", func() {
 	table.DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig) {
 		f.TestSetup(config)
 		if template := config.TaskData.Template; template != nil {
-			template, err := f.TemplateClient.Templates(template.Namespace).Create(template)
+			template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(template)
 		}
@@ -350,7 +352,7 @@ var _ = Describe("Create VM from template", func() {
 		f.ManageVMs(expectedVM)
 
 		for _, dvWrapper := range config.TaskData.DataVolumesToCreate {
-			dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(dvWrapper.Data)
+			dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dataVolume)
 			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, templ.TemplateParam(SpacesSmall+templ.SrcPvcNameParam, dataVolume.Name))
@@ -439,12 +441,12 @@ var _ = Describe("Create VM from template", func() {
 				}
 				f.TestSetup(config)
 				if template := config.TaskData.Template; template != nil {
-					template, err := f.TemplateClient.Templates(template.Namespace).Create(template)
+					template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
 					Expect(err).ShouldNot(HaveOccurred())
 					f.ManageTemplates(template)
 				}
 				for _, dvWrapper := range config.TaskData.DataVolumesToCreate {
-					dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(dvWrapper.Data)
+					dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
 					Expect(err).ShouldNot(HaveOccurred())
 					f.ManageDataVolumes(dataVolume)
 					config.TaskData.SetDVorPVC(dataVolume.Name, dvWrapper.AttachmentType)
@@ -487,7 +489,7 @@ var _ = Describe("Create VM from template", func() {
 			},
 		}
 		f.TestSetup(config)
-		template, err := f.TemplateClient.Templates(template.Namespace).Create(template)
+		template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		f.ManageTemplates(template)
 

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/tektoncd/pipeline/pkg/apis/validate"
 	"github.com/tektoncd/pipeline/pkg/substitution"
@@ -42,7 +43,7 @@ func (ts *TaskSpec) Validate(ctx context.Context) (errs *apis.FieldError) {
 		errs = errs.Also(apis.ErrMissingField("steps"))
 	}
 	errs = errs.Also(ValidateVolumes(ts.Volumes).ViaField("volumes"))
-	errs = errs.Also(ValidateDeclaredWorkspaces(ts.Workspaces, ts.Steps, ts.StepTemplate).ViaField("workspaces"))
+	errs = errs.Also(validateDeclaredWorkspaces(ts.Workspaces, ts.Steps, ts.StepTemplate).ViaField("workspaces"))
 	mergedSteps, err := MergeStepsWithStepTemplate(ts.StepTemplate, ts.Steps)
 	if err != nil {
 		errs = errs.Also(&apis.FieldError{
@@ -78,7 +79,7 @@ func (tr TaskResult) Validate(_ context.Context) *apis.FieldError {
 
 // a mount path which conflicts with any other declared workspaces, with the explicitly
 // declared volume mounts, or with the stepTemplate. The names must also be unique.
-func ValidateDeclaredWorkspaces(workspaces []WorkspaceDeclaration, steps []Step, stepTemplate *corev1.Container) (errs *apis.FieldError) {
+func validateDeclaredWorkspaces(workspaces []WorkspaceDeclaration, steps []Step, stepTemplate *corev1.Container) (errs *apis.FieldError) {
 	mountPaths := sets.NewString()
 	for _, step := range steps {
 		for _, vm := range step.VolumeMounts {
@@ -157,6 +158,12 @@ func validateStep(s Step, names sets.String) (errs *apis.FieldError) {
 			})
 		}
 		names.Insert(s.Name)
+	}
+
+	if s.Timeout != nil {
+		if s.Timeout.Duration < time.Duration(0) {
+			return apis.ErrInvalidValue(s.Timeout.Duration, "negative timeout")
+		}
 	}
 
 	for j, vm := range s.VolumeMounts {

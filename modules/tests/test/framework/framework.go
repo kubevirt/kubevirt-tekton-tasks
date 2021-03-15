@@ -1,6 +1,7 @@
 package framework
 
 import (
+	"context"
 	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
@@ -95,7 +96,7 @@ func (f *Framework) AfterEach() {
 		defer func() {
 			if !f.Debug {
 				for _, taskRun := range taskRuns {
-					defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(taskRun.Name, &metav1.DeleteOptions{})
+					defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(context.TODO(), taskRun.Name, metav1.DeleteOptions{})
 				}
 			}
 			for _, taskRun := range taskRuns {
@@ -111,21 +112,21 @@ func (f *Framework) AfterEach() {
 
 	if !failed { // failed has its own cleanup
 		for _, taskRun := range taskRuns {
-			defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(taskRun.Name, &metav1.DeleteOptions{})
+			defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(context.TODO(), taskRun.Name, metav1.DeleteOptions{})
 		}
 	}
 
 	for _, dv := range f.managedResources.dataVolumes {
-		defer f.CdiClient.DataVolumes(dv.Namespace).Delete(dv.Name, &metav1.DeleteOptions{})
+		defer f.CdiClient.DataVolumes(dv.Namespace).Delete(context.TODO(), dv.Name, metav1.DeleteOptions{})
 	}
 	for _, vm := range f.managedResources.vms {
 		defer f.KubevirtClient.VirtualMachine(vm.Namespace).Delete(vm.Name, &metav1.DeleteOptions{})
 	}
 	for _, t := range f.managedResources.templates {
-		defer f.TemplateClient.Templates(t.Namespace).Delete(t.Name, &metav1.DeleteOptions{})
+		defer f.TemplateClient.Templates(t.Namespace).Delete(context.TODO(), t.Name, metav1.DeleteOptions{})
 	}
 	for _, s := range f.managedResources.secrets {
-		defer f.KubevirtClient.CoreV1().Secrets(s.Namespace).Delete(s.Name, &metav1.DeleteOptions{})
+		defer f.KubevirtClient.CoreV1().Secrets(s.Namespace).Delete(context.TODO(), s.Name, metav1.DeleteOptions{})
 	}
 }
 

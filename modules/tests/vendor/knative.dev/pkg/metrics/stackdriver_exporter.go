@@ -1,3 +1,5 @@
+// +build !nostackdriver
+
 /*
 Copyright 2019 The Knative Authors
 
@@ -20,6 +22,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"strconv"
 	"sync"
 	"time"
 
@@ -51,7 +54,7 @@ const (
 	// secretDataFieldKey is the name of the k8s Secret field that contains the Secret's key.
 	secretDataFieldKey = "key.json"
 	// stackdriverApiTimeout is the timeout value of Stackdriver API service side.
-	stackdriverApiTimeout = 12 * time.Second
+	stackdriverAPITimeout = 12 * time.Second
 )
 
 var (
@@ -69,7 +72,7 @@ var (
 	newStackdriverExporterFunc func(sd.Options) (view.Exporter, error)
 
 	// kubeclient is the in-cluster Kubernetes kubeclient, which is lazy-initialized on first use.
-	kubeclient *kubernetes.Clientset
+	kubeclient kubernetes.Interface
 	// initClientOnce is the lazy initializer for kubeclient.
 	initClientOnce sync.Once
 	// kubeclientInitErr capture an error during initClientOnce
@@ -93,6 +96,42 @@ var (
 type resourceTemplate struct {
 	Type      string
 	LabelKeys sets.String
+}
+
+func sdinit(ctx context.Context, m map[string]string, mc *metricsConfig, ops ExporterOptions) error {
+	// If stackdriverClientConfig is not provided for stackdriver backend destination, OpenCensus will try to
+	// use the application default credentials. If that is not available, Opencensus would fail to create the
+	// metrics exporter.
+	scc := NewStackdriverClientConfigFromMap(m)
+	mc.stackdriverClientConfig = *scc
+	mc.isStackdriverBackend = true
+	var allowCustomMetrics bool
+	var err error
+	mc.stackdriverMetricTypePrefix = path.Join(mc.domain, mc.component)
+
+	customMetricsSubDomain := m[stackdriverCustomMetricSubDomainKey]
+	if customMetricsSubDomain == "" {
+		customMetricsSubDomain = defaultCustomMetricSubDomain
+	}
+	mc.stackdriverCustomMetricTypePrefix = path.Join(customMetricTypePrefix, customMetricsSubDomain, mc.component)
+	if ascmStr := m[allowStackdriverCustomMetricsKey]; ascmStr != "" {
+		allowCustomMetrics, err = strconv.ParseBool(ascmStr)
+		if err != nil {
+			return fmt.Errorf("invalid %s value %q", allowStackdriverCustomMetricsKey, ascmStr)
+		}
+	}
+
+	mc.recorder = sdCustomMetricsRecorder(*mc, allowCustomMetrics)
+
+	if scc.UseSecret {
+		secret, err := getStackdriverSecret(ctx, ops.Secrets)
+		if err != nil {
+			return err
+		}
+
+		mc.secret = secret
+	}
+	return nil
 }
 
 // SetStackdriverSecretLocation sets the name and namespace of the Secret that can be used to authenticate with Stackdriver.
@@ -189,13 +228,14 @@ func newStackdriverExporter(config *metricsConfig, logger *zap.SugaredLogger) (v
 		GetMetricPrefix:         mpf,
 		ReportingInterval:       config.reportingPeriod,
 		DefaultMonitoringLabels: &sd.Labels{},
-		Timeout:                 stackdriverApiTimeout,
+		Timeout:                 stackdriverAPITimeout,
+		BundleCountThreshold:    TestOverrideBundleCount,
 	})
 	if err != nil {
 		logger.Errorw("Failed to create the Stackdriver exporter: ", zap.Error(err))
 		return nil, nil, err
 	}
-	logger.Infof("Created Opencensus Stackdriver exporter with config %v", config)
+	logger.Info("Created Opencensus Stackdriver exporter with config ", config)
 	// We have to return a ResourceExporterFactory here to enable tracking resources, even though we always poll for them.
 	return &pollOnlySDExporter{e},
 		func(r *resource.Resource) (view.Exporter, error) { return &pollOnlySDExporter{}, nil },
@@ -286,7 +326,7 @@ func getStackdriverExporterClientOptions(config *metricsConfig) ([]option.Client
 	// SetStackdriverSecretLocation must have been called by calling package for this to work.
 	if config.stackdriverClientConfig.UseSecret {
 		if config.secret == nil {
-			return co, fmt.Errorf("No secret provided for component %q; cannot use stackdriver-use-secret=true", config.component)
+			return co, fmt.Errorf("no secret provided for component %q; cannot use stackdriver-use-secret=true", config.component)
 		}
 
 		if opt, err := convertSecretToExporterOption(config.secret); err == nil {
@@ -336,7 +376,7 @@ func getMetricPrefixFunc(metricTypePrefix, customMetricTypePrefix string) func(n
 // getStackdriverSecret returns the Kubernetes Secret specified in the given config.
 // SetStackdriverSecretLocation must have been called by calling package for this to work.
 // TODO(anniefu): Update exporter if Secret changes (https://github.com/knative/pkg/issues/842)
-func getStackdriverSecret(secretFetcher SecretFetcher) (*corev1.Secret, error) {
+func getStackdriverSecret(ctx context.Context, secretFetcher SecretFetcher) (*corev1.Secret, error) {
 	stackdriverMtx.RLock()
 	defer stackdriverMtx.RUnlock()
 
@@ -354,11 +394,11 @@ func getStackdriverSecret(secretFetcher SecretFetcher) (*corev1.Secret, error) {
 			return nil, err
 		}
 
-		sec, secErr = kubeclient.CoreV1().Secrets(secretNamespace).Get(secretName, metav1.GetOptions{})
+		sec, secErr = kubeclient.CoreV1().Secrets(secretNamespace).Get(ctx, secretName, metav1.GetOptions{})
 	}
 
 	if secErr != nil {
-		return nil, fmt.Errorf("error getting Secret [%v] in namespace [%v]: %v", secretName, secretNamespace, secErr)
+		return nil, fmt.Errorf("error getting Secret [%v] in namespace [%v]: %w", secretName, secretNamespace, secErr)
 	}
 
 	return sec, nil
@@ -369,7 +409,7 @@ func convertSecretToExporterOption(secret *corev1.Secret) (option.ClientOption, 
 	if data, ok := secret.Data[secretDataFieldKey]; ok {
 		return option.WithCredentialsJSON(data), nil
 	}
-	return nil, fmt.Errorf("Expected Secret to store key in data field named [%s]", secretDataFieldKey)
+	return nil, fmt.Errorf("expected Secret to store key in data field named [%s]", secretDataFieldKey)
 }
 
 // ensureKubeclient is the lazy initializer for kubeclient.

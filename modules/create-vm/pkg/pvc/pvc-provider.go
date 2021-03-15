@@ -1,6 +1,7 @@
 package pvc
 
 import (
+	"context"
 	"errors"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/k8s"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
@@ -30,7 +31,7 @@ func (d *pvcProvider) GetByName(namespace string, names ...string) ([]*v1.Persis
 	var pvcs []*v1.PersistentVolumeClaim
 
 	for _, name := range names {
-		pvc, err := d.client.PersistentVolumeClaims(namespace).Get(name, metav1.GetOptions{})
+		pvc, err := d.client.PersistentVolumeClaims(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err == nil {
 			pvcs = append(pvcs, pvc)
 		} else {
@@ -59,5 +60,5 @@ func (d *pvcProvider) AddOwnerReferences(pvc *v1.PersistentVolumeClaim, newOwner
 		return nil, err
 	}
 
-	return d.client.PersistentVolumeClaims(pvc.Namespace).Patch(pvc.Name, types.JSONPatchType, patch)
+	return d.client.PersistentVolumeClaims(pvc.Namespace).Patch(context.TODO(), pvc.Name, types.JSONPatchType, patch, metav1.PatchOptions{})
 }

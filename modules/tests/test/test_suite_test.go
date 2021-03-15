@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
@@ -32,7 +33,7 @@ func BuildTestSuite() {
 		noErr(err)
 
 		if framework.TestOptionsInstance.EnvScope == constants.OpenshiftEnvScope {
-			templateList, err := framework.ClientsInstance.TemplateClient.Templates("openshift").List(metav1.ListOptions{
+			templateList, err := framework.ClientsInstance.TemplateClient.Templates("openshift").List(context.TODO(), metav1.ListOptions{
 				LabelSelector: "template.kubevirt.io/type=base",
 			})
 			noErr(err)

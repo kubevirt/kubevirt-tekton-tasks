@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"context"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	templatev1 "github.com/openshift/api/template/v1"
 	tempclient "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
@@ -27,7 +28,7 @@ func NewTemplateProvider(client tempclient.TemplateV1Interface) TemplateProvider
 }
 
 func (t *templateProvider) Get(namespace string, name string) (*templatev1.Template, error) {
-	return t.client.Templates(namespace).Get(name, metav1.GetOptions{})
+	return t.client.Templates(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 }
 
 func (t *templateProvider) Process(namespace string, template *templatev1.Template, paramValues map[string]string) (*templatev1.Template, error) {
@@ -52,7 +53,7 @@ func (t *templateProvider) Process(namespace string, template *templatev1.Templa
 		Namespace(namespace).
 		Resource(processingURI).
 		Body(temp).
-		Do().
+		Do(context.TODO()).
 		Into(processedTemplate)
 	if err != nil {
 		return nil, err

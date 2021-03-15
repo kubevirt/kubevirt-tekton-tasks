@@ -1,8 +1,9 @@
 ![Ginkgo: A Go BDD Testing Framework](https://onsi.github.io/ginkgo/images/ginkgo.png)
 
 [![Build Status](https://travis-ci.org/onsi/ginkgo.svg?branch=master)](https://travis-ci.org/onsi/ginkgo)
+[![test](https://github.com/onsi/ginkgo/workflows/test/badge.svg?branch=master)](https://github.com/onsi/ginkgo/actions?query=workflow%3Atest+branch%3Amaster)
 
-Jump to the [docs](https://onsi.github.io/ginkgo/) to learn more.  To start rolling your Ginkgo tests *now* [keep reading](#set-me-up)!
+Jump to the [docs](https://onsi.github.io/ginkgo/) | [中文文档](https://ke-chain.github.io/ginkgodoc) to learn more.  To start rolling your Ginkgo tests *now* [keep reading](#set-me-up)!
 
 If you have a question, comment, bug report, feature request, etc. please open a GitHub issue, or visit the [Ginkgo Slack channel](https://app.slack.com/client/T029RQSE6/CQQ50BBNW).
 
@@ -80,10 +81,11 @@ Agouti allows you run WebDriver integration tests.  Learn more about Agouti [her
 You'll need the Go command-line tools. Follow the [installation instructions](https://golang.org/doc/install) if you don't have it installed.
 
 ### Global installation
-To install the Ginkgo command line interface into the `$PATH` (actually to `$GOBIN`):
+To install the Ginkgo command line interface:
 ```bash
 go get -u github.com/onsi/ginkgo/ginkgo
 ```
+Note that this will install it to `$GOBIN`, which will need to be in the `$PATH` (or equivalent). Run `go help install` for more information.
 
 ### Go module ["tools package"](https://github.com/golang/go/issues/25922):
 Create (or update) a file called `tools/tools.go` with the following contents:
@@ -93,7 +95,7 @@ Create (or update) a file called `tools/tools.go` with the following contents:
 package tools
 
 import (
-	_ "github.com/onsi/ginkgo"
+	_ "github.com/onsi/ginkgo/ginkgo"
 )
 
 // This file imports packages that are used when running go generate, or used

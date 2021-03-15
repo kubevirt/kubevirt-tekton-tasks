@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
@@ -39,7 +40,7 @@ var _ = Describe("Generate SSH Keys", func() {
 		table.Entry("invalid public secret name", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   "invalid public-key-secret-name value: a DNS-1123 subdomain must consist of",
+				ExpectedLogs:   "invalid public-key-secret-name value: a lowercase RFC 1123 subdomain must consist of",
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PublicKeySecretName: "public secret",
@@ -48,7 +49,7 @@ var _ = Describe("Generate SSH Keys", func() {
 		table.Entry("invalid public secret namespace", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   "invalid public-key-secret-namespace value: a DNS-1123 subdomain must consist of",
+				ExpectedLogs:   "invalid public-key-secret-namespace value: a lowercase RFC 1123 subdomain must consist of",
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PublicKeySecretNamespace: "my ns",
@@ -57,7 +58,7 @@ var _ = Describe("Generate SSH Keys", func() {
 		table.Entry("invalid private secret name", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   "invalid private-key-secret-name value: a DNS-1123 subdomain must consist of",
+				ExpectedLogs:   "invalid private-key-secret-name value: a lowercase RFC 1123 subdomain must consist of",
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PrivateKeySecretName: "private secret",
@@ -66,7 +67,7 @@ var _ = Describe("Generate SSH Keys", func() {
 		table.Entry("invalid private secret namespace", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   "invalid private-key-secret-namespace value: a DNS-1123 subdomain must consist of",
+				ExpectedLogs:   "invalid private-key-secret-namespace value: a lowercase RFC 1123 subdomain must consist of",
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PrivateKeySecretNamespace: "my ns",
@@ -117,7 +118,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResultsWithLen(config.GetExpectedResults(), 4)
 
-		publicSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PublicKeySecretNamespace]).Get(results[GenerateSshKeysResults.PublicKeySecretName], metav1.GetOptions{})
+		publicSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PublicKeySecretNamespace]).Get(context.TODO(), results[GenerateSshKeysResults.PublicKeySecretName], metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(publicSecret.Data).To(HaveLen(1))
 
@@ -130,7 +131,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			}
 		}
 
-		privateSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PrivateKeySecretNamespace]).Get(results[GenerateSshKeysResults.PrivateKeySecretName], metav1.GetOptions{})
+		privateSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PrivateKeySecretNamespace]).Get(context.TODO(), results[GenerateSshKeysResults.PrivateKeySecretName], metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(privateSecret.Type).Should(Equal(corev1.SecretTypeSSHAuth))
 		Expect(string(privateSecret.Data[PrivateKeyConnectionOptions.PrivateKey])).Should(ContainSubstring("PRIVATE KEY-----"))
@@ -247,7 +248,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			},
 		}
 
-		publicSecret, err := f.CoreV1Client.Secrets(f.TestNamespace).Create(publicSecret)
+		publicSecret, err := f.CoreV1Client.Secrets(f.TestNamespace).Create(context.TODO(), publicSecret, metav1.CreateOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		f.ManageSecrets(publicSecret)
 
@@ -262,7 +263,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResultsWithLen(config.GetExpectedResults(), 4)
 
-		publicSecret, err = f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PublicKeySecretNamespace]).Get(results[GenerateSshKeysResults.PublicKeySecretName], metav1.GetOptions{})
+		publicSecret, err = f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PublicKeySecretNamespace]).Get(context.TODO(), results[GenerateSshKeysResults.PublicKeySecretName], metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(publicSecret.Data).To(HaveLen(2))
 
@@ -275,7 +276,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			Expect(string(value)).To(ContainSubstring("@"))
 		}
 
-		privateSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PrivateKeySecretNamespace]).Get(results[GenerateSshKeysResults.PrivateKeySecretName], metav1.GetOptions{})
+		privateSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PrivateKeySecretNamespace]).Get(context.TODO(), results[GenerateSshKeysResults.PrivateKeySecretName], metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(string(privateSecret.Data[PrivateKeyConnectionOptions.PrivateKey])).Should(ContainSubstring("PRIVATE KEY-----"))
 	})

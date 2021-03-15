@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
@@ -55,7 +56,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			f.TestSetup(config)
 
 			if secret := config.TaskData.Secret; secret != nil {
-				secret, err := f.K8sClient.CoreV1().Secrets(secret.Namespace).Create(secret)
+				secret, err := f.K8sClient.CoreV1().Secrets(secret.Namespace).Create(context.TODO(), secret, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageSecrets(secret)
 			}
@@ -72,7 +73,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 								"userdata": volume.CloudInitNoCloud.UserData,
 							},
 						}
-						cloudInitSecret, err := f.K8sClient.CoreV1().Secrets(vm.Namespace).Create(cloudInitSecret)
+						cloudInitSecret, err := f.K8sClient.CoreV1().Secrets(vm.Namespace).Create(context.TODO(), cloudInitSecret, v1.CreateOptions{})
 						Expect(err).ShouldNot(HaveOccurred())
 						f.ManageSecrets(cloudInitSecret)
 						volume.CloudInitNoCloud.UserData = ""
@@ -431,7 +432,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		f.TestSetup(config)
 
 		if secret := config.TaskData.Secret; secret != nil {
-			secret, err := f.K8sClient.CoreV1().Secrets(secret.Namespace).Create(secret)
+			secret, err := f.K8sClient.CoreV1().Secrets(secret.Namespace).Create(context.TODO(), secret, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageSecrets(secret)
 		}

@@ -17,16 +17,16 @@ var _ = Describe("CLIOptions", func() {
 	table.DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
 		Expect(options.Init().Error()).To(ContainSubstring(expectedErrMessage))
 	},
-		table.Entry("invalid public secret name", "invalid public-key-secret-name value: a DNS-1123 subdomain must consist of", &parse.CLIOptions{
+		table.Entry("invalid public secret name", "invalid public-key-secret-name value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
 			PublicKeySecretName: "invalid name",
 		}),
-		table.Entry("invalid public secret namespace", "invalid public-key-secret-namespace value: a DNS-1123 subdomain must consist of", &parse.CLIOptions{
+		table.Entry("invalid public secret namespace", "invalid public-key-secret-namespace value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
 			PublicKeySecretNamespace: "invalid ns",
 		}),
-		table.Entry("invalid private secret name", "invalid private-key-secret-name value: a DNS-1123 subdomain must consist of", &parse.CLIOptions{
+		table.Entry("invalid private secret name", "invalid private-key-secret-name value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
 			PrivateKeySecretName: "%invalid-name",
 		}),
-		table.Entry("invalid private secret namespace", "invalid private-key-secret-namespace value: a DNS-1123 subdomain must consist of", &parse.CLIOptions{
+		table.Entry("invalid private secret namespace", "invalid private-key-secret-namespace value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
 			PrivateKeySecretNamespace: "(-invalid-ns",
 		}),
 		table.Entry("invalid connection options 1", "invalid private-key connection options: no key found before \"root\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
