@@ -57,6 +57,7 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 #### Manipulate PVCs with libguestfs tools
 
 - [disk-virt-customize](tasks/disk-virt-customize): execute virt-customize commands in PVCs
+- [disk-virt-sysprep](tasks/disk-virt-sysprep): execute virt-sysprep commands in PVCs
 
 ## Examples
 
@@ -75,7 +76,15 @@ It also showcases the `finally` construct.
 
 For complex application server deployments it might be easier to start the server as is in a VM rather than converting it to cloud-native application.
 
-This example shows how you could initialize/modify a PVC and deploy such an application in a VM.
+This example shows how you can initialize/modify a PVC and deploy such application in a VM.
+
+#### [Virt-sysprep Updater Pipeline](examples/pipelines/virt-sysprep-updater)
+
+Virt-sysprep can be used for preparing VM images which can be then used as base images for other VMs.
+
+This example shows how you can update an operating system and seal VM's image by using virt-customize.
+Then, a VM is created from such image.
+
 
 ## Development Guide
 
