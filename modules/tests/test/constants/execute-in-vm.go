@@ -29,3 +29,10 @@ var ExecuteOrCleanupVMParams = executeOrCleanupVMParams{
 	Delete:      "delete",
 	Timeout:     "timeout",
 }
+
+type ExecInVMMode string
+
+const (
+	ExecuteInVMMode ExecInVMMode = "execute-in-vm"
+	CleanupVMMode   ExecInVMMode = "cleanup-vm"
+)

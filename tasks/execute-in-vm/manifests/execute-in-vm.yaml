@@ -42,12 +42,12 @@ spec:
       command:
         - entrypoint
       args:
-        - '--vm-name'
-        - $(params.vmName)
         - '--'
         - $(params.command)
         - $(params.args)
       env:
+        - name: VM_NAME
+          value: $(params.vmName)
         - name: VM_NAMESPACE
           value: $(params.vmNamespace)
         - name: EXECUTE_SCRIPT

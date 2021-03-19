@@ -14,6 +14,18 @@ func (c *CLIOptions) trimSpaces() {
 	c.VirtualMachineNamespace = strings.TrimSpace(c.VirtualMachineNamespace)
 }
 
+func (c *CLIOptions) validateName() error {
+	if c.VirtualMachineName == "" {
+		return zerrors.NewMissingRequiredError("missing value for %v option", vmNameOptionName)
+	}
+
+	errs := validation.IsDNS1123Subdomain(c.VirtualMachineName)
+	if len(errs) > 0 {
+		return zerrors.NewMissingRequiredError("%v is not a valid name: %v", vmNameOptionName, strings.Join(errs, ";"))
+	}
+	return nil
+}
+
 func (c *CLIOptions) resolveDefaultNamespaces() error {
 	vmNamespace := c.GetVirtualMachineNamespace()
 
@@ -57,8 +69,9 @@ func (c *CLIOptions) validateConnectionSecretName() error {
 			return zerrors.NewMissingRequiredError("connection secret should not be empty")
 		}
 
-		if len(validation.IsDNS1123Subdomain(c.ConnectionSecretName)) > 0 {
-			return zerrors.NewMissingRequiredError("connection secret does not have a valid name")
+		errs := validation.IsDNS1123Subdomain(c.ConnectionSecretName)
+		if len(errs) > 0 {
+			return zerrors.NewMissingRequiredError("connection secret does not have a valid name: %v", strings.Join(errs, ";"))
 		}
 	}
 

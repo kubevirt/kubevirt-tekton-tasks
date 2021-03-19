@@ -18,7 +18,7 @@ type ExecuteOrCleanupVMTaskData struct {
 	UseDefaultVMNamespacesInTaskParams bool
 	ShouldStartVM                      bool
 	// supplied
-	IsCleanupVM bool
+	ExecInVMMode ExecInVMMode
 
 	// Params
 	// these three are set if VM is not nil
@@ -35,13 +35,6 @@ type ExecuteOrCleanupVMTaskData struct {
 	Timeout *metav1.Duration
 }
 
-func (x ExecuteOrCleanupVMTaskData) getCleanupSuffix() string {
-	if x.IsCleanupVM {
-		return "-cleanup"
-	}
-	return ""
-}
-
 type ExecuteOrCleanupVMTestConfig struct {
 	TaskRunTestConfig
 	TaskData ExecuteOrCleanupVMTaskData
@@ -53,7 +46,7 @@ func (c *ExecuteOrCleanupVMTestConfig) Init(options *testoptions.TestOptions) {
 	c.deploymentNamespace = options.DeployNamespace
 	if vm := c.TaskData.VM; vm != nil {
 		if vm.Name != "" {
-			vm.Name = E2ETestsRandomName(vm.Name + c.TaskData.getCleanupSuffix())
+			vm.Name = E2ETestsRandomName(vm.Name + "-" + string(c.TaskData.ExecInVMMode))
 			vm.Spec.Template.ObjectMeta.Name = vm.Name
 		}
 		vm.Namespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace)
@@ -72,7 +65,7 @@ func (c *ExecuteOrCleanupVMTestConfig) Init(options *testoptions.TestOptions) {
 			if vm := c.TaskData.VM; vm != nil {
 				secret.Name = vm.Name
 			} else {
-				secret.Name = E2ETestsRandomName(secret.Name + c.TaskData.getCleanupSuffix())
+				secret.Name = E2ETestsRandomName(secret.Name + "-" + string(c.TaskData.ExecInVMMode))
 			}
 		}
 		secret.Namespace = options.DeployNamespace
@@ -82,11 +75,7 @@ func (c *ExecuteOrCleanupVMTestConfig) Init(options *testoptions.TestOptions) {
 }
 
 func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
-	taskName := ExecuteInVMClusterTaskName
-	serviceAccountName := c.ServiceAccount
-	taskRunName := "taskrun-execute-in-vm"
-
-	var vmNamespace string
+	var taskName, serviceAccountName, vmNamespace string
 
 	if !c.TaskData.UseDefaultVMNamespacesInTaskParams {
 		vmNamespace = c.TaskData.VMNamespace
@@ -137,13 +126,12 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		},
 	}
 
-	if c.TaskData.IsCleanupVM {
+	if c.TaskData.ExecInVMMode == CleanupVMMode {
 		taskName = CleanupVMClusterTaskName
-		taskRunName = "taskrun-cleanup-vm"
-
-		if serviceAccountName != "" {
+		if c.ServiceAccount != "" {
 			serviceAccountName = CleanupVMServiceAccountName
 		}
+
 		params = append(params,
 			v1beta1.Param{
 				Name: ExecuteOrCleanupVMParams.Stop,
@@ -169,11 +157,16 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 					},
 				})
 		}
+	} else {
+		taskName = ExecuteInVMClusterTaskName
+		if c.ServiceAccount != "" {
+			serviceAccountName = ExecuteInVMServiceAccountName
+		}
 	}
 
 	return &v1beta1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      E2ETestsRandomName(taskRunName),
+			Name:      E2ETestsRandomName("taskrun-" + string(c.TaskData.ExecInVMMode)),
 			Namespace: c.deploymentNamespace,
 		},
 		Spec: v1beta1.TaskRunSpec{

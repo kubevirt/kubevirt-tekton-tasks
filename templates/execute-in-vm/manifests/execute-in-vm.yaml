@@ -61,8 +61,6 @@ spec:
       command:
         - entrypoint
       args:
-        - '--vm-name'
-        - $(params.vmName)
 {% if is_cleanup %}
         - '--stop'
         - $(params.stop)
@@ -75,6 +73,8 @@ spec:
         - $(params.command)
         - $(params.args)
       env:
+        - name: VM_NAME
+          value: $(params.vmName)
         - name: VM_NAMESPACE
           value: $(params.vmNamespace)
         - name: EXECUTE_SCRIPT

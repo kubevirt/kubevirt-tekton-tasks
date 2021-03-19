@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	vmNameOptionName      = "vm-name"
 	vmNamespaceOptionName = "vm-namespace"
 	stopOptionName        = "stop"
 	deleteOptionName      = "delete"
@@ -16,7 +17,7 @@ const (
 )
 
 type CLIOptions struct {
-	VirtualMachineName      string   `arg:"--vm-name,required" placeholder:"NAME" help:"Name of a VM to execute the action in"`
+	VirtualMachineName      string   `arg:"--vm-name,env:VM_NAME,required" placeholder:"NAME" help:"Name of a VM to execute the action in"`
 	VirtualMachineNamespace string   `arg:"--vm-namespace,env:VM_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a VM to execute the action in"`
 	Stop                    string   `arg:"--stop" placeholder:"true|false" help:"Stops the VM after executing the action"`
 	Delete                  string   `arg:"--delete" placeholder:"true|false" help:"Deletes the VM after executing the action"`
@@ -63,6 +64,10 @@ func (c *CLIOptions) ShouldDelete() bool {
 
 func (c *CLIOptions) Init() error {
 	c.trimSpaces()
+
+	if err := c.validateName(); err != nil {
+		return err
+	}
 
 	if err := c.resolveDefaultNamespaces(); err != nil {
 		return err
