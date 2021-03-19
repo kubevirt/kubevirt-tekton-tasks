@@ -19,7 +19,8 @@ import (
 var _ = Describe("Create VM", func() {
 	f := framework.NewFramework()
 
-	for _, createMode := range []CreateVMMode{CreateVMTemplateMode, CreateVMVMManifestMode} {
+	for _, c := range []CreateVMMode{CreateVMTemplateMode, CreateVMVMManifestMode} {
+		createMode := c
 		Context(string(createMode), func() {
 			Describe("VM with attached PVCs/DV is created successfully ", func() {
 				runConfigurations := []map[dv.TestDataVolumeAttachmentType]int{
@@ -41,7 +42,8 @@ var _ = Describe("Create VM", func() {
 					}
 				}
 
-				for idx, runConf := range runConfigurations {
+				for i, r := range runConfigurations {
+					idx, runConf := i, r
 					name := ""
 					for attachmentType, count := range runConf {
 						name += fmt.Sprintf("%v=%v ", attachmentType, count)

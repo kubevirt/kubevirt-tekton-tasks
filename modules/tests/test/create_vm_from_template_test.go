@@ -394,7 +394,8 @@ var _ = Describe("Create VM from template", func() {
 			}
 		}
 
-		for idx, runConf := range runConfigurations {
+		for i, r := range runConfigurations {
+			idx, runConf := i, r
 			name := ""
 			for attachmentType, count := range runConf {
 				name += fmt.Sprintf("%v=%v ", attachmentType, count)

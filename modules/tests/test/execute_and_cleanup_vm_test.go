@@ -45,14 +45,11 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			testconstants.SSHTestPublicKey,
 		},
 	}
-	for _, isCleanupVM := range []bool{false, true} {
-		tableDescription := "execute in VM"
-		if isCleanupVM {
-			tableDescription = "cleanup VM"
-		}
+	for _, c := range []ExecInVMMode{ExecuteInVMMode, CleanupVMMode} {
+		execInVMMode := c
 
-		table.DescribeTable(tableDescription, func(config *testconfigs.ExecuteOrCleanupVMTestConfig) {
-			config.TaskData.IsCleanupVM = isCleanupVM
+		table.DescribeTable(string(execInVMMode), func(config *testconfigs.ExecuteOrCleanupVMTestConfig) {
+			config.TaskData.ExecInVMMode = execInVMMode
 			f.TestSetup(config)
 
 			if secret := config.TaskData.Secret; secret != nil {
@@ -102,9 +99,18 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			// negative cases
 			table.Entry("no vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ExpectedLogs: "missing value for --vm-name",
+					ExpectedLogs: "missing value for vm-name option",
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
+					Secret: testobjects.NewTestSecret(map[string]string{}),
+				},
+			}),
+			table.Entry("invalid vm name", &testconfigs.ExecuteOrCleanupVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ExpectedLogs: "vm-name is not a valid name: a lowercase RFC 1123 subdomain must consist of",
+				},
+				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
+					VMName: "name with spaces",
 					Secret: testobjects.NewTestSecret(map[string]string{}),
 				},
 			}),
@@ -428,7 +434,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 	}
 
 	table.DescribeTable("cleanup vm actions", func(config *testconfigs.ExecuteOrCleanupVMTestConfig) {
-		config.TaskData.IsCleanupVM = true
+		config.TaskData.ExecInVMMode = CleanupVMMode
 		f.TestSetup(config)
 
 		if secret := config.TaskData.Secret; secret != nil {
