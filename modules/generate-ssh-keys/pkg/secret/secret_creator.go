@@ -42,6 +42,9 @@ func (s SecretFacade) CheckPrivateKeySecretExistence() error {
 	if secretName := s.clioptions.GetPrivateKeySecretName(); secretName != "" {
 		log.Logger().Debug("checking private key existence arguments", zap.String("secretName", secretName))
 		if _, err := s.kubeClient.CoreV1().Secrets(s.clioptions.GetPrivateKeySecretNamespace()).Get(context.TODO(), secretName, v1.GetOptions{}); !zerrors.IsStatusError(err, http.StatusNotFound) {
+			if err != nil {
+				return zerrors.NewMissingRequiredError("error occurred while checking that %v secret should not exist: %v", secretName, err)
+			}
 			return zerrors.NewMissingRequiredError("%v secret already exists", secretName)
 		}
 	}
