@@ -1,0 +1,69 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    pvc.params.task.kubevirt.io/kind: PersistentVolumeClaim
+    pvc.params.task.kubevirt.io/apiVersion: v1
+    sysprepCommands.params.task.kubevirt.io/type: script
+    verbose.params.task.kubevirt.io/type: boolean
+  labels:
+    task.kubevirt.io/type: disk-virt-sysprep
+    task.kubevirt.io/category: disk-virt-sysprep
+  name: disk-virt-sysprep
+spec:
+  params:
+    - name: pvc
+      description: PersistentVolumeClaim to run the the virt-sysprep script in. PVC should be in the same namespace as taskrun/pipelinerun.
+      type: string
+    - name: sysprepCommands
+      description: virt-sysprep commands in "--commands-from-file" format.
+      type: string
+      default: ""
+    - name: verbose
+      description: Enable verbose mode and tracing of libguestfs API calls.
+      type: string
+      default: 'false'
+    - name: additionalOptions
+      description: Additional options to pass to virt-sysprep.
+      type: string
+      default: ""
+  steps:
+    - name: run-virt-sysprep
+      image: quay.io/kubevirt/tekton-task-disk-virt-sysprep:v0.0.1
+      command:
+        - entrypoint
+      args:
+        - '--verbose'
+        - $(params.verbose)
+      env:
+        - name: SYSPREP_COMMANDS
+          value: $(params.sysprepCommands)
+        - name: ADDITIONAL_VIRT_SYSPREP_OPTIONS
+          value: $(params.additionalOptions)
+        - name: LIBGUESTFS_BACKEND
+          value: direct
+        - name: LIBGUESTFS_PATH
+          value: /mnt/appliance
+      securityContext:
+        runAsUser: 0
+      resources:
+        limits:
+          devices.kubevirt.io/kvm: '1'
+          devices.kubevirt.io/tun: '1'
+          devices.kubevirt.io/vhost-net: '1'
+        requests:
+          devices.kubevirt.io/kvm: '1'
+          devices.kubevirt.io/tun: '1'
+          devices.kubevirt.io/vhost-net: '1'
+      volumeMounts:
+        - mountPath: /mnt/appliance/
+          name: guestfsappliance
+        - mountPath: /mnt/targetpvc/
+          name: targetpvc
+  volumes:
+    - name: guestfsappliance
+      emptyDir: {}
+    - name: targetpvc
+      persistentVolumeClaim:
+        claimName: $(params.pvc)

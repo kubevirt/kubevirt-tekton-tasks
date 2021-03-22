@@ -36,7 +36,7 @@ func (c *CLIOptions) GetAdditionalVirtCustomizeOptions() string {
 }
 
 func (c *CLIOptions) Init() error {
-	if err := c.validateExecutionScript(); err != nil {
+	if err := c.validateCommands(); err != nil {
 		return err
 	}
 

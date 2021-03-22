@@ -20,7 +20,7 @@ Then it creates a VM from this PVC and deploys a flaskr server application in th
 2. `disk-virt-customize` task runs virt-customize commands on the PVC that install git, vim, pip and flask python framework.
 3. `generate-ssh-keys` task generates two secrets with private and public keys.
    The name of the secrets are generated. The task itself runs in parallel with `1.` and `2.` tasks.
-4. `create-vm-from-manifest` task creates a VM (generated name) from the prepared PVC with a public key attached .
+4. `create-vm-from-manifest` task creates a VM  called `flasker-vm-*` from the prepared PVC with a public key attached.
 5. `execute-in-vm` task starts a VM and makes SSH connection to it.
    - clones flask repository
    - initializes flaskr application
