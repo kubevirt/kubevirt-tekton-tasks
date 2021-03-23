@@ -53,7 +53,7 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: quay.io/kubevirt/tekton-task-execute-in-vm:v0.0.5
+      image: quay.io/kubevirt/tekton-task-execute-in-vm:v0.0.6
       command:
         - entrypoint
       args:
@@ -388,7 +388,7 @@ spec:
       default: ""
   steps:
     - name: run-virt-customize
-      image: quay.io/kubevirt/tekton-task-disk-virt-customize:v0.0.2
+      image: quay.io/kubevirt/tekton-task-disk-virt-customize:v0.0.3
       command:
         - entrypoint
       args:
@@ -534,7 +534,7 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: quay.io/kubevirt/tekton-task-execute-in-vm:v0.0.5
+      image: quay.io/kubevirt/tekton-task-execute-in-vm:v0.0.6
       command:
         - entrypoint
       args:
@@ -656,7 +656,7 @@ spec:
       description: The namespace of a private key secret.
   steps:
     - name: generate-ssh-keys
-      image: quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.0.3
+      image: quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.0.4
       command:
         - entrypoint
         - '--'
