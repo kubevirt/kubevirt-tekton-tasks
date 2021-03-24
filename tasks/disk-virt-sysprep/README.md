@@ -1,4 +1,4 @@
-# Virt Sysprep Task
+# Disk Virt Sysprep Task
 
 This task uses [virt-sysprep](https://libguestfs.org/virt-sysprep.1.html) to run a sysprep script on a target pvc.
 
