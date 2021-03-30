@@ -38,21 +38,14 @@ func (c *CLIOptions) assertValidTypes() error {
 }
 
 func (c *CLIOptions) trimSpaces() {
-	c.TemplateName = strings.TrimSpace(c.TemplateName)
-	c.TemplateNamespace = strings.TrimSpace(c.TemplateNamespace)
-	c.VirtualMachineNamespace = strings.TrimSpace(c.VirtualMachineNamespace)
+	for _, strVariablePtr := range []*string{&c.TemplateName, &c.TemplateNamespace, &c.VirtualMachineNamespace} {
+		*strVariablePtr = strings.TrimSpace(*strVariablePtr)
+	}
 
-	for i, v := range c.DataVolumes {
-		c.DataVolumes[i] = strings.TrimSpace(v)
-	}
-	for i, v := range c.OwnDataVolumes {
-		c.OwnDataVolumes[i] = strings.TrimSpace(v)
-	}
-	for i, v := range c.PersistentVolumeClaims {
-		c.PersistentVolumeClaims[i] = strings.TrimSpace(v)
-	}
-	for i, v := range c.OwnPersistentVolumeClaims {
-		c.OwnPersistentVolumeClaims[i] = strings.TrimSpace(v)
+	for _, sliceVariablePtr := range []*[]string{&c.DataVolumes, &c.OwnDataVolumes, &c.PersistentVolumeClaims, &c.OwnPersistentVolumeClaims} {
+		for i, v := range *sliceVariablePtr {
+			(*sliceVariablePtr)[i] = strings.TrimSpace(v)
+		}
 	}
 }
 

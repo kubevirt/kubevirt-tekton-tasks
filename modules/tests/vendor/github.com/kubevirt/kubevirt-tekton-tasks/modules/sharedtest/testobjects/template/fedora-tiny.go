@@ -1,4 +1,4 @@
-package testobjects
+package template
 
 import (
 	v1 "github.com/openshift/api/template/v1"
@@ -95,7 +95,7 @@ objects:
                 bus: virtio
               name: cloudinitdisk
             interfaces:
-            - masquerade: {}
+            - bridge: {}
               name: default
             networkInterfaceMultiqueue: true
             rng: {}
@@ -126,12 +126,15 @@ parameters:
   required: true
 `
 
-func NewFedoraServerTinyTemplate() *v1.Template {
+func NewFedoraServerTinyTemplate() *TestTemplate {
 	var template v1.Template
 	err := yaml.Unmarshal([]byte(fedoraServerTinyTemplateYAML), &template)
 
 	if err != nil {
 		panic(err)
 	}
-	return &template
+
+	return &TestTemplate{
+		&template,
+	}
 }

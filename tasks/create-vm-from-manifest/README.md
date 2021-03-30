@@ -11,10 +11,10 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 
 - **manifest**: YAML manifest of a VirtualMachine resource to be created.
 - **namespace**: Namespace where to create the VM. (defaults to manifest namespace or active namespace)
-- **dataVolumes**: Add DVs to VM Volumes.
-- **ownDataVolumes**: Add DVs to VM Volumes and add VM to DV ownerReferences. These DataVolumes will be deleted once the created VM gets deleted.
-- **persistentVolumeClaims**: Add PVCs to VM Volumes.
-- **ownPersistentVolumeClaims**: Add PVCs to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted.
+- **dataVolumes**: Add DVs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. `["rootdisk:my-dv", "my-dv2"]`
+- **ownDataVolumes**: Add DVs to VM Volumes and add VM to DV ownerReferences. These DataVolumes will be deleted once the created VM gets deleted. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. `["rootdisk:my-dv", "my-dv2"]`
+- **persistentVolumeClaims**: Add PVCs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:PVC_NAME format. Eg. `["rootdisk:my-pvc", "my-pvc2"]`
+- **ownPersistentVolumeClaims**: Add PVCs to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted. Replaces a particular volume if in VOLUME_NAME:PVC_NAME format. Eg. `["rootdisk:my-pvc", "my-pvc2"]`
 
 ### Results
 

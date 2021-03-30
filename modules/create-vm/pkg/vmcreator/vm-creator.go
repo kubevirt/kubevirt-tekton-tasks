@@ -11,6 +11,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
 	virtualMachine "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
@@ -90,7 +91,6 @@ func (v *VMCreator) createVMFromManifest() (*kubevirtv1.VirtualMachine, error) {
 
 	templateValidations := validations.NewTemplateValidations(nil) // fallback to defaults
 	virtualMachine.AddVolumes(&vm, templateValidations, v.cliOptions)
-	virtualMachine.SortDisksAndVolumes(&vm)
 
 	log.Logger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, &vm)
@@ -125,16 +125,18 @@ func (v *VMCreator) createVMFromTemplate() (*kubevirtv1.VirtualMachine, error) {
 	vm.Namespace = v.targetNamespace
 	virtualMachine.AddMetadata(vm, processedTemplate)
 	virtualMachine.AddVolumes(vm, templateValidations, v.cliOptions)
-	virtualMachine.SortDisksAndVolumes(vm)
 
 	log.Logger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, vm)
 }
 
 func (v *VMCreator) CheckVolumesExist() error {
-	log.Logger().Debug("asserting additional volumes exist", zap.Strings("additional-volumes", v.cliOptions.GetAllDiskNames()))
-	_, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, v.cliOptions.GetAllDVNames()...)
-	_, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, v.cliOptions.GetAllPVCNames()...)
+	allDVs := zutils.ConcatStringSlices(v.cliOptions.GetOwnDVNames(), v.cliOptions.GetDVNames())
+	allPVCs := zutils.ConcatStringSlices(v.cliOptions.GetOwnPVCNames(), v.cliOptions.GetPVCNames())
+
+	log.Logger().Debug("asserting additional volumes exist", zap.Strings("additional-dvs", allDVs), zap.Strings("additional-pvcs", allPVCs))
+	_, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, allDVs...)
+	_, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, allPVCs...)
 
 	return zerrors.NewMultiError().
 		AddC("dvsErr", dvsErr).
@@ -153,12 +155,13 @@ func (v *VMCreator) OwnVolumes(vm *kubevirtv1.VirtualMachine) error {
 }
 
 func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
-	log.Logger().Debug("taking ownership of DataVolumes", zap.Strings("own-dvs", v.cliOptions.OwnDataVolumes))
+	ownDVs := v.cliOptions.GetOwnDVNames()
+	log.Logger().Debug("taking ownership of DataVolumes", zap.Strings("own-dvs", ownDVs))
 	var multiError zerrors.MultiError
 
-	dvs, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, v.cliOptions.OwnDataVolumes...)
+	dvs, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, ownDVs...)
 
-	for idx, dvName := range v.cliOptions.OwnDataVolumes {
+	for idx, dvName := range ownDVs {
 		if err := zerrors.GetErrorFromMultiError(dvsErr, dvName); err != nil {
 			multiError.Add(dvName, err)
 			continue
@@ -174,12 +177,13 @@ func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
 }
 
 func (v *VMCreator) ownPersistentVolumeClaims(vm *kubevirtv1.VirtualMachine) error {
-	log.Logger().Debug("taking ownership of PersistentVolumeClaims", zap.Strings("own-pvcs", v.cliOptions.OwnPersistentVolumeClaims))
+	ownPVCs := v.cliOptions.GetOwnPVCNames()
+	log.Logger().Debug("taking ownership of PersistentVolumeClaims", zap.Strings("own-pvcs", ownPVCs))
 	var multiError zerrors.MultiError
 
-	pvcs, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, v.cliOptions.OwnPersistentVolumeClaims...)
+	pvcs, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, ownPVCs...)
 
-	for idx, pvcName := range v.cliOptions.OwnPersistentVolumeClaims {
+	for idx, pvcName := range ownPVCs {
 		if err := zerrors.GetErrorFromMultiError(pvcsErr, pvcName); err != nil {
 			multiError.Add(pvcName, err)
 			continue
@@ -188,7 +192,6 @@ func (v *VMCreator) ownPersistentVolumeClaims(vm *kubevirtv1.VirtualMachine) err
 		if _, err := v.pvcProvider.AddOwnerReferences(pvcs[idx], virtualMachine.AsVMOwnerReference(vm)); err != nil {
 			multiError.Add(pvcName, fmt.Errorf("could not add owner reference to %v PersistentVolumeClaim: %v", pvcName, err.Error()))
 		}
-
 	}
 
 	return multiError.AsOptional()

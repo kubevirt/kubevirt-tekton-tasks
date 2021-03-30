@@ -20,6 +20,7 @@ const (
 type TestDataVolume struct {
 	Data           *v1beta12.DataVolume
 	AttachmentType TestDataVolumeAttachmentType
+	DiskName       string
 }
 
 func NewBlankDataVolume(name string) *TestDataVolume {
@@ -51,6 +52,7 @@ func NewBlankDataVolume(name string) *TestDataVolume {
 	return &TestDataVolume{
 		datavolume,
 		"",
+		"",
 	}
 }
 
@@ -62,6 +64,11 @@ func (d *TestDataVolume) WithoutTypeMeta() *TestDataVolume {
 
 func (d *TestDataVolume) AttachAs(attachmentType TestDataVolumeAttachmentType) *TestDataVolume {
 	d.AttachmentType = attachmentType
+	return d
+}
+
+func (d *TestDataVolume) AttachWithDiskName(diskName string) *TestDataVolume {
+	d.DiskName = diskName
 	return d
 }
 

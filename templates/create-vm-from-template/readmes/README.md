@@ -12,7 +12,7 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 ### Parameters
 
 {% for item in task_yaml.spec.params %}
-{% if item.name == "templateParams" %}
+{% if item.name == "templateParams" or 'Volume' in item.name %}
 - **{{ item.name }}**: {{ item.description | replace('[', '`[')   | replace(']', ']`')}}
 {% else %}
 - **{{ item.name }}**: {{ item.description | replace('"', '`') }}

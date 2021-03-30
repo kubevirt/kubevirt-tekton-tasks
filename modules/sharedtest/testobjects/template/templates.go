@@ -66,6 +66,22 @@ func (t *TestTemplate) WithDescriptionParam() *TestTemplate {
 	return t
 }
 
+func (t *TestTemplate) WithDisk(disk kubevirtv1.Disk) *TestTemplate {
+	t.modifyVM(func(vm *kubevirtv1.VirtualMachine) {
+		vm.Spec.Template.Spec.Domain.Devices.Disks = append(vm.Spec.Template.Spec.Domain.Devices.Disks, disk)
+	})
+
+	return t
+}
+
+func (t *TestTemplate) WithVolume(volume kubevirtv1.Volume) *TestTemplate {
+	t.modifyVM(func(vm *kubevirtv1.VirtualMachine) {
+		vm.Spec.Template.Spec.Volumes = append(vm.Spec.Template.Spec.Volumes, volume)
+	})
+
+	return t
+}
+
 func (t *TestTemplate) WithNonMatchingDisk() *TestTemplate {
 	t.modifyVM(func(vm *kubevirtv1.VirtualMachine) {
 		vm.Spec.Template.Spec.Domain.Devices.Disks[0].Name = "non-matching-name"
