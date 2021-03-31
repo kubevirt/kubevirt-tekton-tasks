@@ -15,6 +15,7 @@ import (
 	vm2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants"
 	shtestobjects "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
+	template "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 )
 
 var _ = Describe("VM", func() {
@@ -41,16 +42,16 @@ var _ = Describe("VM", func() {
 				TemplateName:              "test",
 				TemplateNamespace:         "default",
 				VirtualMachineNamespace:   "default",
-				OwnDataVolumes:            []string{"dv1"},
-				DataVolumes:               []string{"dv2", "dv3"},
-				OwnPersistentVolumeClaims: []string{"pvc1", "pvc2"},
-				PersistentVolumeClaims:    []string{"pvc3"},
+				PersistentVolumeClaims:    []string{"pvc1"},
+				OwnPersistentVolumeClaims: []string{"pvc2", "pvc3"},
+				DataVolumes:               []string{"dv1", "dv2"},
+				OwnDataVolumes:            []string{"dv3"},
 			}
 			Expect(cliOptions.Init()).Should(Succeed())
 		})
 
 		table.DescribeTable("adds all volumes with various validations", func(templateValidations *validations.TemplateValidations, expectedBus string) {
-			addsVolumesCorrectly(vm, templateValidations, cliOptions, expectedBus)
+			addsVolumesCorrectly(vm, templateValidations, cliOptions, []string{expectedBus})
 		},
 			table.Entry("no validations", nil, Virtio),
 			table.Entry("empty validations", validations.NewTemplateValidations(nil), Virtio),
@@ -60,7 +61,7 @@ var _ = Describe("VM", func() {
 		It("adds some volumes", func() {
 			cliOptions.DataVolumes = nil
 			cliOptions.OwnPersistentVolumeClaims = nil
-			addsVolumesCorrectly(vm, emptyValidations, cliOptions, Virtio)
+			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []string{Virtio})
 		})
 
 		It("adds no volumes", func() {
@@ -68,59 +69,129 @@ var _ = Describe("VM", func() {
 			cliOptions.DataVolumes = nil
 			cliOptions.OwnPersistentVolumeClaims = nil
 			cliOptions.PersistentVolumeClaims = nil
-			addsVolumesCorrectly(vm, emptyValidations, cliOptions, Virtio)
+			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []string{Virtio})
+		})
+
+		It("adding named disks", func() {
+			cliOptions.OwnDataVolumes = append(cliOptions.OwnDataVolumes, "disk1:dv4")
+			cliOptions.PersistentVolumeClaims = append(cliOptions.PersistentVolumeClaims, "disk2:pvc4")
+			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []string{Virtio})
+		})
+
+		It("replaces existing disks", func() {
+			bootOrder := uint(1)
+			vm.Spec.Template.Spec.Domain.Devices.Disks = append(vm.Spec.Template.Spec.Domain.Devices.Disks,
+				kubevirtv1.Disk{
+					Name:      "disk1",
+					BootOrder: &bootOrder,
+					DiskDevice: kubevirtv1.DiskDevice{
+						CDRom: &kubevirtv1.CDRomTarget{Bus: Sata},
+					},
+				},
+				kubevirtv1.Disk{
+					Name: "disk2",
+					DiskDevice: kubevirtv1.DiskDevice{
+						Disk: &kubevirtv1.DiskTarget{Bus: Virtio},
+					},
+				},
+				kubevirtv1.Disk{
+					Name: "disk3",
+					DiskDevice: kubevirtv1.DiskDevice{
+						Disk: &kubevirtv1.DiskTarget{Bus: Sata},
+					},
+				},
+			)
+			vm.Spec.Template.Spec.Volumes = append(vm.Spec.Template.Spec.Volumes,
+				kubevirtv1.Volume{
+					Name: "disk1",
+					// wrong source - should overwrite
+					VolumeSource: kubevirtv1.VolumeSource{
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "other1",
+						},
+					},
+				},
+				kubevirtv1.Volume{
+					// no source - should complete
+					Name: "disk2",
+				},
+				// for disk3 - should create volume
+				// for disk4 - should not damage source
+				kubevirtv1.Volume{
+					Name: "disk4",
+					VolumeSource: kubevirtv1.VolumeSource{
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "other2",
+							ReadOnly:  true,
+						},
+					},
+				},
+			)
+
+			cliOptions.OwnDataVolumes = append(cliOptions.OwnDataVolumes, "disk1:dv4")
+			cliOptions.PersistentVolumeClaims = append(cliOptions.PersistentVolumeClaims, "disk2:pvc4", "disk3:pvc5", "disk4:pvc6")
+			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []string{Sata, Virtio, Sata, Virtio})
+			// initial disks should not be changed
+			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[0]).Should(Equal(
+				kubevirtv1.Disk{
+					Name:      "disk1",
+					BootOrder: &bootOrder,
+					DiskDevice: kubevirtv1.DiskDevice{
+						CDRom: &kubevirtv1.CDRomTarget{Bus: Sata},
+					},
+				},
+			))
+			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[1]).Should(Equal(
+				kubevirtv1.Disk{
+					Name: "disk2",
+					DiskDevice: kubevirtv1.DiskDevice{
+						Disk: &kubevirtv1.DiskTarget{Bus: Virtio},
+					},
+				},
+			))
+			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[2]).Should(Equal(
+				kubevirtv1.Disk{
+					Name: "disk3",
+					DiskDevice: kubevirtv1.DiskDevice{
+						Disk: &kubevirtv1.DiskTarget{Bus: Sata},
+					},
+				},
+			))
+			// should have correctly filled sources
+			Expect(vm.Spec.Template.Spec.Volumes[0]).Should(Equal(
+				kubevirtv1.Volume{
+					Name: "disk1",
+					VolumeSource: kubevirtv1.VolumeSource{
+						DataVolume: &kubevirtv1.DataVolumeSource{Name: "dv4"},
+					},
+				},
+			))
+			Expect(vm.Spec.Template.Spec.Volumes[1]).Should(Equal(
+				kubevirtv1.Volume{
+					Name: "disk2",
+					VolumeSource: kubevirtv1.VolumeSource{
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "pvc4",
+						},
+					},
+				},
+			))
+			Expect(vm.Spec.Template.Spec.Volumes[2]).Should(Equal(
+				kubevirtv1.Volume{
+					Name: "disk4",
+					VolumeSource: kubevirtv1.VolumeSource{
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "pvc6",
+							ReadOnly:  true,
+						},
+					},
+				},
+			))
 		})
 	})
 
-	It("sorts disks and volumes", func() {
-		vm = shtestobjects.NewTestVM().Build()
-
-		for _, name := range []string{"c", "a", "b", "d"} {
-			disk := kubevirtv1.Disk{
-				Name: name,
-				DiskDevice: kubevirtv1.DiskDevice{
-					Disk: &kubevirtv1.DiskTarget{Bus: Virtio},
-				},
-			}
-			vm.Spec.Template.Spec.Domain.Devices.Disks = append(vm.Spec.Template.Spec.Domain.Devices.Disks, disk)
-		}
-
-		vm.Spec.Template.Spec.Volumes = []kubevirtv1.Volume{
-			{
-				Name: "c",
-				VolumeSource: kubevirtv1.VolumeSource{
-					Secret: &kubevirtv1.SecretVolumeSource{SecretName: "test-c"},
-				},
-			},
-			{
-				Name: "a",
-				VolumeSource: kubevirtv1.VolumeSource{
-					PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{ClaimName: "test-a"},
-				},
-			},
-			{
-				Name: "d",
-				VolumeSource: kubevirtv1.VolumeSource{
-					CloudInitConfigDrive: &kubevirtv1.CloudInitConfigDriveSource{UserData: "test-d"},
-				},
-			},
-			{
-				Name: "b",
-				VolumeSource: kubevirtv1.VolumeSource{
-					DataVolume: &kubevirtv1.DataVolumeSource{Name: "test-b"},
-				},
-			},
-		}
-
-		vm2.SortDisksAndVolumes(vm)
-		for idx, name := range []string{"a", "b", "c", "d"} {
-			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[idx].Name).To(Equal(name))
-			Expect(vm.Spec.Template.Spec.Volumes[idx].Name).To(Equal(name))
-		}
-	})
-
 	It("Adds correct metadata from template", func() {
-		vm2.AddMetadata(vm, shtestobjects.NewFedoraServerTinyTemplate())
+		vm2.AddMetadata(vm, template.NewFedoraServerTinyTemplate().Build())
 
 		Expect(vm.Labels).To(Equal(map[string]string{
 			"vm.kubevirt.io/template":              "fedora-server-tiny-v0.7.0",
@@ -155,23 +226,45 @@ var _ = Describe("VM", func() {
 	})
 })
 
-func addsVolumesCorrectly(vm *kubevirtv1.VirtualMachine, templateValidations *validations.TemplateValidations, cliOpts *parse.CLIOptions, expectedBus string) {
+// expectedBuses: the disk at index i should have a bus at expectedBuses[i], or the last of expectedBuses
+func addsVolumesCorrectly(vm *kubevirtv1.VirtualMachine, templateValidations *validations.TemplateValidations, cliOpts *parse.CLIOptions, expectedBuses []string) {
 	vm2.AddVolumes(vm, templateValidations, cliOpts)
-	disksCount := len(cliOpts.GetAllDiskNames())
+	disksCount := len(cliOpts.GetPVCDiskNamesMap()) + len(cliOpts.GetDVDiskNamesMap())
 	Expect(vm.Spec.Template.Spec.Volumes).To(HaveLen(disksCount))
 	Expect(vm.Spec.Template.Spec.Domain.Devices.Disks).To(HaveLen(disksCount))
 
 	var foundDiskNames []string
 	var foundVolumeNames []string
-	for _, disk := range vm.Spec.Template.Spec.Domain.Devices.Disks {
-		Expect(disk.Disk.Bus).To(Equal(expectedBus))
+	for i, disk := range vm.Spec.Template.Spec.Domain.Devices.Disks {
+		var expectedBus string
+		if i < len(expectedBuses) {
+			expectedBus = expectedBuses[i]
+		} else {
+			expectedBus = expectedBuses[len(expectedBuses)-1]
+		}
+
+		if disk.CDRom != nil {
+			Expect(disk.CDRom.Bus).To(Equal(expectedBus))
+		} else {
+			Expect(disk.Disk.Bus).To(Equal(expectedBus))
+		}
+
 		foundDiskNames = append(foundDiskNames, disk.Name)
 	}
 	for _, volume := range vm.Spec.Template.Spec.Volumes {
 		foundVolumeNames = append(foundVolumeNames, volume.Name)
 	}
 
-	var expectedNames = cliOpts.GetAllDiskNames()
+	var expectedNames []string
+
+	for expectedName, _ := range cliOpts.GetPVCDiskNamesMap() {
+		expectedNames = append(expectedNames, expectedName)
+	}
+
+	for expectedName, _ := range cliOpts.GetDVDiskNamesMap() {
+		expectedNames = append(expectedNames, expectedName)
+	}
+
 	sort.Strings(foundDiskNames)
 	sort.Strings(foundVolumeNames)
 	sort.Strings(expectedNames)

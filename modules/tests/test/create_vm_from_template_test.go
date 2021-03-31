@@ -2,12 +2,11 @@ package test
 
 import (
 	"context"
-	"fmt"
+	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
-	templ "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/template"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/vm"
 	. "github.com/onsi/ginkgo"
@@ -52,9 +51,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs: "cannot get resource \"templates\" in API group \"template.openshift.io\"",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("no-sa")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("no-sa")),
 				},
 			},
 		}),
@@ -71,9 +70,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   "no VM object found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().WithNoVM().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().WithNoVM().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("invalid-template-no-vm")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("invalid-template-no-vm")),
 				},
 			},
 		}),
@@ -93,10 +92,10 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   "invalid template-params: no key found before \"InvalidDescription\"; pair should be in \"KEY:VAL\" format",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
 				TemplateParams: []string{
 					"InvalidDescription",
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("invalid-template-params")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("invalid-template-params")),
 				},
 			},
 		}),
@@ -106,7 +105,7 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   "required params are missing values: NAME",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 			},
 		}),
 
@@ -116,9 +115,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   "required params are missing values: DESCRIPTION",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("missing-one-template-param")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("missing-one-template-param")),
 				},
 			},
 		}),
@@ -128,9 +127,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   "datavolumes.cdi.kubevirt.io \"non-existent-dv\" not found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-with-non-existent-dv")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-non-existent-dv")),
 				},
 				DataVolumes: []string{"non-existent-dv"},
 			},
@@ -141,9 +140,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   "datavolumes.cdi.kubevirt.io \"non-existent-own-dv\" not found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-with-non-existent-owned-dv")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-non-existent-owned-dv")),
 				},
 				OwnDataVolumes: []string{"non-existent-own-dv"},
 			},
@@ -154,9 +153,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   "persistentvolumeclaims \"non-existent-pvc\" not found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-with-non-existent-pvc")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-non-existent-pvc")),
 				},
 				PersistentVolumeClaims: []string{"non-existent-pvc"},
 			},
@@ -167,9 +166,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   "persistentvolumeclaims \"non-existent-own-pvc\" not found\npersistentvolumeclaims \"non-existent-own-pvc-2\" not found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-with-non-existent-owned-pvcs")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-non-existent-owned-pvcs")),
 				},
 				OwnPersistentVolumeClaims: []string{"non-existent-own-pvc", "non-existent-own-pvc-2"},
 			},
@@ -180,9 +179,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   "admission webhook \"virtualmachine-validator.kubevirt.io\" denied the request: spec.template.spec.domain.devices.disks[0].Name",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().WithNonMatchingDisk().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().WithNonMatchingDisk().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("non-matching-disk-fail-creation")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("non-matching-disk-fail-creation")),
 				},
 			},
 		}),
@@ -193,9 +192,9 @@ var _ = Describe("Create VM from template", func() {
 				LimitTestScope: NamespaceTestScope,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("different-ns-namespace-scope")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("different-ns-namespace-scope")),
 				},
 				VMTargetNamespace: SystemTargetNS,
 			},
@@ -210,7 +209,7 @@ var _ = Describe("Create VM from template", func() {
 				TemplateTargetNamespace: SystemTargetNS,
 				TemplateName:            "unreachable-template",
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("different-ns-namespace-scope")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("different-ns-namespace-scope")),
 				},
 			},
 		}),
@@ -246,9 +245,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("simple-vm")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("simple-vm")),
 				},
 			},
 		}),
@@ -258,9 +257,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-to-deploy-by-default")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-to-deploy-by-default")),
 				},
 				VMTargetNamespace:                  DeployTargetNS,
 				UseDefaultVMNamespacesInTaskParams: true,
@@ -272,9 +271,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-with-template-from-deploy-by-default")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-template-from-deploy-by-default")),
 				},
 				TemplateTargetNamespace:                  DeployTargetNS,
 				UseDefaultTemplateNamespacesInTaskParams: true,
@@ -286,9 +285,9 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template: templ.NewCirrosServerTinyTemplate().Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-with-template-to-deploy-by-default")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-template-to-deploy-by-default")),
 				},
 				VMTargetNamespace:                        DeployTargetNS,
 				TemplateTargetNamespace:                  DeployTargetNS,
@@ -302,12 +301,12 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   "description: e2e description with spaces",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template:                templ.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
+				Template:                testtemplate.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
 				TemplateTargetNamespace: DeployTargetNS,
 				TemplateParams: []string{
-					templ.TemplateParam(templ.DescriptionParam, "e2e description with spaces"),
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-with-params")),
-					templ.TemplateParam("test", "test test"),
+					testtemplate.TemplateParam(testtemplate.DescriptionParam, "e2e description with spaces"),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-params")),
+					testtemplate.TemplateParam("test", "test test"),
 				},
 			},
 		}),
@@ -318,11 +317,11 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template:                templ.NewCirrosServerTinyTemplate().Build(),
+				Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateTargetNamespace: DeployTargetNS,
 				VMTargetNamespace:       DeployTargetNS,
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("same-ns-cluster-scope")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("same-ns-cluster-scope")),
 				},
 			},
 		}),
@@ -338,7 +337,7 @@ var _ = Describe("Create VM from template", func() {
 				TemplateName:      SpacesSmall + "fedora-server-tiny",
 				TemplateNamespace: SpacesSmall + "openshift" + SpacesSmall,
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-from-common-template")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-common-template")),
 				},
 				IsCommonTemplate: true,
 				DataVolumesToCreate: []*dv.TestDataVolume{
@@ -355,8 +354,8 @@ var _ = Describe("Create VM from template", func() {
 			dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dataVolume)
-			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, templ.TemplateParam(SpacesSmall+templ.SrcPvcNameParam, dataVolume.Name))
-			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, templ.TemplateParam(SpacesSmall+templ.SrcPvcNamespaceParam, dataVolume.Namespace))
+			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, testtemplate.TemplateParam(SpacesSmall+testtemplate.SrcPvcNameParam, dataVolume.Name))
+			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, testtemplate.TemplateParam(SpacesSmall+testtemplate.SrcPvcNamespaceParam, dataVolume.Namespace))
 		}
 
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
@@ -374,109 +373,8 @@ var _ = Describe("Create VM from template", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
-	Describe("VM with attached PVCs/DV is created successfully ", func() {
-		runConfigurations := []map[dv.TestDataVolumeAttachmentType]int{
-			{
-				// try all at once
-				dv.OwnedDV:  2,
-				dv.OwnedPVC: 1,
-				dv.PVC:      1,
-				dv.DV:       1,
-			},
-		}
-
-		// try for each type 1 or 2 dvs
-		for count := 1; count < 3; count++ {
-			for _, attachmentType := range []dv.TestDataVolumeAttachmentType{dv.OwnedDV, dv.OwnedPVC, dv.PVC, dv.DV} {
-				runConfigurations = append(runConfigurations, map[dv.TestDataVolumeAttachmentType]int{
-					attachmentType: count,
-				})
-			}
-		}
-
-		for i, r := range runConfigurations {
-			idx, runConf := i, r
-			name := ""
-			for attachmentType, count := range runConf {
-				name += fmt.Sprintf("%v=%v ", attachmentType, count)
-			}
-			It(name, func() {
-				var datavolumes []*dv.TestDataVolume
-				for attachmentType, count := range runConf {
-					name += fmt.Sprintf("%v=%v ", attachmentType, count)
-					for id := 0; id < count; id++ {
-						datavolumes = append(datavolumes,
-							dv.NewBlankDataVolume(fmt.Sprintf("attach-to-vm-%v-%v", attachmentType, id)).AttachAs(attachmentType),
-						)
-					}
-				}
-				var expectedDisbBus string
-				testTemplate := templ.NewCirrosServerTinyTemplate()
-				switch idx % 4 { // try different disk buses for each test
-				case 0:
-					testTemplate.WithSataDiskValidations()
-					expectedDisbBus = "sata"
-				case 1:
-					testTemplate.WithSCSIDiskValidations()
-					expectedDisbBus = "scsi"
-				case 2:
-					testTemplate.WithVirtioDiskValidations()
-					expectedDisbBus = "virtio"
-				default:
-					expectedDisbBus = "virtio"
-				}
-				config := &testconfigs.CreateVMTestConfig{
-					TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-						ServiceAccount: CreateVMFromTemplateServiceAccountName,
-						ExpectedLogs:   ExpectedSuccessfulVMCreation,
-						Timeout:        Timeouts.SmallDVCreation,
-					},
-					TaskData: testconfigs.CreateVMTaskData{
-						Template: testTemplate.Build(),
-						TemplateParams: []string{
-							templ.TemplateParam(templ.NameParam, E2ETestsRandomName("simple-vm")),
-						},
-						DataVolumesToCreate:       datavolumes,
-						ExpectedAdditionalDiskBus: expectedDisbBus,
-					},
-				}
-				f.TestSetup(config)
-				if template := config.TaskData.Template; template != nil {
-					template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
-					Expect(err).ShouldNot(HaveOccurred())
-					f.ManageTemplates(template)
-				}
-				for _, dvWrapper := range config.TaskData.DataVolumesToCreate {
-					dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
-					Expect(err).ShouldNot(HaveOccurred())
-					f.ManageDataVolumes(dataVolume)
-					config.TaskData.SetDVorPVC(dataVolume.Name, dvWrapper.AttachmentType)
-				}
-
-				expectedVM := config.TaskData.GetExpectedVMStubMeta()
-				f.ManageVMs(expectedVM)
-
-				runner.NewTaskRunRunner(f, config.GetTaskRun()).
-					CreateTaskRun().
-					ExpectSuccess().
-					ExpectLogs(config.GetAllExpectedLogs()...).
-					ExpectResults(map[string]string{
-						CreateVMResults.Name:      expectedVM.Name,
-						CreateVMResults.Namespace: expectedVM.Namespace,
-					})
-
-				vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
-					"", config.GetTaskRunTimeout(), false)
-				Expect(err).ShouldNot(HaveOccurred())
-				// check all disks are present
-				Expect(vm.Spec.Template.Spec.Volumes).To(ConsistOf(expectedVM.Spec.Template.Spec.Volumes))
-				Expect(vm.Spec.Template.Spec.Domain.Devices.Disks).To(ConsistOf(expectedVM.Spec.Template.Spec.Domain.Devices.Disks))
-			})
-		}
-	})
-
 	It("VM is created from template properly ", func() {
-		template := templ.NewCirrosServerTinyTemplate().Build()
+		template := testtemplate.NewCirrosServerTinyTemplate().Build()
 		config := &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
@@ -485,7 +383,7 @@ var _ = Describe("Create VM from template", func() {
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: template,
 				TemplateParams: []string{
-					templ.TemplateParam(templ.NameParam, E2ETestsRandomName("vm-from-template-data")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
 				},
 			},
 		}
@@ -511,7 +409,7 @@ var _ = Describe("Create VM from template", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		vmName := expectedVMStub.Name
-		expectedVM := templ.GetVM(template)
+		expectedVM := testtemplate.GetVM(template)
 		// fill template VM accordingly
 		expectedVM.Spec.Template.Spec.Hostname = vmName
 		expectedVM.Spec.Template.Spec.Domain.Machine = vm.Spec.Template.Spec.Domain.Machine // ignore Machine

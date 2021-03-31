@@ -69,11 +69,15 @@ spec:
                       threads: 1
                     devices:
                       disks:
+                        - name: rootdisk
+                          bootOrder: 1
+                          disk:
+                            bus: virtio
                         - name: cloudinitdrive
                           disk:
                             bus: virtio
                       interfaces:
-                        - masquerade: {}
+                        - bridge: {}
                           name: default
                       networkInterfaceMultiqueue: true
                       rng: {}
@@ -85,6 +89,7 @@ spec:
                     - name: default
                       pod: {}
                   volumes:
+                    - name: rootdisk
                     - name: cloudinitdrive
                       cloudInitConfigDrive:
                         userData: |
@@ -93,7 +98,7 @@ spec:
                           chpasswd: { expire: False }
         - name: ownDataVolumes
           value:
-            - "$(tasks.create-datavolume-from-manifest.results.name)"
+            - "rootdisk:$(tasks.create-datavolume-from-manifest.results.name)"
       runAfter:
         - disk-virt-sysprep
       taskRef:

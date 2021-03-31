@@ -26,11 +26,15 @@ func newRandomVMIWithNS(namespace string) *v1.VirtualMachineInstance {
 		Sockets: 1,
 		Threads: 1,
 	}
-	vmi.Spec.Domain.Devices = v1.Devices{Interfaces: []v1.Interface{{Name: "default",
-		InterfaceBindingMethod: v1.InterfaceBindingMethod{
-			Masquerade: &v1.InterfaceMasquerade{}}}}}
+	vmi.Spec.Domain.Devices = v1.Devices{
+		Interfaces: []v1.Interface{
+			*v1.DefaultBridgeNetworkInterface(),
+		},
+	}
 
-	vmi.Spec.Networks = []v1.Network{*v1.DefaultPodNetwork()}
+	vmi.Spec.Networks = []v1.Network{
+		*v1.DefaultPodNetwork(),
+	}
 
 	return vmi
 }
@@ -89,6 +93,16 @@ func (t *TestVM) WithMemory(memory string) *TestVM {
 	return t
 }
 
+func (t *TestVM) WithDisk(disk v1.Disk) *TestVM {
+	t.Data.Spec.Template.Spec.Domain.Devices.Disks = append(t.Data.Spec.Template.Spec.Domain.Devices.Disks, disk)
+	return t
+}
+
+func (t *TestVM) WithVolume(volume v1.Volume) *TestVM {
+	t.Data.Spec.Template.Spec.Volumes = append(t.Data.Spec.Template.Spec.Volumes, volume)
+	return t
+}
+
 func (t *TestVM) WithNonMatchingDisk() *TestVM {
 	t.Data.Spec.Template.Spec.Domain.Devices.Disks[0].Name = "non-matching-name"
 	return t
@@ -115,12 +129,35 @@ func (t *TestVM) WithCloudConfig(cloudConfig CloudConfig) *TestVM {
 		cloudConfig.Password = "fedora"
 	}
 
+	applied := false
+
 	for _, volume := range t.Data.Spec.Template.Spec.Volumes {
 		if volume.CloudInitNoCloud != nil {
 			volume.CloudInitNoCloud.UserData = cloudConfig.ToString()
 			volume.CloudInitNoCloud.UserDataBase64 = ""
+			applied = true
 			break
 		}
+	}
+
+	if !applied {
+		cloudinitDiskName := "cloudinitdisk"
+		t.Data.Spec.Template.Spec.Domain.Devices.Disks = append(t.Data.Spec.Template.Spec.Domain.Devices.Disks, v1.Disk{
+			Name: cloudinitDiskName,
+			DiskDevice: v1.DiskDevice{
+				Disk: &v1.DiskTarget{
+					Bus: "virtio",
+				},
+			},
+		})
+		t.Data.Spec.Template.Spec.Volumes = append(t.Data.Spec.Template.Spec.Volumes, v1.Volume{
+			Name: cloudinitDiskName,
+			VolumeSource: v1.VolumeSource{
+				CloudInitNoCloud: &v1.CloudInitNoCloudSource{
+					UserData: cloudConfig.ToString(),
+				},
+			},
+		})
 	}
 	return t
 }

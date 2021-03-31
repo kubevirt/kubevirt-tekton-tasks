@@ -2,10 +2,10 @@ package testconfigs
 
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
+	template2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/template"
 	"github.com/onsi/ginkgo"
 	v1 "github.com/openshift/api/template/v1"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
@@ -59,8 +59,8 @@ func (c *CreateVMTaskData) GetTemplateParam(key string) string {
 }
 
 func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
-	var disks []kubevirtv1.Disk
-	var volumes []kubevirtv1.Volume
+	var finalDisks []kubevirtv1.Disk
+	var finalVolumes []kubevirtv1.Volume
 	var vmName, vmNamespace string
 
 	var vm *kubevirtv1.VirtualMachine
@@ -78,42 +78,85 @@ func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
 		}
 	case CreateVMTemplateMode:
 		if c.Template != nil && c.Template.Objects != nil {
-			vm = template.GetVM(c.Template)
+			vm = template2.GetVM(c.Template)
 		}
 
-		vmName = c.GetTemplateParam(template.NameParam)
+		vmName = c.GetTemplateParam(template2.NameParam)
 		vmNamespace = c.VMNamespace
 	}
 	if vm != nil {
-		disks = append(disks, vm.Spec.Template.Spec.Domain.Devices.Disks...)
-		volumes = append(volumes, vm.Spec.Template.Spec.Volumes...)
+		finalDisks = append(finalDisks, vm.Spec.Template.Spec.Domain.Devices.Disks...)
+		finalVolumes = append(finalVolumes, vm.Spec.Template.Spec.Volumes...)
+	}
+
+	findDisk := func(name string) *kubevirtv1.Disk {
+		for i := 0; i < len(finalDisks); i++ {
+			if finalDisks[i].Name == name {
+				return &finalDisks[i]
+			}
+		}
+		return nil
+	}
+
+	findVolume := func(name string) *kubevirtv1.Volume {
+		for i := 0; i < len(finalVolumes); i++ {
+			if finalVolumes[i].Name == name {
+				return &finalVolumes[i]
+			}
+		}
+		return nil
 	}
 
 	for _, dataVolume := range c.DataVolumesToCreate {
 		name := dataVolume.Data.Name
-		disk := kubevirtv1.Disk{
-			Name: name,
-			DiskDevice: kubevirtv1.DiskDevice{
-				Disk: &kubevirtv1.DiskTarget{Bus: c.ExpectedAdditionalDiskBus},
-			},
-		}
-		volume := kubevirtv1.Volume{
-			Name: name,
+
+		if dataVolume.DiskName == "" || findDisk(dataVolume.DiskName) == nil {
+			disk := kubevirtv1.Disk{
+				Name: name,
+				DiskDevice: kubevirtv1.DiskDevice{
+					Disk: &kubevirtv1.DiskTarget{Bus: c.ExpectedAdditionalDiskBus},
+				},
+			}
+			if dataVolume.DiskName != "" {
+				disk.Name = dataVolume.DiskName
+			}
+
+			finalDisks = append(finalDisks, disk)
 		}
 
-		switch dataVolume.AttachmentType {
-		case dv.DV, dv.OwnedDV:
-			volume.DataVolume = &kubevirtv1.DataVolumeSource{
+		if originalVolume := findVolume(dataVolume.DiskName); dataVolume.DiskName != "" && originalVolume != nil {
+			switch dataVolume.AttachmentType {
+			case dv.DV, dv.OwnedDV:
+				originalVolume.VolumeSource = kubevirtv1.VolumeSource{
+					DataVolume: &kubevirtv1.DataVolumeSource{Name: name},
+				}
+			case dv.PVC, dv.OwnedPVC:
+				originalVolume.VolumeSource = kubevirtv1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{ClaimName: name},
+				}
+			}
+		} else {
+			volume := kubevirtv1.Volume{
 				Name: name,
 			}
-		case dv.PVC, dv.OwnedPVC:
-			volume.PersistentVolumeClaim = &corev1.PersistentVolumeClaimVolumeSource{
-				ClaimName: name,
-			}
-		}
 
-		disks = append(disks, disk)
-		volumes = append(volumes, volume)
+			if dataVolume.DiskName != "" {
+				volume.Name = dataVolume.DiskName
+			}
+
+			switch dataVolume.AttachmentType {
+			case dv.DV, dv.OwnedDV:
+				volume.DataVolume = &kubevirtv1.DataVolumeSource{
+					Name: name,
+				}
+			case dv.PVC, dv.OwnedPVC:
+				volume.PersistentVolumeClaim = &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: name,
+				}
+			}
+
+			finalVolumes = append(finalVolumes, volume)
+		}
 	}
 
 	return &kubevirtv1.VirtualMachine{
@@ -124,10 +167,10 @@ func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
 		Spec: kubevirtv1.VirtualMachineSpec{
 			Template: &kubevirtv1.VirtualMachineInstanceTemplateSpec{
 				Spec: kubevirtv1.VirtualMachineInstanceSpec{
-					Volumes: volumes,
+					Volumes: finalVolumes,
 					Domain: kubevirtv1.DomainSpec{
 						Devices: kubevirtv1.Devices{
-							Disks: disks,
+							Disks: finalDisks,
 						},
 					},
 				},
