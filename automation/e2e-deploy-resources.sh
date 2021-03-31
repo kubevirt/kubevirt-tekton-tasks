@@ -6,7 +6,9 @@ if kubectl get namespace tekton-pipelines > /dev/null 2>&1; then
   exit 0
 fi
 
-KUBEVIRT_VERSION=$(curl -s https://github.com/kubevirt/kubevirt/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
+KUBEVIRT_VERSION="v0.39.0"
+# TODO switch once the latest release YAML is fixed: https://github.com/kubevirt/kubevirt/issues/5352
+#KUBEVIRT_VERSION=$(curl -s https://github.com/kubevirt/kubevirt/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
 CDI_VERSION=$(curl -s https://github.com/kubevirt/containerized-data-importer/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
 COMMON_TEMPLATES_VERSION=""
 if kubectl get templates > /dev/null 2>&1; then
@@ -57,5 +59,5 @@ kubectl rollout status -n tekton-pipelines deployment/tekton-pipelines-controlle
 kubectl rollout status -n tekton-pipelines deployment/tekton-pipelines-webhook --timeout 10m
 
 # Wait for kubevirt to be available
-kubectl wait -n kubevirt kv kubevirt --for condition=Available --timeout 10m
 kubectl rollout status -n cdi deployment/cdi-operator --timeout 10m
+kubectl wait -n kubevirt kv kubevirt --for condition=Available --timeout 10m
