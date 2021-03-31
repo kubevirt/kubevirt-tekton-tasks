@@ -1,0 +1,17 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: wait-for-vmi-status-taskrun
+spec:
+  serviceAccountName: wait-for-vmi-status-task
+  taskRef:
+    kind: ClusterTask
+    name: wait-for-vmi-status
+  params:
+    - name: vmiName
+      value: example-vm
+    - name: successCondition
+      value: "status.phase == Succeeded"
+    - name: failureCondition
+      value: "status.phase in (Failed, Unknown)"

@@ -15,7 +15,7 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 - **privateKeySecretNamespace**: Namespace of privateKeySecretName. (defaults to active namespace)
 - **privateKeyConnectionOptions**: Additional options to use in SSH client. Please see execute-in-vm task SSH section for more details. Eg `["host-public-key:ssh-rsa AAAAB...", "additional-ssh-options:-p 8022"]`.
 - **additionalSSHKeygenOptions**: Additional options to pass to the ssh-keygen command.
-  
+
 ### Results
 
 - **publicKeySecretName**: The name of a public key secret.

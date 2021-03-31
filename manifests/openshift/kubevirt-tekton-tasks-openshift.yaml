@@ -858,3 +858,77 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: generate-ssh-keys-task
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: wait-for-vmi-status-task
+    vmNamespace.params.task.kubevirt.io/type: namespace
+  labels:
+    task.kubevirt.io/type: wait-for-vmi-status
+    task.kubevirt.io/category: wait-for-vmi-status
+  name: wait-for-vmi-status
+spec:
+  params:
+    - name: vmiName
+      description: Name of a VirtualMachineInstance to wait for.
+      type: string
+    - name: vmiNamespace
+      description: Namespace of a VirtualMachineInstance to wait for. (defaults to manifest namespace or active namespace)
+      default: ""
+      type: string
+    - name: successCondition
+      default: ""
+      description: A label selector expression to decide if the VirtualMachineInstance (VMI) is in a success state. Eg. "status.phase == Succeeded". It is evaluated on each VMI update and will result in this task succeeding if true.
+    - name: failureCondition
+      default: ""
+      description: A label selector expression to decide if the VirtualMachineInstance (VMI) is in a failed state. Eg. "status.phase in (Failed, Unknown)". It is evaluated on each VMI update and will result in this task failing if true.
+  steps:
+    - name: wait-for-vmi-status
+      image: quay.io/kubevirt/tekton-task-wait-for-vmi-status:v0.0.1
+      command:
+        - entrypoint
+      env:
+        - name: VMI_NAME
+          value: $(params.vmiName)
+        - name: VMI_NAMESPACE
+          value: $(params.vmiNamespace)
+        - name: SUCCESS_CONDITION
+          value: $(params.successCondition)
+        - name: FAILURE_CONDITION
+          value: $(params.failureCondition)
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: wait-for-vmi-status-task
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - kubevirt.io
+    resources:
+      - virtualmachineinstances
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wait-for-vmi-status-task
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wait-for-vmi-status-task
+roleRef:
+  kind: ClusterRole
+  name: wait-for-vmi-status-task
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: wait-for-vmi-status-task
