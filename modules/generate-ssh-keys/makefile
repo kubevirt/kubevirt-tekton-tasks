@@ -1,6 +1,6 @@
 all: clean build
 
-CONFIG_FILE ?= ../../configs/generate-ssh-keys.yaml # cleanup-vm.yaml as well
+CONFIG_FILE ?= ../../configs/generate-ssh-keys.yaml
 include ../../scripts/makefile-snippets/makefile-common.mk
 
 include ../../scripts/makefile-snippets/makefile-clean.mk # clean
