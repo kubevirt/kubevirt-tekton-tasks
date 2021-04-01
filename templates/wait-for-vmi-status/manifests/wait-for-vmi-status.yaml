@@ -4,7 +4,7 @@ kind: ClusterTask
 metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
-    vmNamespace.params.task.kubevirt.io/type: namespace
+    vmiNamespace.params.task.kubevirt.io/type: namespace
   labels:
     task.kubevirt.io/type: {{ task_name }}
     task.kubevirt.io/category: {{ task_category }}
