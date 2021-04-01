@@ -58,7 +58,7 @@ function combineTaskManifestsIntoRelease() {
     fi
 
     mkdir -p "${RESULT_DIR}"
-    RESULT_FILE="${RESULT_DIR}/kubevirt-tekton-tasks.yaml"
+    RESULT_FILE="${RESULT_DIR}/kubevirt-tekton-tasks-${RELEASE_TYPE}.yaml"
     visit "${REPO_DIR}/tasks"
       for TASK_NAME in *; do
         CONFIG_FILE="../configs/${TASK_NAME}.yaml"
