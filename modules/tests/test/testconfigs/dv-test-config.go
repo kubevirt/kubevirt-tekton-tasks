@@ -38,7 +38,7 @@ func (c *CreateDVTestConfig) Init(options *testoptions.TestOptions) {
 		if dv.Name != "" {
 			dv.Name = E2ETestsRandomName(dv.Name)
 		}
-		dv.Namespace = options.ResolveNamespace(c.TaskData.Namespace)
+		dv.Namespace = options.ResolveNamespace(c.TaskData.Namespace, "")
 
 		if options.StorageClass != "" {
 			dv.Spec.PVC.StorageClassName = &options.StorageClass

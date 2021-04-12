@@ -238,11 +238,11 @@ func (c *CreateVMTestConfig) initCreateVMManifest(options *testoptions.TestOptio
 		vm.Spec.Template.ObjectMeta.Namespace = ""
 
 		if c.TaskData.VMManifestTargetNamespace != "" {
-			vm.Namespace = options.ResolveNamespace(c.TaskData.VMManifestTargetNamespace)
+			vm.Namespace = options.ResolveNamespace(c.TaskData.VMManifestTargetNamespace, "")
 			c.TaskData.VMNamespace = ""
 		} else {
 			vm.Namespace = ""
-			c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace)
+			c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace, c.TaskData.VMNamespace)
 		}
 
 		c.TaskData.VMManifest = (&testobjects.TestVM{Data: vm}).ToString()
@@ -258,20 +258,17 @@ func (c *CreateVMTestConfig) initCreateVMManifest(options *testoptions.TestOptio
 }
 
 func (c *CreateVMTestConfig) initCreateVMTemplate(options *testoptions.TestOptions) {
-	c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace)
+	c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace, c.TaskData.VMNamespace)
+	c.TaskData.TemplateNamespace = options.ResolveNamespace(c.TaskData.TemplateTargetNamespace, c.TaskData.TemplateNamespace)
+
 	if tmpl := c.TaskData.Template; tmpl != nil {
 		if tmpl.Name != "" {
 			tmpl.Name = E2ETestsRandomName(tmpl.Name)
 		}
-		tmpl.Namespace = options.ResolveNamespace(c.TaskData.TemplateTargetNamespace)
+		tmpl.Namespace = c.TaskData.TemplateNamespace
 
 		c.TaskData.TemplateName = tmpl.Name
-		c.TaskData.TemplateNamespace = tmpl.Namespace
 	} else {
-		if c.TaskData.TemplateTargetNamespace != "" {
-			// for negative cases
-			c.TaskData.TemplateNamespace = options.ResolveNamespace(c.TaskData.TemplateTargetNamespace)
-		}
 		if c.TaskData.TemplateName != "" && c.TaskData.IsCommonTemplate {
 			c.TaskData.TemplateName += options.CommonTemplatesVersion
 		}
