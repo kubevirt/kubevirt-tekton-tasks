@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
@@ -64,7 +65,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 					ExpectedLogs: "env variable is required",
 				},
 				TaskData: testconfigs.DiskVirtLibguestfsTaskData{
-					Datavolume: dv.NewBlankDataVolume("no-customize-commands").Build(),
+					Datavolume: datavolume.NewBlankDataVolume("no-customize-commands").Build(),
 				},
 			}),
 			table.Entry("wrong customize commands", &testconfigs.DiskVirtLibguestfsTestConfig{
@@ -72,7 +73,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 					ExpectedLogs: "command 'illegal-operation' not valid",
 				},
 				TaskData: testconfigs.DiskVirtLibguestfsTaskData{
-					Datavolume: dv.NewBlankDataVolume("wrong-customize-commands").Build(),
+					Datavolume: datavolume.NewBlankDataVolume("wrong-customize-commands").Build(),
 					Commands:   "illegal-operation",
 				},
 			}),
@@ -81,7 +82,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 					ExpectedLogs: "unrecognized option '--illegal-command'",
 				},
 				TaskData: testconfigs.DiskVirtLibguestfsTaskData{
-					Datavolume:        dv.NewBlankDataVolume("wrong-additional-options").Build(),
+					Datavolume:        datavolume.NewBlankDataVolume("wrong-additional-options").Build(),
 					Commands:          "update",
 					AdditionalOptions: "--verbose --illegal-command illegal args",
 				},
@@ -93,7 +94,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 					},
 				},
 				TaskData: testconfigs.DiskVirtLibguestfsTaskData{
-					Datavolume: dv.NewBlankDataVolume("empty-disk").Build(),
+					Datavolume: datavolume.NewBlankDataVolume("empty-disk").Build(),
 					Commands:   "update",
 				},
 			}),
@@ -112,7 +113,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 					},
 				},
 				TaskData: testconfigs.DiskVirtLibguestfsTaskData{
-					Datavolume: dv.NewBlankDataVolume("basic-functionality").
+					Datavolume: datavolume.NewBlankDataVolume("basic-functionality").
 						WithSize(5, resource.Giga).
 						WithRegistrySource("docker://kubevirt/fedora-cloud-registry-disk-demo").
 						Build(),

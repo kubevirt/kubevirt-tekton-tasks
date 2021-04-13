@@ -2,9 +2,9 @@ package testconfigs
 
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	template2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/onsi/ginkgo"
 	v1 "github.com/openshift/api/template/v1"
@@ -26,7 +26,7 @@ type CreateVMTaskData struct {
 	VMTargetNamespace         TargetNamespace
 	VMManifestTargetNamespace TargetNamespace
 
-	DataVolumesToCreate                      []*dv.TestDataVolume
+	DataVolumesToCreate                      []*datavolume.TestDataVolume
 	IsCommonTemplate                         bool
 	UseDefaultTemplateNamespacesInTaskParams bool
 	UseDefaultVMNamespacesInTaskParams       bool
@@ -126,11 +126,11 @@ func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
 
 		if originalVolume := findVolume(dataVolume.DiskName); dataVolume.DiskName != "" && originalVolume != nil {
 			switch dataVolume.AttachmentType {
-			case dv.DV, dv.OwnedDV:
+			case datavolume.DV, datavolume.OwnedDV:
 				originalVolume.VolumeSource = kubevirtv1.VolumeSource{
 					DataVolume: &kubevirtv1.DataVolumeSource{Name: name},
 				}
-			case dv.PVC, dv.OwnedPVC:
+			case datavolume.PVC, datavolume.OwnedPVC:
 				originalVolume.VolumeSource = kubevirtv1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{ClaimName: name},
 				}
@@ -145,11 +145,11 @@ func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
 			}
 
 			switch dataVolume.AttachmentType {
-			case dv.DV, dv.OwnedDV:
+			case datavolume.DV, datavolume.OwnedDV:
 				volume.DataVolume = &kubevirtv1.DataVolumeSource{
 					Name: name,
 				}
-			case dv.PVC, dv.OwnedPVC:
+			case datavolume.PVC, datavolume.OwnedPVC:
 				volume.PersistentVolumeClaim = &corev1.PersistentVolumeClaimVolumeSource{
 					ClaimName: name,
 				}
@@ -179,15 +179,15 @@ func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
 	}
 }
 
-func (c *CreateVMTaskData) SetDVorPVC(name string, attachmentType dv.TestDataVolumeAttachmentType) {
+func (c *CreateVMTaskData) SetDVorPVC(name string, attachmentType datavolume.TestDataVolumeAttachmentType) {
 	switch attachmentType {
-	case dv.DV:
+	case datavolume.DV:
 		c.DataVolumes = append(c.DataVolumes, name)
-	case dv.OwnedDV:
+	case datavolume.OwnedDV:
 		c.OwnDataVolumes = append(c.OwnDataVolumes, name)
-	case dv.PVC:
+	case datavolume.PVC:
 		c.PersistentVolumeClaims = append(c.PersistentVolumeClaims, name)
-	case dv.OwnedPVC:
+	case datavolume.OwnedPVC:
 		c.OwnPersistentVolumeClaims = append(c.OwnPersistentVolumeClaims, name)
 	}
 }

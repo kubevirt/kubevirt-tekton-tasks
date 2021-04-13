@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
@@ -48,7 +49,7 @@ var _ = Describe("Create DataVolume", func() {
 				ExpectedLogs:   "manifest does not contain DataVolume kind",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
-				Datavolume: dv.NewBlankDataVolume("malformed").WithoutTypeMeta().Build(),
+				Datavolume: datavolume.NewBlankDataVolume("malformed").WithoutTypeMeta().Build(),
 			},
 		}),
 		table.Entry("no service account", &testconfigs.CreateDVTestConfig{
@@ -56,7 +57,7 @@ var _ = Describe("Create DataVolume", func() {
 				ExpectedLogs: "datavolumes.cdi.kubevirt.io is forbidden",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
-				Datavolume: dv.NewBlankDataVolume("no-sa").Build(),
+				Datavolume: datavolume.NewBlankDataVolume("no-sa").Build(),
 			},
 		}),
 		table.Entry("missing name", &testconfigs.CreateDVTestConfig{
@@ -65,7 +66,7 @@ var _ = Describe("Create DataVolume", func() {
 				ExpectedLogs:   "invalid: metadata.name: Required value: name",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
-				Datavolume: dv.NewBlankDataVolume("").Build(),
+				Datavolume: datavolume.NewBlankDataVolume("").Build(),
 			},
 		}),
 		table.Entry("[NAMESPACE SCOPED] cannot create a DataVolume in different namespace", &testconfigs.CreateDVTestConfig{
@@ -75,7 +76,7 @@ var _ = Describe("Create DataVolume", func() {
 				ExpectedLogs:   "datavolumes.cdi.kubevirt.io is forbidden",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
-				Datavolume: dv.NewBlankDataVolume("different-ns-namespace-scope").Build(),
+				Datavolume: datavolume.NewBlankDataVolume("different-ns-namespace-scope").Build(),
 				Namespace:  SystemTargetNS,
 			},
 		}),
@@ -106,7 +107,7 @@ var _ = Describe("Create DataVolume", func() {
 				ExpectedLogs:   "Created",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
-				Datavolume:     dv.NewBlankDataVolume("blank").Build(),
+				Datavolume:     datavolume.NewBlankDataVolume("blank").Build(),
 				WaitForSuccess: true,
 			},
 		}),
@@ -117,7 +118,7 @@ var _ = Describe("Create DataVolume", func() {
 				ExpectedLogs:   "Created",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
-				Datavolume:     dv.NewBlankDataVolume("blank-wait").Build(),
+				Datavolume:     datavolume.NewBlankDataVolume("blank-wait").Build(),
 				WaitForSuccess: true,
 			},
 		}),
@@ -129,7 +130,7 @@ var _ = Describe("Create DataVolume", func() {
 				ExpectedLogs:   "Created",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
-				Datavolume:     dv.NewBlankDataVolume("same-ns-cluster-scope").Build(),
+				Datavolume:     datavolume.NewBlankDataVolume("same-ns-cluster-scope").Build(),
 				WaitForSuccess: true,
 				Namespace:      DeployTargetNS,
 			},
@@ -143,7 +144,7 @@ var _ = Describe("Create DataVolume", func() {
 				Timeout:        Timeouts.QuickTaskRun,
 			},
 			TaskData: testconfigs.CreateDVTaskData{
-				Datavolume: dv.NewBlankDataVolume("blank").
+				Datavolume: datavolume.NewBlankDataVolume("blank").
 					WithURLSource("https://invalid.source.my.domain.fail").Build(),
 				WaitForSuccess: true,
 			},
