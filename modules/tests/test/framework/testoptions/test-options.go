@@ -102,15 +102,21 @@ func (f *TestOptions) resolveNamespaces() map[constants.TargetNamespace]string {
 	}
 }
 
-func (f *TestOptions) ResolveNamespace(namespace constants.TargetNamespace) string {
-	if namespace == constants.EmptyTargetNS {
-		return ""
-	}
+func (f *TestOptions) ResolveNamespace(namespace constants.TargetNamespace, fallbackNamespace string) string {
+	if namespace == "" {
+		if fallbackNamespace != "" {
+			return fallbackNamespace
+		}
+	} else {
+		if namespace == constants.EmptyTargetNS {
+			return ""
+		}
 
-	ns := f.targetNamespaces[namespace]
+		ns := f.targetNamespaces[namespace]
 
-	if ns != "" {
-		return ns
+		if ns != "" {
+			return ns
+		}
 	}
 
 	return f.TestNamespace

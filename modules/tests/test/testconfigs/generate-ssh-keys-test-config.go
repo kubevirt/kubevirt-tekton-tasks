@@ -48,17 +48,13 @@ func (c *GenerateSshKeysTestConfig) Init(options *testoptions.TestOptions) {
 		data.PublicKeySecretName = E2ETestsRandomName(data.PublicKeySecretName)
 	}
 
-	if data.PublicKeySecretNamespace == "" {
-		data.PublicKeySecretNamespace = options.ResolveNamespace(data.PublicKeySecretTargetNamespace)
-	}
+	data.PublicKeySecretNamespace = options.ResolveNamespace(data.PublicKeySecretTargetNamespace, data.PublicKeySecretNamespace)
 
 	if data.PrivateKeySecretName != "" {
 		data.PrivateKeySecretName = E2ETestsRandomName(data.PrivateKeySecretName)
 	}
 
-	if data.PrivateKeySecretNamespace == "" {
-		data.PrivateKeySecretNamespace = options.ResolveNamespace(data.PrivateKeySecretTargetNamespace)
-	}
+	data.PrivateKeySecretNamespace = options.ResolveNamespace(data.PrivateKeySecretTargetNamespace, data.PrivateKeySecretNamespace)
 
 }
 

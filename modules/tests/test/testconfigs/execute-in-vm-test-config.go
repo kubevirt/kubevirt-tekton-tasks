@@ -44,20 +44,16 @@ type ExecuteOrCleanupVMTestConfig struct {
 
 func (c *ExecuteOrCleanupVMTestConfig) Init(options *testoptions.TestOptions) {
 	c.deploymentNamespace = options.DeployNamespace
+	c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace, c.TaskData.VMNamespace)
+
 	if vm := c.TaskData.VM; vm != nil {
 		if vm.Name != "" {
 			vm.Name = E2ETestsRandomName(vm.Name + "-" + string(c.TaskData.ExecInVMMode))
 			vm.Spec.Template.ObjectMeta.Name = vm.Name
 		}
-		vm.Namespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace)
+		vm.Namespace = c.TaskData.VMNamespace
 
 		c.TaskData.VMName = vm.Name
-		c.TaskData.VMNamespace = vm.Namespace
-	} else {
-		if c.TaskData.VMTargetNamespace != "" {
-			// for negative cases
-			c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace)
-		}
 	}
 
 	if secret := c.TaskData.Secret; secret != nil {
