@@ -81,10 +81,10 @@ var _ = Describe("Wait for VMI Status", func() {
 		table.Entry("no service account", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ExpectedLogs: "cannot list resource \"virtualmachineinstances\" in API group \"kubevirt.io\"",
-				Timeout:      &metav1.Duration{90 * time.Second},
+				Timeout:      &metav1.Duration{1 * time.Minute},
 			},
 			TaskData: testconfigs.WaitForVMIStatusTaskData{
-				VMIName:          "test",
+				VM:               testobjects.NewTestAlpineVM("no-serviceaccount").Build(),
 				SuccessCondition: "status.phase == Running",
 			},
 		}),
@@ -93,7 +93,7 @@ var _ = Describe("Wait for VMI Status", func() {
 				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
 				LimitTestScope: constants.NamespaceTestScope,
 				ExpectedLogs:   "cannot list resource \"virtualmachineinstances\" in API group \"kubevirt.io\"",
-				Timeout:        &metav1.Duration{90 * time.Second},
+				Timeout:        &metav1.Duration{1 * time.Minute},
 			},
 			TaskData: testconfigs.WaitForVMIStatusTaskData{
 				VM:                testobjects.NewTestAlpineVM("wait-for-vmi-status-in-different-ns").Build(),

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/clients"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/utils"
 	"github.com/onsi/ginkgo/config"
@@ -29,7 +30,7 @@ func BuildTestSuite() {
 	BeforeSuite(func() {
 		err := testoptions.InitTestOptions(framework.TestOptionsInstance)
 		noErr(err)
-		err = framework.InitClients(framework.ClientsInstance, framework.TestOptionsInstance)
+		err = clients.InitClients(framework.ClientsInstance, framework.TestOptionsInstance)
 		noErr(err)
 
 		if framework.TestOptionsInstance.EnvScope == constants.OpenshiftEnvScope {
