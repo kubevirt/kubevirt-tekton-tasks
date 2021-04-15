@@ -2,9 +2,9 @@ package test
 
 import (
 	"context"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
@@ -340,8 +340,8 @@ var _ = Describe("Create VM from template", func() {
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-common-template")),
 				},
 				IsCommonTemplate: true,
-				DataVolumesToCreate: []*dv.TestDataVolume{
-					dv.NewBlankDataVolume("common-templates-src-dv"),
+				DataVolumesToCreate: []*datavolume.TestDataVolume{
+					datavolume.NewBlankDataVolume("common-templates-src-dv"),
 				},
 			},
 		}

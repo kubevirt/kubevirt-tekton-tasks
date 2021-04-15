@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
@@ -25,25 +25,25 @@ var _ = Describe("Create VM", func() {
 		createMode := c
 		Context(string(createMode), func() {
 			Describe("VM with attached PVCs/DV is created successfully", func() {
-				runConfigurations := []map[dv.TestDataVolumeAttachmentType]int{
+				runConfigurations := []map[datavolume.TestDataVolumeAttachmentType]int{
 					{
-						dv.OwnedDV: 1,
+						datavolume.OwnedDV: 1,
 					},
 					{
-						dv.PVC: 1,
+						datavolume.PVC: 1,
 					},
 					{
-						dv.OwnedPVC: 2,
+						datavolume.OwnedPVC: 2,
 					},
 					{
-						dv.DV: 2,
+						datavolume.DV: 2,
 					},
 					{
 						// try all at once
-						dv.OwnedDV:  2,
-						dv.OwnedPVC: 1,
-						dv.PVC:      1,
-						dv.DV:       1,
+						datavolume.OwnedDV:  2,
+						datavolume.OwnedPVC: 1,
+						datavolume.PVC:      1,
+						datavolume.DV:       1,
 					},
 				}
 
@@ -54,12 +54,12 @@ var _ = Describe("Create VM", func() {
 						name += fmt.Sprintf("%v=%v ", attachmentType, count)
 					}
 					It(name, func() {
-						var datavolumes []*dv.TestDataVolume
+						var datavolumes []*datavolume.TestDataVolume
 						for attachmentType, count := range runConf {
 							name += fmt.Sprintf("%v=%v ", attachmentType, count)
 							for id := 0; id < count; id++ {
 								datavolumes = append(datavolumes,
-									dv.NewBlankDataVolume(fmt.Sprintf("attach-to-vm-%v-%v", attachmentType, id)).AttachAs(attachmentType),
+									datavolume.NewBlankDataVolume(fmt.Sprintf("attach-to-vm-%v-%v", attachmentType, id)).AttachAs(attachmentType),
 								)
 							}
 						}
@@ -151,10 +151,10 @@ var _ = Describe("Create VM", func() {
 			})
 		})
 		It("VM with attached PVCs/DVs and existing disks/volumes is created successfully", func() {
-			datavolumes := []*dv.TestDataVolume{
-				dv.NewBlankDataVolume("attach-to-vm-with-disk-name-1").AttachWithDiskName("disk1").AttachAs(dv.OwnedPVC),
-				dv.NewBlankDataVolume("attach-to-vm-with-disk-name-2").AttachWithDiskName("disk2").AttachAs(dv.OwnedDV),
-				dv.NewBlankDataVolume("attach-to-vm-with-disk-name-3").AttachWithDiskName("disk3").AttachAs(dv.OwnedDV),
+			datavolumes := []*datavolume.TestDataVolume{
+				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-1").AttachWithDiskName("disk1").AttachAs(datavolume.OwnedPVC),
+				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-2").AttachWithDiskName("disk2").AttachAs(datavolume.OwnedDV),
+				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-3").AttachWithDiskName("disk3").AttachAs(datavolume.OwnedDV),
 			}
 
 			vmDisk1 := kubevirtv1.Disk{

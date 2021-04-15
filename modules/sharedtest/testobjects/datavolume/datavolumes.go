@@ -1,11 +1,15 @@
-package dv
+package datavolume
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1beta12 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1beta1"
+)
+
+const (
+	dataVolumeKind       = "DataVolume"
+	dataVolumeApiVersion = "cdi.kubevirt.io/v1beta1"
 )
 
 type TestDataVolumeAttachmentType string
@@ -27,8 +31,8 @@ func NewBlankDataVolume(name string) *TestDataVolume {
 	volumeMode := v1.PersistentVolumeFilesystem
 	datavolume := &v1beta12.DataVolume{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: constants.DataVolumeApiVersion,
-			Kind:       constants.DataVolumeKind,
+			APIVersion: dataVolumeApiVersion,
+			Kind:       dataVolumeKind,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
