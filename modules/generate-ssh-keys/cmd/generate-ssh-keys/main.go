@@ -33,7 +33,7 @@ func main() {
 
 	secretFacade, err := secret.NewSecretFacade(cliOptions, *keys)
 	if err != nil {
-		exit.ExitOrDieFromError(SecretCreatorInitFailed, err)
+		exit.ExitOrDieFromError(SecretFacadeInitFailed, err)
 	}
 
 	err = secretFacade.CheckPrivateKeySecretExistence()

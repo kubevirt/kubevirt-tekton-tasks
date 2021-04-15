@@ -16,7 +16,7 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 - **{{ item.name }}**: {{ item.description | replace('"', '`') }}
 {% endif %}
 {% endfor %}
-  
+
 ### Results
 
 {% for item in task_yaml.spec.results %}

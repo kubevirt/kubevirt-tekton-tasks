@@ -6,7 +6,7 @@ const (
 	InvalidArguments               = -1 // same as go-arg invalid args exit
 	SshKeysGenerationFailed        = -2
 	PrivateKeyAlreadyExists        = -3
-	SecretCreatorInitFailed        = -4
+	SecretFacadeInitFailed         = -4
 	PublicKeySecretFetchFailed     = -5
 	PublicKeySecretCreationFailed  = -6
 	PrivateKeySecretCreationFailed = -7

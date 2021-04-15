@@ -59,6 +59,10 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 - [disk-virt-customize](tasks/disk-virt-customize): execute virt-customize commands in PVCs
 - [disk-virt-sysprep](tasks/disk-virt-sysprep): execute virt-sysprep commands in PVCs
 
+#### Wait for Virtual Machine Instance Status
+
+- [wait-for-vmi-status](tasks/wait-for-vmi-status)
+
 ## Examples
 
 #### [Unit Tester Pipeline](examples/pipelines/unit-tester) 

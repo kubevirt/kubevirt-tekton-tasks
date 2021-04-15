@@ -16,6 +16,7 @@ import (
 type TaskRunRunner struct {
 	framework *framework2.Framework
 	taskRun   *pipev1beta1.TaskRun
+	logs      string
 }
 
 func NewTaskRunRunner(framework *framework2.Framework, taskRun *pipev1beta1.TaskRun) *TaskRunRunner {
@@ -39,14 +40,14 @@ func (r *TaskRunRunner) CreateTaskRun() *TaskRunRunner {
 }
 
 func (r *TaskRunRunner) ExpectFailure() *TaskRunRunner {
-	r.taskRun = tekton.WaitForTaskRunState(r.framework.TknClient, r.taskRun.Namespace, r.taskRun.Name,
+	r.taskRun, r.logs = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
 		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		tkntest.TaskRunFailed(r.taskRun.Name))
 	return r
 }
 
 func (r *TaskRunRunner) WaitForTaskRunFinish() *TaskRunRunner {
-	r.taskRun = tekton.WaitForTaskRunState(r.framework.TknClient, r.taskRun.Namespace, r.taskRun.Name,
+	r.taskRun, r.logs = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
 		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		func(accessor apis.ConditionAccessor) (bool, error) {
 			succeeded, _ := tkntest.TaskRunSucceed(r.taskRun.Name)(accessor)
@@ -56,7 +57,7 @@ func (r *TaskRunRunner) WaitForTaskRunFinish() *TaskRunRunner {
 }
 
 func (r *TaskRunRunner) ExpectSuccess() *TaskRunRunner {
-	r.taskRun = tekton.WaitForTaskRunState(r.framework.TknClient, r.taskRun.Namespace, r.taskRun.Name,
+	r.taskRun, r.logs = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
 		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		tkntest.TaskRunSucceed(r.taskRun.Name))
 	return r
@@ -73,9 +74,8 @@ func (r *TaskRunRunner) ExpectSuccessOrFailure(expectSuccess bool) *TaskRunRunne
 
 func (r *TaskRunRunner) ExpectLogs(logs ...string) *TaskRunRunner {
 	if len(logs) > 0 {
-		taskRunLogs := tekton.GetTaskRunLogs(r.framework.CoreV1Client, r.taskRun)
 		for _, snippet := range logs {
-			Expect(taskRunLogs).Should(ContainSubstring(snippet))
+			Expect(r.logs).Should(ContainSubstring(snippet))
 		}
 	}
 	return r

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/clients"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
 	. "github.com/onsi/ginkgo"
@@ -16,7 +17,7 @@ import (
 )
 
 var TestOptionsInstance = &testoptions.TestOptions{}
-var ClientsInstance = &Clients{}
+var ClientsInstance = &clients.Clients{}
 
 type ManagedResources struct {
 	taskRuns    []*pipev1beta1.TaskRun
@@ -27,7 +28,7 @@ type ManagedResources struct {
 }
 type Framework struct {
 	*testoptions.TestOptions
-	*Clients
+	*clients.Clients
 
 	managedResources  ManagedResources
 	limitEnvScope     constants.EnvScope
@@ -100,7 +101,7 @@ func (f *Framework) AfterEach() {
 				}
 			}
 			for _, taskRun := range taskRuns {
-				tekton.PrintTaskRunDebugInfo(f.TknClient, f.CoreV1Client, taskRun.Namespace, taskRun.Name)
+				tekton.PrintTaskRunDebugInfo(f.Clients, taskRun.Namespace, taskRun.Name)
 			}
 		}()
 	}

@@ -1,15 +1,15 @@
 package tekton
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/clients"
+	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
-	pipev1beta1 "github.com/tektoncd/pipeline/pkg/client/clientset/versioned/typed/pipeline/v1beta1"
 	tkntest "github.com/tektoncd/pipeline/test"
-	"io"
+	"io/ioutil"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -18,23 +18,63 @@ import (
 	"time"
 )
 
-func WaitForTaskRunState(client pipev1beta1.TektonV1beta1Interface, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) *v1beta1.TaskRun {
+func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) (*v1beta1.TaskRun, string) {
+	isCapturing := false
+	logs := make(chan string, 1)
+
 	err := wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
-		r, err := client.TaskRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+		taskRun, err := clients.TknClient.TaskRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
 			return true, err
 		}
-		return inState(&r.Status)
+
+		if taskRun.Status.PodName != "" && !isCapturing {
+			req := clients.CoreV1Client.Pods(taskRun.Namespace).GetLogs(taskRun.Status.PodName, &v1.PodLogOptions{
+				Follow: true,
+			})
+
+			podLogs, err := req.Stream(context.TODO())
+			if err == nil {
+				isCapturing = true
+				go func() {
+					defer podLogs.Close()
+					defer ginkgo.GinkgoRecover()
+
+					result, err := ioutil.ReadAll(podLogs)
+					logs <- string(result)
+					gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+				}()
+			}
+		}
+		return inState(&taskRun.Status)
 	})
 	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
-	taskRun, err := client.TaskRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	taskRun, err := clients.TknClient.TaskRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
-	return taskRun
+	if isCapturing {
+		return taskRun, <-logs
+	}
+
+	return taskRun, ""
 }
 
-func GetTaskRunLogs(coreClient clientv1.CoreV1Interface, taskRun *v1beta1.TaskRun) string {
+func PrintTaskRunDebugInfo(clients *clients.Clients, taskRunNamespace, taskRunName string) {
+	// print conditions
+	taskRun, err := clients.TknClient.TaskRuns(taskRunNamespace).Get(context.TODO(), taskRunName, metav1.GetOptions{})
+	if err == nil {
+		conditions, _ := yaml.Marshal(taskRun.Status.Conditions)
+		fmt.Printf("taskrun conditions:\n%v\n", string(conditions))
+
+		if taskRun.Status.PodName == "" {
+			return
+		}
+		fmt.Printf("%v pod logs:\n%v\n", taskRun.Status.PodName, getTaskRunLogs(clients.CoreV1Client, taskRun))
+	}
+}
+
+func getTaskRunLogs(coreClient clientv1.CoreV1Interface, taskRun *v1beta1.TaskRun) string {
 	if taskRun.Status.PodName == "" {
 		return ""
 	}
@@ -48,24 +88,9 @@ func GetTaskRunLogs(coreClient clientv1.CoreV1Interface, taskRun *v1beta1.TaskRu
 	}
 	defer podLogs.Close()
 
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
+	result, err := ioutil.ReadAll(podLogs)
 	if err != nil {
 		return ""
 	}
-	return buf.String()
-}
-
-func PrintTaskRunDebugInfo(tknClient pipev1beta1.TektonV1beta1Interface, coreClient clientv1.CoreV1Interface, taskRunNamespace, taskRunName string) {
-	// print conditions
-	taskRun, err := tknClient.TaskRuns(taskRunNamespace).Get(context.TODO(), taskRunName, metav1.GetOptions{})
-	if err == nil {
-		conditions, _ := yaml.Marshal(taskRun.Status.Conditions)
-		fmt.Printf("taskrun conditions:\n%v\n", string(conditions))
-
-		if taskRun.Status.PodName == "" {
-			return
-		}
-		fmt.Printf("%v pod logs:\n%v\n", taskRun.Status.PodName, GetTaskRunLogs(coreClient, taskRun))
-	}
+	return string(result)
 }
