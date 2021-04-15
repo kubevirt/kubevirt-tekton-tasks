@@ -473,7 +473,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		// negative cases
 		table.Entry("execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: ExecuteInVMServiceAccountName,
+				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectedLogs:   "command timed out",
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
@@ -490,7 +490,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 
 		table.Entry("starts and execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: ExecuteInVMServiceAccountName,
+				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectedLogs:   "command timed out",
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
@@ -506,7 +506,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		// positive cases
 		table.Entry("stop vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: ExecuteInVMServiceAccountName,
+				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectSuccess:  true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
@@ -518,7 +518,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		table.Entry("stop non running vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: ExecuteInVMServiceAccountName,
+				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectSuccess:  true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
@@ -529,7 +529,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		table.Entry("delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: ExecuteInVMServiceAccountName,
+				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectSuccess:  true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
@@ -541,7 +541,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		table.Entry("stop and delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: ExecuteInVMServiceAccountName,
+				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectSuccess:  true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
@@ -554,7 +554,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		table.Entry("execute and stop and delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: ExecuteInVMServiceAccountName,
+				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectedLogs:   "hello world",
 				ExpectSuccess:  true,
 			},
@@ -569,7 +569,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		table.Entry("execute and stops vm with timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: ExecuteInVMServiceAccountName,
+				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectedLogs:   "hello world",
 				ExpectSuccess:  true,
 			},
@@ -584,7 +584,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		table.Entry("execute and deletes vm with timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: ExecuteInVMServiceAccountName,
+				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectedLogs:   "hello world",
 				ExpectSuccess:  true,
 			},
@@ -595,6 +595,18 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				ShouldStartVM: true,
 				Delete:        true,
 				Timeout:       Timeouts.WaitForVMStart,
+			},
+		}),
+		table.Entry("stops failed VMI", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+				ServiceAccount: CleanupVMClusterTaskName,
+				ExpectSuccess:  true,
+			},
+			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
+				VM:            testobjects.NewTestFedoraCloudVM("stops-failed-vmi").WithMemory("100Pi").Build(),
+				SecretName:    "__empty__",
+				ShouldStartVM: true,
+				Stop:          true,
 			},
 		}),
 	)
