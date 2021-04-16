@@ -131,9 +131,14 @@ func (e *Executor) EnsureVMStopped() error {
 	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
 
 	return wait.PollImmediateInfinite(constants.PollVMItoStopInterval, func() (bool, error) {
-		_, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(vmName, &v1.GetOptions{})
+		vmi, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(vmName, &v1.GetOptions{})
 
 		if err == nil {
+			switch vmi.Status.Phase {
+			case kubevirtv1.Succeeded, kubevirtv1.Failed:
+				return true, nil
+			}
+
 			if stopErr := e.ensureVMStop(); stopErr != nil {
 				switch t := stopErr.(type) {
 				case *errors.StatusError:
@@ -146,7 +151,7 @@ func (e *Executor) EnsureVMStopped() error {
 				}
 			}
 
-			log.Logger().Debug(" waiting for a VM to stop", zap.String("name", vmName), zap.String("namespace", vmNamespace))
+			log.Logger().Debug("waiting for a VM to stop", zap.String("name", vmName), zap.String("namespace", vmNamespace))
 			return false, nil
 		}
 
