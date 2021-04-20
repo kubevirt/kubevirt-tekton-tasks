@@ -17,7 +17,7 @@ var storageClass string
 var kubeConfigPath string
 var scope string
 var debug string
-var isOpenshift string
+var isOKD string
 
 type TestOptions struct {
 	DeployNamespace string
@@ -38,7 +38,7 @@ func init() {
 	flag.StringVar(&testNamespace, "test-namespace", "", "Namespace where to create the vm/dv resources")
 	flag.StringVar(&storageClass, "storage-class", "", "Storage class to be used for creating test DVs/PVCs")
 	flag.StringVar(&kubeConfigPath, "kubeconfig-path", "", "Path to the kubeconfig")
-	flag.StringVar(&isOpenshift, "is-openshift", "", "Set to true if running on openshift. One of: true|false")
+	flag.StringVar(&isOKD, "is-okd", "", "Set to true if running on OKD. One of: true|false")
 	flag.StringVar(&scope, "scope", "", "Scope of the tests. One of: cluster|namespace")
 	flag.StringVar(&debug, "debug", "", "Debug keeps all the resources alive after the tests complete. One of: true|false")
 }
@@ -74,8 +74,8 @@ func InitTestOptions(testOptions *TestOptions) error {
 	testOptions.DeployNamespace = deployNamespace
 	testOptions.TestNamespace = testNamespace
 	testOptions.StorageClass = storageClass
-	if strings.ToLower(isOpenshift) == "true" {
-		testOptions.EnvScope = constants.OpenshiftEnvScope
+	if strings.ToLower(isOKD) == "true" {
+		testOptions.EnvScope = constants.OKDEnvScope
 	} else {
 		testOptions.EnvScope = constants.KubernetesEnvScope
 	}

@@ -41,10 +41,10 @@ WIN_URL="https://software-download.microsoft.com/db/Win10_20H2_v2_English_x64.is
 ```
 
 1. `create-source-dv` task downloads a Windows source ISO into a PVC called `windows-10-source-*`.
-2. `create-base-dv` task creates empty PVC for new windows installation called `windows-10-base-*`.
+2. `create-base-dv` task creates an empty PVC for new windows installation called `windows-10-base-*`.
 3. `create-vm-from-manifest` task creates a VM called `windows-installer-*`
-   from the empty PVC and with `windows-10-source-*` PVC attached as a CD-ROM.
-4. ` wait-for-vmi-status` task waits until the VM shutdowns.
+   from the empty PVC and with the `windows-10-source-*` PVC attached as a CD-ROM.
+4. `wait-for-vmi-status` task waits until the VM shuts down.
 5. `cleanup-vm` deletes the installer VM and ISO PVC.
 6.  The output artifact will be the `windows-10-base-*` PVC with the Windows installation. 
     It includes an `Administrator` user with `changepassword` password.

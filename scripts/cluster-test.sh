@@ -40,7 +40,7 @@ pushd modules/tests || exit
     --deploy-namespace="${DEPLOY_NAMESPACE}" \
     --test-namespace="${TEST_NAMESPACE}" \
     --kubeconfig-path="${KUBECONFIG}" \
-    --is-openshift="${IS_OPENSHIFT}" \
+    --is-okd="${IS_OKD}" \
     --scope="${SCOPE}" \
     --storage-class="${STORAGE_CLASS}" \
     --debug="${DEBUG}" | tee "${TEST_OUT}"

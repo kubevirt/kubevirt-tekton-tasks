@@ -12,7 +12,7 @@ MINIKUBE_CONTAINER_RUNTIME="${MINIKUBE_CONTAINER_RUNTIME:-docker}"
 IMAGE_REGISTRY=""
 
 if [[ "${PRUNE_IMAGES}" == "true" ]]; then
-  if [[ "$IS_OPENSHIFT" == "true" ]]; then
+  if [[ "$IS_OKD" == "true" ]]; then
     IMAGE_REGISTRY="$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')"
     if [[ "$FORCE" == "true" ]]; then
       oc adm prune images --registry-url=$IMAGE_REGISTRY  --all=false  --keep-younger-than=0s --keep-tag-revisions=0 --confirm
@@ -49,7 +49,7 @@ pushd modules
         kubectl delete $RESOURCE --all
     done
 
-    if [[ "$IS_OPENSHIFT" == "true" ]]; then
+    if [[ "$IS_OKD" == "true" ]]; then
       kubectl delete templates.template.openshift.io --all
     fi
 

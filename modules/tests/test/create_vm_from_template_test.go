@@ -17,7 +17,7 @@ import (
 
 var _ = Describe("Create VM from template", func() {
 	f := framework.NewFramework().
-		LimitEnvScope(OpenshiftEnvScope).
+		LimitEnvScope(OKDEnvScope).
 		OnBeforeTestSetup(func(config framework.TestConfig) {
 			if createVMConfig, ok := config.(*testconfigs.CreateVMTestConfig); ok {
 				createVMConfig.TaskData.CreateMode = CreateVMTemplateMode

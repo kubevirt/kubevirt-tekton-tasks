@@ -16,7 +16,7 @@ DRY_RUN="${DRY_RUN:=false}"
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 RESOURCE_TYPES=(manifests examples README.md)
-RELEASE_TYPES=(kubernetes openshift)
+RELEASE_TYPES=(kubernetes okd)
 
 if [[ $# -eq 0 ]]; then
   visit "${REPO_DIR}/templates"
@@ -62,8 +62,8 @@ function combineTaskManifestsIntoRelease() {
     visit "${REPO_DIR}/tasks"
       for TASK_NAME in *; do
         CONFIG_FILE="../configs/${TASK_NAME}.yaml"
-        IS_TASK_OPENSHIFT="$(sed -n  's/^is_openshift *: *//p' ${CONFIG_FILE})"
-        if [ "${RELEASE_TYPE}" != openshift ] && [ "${IS_TASK_OPENSHIFT}" == true ]; then
+        IS_TASK_OKD="$(sed -n  's/^is_okd *: *//p' ${CONFIG_FILE})"
+        if [ "${RELEASE_TYPE}" != okd ] && [ "${IS_TASK_OKD}" == true ]; then
           continue
         fi
 

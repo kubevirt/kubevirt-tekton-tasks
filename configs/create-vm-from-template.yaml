@@ -2,4 +2,4 @@ task_name: create-vm-from-template
 task_category: create-vm
 # create-vm-from-manifest.yaml main_image should be also updated to match this one!
 main_image: quay.io/kubevirt/tekton-task-create-vm:v0.0.7
-is_openshift: true
+is_okd: true

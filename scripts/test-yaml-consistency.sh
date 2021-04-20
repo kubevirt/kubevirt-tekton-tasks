@@ -46,7 +46,7 @@ visit "${REPO_DIR}"
   leave
 
   visit manifests
-    for RELEASE_TYPE in kubernetes openshift; do
+    for RELEASE_TYPE in kubernetes okd; do
       visit "${RELEASE_TYPE}"
         DESTINATION_DIR="${REPO_DIR}/manifests/${RELEASE_TYPE}"
         SOURCE_DIR="${DESTINATION_DIR}-dist"

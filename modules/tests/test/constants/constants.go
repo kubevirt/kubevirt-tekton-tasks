@@ -32,7 +32,7 @@ const (
 type EnvScope string
 
 const (
-	OpenshiftEnvScope  EnvScope = "openshift"
+	OKDEnvScope        EnvScope = "okd"
 	KubernetesEnvScope EnvScope = "kubernetes"
 )
 

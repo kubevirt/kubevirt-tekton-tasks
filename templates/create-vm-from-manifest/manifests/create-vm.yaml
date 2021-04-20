@@ -41,10 +41,10 @@ spec:
       type: string
 {% elif task_name == "create-vm-from-template" %}
     - name: templateName
-      description: Name of an OpenShift template to create VM from.
+      description: Name of an OKD template to create VM from.
       type: string
     - name: templateNamespace
-      description: Namespace of an OpenShift template to create VM from. (defaults to active namespace)
+      description: Namespace of an OKD template to create VM from. (defaults to active namespace)
       default: ""
       type: string
     - name: templateParams

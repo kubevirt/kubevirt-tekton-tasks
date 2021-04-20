@@ -1,6 +1,6 @@
-# Create VirtualMachine from OpenShift Template Task
+# Create VirtualMachine from OKD Template Task
 
-This task creates a VirtualMachine from OpenShift Template.
+This task creates a VirtualMachine from OKD Template.
 Virtual machines can be described and parametrized in a generic form with these templates.
 A bundle of predefined templates to use can be found in [Common Templates](https://github.com/kubevirt/common-templates) project.
 
@@ -11,8 +11,8 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 
 ### Parameters
 
-- **templateName**: Name of an OpenShift template to create VM from.
-- **templateNamespace**: Namespace of an OpenShift template to create VM from. (defaults to active namespace)
+- **templateName**: Name of an OKD template to create VM from.
+- **templateNamespace**: Namespace of an OKD template to create VM from. (defaults to active namespace)
 - **templateParams**: Template params to pass when processing the template manifest. Each param should have KEY:VAL format. Eg `["NAME:my-vm", "DESC:blue"]`
 - **vmNamespace**: Namespace where to create the VM. (defaults to active namespace)
 - **dataVolumes**: Add DVs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. `["rootdisk:my-dv", "my-dv2"]`

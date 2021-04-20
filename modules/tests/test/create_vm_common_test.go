@@ -99,7 +99,7 @@ var _ = Describe("Create VM", func() {
 									ServiceAccount: CreateVMFromTemplateServiceAccountName,
 									ExpectedLogs:   ExpectedSuccessfulVMCreation,
 									Timeout:        Timeouts.SmallDVCreation,
-									LimitEnvScope:  OpenshiftEnvScope,
+									LimitEnvScope:  OKDEnvScope,
 								},
 								TaskData: testconfigs.CreateVMTaskData{
 									CreateMode: createMode,
@@ -222,7 +222,7 @@ var _ = Describe("Create VM", func() {
 						ServiceAccount: CreateVMFromTemplateServiceAccountName,
 						ExpectedLogs:   ExpectedSuccessfulVMCreation,
 						Timeout:        Timeouts.SmallDVCreation,
-						LimitEnvScope:  OpenshiftEnvScope,
+						LimitEnvScope:  OKDEnvScope,
 					},
 					TaskData: testconfigs.CreateVMTaskData{
 						CreateMode: createMode,

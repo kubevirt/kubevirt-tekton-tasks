@@ -12,7 +12,7 @@ KUBEVIRT_VERSION="v0.39.0"
 CDI_VERSION=$(curl -s https://github.com/kubevirt/containerized-data-importer/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
 COMMON_TEMPLATES_VERSION=""
 if kubectl get templates > /dev/null 2>&1; then
-  # openshift
+  # okd
   COMMON_TEMPLATES_VERSION=$(curl -s https://github.com/kubevirt/common-templates/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
 
   # Prepare Tekton Pipelines
