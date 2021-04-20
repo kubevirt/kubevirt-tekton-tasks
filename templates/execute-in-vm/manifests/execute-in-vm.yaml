@@ -34,7 +34,7 @@ spec:
       name: delete
       type: string
       default: "false"
-    - description: Timeout for the command/script (includes potential VM start). The VM will be stoped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
+    - description: Timeout for the command/script (includes potential VM start). The VM will be stopped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
       name: timeout
       type: string
       default: "30m"

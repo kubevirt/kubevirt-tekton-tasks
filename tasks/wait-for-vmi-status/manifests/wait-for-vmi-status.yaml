@@ -4,7 +4,7 @@ kind: ClusterTask
 metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: wait-for-vmi-status-task
-    vmNamespace.params.task.kubevirt.io/type: namespace
+    vmiNamespace.params.task.kubevirt.io/type: namespace
   labels:
     task.kubevirt.io/type: wait-for-vmi-status
     task.kubevirt.io/category: wait-for-vmi-status

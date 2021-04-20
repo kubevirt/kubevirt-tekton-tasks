@@ -31,7 +31,7 @@ spec:
       name: delete
       type: string
       default: "false"
-    - description: Timeout for the command/script (includes potential VM start). The VM will be stoped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
+    - description: Timeout for the command/script (includes potential VM start). The VM will be stopped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
       name: timeout
       type: string
       default: "30m"
@@ -864,7 +864,7 @@ kind: ClusterTask
 metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: wait-for-vmi-status-task
-    vmNamespace.params.task.kubevirt.io/type: namespace
+    vmiNamespace.params.task.kubevirt.io/type: namespace
   labels:
     task.kubevirt.io/type: wait-for-vmi-status
     task.kubevirt.io/category: wait-for-vmi-status

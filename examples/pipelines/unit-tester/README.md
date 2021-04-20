@@ -2,7 +2,6 @@
 
 Clones kubevirt-tekton-tasks repository and executes unit tests in a VM and then deletes the VM at the end.
 
-
 ## Prerequisites
 
 - KubeVirt `v0.36.0`
@@ -23,7 +22,6 @@ Clones kubevirt-tekton-tasks repository and executes unit tests in a VM and then
 4. `cleanup-vm` task attempts to connect to the VM.
     - prints unit tests results or `failure` if no test results found
     - deletes the VM
-
 
 ## How to run
 
