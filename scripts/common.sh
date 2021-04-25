@@ -8,11 +8,11 @@ function leave() {
   popd > /dev/null
 }
 
-export IS_OPENSHIFT="false"
+export IS_OKD="false"
 export IS_MINIKUBE="false"
 
 if kubectl get projects > /dev/null 2>&1; then
-  export IS_OPENSHIFT="true"
+  export IS_OKD="true"
 elif minikube status 2>&1 | grep -q Running; then
   export IS_MINIKUBE="true"
 fi

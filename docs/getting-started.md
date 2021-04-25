@@ -4,7 +4,7 @@
 
 Cluster oriented dev scripts are optimized for these environments:
 
-- minikube
+- Minikube
     - example setup:
       ```bash
       minikube config set driver kvm2
@@ -12,13 +12,13 @@ Cluster oriented dev scripts are optimized for these environments:
       minikube start
       minikube addons enable registry
       ```
-- openshift
+- OKD
 
 ## Build and Deployment
 
 ### Deploying Dependencies
 
-To deploy `KubeVirt`, `Tekton Pipelines`, `Containerized Data Importer (CDI)` and `Common Templates` (openshift only):
+To deploy `KubeVirt`, `Tekton Pipelines`, `Containerized Data Importer (CDI)` and `Common Templates` (OKD only):
 
 ```bash
 ./automation/e2e-deploy-resources.sh

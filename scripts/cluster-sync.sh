@@ -12,7 +12,7 @@ export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --ou
 IMAGE_REGISTRY=""
 IN_CLUSTER_IMAGE_REGISTRY=""
 
-if [[ "${IS_OPENSHIFT}" == "true" ]]; then
+if [[ "${IS_OKD}" == "true" ]]; then
   oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
   IMAGE_REGISTRY="$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')"
   IN_CLUSTER_IMAGE_REGISTRY="image-registry.openshift-image-registry.svc:5000"
@@ -28,7 +28,7 @@ elif [[ "${IS_MINIKUBE}" == "true" ]]; then
   IMAGE_REGISTRY="$(minikube ip):5000"
   IN_CLUSTER_IMAGE_REGISTRY="$(kubectl get service registry -n kube-system --output 'jsonpath={.spec.clusterIP}')"
 else
-  echo "only minikube or openshift is supported" >&2
+  echo "only minikube or OKD is supported" >&2
   exit 3
 fi
 
