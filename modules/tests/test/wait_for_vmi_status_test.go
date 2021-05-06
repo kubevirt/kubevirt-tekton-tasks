@@ -144,7 +144,7 @@ var _ = Describe("Wait for VMI Status", func() {
 			},
 			TaskData: testconfigs.WaitForVMIStatusTaskData{
 				VM:               testobjects.NewTestAlpineVM("fulfills-complex-success-condition").Build(),
-				SuccessCondition: "status.phase in (Scheduling, Running), status.phase == Scheduling",
+				SuccessCondition: "status.phase in (Scheduling, Running), status.phase == Running",
 				FailureCondition: "status.phase == Failed, spec.running == false",
 				ShouldStartVM:    true,
 			},
