@@ -6,9 +6,7 @@ if kubectl get namespace tekton-pipelines > /dev/null 2>&1; then
   exit 0
 fi
 
-KUBEVIRT_VERSION="v0.39.0"
-# TODO switch once the latest release YAML is fixed: https://github.com/kubevirt/kubevirt/issues/5352
-#KUBEVIRT_VERSION=$(curl -s https://github.com/kubevirt/kubevirt/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
+KUBEVIRT_VERSION=$(curl -s https://github.com/kubevirt/kubevirt/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
 CDI_VERSION=$(curl -s https://github.com/kubevirt/containerized-data-importer/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
 COMMON_TEMPLATES_VERSION=""
 if kubectl get templates > /dev/null 2>&1; then
@@ -51,7 +49,7 @@ kubectl create -f "https://github.com/kubevirt/containerized-data-importer/relea
 # Deploy Common Templates
 
 if [ -n "${COMMON_TEMPLATES_VERSION}" ]; then
-  kubectl create -n openshift -f "https://github.com/kubevirt/common-templates/releases/download/${COMMON_TEMPLATES_VERSION}/common-templates-${COMMON_TEMPLATES_VERSION}.yaml"
+  kubectl create -n openshift -f "https://github.com/kubevirt/common-templates/releases/download/${COMMON_TEMPLATES_VERSION}/common-templates.yaml"
 fi
 
 # wait for tekton pipelines
