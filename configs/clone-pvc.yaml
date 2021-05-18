@@ -1,0 +1,3 @@
+task_name: clone-pvc
+task_category: create-datavolume
+main_image: quay.io/kubevirt/tekton-task-create-datavolume:v0.0.1

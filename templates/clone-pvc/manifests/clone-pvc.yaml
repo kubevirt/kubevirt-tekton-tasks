@@ -1,0 +1,66 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
+    sourcePVC.params.task.kubevirt.io/kind: {{ task_param_types.pvc_kind }}
+    sourcePVC.params.task.kubevirt.io/apiVersion: {{ task_param_types.cdi_beta_api_version }}
+    sourcePVCNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    targetPVC.params.task.kubevirt.io/kind: {{ task_param_types.pvc_kind }}
+    targetPVC.params.task.kubevirt.io/apiVersion: {{ task_param_types.cdi_beta_api_version }}
+    targetPVCNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    storageClass.params.task.kubevirt.io/kind: {{ task_param_types.storageclass_kind }}
+    storageClass.params.task.kubevirt.io/apiVersion: {{ task_param_types.storage_version }}
+    waitForSuccess.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
+  labels:
+    task.kubevirt.io/type: {{ task_name }}
+    task.kubevirt.io/category: {{ task_category }}
+  name: {{ task_name }}
+spec:
+  params:
+    - name: sourcePVC
+      description: Source PersistentVolumeClaim to clone from.
+      type: string
+    - name: sourcePVCNamespace
+      description: Namespace of sourcePVC. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: targetPVC
+      description: Target PersistentVolumeClaim to clone to. The name will be generated if not specified. Implemented by CDI DataVolumes.
+      default: ""
+      type: string
+    - name: targetPVCNamespace
+      description: Namespace of targetPVC. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: storageClass
+      description: StorageClass to use when cloning. (defaults to empty; ie default StorageClass)
+      default: ""
+      type: string
+    - name: waitForSuccess
+      description: Set to "true" or "false" if container should wait for Ready condition of a DataVolume.
+      default: 'false'
+      type: string
+  results:
+    - name: name
+      description: The name of target PVC.
+    - name: namespace
+      description: The namespace of a target PVC.
+  steps:
+    - name: clone-pvc
+      image: {{ main_image }}
+      command:
+        - clone-pvc
+        - '--source-pvc-name'
+        - $(params.sourcePVC)
+        - '--source-pvc-namespace'
+        - $(params.sourcePVCNamespace)
+        - '--target-pvc-name'
+        - $(params.targetPVC)
+        - '--target-pvc-namespace'
+        - $(params.targetPVCNamespace)
+        - '--storage-class'
+        - $(params.storageClass)
+        - '--wait-for-success'
+        - $(params.waitForSuccess)

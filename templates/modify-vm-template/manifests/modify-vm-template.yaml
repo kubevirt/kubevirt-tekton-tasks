@@ -1,0 +1,57 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
+    template.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
+    template.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
+    templateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    cpus.params.task.kubevirt.io/type: {{ task_param_types.number }}
+    memory.params.task.kubevirt.io/type: {{ task_param_types.memory }}
+  labels:
+    task.kubevirt.io/type: {{ task_name }}
+    task.kubevirt.io/category: {{ task_category }}
+  name: {{ task_name }}
+spec:
+  params:
+    - name: template
+      description: Template to modify.
+      type: string
+    - name: templateNamespace
+      description: Namespace of template. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: cpus
+      description: Changes number of VM CPUs.
+      default: ""
+      type: string
+    - name: memory
+      description: Changes memory of the VM.
+      default: ""
+      type: string
+    - name: providerName
+      description: Specifies the name of the template provider.
+      default: ""
+      type: string
+    - name: supportURL
+      description: Specifies the support URL of the template.
+      default: ""
+      type: string
+  steps:
+    - name: modify-vm-template
+      image: {{ main_image }}
+      command:
+        - modify-vm-template
+        - '--template-name'
+        - $(params.template)
+        - '--template-namespace'
+        - $(params.templateNamespace)
+        - '--cpus'
+        - $(params.cpus)
+        - '--memory'
+        - $(params.memory)
+        - '--provider-name'
+        - $(params.providerName)
+        - '--support-url'
+        - $(params.supportURL)

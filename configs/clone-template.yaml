@@ -1,0 +1,4 @@
+task_name: clone-template
+task_category: clone-template
+main_image: quay.io/kubevirt/tekton-task-clone-template:v0.0.1
+is_openshift: true

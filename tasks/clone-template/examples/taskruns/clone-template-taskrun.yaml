@@ -1,0 +1,15 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: clone-template-taskrun
+spec:
+  serviceAccountName: clone-template-task
+  taskRef:
+    kind: ClusterTask
+    name: clone-template
+  params:
+    - name: sourceTemplate
+      value: source-template
+    - name: targetTemplate
+      value: target-template

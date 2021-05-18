@@ -1,0 +1,21 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: modify-vm-template-taskrun
+spec:
+  serviceAccountName: modify-vm-template-task
+  taskRef:
+    kind: ClusterTask
+    name: modify-vm-template
+  params:
+    - name: template
+      value: template-example
+    - name: cpus
+      value: "2"
+    - name: memory
+      value: "4Gi"
+    - name: providerName
+      value: "example corp"
+    - name: supportURL
+      value: "https://example.corp.com/templates"

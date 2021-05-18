@@ -1,0 +1,17 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: {{ item.taskrun_with_flavor_name }}
+spec:
+  serviceAccountName: {{ sa_name }}
+  taskRef:
+    kind: ClusterTask
+    name: {{ task_name }}
+  params:
+    - name: sourcePVC
+      value: source-pvc
+    - name: targetPVC
+      value: target-pvc
+    - name: waitForSuccess
+      value: true
