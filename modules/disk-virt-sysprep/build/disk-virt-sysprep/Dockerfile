@@ -1,4 +1,5 @@
-FROM golang:1.15 AS taskBuilder
+FROM registry.access.redhat.com/ubi8/ubi-minimal AS taskBuilder
+RUN microdnf install -y golang-1.15.* && microdnf clean all
 ENV TASK_NAME=disk-virt-sysprep \
     GOFLAGS="-mod=vendor" \
     GO111MODULE=on
