@@ -19,6 +19,13 @@ if ! echo "${TASK_ENV_VAR}" |  grep -qE "^[A-Z_]+_IMAGE$"; then
   exit 1
 fi
 
+read -p "Is it only OKD task? true/false: " ONLY_OKD
+
+if ! echo "${ONLY_OKD}" |  grep -qE "^true$|^false$"; then
+  echo "Invalid bool value! Should comply with ^true$|^false$ regex" 1>&2
+  exit 1
+fi
+
 if ! grep -Fq "IMAGE_MODULE_NAME_TO_ENV_NAME[\"${TASK_NAME}\"]" "${SCRIPT_DIR}/common.sh"; then
 echo "editing common.sh"
 cat <<EOF >> "${SCRIPT_DIR}/common.sh"
@@ -40,6 +47,10 @@ main_image: quay.io/kubevirt/tekton-task-${TASK_NAME}:v0.0.1
 EOF
 fi
 
+if [[ "${ONLY_OKD}" == "true" ]]; then
+  echo "is_okd: true" >> "${CONFIG_FILE}"
+fi
+
 mkdir -p "${REPO_DIR}/modules/${TASK_NAME}"
 mkdir -p "${REPO_DIR}/modules/${TASK_NAME}/build/${TASK_NAME}"
 
@@ -48,7 +59,9 @@ MAIN_TASK_DOCKERFILE="${REPO_DIR}/modules/${TASK_NAME}/build/${TASK_NAME}/Docker
 if [ ! -f "${MAIN_TASK_DOCKERFILE}" ]; then
 echo "creating ${MAIN_TASK_DOCKERFILE}"
 cat <<EOF > "${MAIN_TASK_DOCKERFILE}"
-FROM golang:1.15 AS builder
+FROM registry.access.redhat.com/ubi8/ubi-minimal AS builder
+RUN microdnf install -y golang-1.15.* && microdnf clean all
+
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 EOF
 fi
