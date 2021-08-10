@@ -1,0 +1,20 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: copy-template-taskrun
+spec:
+  serviceAccountName: copy-template-task
+  taskRef:
+    kind: ClusterTask
+    name: copy-template
+  params:
+  - name: sourceTemplateName
+    value: source-vm-template-example
+  - name: sourceTemplateNamespace
+    value: source-vm-template-namespace-example
+  - name: targetTemplateName
+    value: target-vm-template-example
+  - name: targetTemplateNamespace
+    value: target-vm-template-namespace-example
+

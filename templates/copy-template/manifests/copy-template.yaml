@@ -1,0 +1,63 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
+    sourceTemplateName.params.task.kubevirt.io/type: {{ task_param_types.vm_template_name }}
+    sourceTemplateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
+    sourceTemplateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
+    sourceTemplateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    sourceTemplateParams.params.task.kubevirt.io/type: {{ task_param_types.template_params_array }}
+    targetTemplateName.params.task.kubevirt.io/type: {{ task_param_types.vm_template_name }}
+    targetTemplateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
+    targetTemplateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
+    targetTemplateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    targetTemplateParams.params.task.kubevirt.io/type: {{ task_param_types.template_params_array }}
+  labels:
+    task.kubevirt.io/type: {{ task_name }}
+    task.kubevirt.io/category: {{ task_category }}
+  name: {{ task_name }}
+spec:
+  params:
+    - name: sourceTemplateName
+      description: Name of an OKD template to copy template from.
+      type: string
+    - name: sourceTemplateNamespace
+      description: Namespace of an source OKD template to copy template from. (defaults to active namespace)
+      type: string
+    - name: targetTemplateName
+      description: Name of an target OKD template.
+      type: string
+    - name: targetTemplateNamespace
+      description: Namespace of an target OKD template to create in. (defaults to active namespace)
+      type: string
+  results:
+    - name: name
+      description: The name of a template that was created.
+    - name: namespace
+      description: The namespace of a template that was created.
+  steps:
+    - name: copytemplate
+      image: {{ main_image }}
+      command:
+        - copy-template
+      args:
+        - "--output=yaml"
+        - '--source-template-name'
+        - $(params.sourceTemplateName)
+        - '--source-template-namespace'
+        - $(params.sourceTemplateNamespace)
+        - '--target-template-name'
+        - $(params.targetTemplateName)
+        - '--target-template-namespace'
+        - $(params.targetTemplateNamespace)
+      env:
+        - name: SOURCE_TEMPLATE_NAME
+          value: $(params.sourceTemplateName)
+        - name: SOURCE_TEMPLATE_NAMESPACE
+          value: $(params.sourceTemplateNamespace)
+        - name: TARGET_TEMPLATE_NAME
+          value: $(params.targetTemplateName)
+        - name: TARGET_TEMPLATE_NAMESPACE
+          value: $(params.targetTemplateNamespace)

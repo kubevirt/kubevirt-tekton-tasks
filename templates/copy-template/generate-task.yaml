@@ -1,0 +1,46 @@
+---
+- connection: local
+  hosts: 127.0.0.1
+  gather_facts: no
+  vars_files:
+    - ../../configs/copy-template.yaml
+    - ../../scripts/ansible/enums.yaml
+    - ../../scripts/ansible/common.yaml
+  tasks:
+    - name: Init
+      include: "{{ repo_dir }}/scripts/ansible/init-task-generation.yaml"
+    - name: "Generate {{ task_name }} task"
+      template:
+        src: "{{ manifest_templates_dir }}/{{ task_category }}.yaml"
+        dest: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
+        mode: "{{ default_file_mode }}"
+    - name: Generate roles
+      include: "{{ repo_dir }}/scripts/ansible/generate-roles.yaml"
+      with_items:
+        - { role_type: ClusterRole, prefix: zz- }
+      vars:
+        role_output_dir: "{{ manifests_output_dir_tmp }}"
+    - name: Prepare examples dist directory
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ examples_output_dir }}"
+        - "{{ examples_taskruns_output_dir }}"
+    - name: Generate example task runs
+      template:
+        src: "{{ examples_templates_dir }}/{{ task_name }}-taskrun.yaml"
+        dest: "{{ examples_taskruns_output_dir }}/{{ item.taskrun_with_flavor_name }}.yaml"
+        mode: "{{ default_file_mode }}"
+      with_items:
+        - { taskrun_with_flavor_name: "{{ task_name }}-taskrun" }
+    - name: Generate README
+      template:
+        src: "{{ readmes_templates_dir }}/README.md"
+        dest: "{{ output_dir }}/README.md"
+        mode: "{{ default_file_mode }}"
+      vars:
+        task_path: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
+        task_yaml: "{{ lookup('file', task_path) | from_yaml }}"
+    - name: Assemble task
+      include: "{{ repo_dir }}/scripts/ansible/assemble-task.yaml"
