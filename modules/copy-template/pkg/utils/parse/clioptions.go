@@ -3,6 +3,7 @@ package parse
 import (
 	"strings"
 
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap/zapcore"
@@ -16,7 +17,7 @@ const (
 )
 
 type CLIOptions struct {
-	SourceTemplateName      string `arg:"--source-template-name,env:SOURCE_TEMPLATE_NAME" placeholder:"NAME" help:"Name of a source template"`
+	SourceTemplateName      string `arg:"--source-template-name,env:SOURCE_TEMPLATE_NAME,required" placeholder:"NAME" help:"Name of a source template"`
 	SourceTemplateNamespace string `arg:"--source-template-namespace,env:SOURCE_TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a source template"`
 	TargetTemplateName      string `arg:"--target-template-name,env:TARGET_TEMPLATE_NAME" placeholder:"NAME" help:"Name of a target template"`
 	TargetTemplateNamespace string `arg:"--target-template-namespace,env:TARGET_TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a target template"`
@@ -49,7 +50,9 @@ func (c *CLIOptions) GetTargetTemplateName() string {
 }
 
 func (c *CLIOptions) Init() error {
-	if err := c.assertValidMode(); err != nil {
+	c.trimSpaces()
+
+	if err := c.assertValidParams(); err != nil {
 		return err
 	}
 
@@ -57,7 +60,24 @@ func (c *CLIOptions) Init() error {
 		return err
 	}
 
-	c.trimSpaces()
+	c.setValues()
+
+	return nil
+}
+
+func (c *CLIOptions) setValues() error {
+	activeNamespace, err := env.GetActiveNamespace()
+	if err != nil {
+		return zerrors.NewMissingRequiredError("can't get active namespace: %v", err.Error())
+	}
+
+	if c.SourceTemplateNamespace == "" {
+		c.SourceTemplateNamespace = activeNamespace
+	}
+
+	if c.TargetTemplateNamespace == "" {
+		c.TargetTemplateNamespace = activeNamespace
+	}
 
 	return nil
 }
@@ -68,21 +88,9 @@ func (c *CLIOptions) trimSpaces() {
 	}
 }
 
-func (c *CLIOptions) assertValidMode() error {
+func (c *CLIOptions) assertValidParams() error {
 	if c.SourceTemplateName == "" {
 		return zerrors.NewMissingRequiredError("%s param has to be specified", sourceTemplateNameOptionName)
-	}
-
-	if c.SourceTemplateNamespace == "" {
-		return zerrors.NewMissingRequiredError("%s param has to be specified", sourceTemplateNamespaceOptionName)
-	}
-
-	if c.TargetTemplateName == "" {
-		return zerrors.NewMissingRequiredError("%s param has to be specified", targetTemplateNameOptionName)
-	}
-
-	if c.TargetTemplateNamespace == "" {
-		return zerrors.NewMissingRequiredError("%s param has to be specified", targetTemplateNamespaceOptionName)
 	}
 
 	return nil

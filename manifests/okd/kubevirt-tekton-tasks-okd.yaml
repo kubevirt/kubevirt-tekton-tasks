@@ -134,16 +134,12 @@ kind: ClusterTask
 metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: copy-template-task
-    sourceTemplateName.params.task.kubevirt.io/type: vm-template-name
     sourceTemplateName.params.task.kubevirt.io/kind: Template
     sourceTemplateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
     sourceTemplateNamespace.params.task.kubevirt.io/type: namespace
-    sourceTemplateParams.params.task.kubevirt.io/type: template-params-array
-    targetTemplateName.params.task.kubevirt.io/type: vm-template-name
     targetTemplateName.params.task.kubevirt.io/kind: Template
     targetTemplateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
     targetTemplateNamespace.params.task.kubevirt.io/type: namespace
-    targetTemplateParams.params.task.kubevirt.io/type: template-params-array
   labels:
     task.kubevirt.io/type: copy-template
     task.kubevirt.io/category: copy-template
@@ -151,17 +147,20 @@ metadata:
 spec:
   params:
     - name: sourceTemplateName
-      description: Name of an OKD template to copy template from.
+      description: Name of an OpenShift template to copy template from.
       type: string
     - name: sourceTemplateNamespace
-      description: Namespace of an source OKD template to copy template from. (defaults to active namespace)
+      description: Namespace of an source OpenShift template to copy template from. (defaults to active namespace)
       type: string
+      default: ""
     - name: targetTemplateName
-      description: Name of an target OKD template.
+      description: Name of an target OpenShift template.
       type: string
+      default: ""
     - name: targetTemplateNamespace
-      description: Namespace of an target OKD template to create in. (defaults to active namespace)
+      description: Namespace of an target OpenShift template to create in. (defaults to active namespace)
       type: string
+      default: ""
   results:
     - name: name
       description: The name of a template that was created.
@@ -174,14 +173,6 @@ spec:
         - copy-template
       args:
         - "--output=yaml"
-        - '--source-template-name'
-        - $(params.sourceTemplateName)
-        - '--source-template-namespace'
-        - $(params.sourceTemplateNamespace)
-        - '--target-template-name'
-        - $(params.targetTemplateName)
-        - '--target-template-namespace'
-        - $(params.targetTemplateNamespace)
       env:
         - name: SOURCE_TEMPLATE_NAME
           value: $(params.sourceTemplateName)

@@ -11,7 +11,7 @@
       include: "{{ repo_dir }}/scripts/ansible/init-task-generation.yaml"
     - name: "Generate {{ task_name }} task"
       template:
-        src: "{{ manifest_templates_dir }}/{{ task_category }}.yaml"
+        src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
         dest: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
         mode: "{{ default_file_mode }}"
     - name: Generate roles

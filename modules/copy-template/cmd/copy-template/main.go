@@ -33,12 +33,12 @@ func main() {
 
 	templateCreator, err := templatecreator.NewTemplateCreator(cliOptions)
 	if err != nil {
-		exit.ExitOrDieFromError(GenericExitCode, err)
+		exit.ExitOrDieFromError(TemplateCreatorErrorCode, err)
 	}
 
 	newTemplate, err := templateCreator.CopyTemplate()
 	if err != nil {
-		exit.ExitOrDieFromError(CreateVMErrorExitCode, err,
+		exit.ExitOrDieFromError(CopyTemplateErrorCode, err,
 			zerrors.IsStatusError(err, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity),
 		)
 	}

@@ -11,10 +11,5 @@ spec:
   params:
   - name: sourceTemplateName
     value: source-vm-template-example
-  - name: sourceTemplateNamespace
-    value: source-vm-template-namespace-example
   - name: targetTemplateName
     value: target-vm-template-example
-  - name: targetTemplateNamespace
-    value: target-vm-template-namespace-example
-

@@ -41,7 +41,7 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 - [create-vm-from-manifest](tasks/create-vm-from-manifest)
 - [create-vm-from-template](tasks/create-vm-from-template)
 
-#### Copy Templates
+#### Utilize Templates
 
 - [copy-template](tasks/copy-template)
 

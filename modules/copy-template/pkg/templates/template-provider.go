@@ -20,7 +20,7 @@ type templateProvider struct {
 
 type TemplateProvider interface {
 	Get(string, string) (*templatev1.Template, error)
-	Create(string, *templatev1.Template) (*templatev1.Template, error)
+	Create(*templatev1.Template) (*templatev1.Template, error)
 }
 
 func NewTemplateProvider(client tempclient.TemplateV1Interface) TemplateProvider {
@@ -33,8 +33,8 @@ func (t *templateProvider) Get(namespace string, name string) (*templatev1.Templ
 	return t.client.Templates(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 }
 
-func (t *templateProvider) Create(namespace string, template *templatev1.Template) (*templatev1.Template, error) {
-	return t.client.Templates(namespace).Create(context.TODO(), template, metav1.CreateOptions{})
+func (t *templateProvider) Create(template *templatev1.Template) (*templatev1.Template, error) {
+	return t.client.Templates(template.Namespace).Create(context.TODO(), template, metav1.CreateOptions{})
 }
 
 type TemplateCreator struct {
@@ -63,21 +63,28 @@ func (t *TemplateCreator) CopyTemplate() (*v1.Template, error) {
 		return nil, err
 	}
 
-	updatedTemplate, err := t.UpdateTemplate(template)
-	if err != nil {
-		return nil, err
-	}
+	log.Logger().Debug("Original template metadata", zap.Any("ObjectMeta", template.ObjectMeta))
 
-	return t.templateProvider.Create(t.cliOptions.GetTargetTemplateNamespace(), updatedTemplate)
+	updatedTemplate := t.UpdateTemplateMetaObject(template)
+
+	log.Logger().Debug("Updated template metadata", zap.Any("ObjectMeta", updatedTemplate.ObjectMeta))
+
+	return t.templateProvider.Create(updatedTemplate)
 }
 
-func (t *TemplateCreator) UpdateTemplate(template *v1.Template) (*v1.Template, error) {
+func (t *TemplateCreator) UpdateTemplateMetaObject(template *v1.Template) *v1.Template {
 	newObjectMeta := metav1.ObjectMeta{
-		Name:        t.cliOptions.GetTargetTemplateName(),
 		Namespace:   t.cliOptions.GetTargetTemplateNamespace(),
 		Labels:      template.Labels,
 		Annotations: template.Annotations,
 	}
+
+	if t.cliOptions.GetTargetTemplateName() == "" {
+		newObjectMeta.GenerateName = t.cliOptions.GetSourceTemplateName()
+	} else {
+		newObjectMeta.Name = t.cliOptions.GetTargetTemplateName()
+	}
+
 	template.ObjectMeta = newObjectMeta
-	return template, nil
+	return template
 }

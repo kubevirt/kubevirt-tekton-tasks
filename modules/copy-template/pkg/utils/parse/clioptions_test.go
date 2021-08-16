@@ -11,7 +11,10 @@ import (
 )
 
 const (
-	testString = "test"
+	testStringSourceName      = "source-name-test"
+	testStringSourceNamespace = "source-namespace-test"
+	testStringTargetName      = "target-name-test"
+	testStringTargetNamespace = "target-namespace-test"
 )
 
 var _ = Describe("CLIOptions", func() {
@@ -23,10 +26,14 @@ var _ = Describe("CLIOptions", func() {
 			Expect(err.Error()).To(ContainSubstring(expectedErrMessage))
 		},
 			table.Entry("no source-template-name", "source-template-name param has to be specified", &parse.CLIOptions{}),
-			table.Entry("no source-template-namespace", "source-template-namespace param has to be specified", &parse.CLIOptions{SourceTemplateName: testString}),
-			table.Entry("no target-template-name", "target-template-name param has to be specified", &parse.CLIOptions{SourceTemplateName: testString, SourceTemplateNamespace: testString}),
-			table.Entry("no target-template-namespace", "target-template-namespace param has to be specified", &parse.CLIOptions{SourceTemplateName: testString, SourceTemplateNamespace: testString, TargetTemplateName: testString}),
-			table.Entry("wrong output type", "non-existing is not a valid output type", &parse.CLIOptions{SourceTemplateName: testString, SourceTemplateNamespace: testString, TargetTemplateName: testString, TargetTemplateNamespace: testString, Output: "non-existing"}),
+			table.Entry("wrong output type", "non-existing is not a valid output type",
+				&parse.CLIOptions{
+					SourceTemplateName:      testStringSourceName,
+					SourceTemplateNamespace: testStringSourceNamespace,
+					TargetTemplateName:      testStringTargetName,
+					TargetTemplateNamespace: testStringTargetNamespace,
+					Output:                  "non-existing",
+				}),
 		)
 	})
 	Context("correct cli options", func() {
@@ -34,45 +41,55 @@ var _ = Describe("CLIOptions", func() {
 			Expect(options.Init()).To(Succeed())
 		},
 			table.Entry("with yaml output", &parse.CLIOptions{
-				SourceTemplateName:      testString,
-				SourceTemplateNamespace: testString,
-				TargetTemplateName:      testString,
-				TargetTemplateNamespace: testString,
+				SourceTemplateName:      testStringSourceName,
+				SourceTemplateNamespace: testStringSourceNamespace,
+				TargetTemplateName:      testStringTargetName,
+				TargetTemplateNamespace: testStringTargetNamespace,
 				Output:                  "yaml",
 				Debug:                   true,
 			}),
 			table.Entry("with json output", &parse.CLIOptions{
-				SourceTemplateName:      testString,
-				SourceTemplateNamespace: testString,
-				TargetTemplateName:      testString,
-				TargetTemplateNamespace: testString,
+				SourceTemplateName:      testStringSourceName,
+				SourceTemplateNamespace: testStringSourceNamespace,
+				TargetTemplateName:      testStringTargetName,
+				TargetTemplateNamespace: testStringTargetNamespace,
 				Output:                  "json",
 				Debug:                   true,
+			}),
+			table.Entry("no source-template-namespace", &parse.CLIOptions{SourceTemplateName: testStringSourceName}),
+			table.Entry("no target-template-name", &parse.CLIOptions{
+				SourceTemplateName:      testStringSourceName,
+				SourceTemplateNamespace: testStringSourceNamespace,
+			}),
+			table.Entry("no target-template-namespace", &parse.CLIOptions{
+				SourceTemplateName:      testStringSourceName,
+				SourceTemplateNamespace: testStringSourceNamespace,
+				TargetTemplateName:      testStringTargetName,
 			}),
 		)
 
 		It("Init should trim spaces", func() {
 			options := &parse.CLIOptions{
-				SourceTemplateName:      " " + testString + " ",
-				SourceTemplateNamespace: " " + testString + " ",
-				TargetTemplateName:      " " + testString + " ",
-				TargetTemplateNamespace: " " + testString + " ",
+				SourceTemplateName:      " " + testStringSourceName + " ",
+				SourceTemplateNamespace: " " + testStringSourceNamespace + " ",
+				TargetTemplateName:      " " + testStringTargetName + " ",
+				TargetTemplateNamespace: " " + testStringTargetNamespace + " ",
 			}
 			Expect(options.Init()).To(Succeed())
-			Expect(options.SourceTemplateName).To(Equal(testString), "SourceTemplateName should equal")
-			Expect(options.SourceTemplateNamespace).To(Equal(testString), "SourceTemplateNamespace should equal")
-			Expect(options.TargetTemplateName).To(Equal(testString), "TargetTemplateName should equal")
-			Expect(options.TargetTemplateNamespace).To(Equal(testString), "TargetTemplateNamespace should equal")
+			Expect(options.SourceTemplateName).To(Equal(testStringSourceName), "SourceTemplateName should equal")
+			Expect(options.SourceTemplateNamespace).To(Equal(testStringSourceNamespace), "SourceTemplateNamespace should equal")
+			Expect(options.TargetTemplateName).To(Equal(testStringTargetName), "TargetTemplateName should equal")
+			Expect(options.TargetTemplateNamespace).To(Equal(testStringTargetNamespace), "TargetTemplateNamespace should equal")
 
 		})
 
 		table.DescribeTable("CLI options should return correct values", func(fnToCall func() string, result string) {
 			Expect(fnToCall()).To(Equal(result), "result should equal")
 		},
-			table.Entry("GetSourceTemplateName should return correct value", (&parse.CLIOptions{SourceTemplateName: testString}).GetSourceTemplateName, testString),
-			table.Entry("GetSourceTemplateNamespace should return correct value", (&parse.CLIOptions{SourceTemplateNamespace: testString}).GetSourceTemplateNamespace, testString),
-			table.Entry("GetTargetTemplateNamespace should return correct value", (&parse.CLIOptions{TargetTemplateNamespace: testString}).GetTargetTemplateNamespace, testString),
-			table.Entry("GetTargetTemplateName should return correct value", (&parse.CLIOptions{TargetTemplateName: testString}).GetTargetTemplateName, testString),
+			table.Entry("GetSourceTemplateName should return correct value", (&parse.CLIOptions{SourceTemplateName: testStringSourceName}).GetSourceTemplateName, testStringSourceName),
+			table.Entry("GetSourceTemplateNamespace should return correct value", (&parse.CLIOptions{SourceTemplateNamespace: testStringSourceNamespace}).GetSourceTemplateNamespace, testStringSourceNamespace),
+			table.Entry("GetTargetTemplateNamespace should return correct value", (&parse.CLIOptions{TargetTemplateNamespace: testStringTargetNamespace}).GetTargetTemplateNamespace, testStringTargetNamespace),
+			table.Entry("GetTargetTemplateName should return correct value", (&parse.CLIOptions{TargetTemplateName: testStringTargetName}).GetTargetTemplateName, testStringTargetName),
 		)
 
 		table.DescribeTable("CLI options should return correct log level", func(options *parse.CLIOptions, level zapcore.Level) {

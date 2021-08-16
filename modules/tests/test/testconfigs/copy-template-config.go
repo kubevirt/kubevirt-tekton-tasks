@@ -1,6 +1,7 @@
 package testconfigs
 
 import (
+	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	v1 "github.com/openshift/api/template/v1"
@@ -12,9 +13,15 @@ type CopyTemplateTaskData struct {
 	Template *v1.Template
 
 	SourceTemplateName      string
-	SourceTemplateNamespace string
+	SourceTemplateNamespace TargetNamespace
 	TargetTemplateName      string
-	TargetTemplateNamespace string
+	TargetTemplateNamespace TargetNamespace
+	ForbiddenNamespace      TargetNamespace
+	SourceNamespace         string
+	TargetNamespace         string
+	ResultTemplateName      string
+	DoNotSetTargetName      bool
+	DoNotSetSourceName      bool
 }
 
 type CopyTemplateTestConfig struct {
@@ -25,7 +32,28 @@ type CopyTemplateTestConfig struct {
 }
 
 func (c *CopyTemplateTestConfig) Init(options *testoptions.TestOptions) {
+	c.TaskData.ResultTemplateName = NewTemplateName
+
+	if c.TaskData.SourceTemplateName == "" && !c.TaskData.DoNotSetSourceName {
+		c.TaskData.SourceTemplateName = testtemplate.CirrosTemplateName
+	}
+
+	if c.TaskData.TargetTemplateName == "" && !c.TaskData.DoNotSetTargetName {
+		c.TaskData.TargetTemplateName = NewTemplateName
+	}
+
 	c.deploymentNamespace = options.DeployNamespace
+
+	c.TaskData.SourceNamespace = options.ResolveNamespace(c.TaskData.SourceTemplateNamespace, options.TestNamespace)
+
+	if c.TaskData.ForbiddenNamespace != "" {
+		c.TaskData.TargetNamespace = string(c.TaskData.ForbiddenNamespace)
+	} else {
+		c.TaskData.TargetNamespace = options.ResolveNamespace(c.TaskData.TargetTemplateNamespace, options.TestNamespace)
+	}
+
+	c.TaskData.Template = testtemplate.NewCirrosServerTinyTemplate().Build()
+	c.TaskData.Template.Namespace = c.TaskData.SourceNamespace
 }
 
 func (c *CopyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
@@ -41,7 +69,7 @@ func (c *CopyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			Name: SourceTemplateNamespaceOptionName,
 			Value: v1beta1.ArrayOrString{
 				Type:      v1beta1.ParamTypeString,
-				StringVal: c.TaskData.SourceTemplateNamespace,
+				StringVal: c.TaskData.SourceNamespace,
 			},
 		},
 		{
@@ -55,7 +83,7 @@ func (c *CopyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			Name: TargetTemplateNamespaceOptionName,
 			Value: v1beta1.ArrayOrString{
 				Type:      v1beta1.ParamTypeString,
-				StringVal: c.TaskData.TargetTemplateNamespace,
+				StringVal: c.TaskData.TargetNamespace,
 			},
 		},
 	}

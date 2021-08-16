@@ -11,11 +11,7 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 ### Parameters
 
 {% for item in task_yaml.spec.params %}
-{% if item.name == "templateParams" %}
-- **{{ item.name }}**: {{ item.description | replace('[', '`[')   | replace(']', ']`')}}
-{% else %}
 - **{{ item.name }}**: {{ item.description | replace('"', '`') }}
-{% endif %}
 {% endfor %}
 
 ### Results
@@ -26,4 +22,4 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 
 ### Usage
 
-Please see [examples](examples) on how to do a copy template from a template.
+Please see [examples](examples) on how to copy a template.

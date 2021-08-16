@@ -10,10 +10,10 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 
 ### Parameters
 
-- **sourceTemplateName**: Name of an OKD template to copy template from.
-- **sourceTemplateNamespace**: Namespace of an source OKD template to copy template from. (defaults to active namespace)
-- **targetTemplateName**: Name of an target OKD template.
-- **targetTemplateNamespace**: Namespace of an target OKD template to create in. (defaults to active namespace)
+- **sourceTemplateName**: Name of an OpenShift template to copy template from.
+- **sourceTemplateNamespace**: Namespace of an source OpenShift template to copy template from. (defaults to active namespace)
+- **targetTemplateName**: Name of an target OpenShift template.
+- **targetTemplateNamespace**: Namespace of an target OpenShift template to create in. (defaults to active namespace)
 
 ### Results
 
@@ -22,4 +22,4 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 
 ### Usage
 
-Please see [examples](examples) on how to do a copy template from a template.
+Please see [examples](examples) on how to copy a template.
