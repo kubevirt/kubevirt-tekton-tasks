@@ -1,7 +1,7 @@
 package log_test
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap/zapcore"

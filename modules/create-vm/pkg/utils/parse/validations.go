@@ -1,13 +1,14 @@
 package parse
 
 import (
+	"strings"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	"sigs.k8s.io/yaml"
-	"strings"
 )
 
 func (c *CLIOptions) assertValidMode() error {

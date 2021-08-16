@@ -2,14 +2,15 @@ package vmcreator
 
 import (
 	"fmt"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/datavolume"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/pvc"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
 	virtualMachine "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"

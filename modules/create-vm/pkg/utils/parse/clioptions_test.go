@@ -1,15 +1,16 @@
 package parse_test
 
 import (
+	"reflect"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap/zapcore"
-	"reflect"
 )
 
 var (

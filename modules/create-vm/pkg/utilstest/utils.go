@@ -1,7 +1,7 @@
 package utilstest
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	"go.uber.org/zap"
 )
 
