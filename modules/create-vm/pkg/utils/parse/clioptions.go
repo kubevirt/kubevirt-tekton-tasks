@@ -2,8 +2,9 @@ package parse
 
 import (
 	"fmt"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap/zapcore"

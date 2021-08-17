@@ -1,8 +1,10 @@
 package output_test
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest"
 	"testing"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
+	"go.uber.org/zap"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,4 +15,9 @@ func TestOutput(t *testing.T) {
 	RunSpecs(t, "Output Suite")
 }
 
-var _ = BeforeSuite(utilstest.SetupTestSuite)
+func SetupTestSuite() {
+	log.InitLogger(zap.InfoLevel)
+}
+
+
+var _ = BeforeSuite(SetupTestSuite)

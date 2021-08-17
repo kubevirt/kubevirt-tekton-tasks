@@ -1,7 +1,7 @@
 package output_test
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"

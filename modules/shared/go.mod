@@ -6,8 +6,10 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/onsi/ginkgo v1.15.1
 	github.com/onsi/gomega v1.11.0
+	go.uber.org/zap v1.16.0
 	k8s.io/api v0.20.2
 	k8s.io/apimachinery v0.20.2
+	sigs.k8s.io/yaml v1.2.0
 )
 
 // Pinned to kubernetes-1.20.2 (due to kubevirt/client-go v0.39.0)

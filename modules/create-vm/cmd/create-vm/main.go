@@ -1,17 +1,18 @@
 package main
 
 import (
+	"net/http"
+
 	goarg "github.com/alexflint/go-arg"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/log"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vmcreator"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	res "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 func main() {
