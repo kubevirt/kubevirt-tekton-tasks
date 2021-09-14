@@ -1,7 +1,6 @@
 package testconfigs
 
 import (
-	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	v1 "github.com/openshift/api/template/v1"
@@ -16,12 +15,8 @@ type CopyTemplateTaskData struct {
 	SourceTemplateNamespace TargetNamespace
 	TargetTemplateName      string
 	TargetTemplateNamespace TargetNamespace
-	ForbiddenNamespace      TargetNamespace
 	SourceNamespace         string
 	TargetNamespace         string
-	ResultTemplateName      string
-	DoNotSetTargetName      bool
-	DoNotSetSourceName      bool
 }
 
 type CopyTemplateTestConfig struct {
@@ -32,28 +27,15 @@ type CopyTemplateTestConfig struct {
 }
 
 func (c *CopyTemplateTestConfig) Init(options *testoptions.TestOptions) {
-	c.TaskData.ResultTemplateName = NewTemplateName
-
-	if c.TaskData.SourceTemplateName == "" && !c.TaskData.DoNotSetSourceName {
-		c.TaskData.SourceTemplateName = testtemplate.CirrosTemplateName
-	}
-
-	if c.TaskData.TargetTemplateName == "" && !c.TaskData.DoNotSetTargetName {
-		c.TaskData.TargetTemplateName = NewTemplateName
-	}
-
 	c.deploymentNamespace = options.DeployNamespace
 
-	c.TaskData.SourceNamespace = options.ResolveNamespace(c.TaskData.SourceTemplateNamespace, options.TestNamespace)
+	c.TaskData.SourceNamespace = options.ResolveNamespace(c.TaskData.SourceTemplateNamespace, options.DeployNamespace)
 
-	if c.TaskData.ForbiddenNamespace != "" {
-		c.TaskData.TargetNamespace = string(c.TaskData.ForbiddenNamespace)
-	} else {
-		c.TaskData.TargetNamespace = options.ResolveNamespace(c.TaskData.TargetTemplateNamespace, options.TestNamespace)
+	c.TaskData.TargetNamespace = options.ResolveNamespace(c.TaskData.TargetTemplateNamespace, options.DeployNamespace)
+
+	if c.TaskData.Template != nil {
+		c.TaskData.Template.Namespace = options.DeployNamespace
 	}
-
-	c.TaskData.Template = testtemplate.NewCirrosServerTinyTemplate().Build()
-	c.TaskData.Template.Namespace = c.TaskData.SourceNamespace
 }
 
 func (c *CopyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
