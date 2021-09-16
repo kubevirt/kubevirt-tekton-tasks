@@ -36,6 +36,12 @@ func (c *CopyTemplateTestConfig) Init(options *testoptions.TestOptions) {
 
 	if c.TaskData.Template != nil {
 		c.TaskData.Template.Namespace = options.ResolveNamespace(c.TaskData.TemplateNamespace, options.TestNamespace)
+
+		originalTemplateName := c.TaskData.Template.Name
+		c.TaskData.Template.Name = E2ETestsRandomName(c.TaskData.Template.Name)
+		if c.TaskData.SourceTemplateName == originalTemplateName {
+			c.TaskData.SourceTemplateName = c.TaskData.Template.Name
+		}
 	}
 }
 
