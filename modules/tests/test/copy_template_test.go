@@ -117,7 +117,7 @@ var _ = Describe("Copy template task", func() {
 				TaskData: testconfigs.CopyTemplateTaskData{
 					SourceTemplateName:      testtemplate.CirrosTemplateName,
 					TargetTemplateName:      NewTemplateName,
-					TargetTemplateNamespace: TestTargetNS,
+					TargetTemplateNamespace: DeployTargetNS,
 					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
@@ -147,6 +147,7 @@ var _ = Describe("Copy template task", func() {
 				TaskData: testconfigs.CopyTemplateTaskData{
 					SourceTemplateName:      testtemplate.CirrosTemplateName,
 					SourceTemplateNamespace: EmptyTargetNS,
+					TemplateNamespace:       DeployTargetNS,
 					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
@@ -158,6 +159,7 @@ var _ = Describe("Copy template task", func() {
 					SourceTemplateName:      testtemplate.CirrosTemplateName,
 					SourceTemplateNamespace: EmptyTargetNS,
 					TargetTemplateNamespace: EmptyTargetNS,
+					TemplateNamespace:       DeployTargetNS,
 					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),

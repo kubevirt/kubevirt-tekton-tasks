@@ -17,6 +17,7 @@ type CopyTemplateTaskData struct {
 	TargetTemplateNamespace TargetNamespace
 	SourceNamespace         string
 	TargetNamespace         string
+	TemplateNamespace       TargetNamespace
 }
 
 type CopyTemplateTestConfig struct {
@@ -29,12 +30,12 @@ type CopyTemplateTestConfig struct {
 func (c *CopyTemplateTestConfig) Init(options *testoptions.TestOptions) {
 	c.deploymentNamespace = options.DeployNamespace
 
-	c.TaskData.SourceNamespace = options.ResolveNamespace(c.TaskData.SourceTemplateNamespace, options.DeployNamespace)
+	c.TaskData.SourceNamespace = options.ResolveNamespace(c.TaskData.SourceTemplateNamespace, options.TestNamespace)
 
-	c.TaskData.TargetNamespace = options.ResolveNamespace(c.TaskData.TargetTemplateNamespace, options.DeployNamespace)
+	c.TaskData.TargetNamespace = options.ResolveNamespace(c.TaskData.TargetTemplateNamespace, options.TestNamespace)
 
 	if c.TaskData.Template != nil {
-		c.TaskData.Template.Namespace = options.DeployNamespace
+		c.TaskData.Template.Namespace = options.ResolveNamespace(c.TaskData.TemplateNamespace, options.TestNamespace)
 	}
 }
 
