@@ -1,0 +1,54 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
+    sourceTemplateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
+    sourceTemplateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
+    sourceTemplateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    targetTemplateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
+    targetTemplateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
+    targetTemplateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+  labels:
+    task.kubevirt.io/type: {{ task_name }}
+    task.kubevirt.io/category: {{ task_category }}
+  name: {{ task_name }}
+spec:
+  params:
+    - name: sourceTemplateName
+      description: Name of an OpenShift template to copy template from.
+      type: string
+    - name: sourceTemplateNamespace
+      description: Namespace of an source OpenShift template to copy template from. (defaults to active namespace)
+      type: string
+      default: ""
+    - name: targetTemplateName
+      description: Name of an target OpenShift template.
+      type: string
+      default: ""
+    - name: targetTemplateNamespace
+      description: Namespace of an target OpenShift template to create in. (defaults to active namespace)
+      type: string
+      default: ""
+  results:
+    - name: name
+      description: The name of a template that was created.
+    - name: namespace
+      description: The namespace of a template that was created.
+  steps:
+    - name: copytemplate
+      image: {{ main_image }}
+      command:
+        - copy-template
+      args:
+        - "--output=yaml"
+      env:
+        - name: SOURCE_TEMPLATE_NAME
+          value: $(params.sourceTemplateName)
+        - name: SOURCE_TEMPLATE_NAMESPACE
+          value: $(params.sourceTemplateNamespace)
+        - name: TARGET_TEMPLATE_NAME
+          value: $(params.targetTemplateName)
+        - name: TARGET_TEMPLATE_NAMESPACE
+          value: $(params.targetTemplateNamespace)

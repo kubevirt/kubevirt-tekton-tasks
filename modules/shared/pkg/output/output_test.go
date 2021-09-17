@@ -1,12 +1,13 @@
 package output_test
 
 import (
+	"io/ioutil"
+	"os"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"io/ioutil"
-	"os"
 )
 
 type TestStruct struct {

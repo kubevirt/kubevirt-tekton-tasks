@@ -19,5 +19,4 @@ func SetupTestSuite() {
 	log.InitLogger(zap.InfoLevel)
 }
 
-
 var _ = BeforeSuite(SetupTestSuite)
