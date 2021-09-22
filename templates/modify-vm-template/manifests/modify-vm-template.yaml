@@ -1,0 +1,87 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
+    templateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
+    templateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
+    templateNamespace.params.task.kubevirt.io/kind: {{ task_param_types.namespace }}
+    cpuSockets.params.task.kubevirt.io/type: {{ task_param_types.string }}
+    cpuCores.params.task.kubevirt.io/type: {{ task_param_types.string }}
+    cpuThreads.params.task.kubevirt.io/type: {{ task_param_types.string }}
+    memory.params.task.kubevirt.io/type: {{ task_param_types.string }}
+  labels:
+    task.kubevirt.io/type: {{ task_name }}
+    task.kubevirt.io/category: {{ task_category }}
+  name: {{ task_name }}
+spec:
+  params:
+    - name: templateName
+      description: Name of an OpenShift template.
+      type: string
+    - name: templateNamespace
+      description: Namespace of an source OpenShift template. (defaults to active namespace)
+      type: string
+    - name: cpuSockets
+      description: Number of CPU sockets
+      type: string
+    - name: cpuCores
+      description: Number of CPU cores
+      type: string
+    - name: cpuThreads
+      description: Number of CPU thready
+      type: string
+    - name: memory
+      description: Number of memory vm can use
+      type: string
+    - description: Template labels. If template contains same label, it will be replaced.
+      name: templateLabels
+      type: array
+      default: []
+    - description: Template Annotations. If template contains same annotation, it will be replaced.
+      name: templateAnnotations
+      type: array
+      default: []
+    - description: VM labels. If VM contains same label, it will be replaced.
+      name: vmLabels
+      type: array
+      default: []
+    - description: VM annotations. If VM contains same annotation, it will be replaced.
+      name: vmAnnotations
+      type: array
+      default: []
+
+  results:
+    - name: name
+      description: The name of a template that was updated.
+    - name: namespace
+      description: The namespace of a template that was updated.
+  steps:
+    - name: modifyvmtemplate
+      image: {{ main_image }}
+      command:
+        - modify-vm-template
+      args:
+        - "--output=yaml"
+        - "--template-labels"
+        - $(params.templateLabels)
+        - "--template-annotations"
+        - $(params.templateAnnotations)
+        - "--vm-labels"
+        - $(params.vmLabels)
+        - "--vm-annotations"
+        - $(params.vmAnnotations)
+      env:
+        - name: TEMPLATE_NAME
+          value: $(params.templateName)
+        - name: TEMPLATE_NAMESPACE
+          value: $(params.templateNamespace)
+        - name: CPU_SOCKETS
+          value: $(params.cpuSockets)
+        - name: CPU_CORES
+          value: $(params.cpuCores)
+        - name: CPU_THREADS
+          value: $(params.cpuThreads)
+        - name: MEMORY
+          value: $(params.memory)

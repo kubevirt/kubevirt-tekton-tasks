@@ -17,3 +17,4 @@ task_param_types:
   template_params_array: template-params-array
   private_key_options_array: private-key-options-array
   execute_in_vm_secret: execute-in-vm-secret
+  string: string
