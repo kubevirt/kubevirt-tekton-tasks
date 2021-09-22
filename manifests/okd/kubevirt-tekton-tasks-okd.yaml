@@ -979,7 +979,7 @@ spec:
       description: Number of CPU cores
       type: string
     - name: cpuThreads
-      description: Number of CPU thready
+      description: Number of CPU threads
       type: string
     - name: memory
       description: Number of memory vm can use

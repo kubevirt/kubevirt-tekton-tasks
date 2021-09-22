@@ -14,7 +14,7 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 - **templateNamespace**: Namespace of an source OpenShift template. (defaults to active namespace)
 - **cpuSockets**: Number of CPU sockets
 - **cpuCores**: Number of CPU cores
-- **cpuThreads**: Number of CPU thready
+- **cpuThreads**: Number of CPU threads
 - **memory**: Number of memory vm can use
 - **templateLabels**: Template labels. If template contains same label, it will be replaced.
 - **templateAnnotations**: Template Annotations. If template contains same annotation, it will be replaced.

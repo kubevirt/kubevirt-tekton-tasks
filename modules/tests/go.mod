@@ -3,6 +3,7 @@ module github.com/kubevirt/kubevirt-tekton-tasks/modules/tests
 go 1.15
 
 require (
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0-20210817085806-121982faec0f
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0
 	github.com/onsi/ginkgo v1.15.1
 	github.com/onsi/gomega v1.11.0
