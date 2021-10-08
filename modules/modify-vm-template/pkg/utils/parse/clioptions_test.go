@@ -2,7 +2,6 @@ package parse_test
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/modify-vm-template/pkg/utils/parse"
 	. "github.com/onsi/ginkgo"
@@ -20,8 +19,9 @@ const (
 )
 
 var (
-	mockArray = []string{"newKey: value", "test: true"}
-	resultMap = map[string]string{"newKey": "value", "test": "true"}
+	mockArray                = []string{"newKey: value", "test: true"}
+	resultMap                = map[string]string{"newKey": "value", "test": "true"}
+	testStringMemoryResource = resource.MustParse(testStringMemory)
 )
 
 var _ = Describe("CLIOptions", func() {
@@ -34,6 +34,13 @@ var _ = Describe("CLIOptions", func() {
 		},
 			table.Entry("no template-name", "template-name param has to be specified", &parse.CLIOptions{}),
 			table.Entry("wrong output type", "non-existing is not a valid output type", &parse.CLIOptions{TemplateName: testString, Output: "non-existing"}),
+			table.Entry("wrong cpu sockets", "parsing \"wrong cpu sockets\": invalid syntax", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: "wrong cpu sockets"}),
+			table.Entry("wrong cpu cores", "parsing \"wrong cpu cores\": invalid syntax", &parse.CLIOptions{TemplateName: testString, CPUCores: "wrong cpu cores"}),
+			table.Entry("wrong cpu threads", "parsing \"wrong cpu threads\": invalid syntax", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: "wrong cpu threads"}),
+			table.Entry("wrong template labels", "pair should be in \"KEY:VAL\" format", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: []string{"singleKey"}}),
+			table.Entry("wrong template annotations", "pair should be in \"KEY:VAL\" format", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: []string{"singleKey"}}),
+			table.Entry("wrong vm labels", "pair should be in \"KEY:VAL\" format", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: mockArray, VMLabels: []string{"singleKey"}}),
+			table.Entry("wrong vm annotations", "pair should be in \"KEY:VAL\" format", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: mockArray, VMLabels: mockArray, VMAnnotations: []string{"singleKey"}}),
 		)
 	})
 	Context("correct cli options", func() {
@@ -51,6 +58,18 @@ var _ = Describe("CLIOptions", func() {
 				Debug:        true,
 			}),
 		)
+		It("should succeed with all options", func() {
+			options := &parse.CLIOptions{
+				TemplateName:        testString,
+				CPUCores:            testNumberOfCPU,
+				CPUThreads:          testNumberOfCPU,
+				TemplateLabels:      mockArray,
+				TemplateAnnotations: mockArray,
+				VMLabels:            mockArray,
+				VMAnnotations:       mockArray,
+			}
+			Expect(options.Init()).To(Succeed())
+		})
 
 		It("Init should trim spaces", func() {
 			options := &parse.CLIOptions{
@@ -75,17 +94,12 @@ var _ = Describe("CLIOptions", func() {
 			table.Entry("GetCPUThreads should return correct value", (&parse.CLIOptions{CPUThreads: testNumberOfCPU}).GetCPUThreads, testNumberOfCPUInt),
 		)
 
-		table.DescribeTable("CLI options should return correct Quantity values", func(fnToCall func() *resource.Quantity, result resource.Quantity) {
+		table.DescribeTable("CLI options should return correct Quantity values", func(fnToCall func() *resource.Quantity, result *resource.Quantity) {
 			r := fnToCall()
-			if reflect.DeepEqual(result, resource.Quantity{}) {
-				var q *resource.Quantity
-				Expect(r).To(Equal(q), "result should equal")
-			} else {
-				Expect(*r).To(Equal(result), "result should equal")
-			}
+			Expect(r).To(Equal(result), "result should equal")
 		},
-			table.Entry("GetMemory should return correct value", (&parse.CLIOptions{Memory: testStringMemory}).GetMemory, resource.MustParse(testStringMemory)),
-			table.Entry("GetMemory should return nil", (&parse.CLIOptions{}).GetMemory, resource.Quantity{}),
+			table.Entry("GetMemory should return correct value", (&parse.CLIOptions{Memory: testStringMemory}).GetMemory, &testStringMemoryResource),
+			table.Entry("GetMemory should return nil", (&parse.CLIOptions{}).GetMemory, nil),
 		)
 
 		table.DescribeTable("CLI options should return correct log level", func(options *parse.CLIOptions, level zapcore.Level) {
@@ -103,8 +117,7 @@ var _ = Describe("CLIOptions", func() {
 			VMAnnotations:       mockArray,
 		}
 		table.DescribeTable("CLI options should return correct map of annotations / labels", func(obj *parse.CLIOptions, fnToCall func() map[string]string, result map[string]string) {
-			err := obj.Init()
-			Expect(err).To(BeNil(), "should not throw error")
+			Expect(obj.Init()).To(Succeed(), "should succeeded")
 			Expect(fnToCall()).To(Equal(result), "maps should equal")
 		},
 			table.Entry("GetTemplateLabels should return correct template labels", cli, cli.GetTemplateLabels, resultMap),

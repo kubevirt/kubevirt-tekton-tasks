@@ -7,6 +7,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -18,7 +19,7 @@ const (
 )
 
 type CLIOptions struct {
-	TemplateName        string            `arg:"--template-name,env:TEMPLATE_NAME" placeholder:"NAME" help:"Name of a template"`
+	TemplateName        string            `arg:"--template-name,env:TEMPLATE_NAME,required" placeholder:"NAME" help:"Name of a template"`
 	TemplateNamespace   string            `arg:"--template-namespace,env:TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a template"`
 	CPUSockets          string            `arg:"--cpu-sockets,env:CPU_SOCKETS" placeholder:"CPU_SOCKETS" help:"Number of CPU sockets"`
 	CPUCores            string            `arg:"--cpu-cores,env:CPU_CORES" placeholder:"CPU_CORES" help:"Number of CPU cores"`
@@ -111,6 +112,23 @@ func (c *CLIOptions) trimSpaces() {
 	for _, strVariablePtr := range []*string{&c.TemplateName, &c.TemplateNamespace} {
 		*strVariablePtr = strings.TrimSpace(*strVariablePtr)
 	}
+
+	for i, value := range c.TemplateLabels {
+		value = strings.ReplaceAll(value, " ", "")
+		c.TemplateLabels[i] = value
+	}
+	for i, value := range c.TemplateAnnotations {
+		value = strings.ReplaceAll(value, " ", "")
+		c.TemplateAnnotations[i] = value
+	}
+	for i, value := range c.VMLabels {
+		value = strings.ReplaceAll(value, " ", "")
+		c.VMLabels[i] = value
+	}
+	for i, value := range c.VMAnnotations {
+		value = strings.ReplaceAll(value, " ", "")
+		c.VMAnnotations[i] = value
+	}
 }
 
 func (c *CLIOptions) setDefaultValues() error {
@@ -160,30 +178,26 @@ func (c *CLIOptions) assertValidParams() error {
 		return err
 	}
 
-	c.templateLabels, err = getMapFromSlice(c.TemplateLabels)
+	c.templateLabels, err = zutils.ExtractKeysAndValuesByLastKnownKey(c.TemplateLabels, colonSeparator)
 	if err != nil {
 		return err
 	}
 
-	c.templateAnnotations, err = getMapFromSlice(c.TemplateAnnotations)
+	c.templateAnnotations, err = zutils.ExtractKeysAndValuesByLastKnownKey(c.TemplateAnnotations, colonSeparator)
 	if err != nil {
 		return err
 	}
 
-	c.vmLabels, err = getMapFromSlice(c.VMLabels)
+	c.vmLabels, err = zutils.ExtractKeysAndValuesByLastKnownKey(c.VMLabels, colonSeparator)
 	if err != nil {
 		return err
 	}
 
-	c.vmAnnotations, err = getMapFromSlice(c.VMAnnotations)
+	c.vmAnnotations, err = zutils.ExtractKeysAndValuesByLastKnownKey(c.VMAnnotations, colonSeparator)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-func getMapFromSlice(input []string) (map[string]string, error) {
-	return createMapFromSlice(input)
 }
 
 func (c *CLIOptions) assertValidTypes() error {

@@ -7,10 +7,10 @@ metadata:
     templateName.params.task.kubevirt.io/kind: Template
     templateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
     templateNamespace.params.task.kubevirt.io/kind: namespace
-    cpuSockets.params.task.kubevirt.io/type: string
-    cpuCores.params.task.kubevirt.io/type: string
-    cpuThreads.params.task.kubevirt.io/type: string
-    memory.params.task.kubevirt.io/type: string
+    cpuSockets.params.task.kubevirt.io/type: number
+    cpuCores.params.task.kubevirt.io/type: number
+    cpuThreads.params.task.kubevirt.io/type: number
+    memory.params.task.kubevirt.io/type: memory
   labels:
     task.kubevirt.io/type: modify-vm-template
     task.kubevirt.io/category: modify-vm-template
@@ -35,19 +35,19 @@ spec:
     - name: memory
       description: Number of memory vm can use
       type: string
-    - description: Template labels. If template contains same label, it will be replaced.
+    - description: Template labels. If template contains same label, it will be replaced. Each param should have KEY:VAL format. Eg ["key:value", "key:value"].
       name: templateLabels
       type: array
       default: []
-    - description: Template Annotations. If template contains same annotation, it will be replaced.
+    - description: Template Annotations. If template contains same annotation, it will be replaced. Each param should have KEY:VAL format. Eg ["key:value", "key:value"]
       name: templateAnnotations
       type: array
       default: []
-    - description: VM labels. If VM contains same label, it will be replaced.
+    - description: VM labels. If VM contains same label, it will be replaced. Each param should have KEY:VAL format. Eg ["key:value", "key:value"].
       name: vmLabels
       type: array
       default: []
-    - description: VM annotations. If VM contains same annotation, it will be replaced.
+    - description: VM annotations. If VM contains same annotation, it will be replaced. Each param should have KEY:VAL format. Eg ["key:value", "key:value"].
       name: vmAnnotations
       type: array
       default: []

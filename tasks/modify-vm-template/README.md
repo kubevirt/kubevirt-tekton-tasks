@@ -16,10 +16,10 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 - **cpuCores**: Number of CPU cores
 - **cpuThreads**: Number of CPU threads
 - **memory**: Number of memory vm can use
-- **templateLabels**: Template labels. If template contains same label, it will be replaced.
-- **templateAnnotations**: Template Annotations. If template contains same annotation, it will be replaced.
-- **vmLabels**: VM labels. If VM contains same label, it will be replaced.
-- **vmAnnotations**: VM annotations. If VM contains same annotation, it will be replaced.
+- **templateLabels**: Template labels. If template contains same label, it will be replaced. Each param should have KEY:VAL format. Eg [`key:value`, `key:value`].
+- **templateAnnotations**: Template Annotations. If template contains same annotation, it will be replaced. Each param should have KEY:VAL format. Eg [`key:value`, `key:value`]
+- **vmLabels**: VM labels. If VM contains same label, it will be replaced. Each param should have KEY:VAL format. Eg [`key:value`, `key:value`].
+- **vmAnnotations**: VM annotations. If VM contains same annotation, it will be replaced. Each param should have KEY:VAL format. Eg [`key:value`, `key:value`].
 
 ### Results
 

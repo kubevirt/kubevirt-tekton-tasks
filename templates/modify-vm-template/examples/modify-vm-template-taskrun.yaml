@@ -11,3 +11,5 @@ spec:
   params:
   - name: templateName
     value: vm-template-example
+  - name: memory
+    value: "2G"

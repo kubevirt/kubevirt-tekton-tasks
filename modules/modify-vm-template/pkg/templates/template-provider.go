@@ -6,7 +6,7 @@ import (
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/modify-vm-template/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	k8sv1 "k8s.io/api/core/v1"
 
 	templatev1 "github.com/openshift/api/template/v1"
@@ -84,109 +84,72 @@ func (t *TemplateUpdator) ModifyTemplate() (*v1.Template, error) {
 
 func (t *TemplateUpdator) UpdateTemplate(template *v1.Template) (*v1.Template, error) {
 	t.setValuesToTemplate(template)
-	vms, err := DecodeVM(template)
+	vm, err := zutils.DecodeVM(template)
 	if err != nil {
 		return nil, err
 	}
-	updatedVM := t.setValuesToVMs(vms)
+	updatedVM := t.setValuesToVM(vm)
 
 	return EncodeVMToTemplate(template, updatedVM)
 }
 
 func (t *TemplateUpdator) setValuesToTemplate(template *v1.Template) {
 	labels := t.cliOptions.GetVMLabels()
-	if template.Labels == nil && len(labels) > 0 {
-		template.Labels = make(map[string]string)
-	}
-
-	for key, value := range labels {
-		template.Labels[key] = value
-	}
+	template.Labels = t.concatMaps(template.Labels, labels)
 
 	annotations := t.cliOptions.GetVMAnnotations()
-	if template.Annotations == nil && len(annotations) > 0 {
-		template.Annotations = make(map[string]string)
-	}
-
-	for key, value := range annotations {
-		template.Annotations[key] = value
-	}
+	template.Annotations = t.concatMaps(template.Annotations, annotations)
 }
 
-func (t *TemplateUpdator) setValuesToVMs(vms []*kubevirtv1.VirtualMachine) []*kubevirtv1.VirtualMachine {
-	updatedVMs := make([]*kubevirtv1.VirtualMachine, len(vms))
+func (t *TemplateUpdator) concatMaps(a, b map[string]string) map[string]string {
+	lenB := len(b)
+	if a == nil && lenB > 0 {
+		a = make(map[string]string, lenB)
+	}
+
+	for key, value := range b {
+		a[key] = value
+	}
+	return a
+}
+
+func (t *TemplateUpdator) setValuesToVM(vm *kubevirtv1.VirtualMachine) *kubevirtv1.VirtualMachine {
 	labels := t.cliOptions.GetVMLabels()
 	annotations := t.cliOptions.GetVMAnnotations()
 
-	for i, vm := range vms {
-		if vm.Labels == nil && len(labels) > 0 {
-			vm.Labels = make(map[string]string)
-		}
+	vm.Labels = t.concatMaps(vm.Labels, labels)
 
-		for key, value := range labels {
-			vm.Labels[key] = value
-		}
+	vm.Annotations = t.concatMaps(vm.Annotations, annotations)
 
-		if vm.Annotations == nil && len(annotations) > 0 {
-			vm.Annotations = make(map[string]string)
-		}
-
-		for key, value := range annotations {
-			vm.Annotations[key] = value
-		}
-
-		if vm.Spec.Template.Spec.Domain.CPU == nil {
-			vm.Spec.Template.Spec.Domain.CPU = &kubevirtv1.CPU{}
-		}
-
-		if sockets := t.cliOptions.GetCPUSockets(); sockets > 0 {
-			vm.Spec.Template.Spec.Domain.CPU.Sockets = uint32(sockets)
-		}
-		if cores := t.cliOptions.GetCPUCores(); cores > 0 {
-			vm.Spec.Template.Spec.Domain.CPU.Cores = uint32(cores)
-		}
-		if threads := t.cliOptions.GetCPUThreads(); threads > 0 {
-			vm.Spec.Template.Spec.Domain.CPU.Threads = uint32(threads)
-		}
-		if memory := t.cliOptions.GetMemory(); memory != nil {
-			vm.Spec.Template.Spec.Domain.Resources.Requests[k8sv1.ResourceMemory] = *memory
-		}
-		updatedVMs[i] = vm
+	if vm.Spec.Template.Spec.Domain.CPU == nil {
+		vm.Spec.Template.Spec.Domain.CPU = &kubevirtv1.CPU{}
 	}
 
-	return updatedVMs
+	if sockets := t.cliOptions.GetCPUSockets(); sockets > 0 {
+		vm.Spec.Template.Spec.Domain.CPU.Sockets = uint32(sockets)
+	}
+	if cores := t.cliOptions.GetCPUCores(); cores > 0 {
+		vm.Spec.Template.Spec.Domain.CPU.Cores = uint32(cores)
+	}
+	if threads := t.cliOptions.GetCPUThreads(); threads > 0 {
+		vm.Spec.Template.Spec.Domain.CPU.Threads = uint32(threads)
+	}
+	if memory := t.cliOptions.GetMemory(); memory != nil {
+		vm.Spec.Template.Spec.Domain.Resources.Requests[k8sv1.ResourceMemory] = *memory
+	}
+
+	return vm
 }
 
-func EncodeVMToTemplate(template *templatev1.Template, vms []*kubevirtv1.VirtualMachine) (*v1.Template, error) {
-	vmsRaw := make([]runtime.RawExtension, len(vms))
-	for i, vm := range vms {
-		raw, err := json.Marshal(vm)
-		if err != nil {
-			return nil, err
-		}
-		vmsRaw[i].Raw = raw
+func EncodeVMToTemplate(template *templatev1.Template, vm *kubevirtv1.VirtualMachine) (*v1.Template, error) {
+	objectsRaw := make([]runtime.RawExtension, 1)
+
+	raw, err := json.Marshal(vm)
+	if err != nil {
+		return nil, err
 	}
-	template.Objects = vmsRaw
+	objectsRaw[0].Raw = raw
+
+	template.Objects = objectsRaw
 	return template, nil
-}
-
-func DecodeVM(template *templatev1.Template) ([]*kubevirtv1.VirtualMachine, error) {
-	var vms []*kubevirtv1.VirtualMachine
-
-	for _, obj := range template.Objects {
-		decoder := kubevirtv1.Codecs.UniversalDecoder(kubevirtv1.GroupVersion)
-		decoded, err := runtime.Decode(decoder, obj.Raw)
-		if err != nil {
-			return nil, err
-		}
-		vm, ok := decoded.(*kubevirtv1.VirtualMachine)
-		if ok {
-			vms = append(vms, vm)
-			break
-		}
-	}
-	if len(vms) == 0 {
-		return nil, zerrors.NewMissingRequiredError("no VM object found in the template")
-	}
-	return vms, nil
 }

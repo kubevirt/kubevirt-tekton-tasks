@@ -16,7 +16,21 @@ const (
 	VMLabelsOptionName            = "vmLabels"
 	VMAnnotationsOptionName       = "vmAnnotations"
 
-	CPUTopologyNumber    uint32 = 3
-	CPUTopologyNumberStr        = "3"
-	MemoryValue                 = "180M"
+	CPUSocketsTopologyNumber    uint32 = 1
+	CPUCoresTopologyNumber      uint32 = 2
+	CPUThreadsTopologyNumber    uint32 = 3
+	CPUSocketsTopologyNumberStr        = "1"
+	CPUCoresTopologyNumberStr          = "2"
+	CPUThreadsTopologyNumberStr        = "3"
+
+	MemoryValue = "180M"
+)
+
+var (
+	MockArray = []string{"newKey: value", "test: true"}
+
+	LabelsAnnotationsMap = map[string]string{
+		"newKey": "value",
+		"test":   "true",
+	}
 )

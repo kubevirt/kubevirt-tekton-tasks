@@ -3,26 +3,70 @@ package test
 import (
 	"context"
 
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	. "github.com/onsi/ginkgo"
-	templatev1 "github.com/openshift/api/template/v1"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	templatev1 "github.com/openshift/api/template/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
+
+type ExpectedResults struct {
+	VM       *kubevirtv1.VirtualMachine
+	Template *templatev1.Template
+
+	ExpectedCPUSocketsTopologyNumber uint32
+	ExpectedCPUCoresTopologyNumber   uint32
+	ExpectedCPUThreadsTopologyNumber uint32
+	ExpectedTemplateLabels           map[string]string
+	ExpectedTemplateAnnotations      map[string]string
+	ExpectedVMLabels                 map[string]string
+	ExpectedVMAnnotations            map[string]string
+	ExpectedVMMemory                 resource.Quantity
+}
+
+func (e ExpectedResults) ExpectCPUTopology() {
+	Expect(e.VM.Spec.Template.Spec.Domain.CPU.Sockets).To(Equal(e.ExpectedCPUSocketsTopologyNumber), "cpu sockets should equal")
+	Expect(e.VM.Spec.Template.Spec.Domain.CPU.Cores).To(Equal(e.ExpectedCPUCoresTopologyNumber), "cpu cores should equal")
+	Expect(e.VM.Spec.Template.Spec.Domain.CPU.Threads).To(Equal(e.ExpectedCPUThreadsTopologyNumber), "cpu threads should equal")
+}
+
+func (e ExpectedResults) ExpectTemplateLabels() {
+	checkValuesInMap(e.Template.Labels, e.ExpectedTemplateLabels, "template labels")
+}
+
+func (e ExpectedResults) ExpectTemplateAnnotations() {
+	checkValuesInMap(e.Template.Annotations, e.ExpectedTemplateAnnotations, "template annotations")
+}
+
+func (e ExpectedResults) ExpectVMLabels() {
+	checkValuesInMap(e.VM.Labels, e.ExpectedVMLabels, "vm labels")
+}
+
+func (e ExpectedResults) ExpectVMAnnotations() {
+	checkValuesInMap(e.VM.Annotations, e.ExpectedVMAnnotations, "vm annotations")
+}
+
+func (e ExpectedResults) ExpectVMMemory() {
+	Expect(e.VM.Spec.Template.Spec.Domain.Resources.Requests.Memory()).To(Equal(&e.ExpectedVMMemory), "memory should equal")
+}
+
+func checkValuesInMap(updatedMap, expectedResult map[string]string, message string) {
+	for key, value := range expectedResult {
+		Expect(updatedMap[key]).To(Equal(value), "value should equal in "+message)
+	}
+}
 
 var _ = Describe("Copy template task", func() {
 	f := framework.NewFramework().LimitEnvScope(OKDEnvScope)
-	mockArray := []string{"newKey: value", "test: true"}
 	Context("modify template fail", func() {
 		table.DescribeTable("taskrun fails and no template is created", func(config *testconfigs.ModifyTemplateTestConfig) {
 			f.TestSetup(config)
@@ -67,7 +111,7 @@ var _ = Describe("Copy template task", func() {
 			}),
 			table.Entry("[NAMESPACE SCOPED] cannot updated template in different namespace", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
+					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "cannot get resource \"templates\" in API group \"template.openshift.io\"",
 					LimitTestScope: NamespaceTestScope,
 				},
@@ -84,43 +128,104 @@ var _ = Describe("Copy template task", func() {
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
-					Memory:       "nonsense value",
+					Memory:       "wrong memory value",
 				},
 			}),
 			table.Entry("wrong number of CPU cores value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "parsing \"nonsense value\": invalid syntax",
+					ExpectedLogs:   "parsing \"wrong cpu cores\": invalid syntax",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
-					CPUCores:     "nonsense value",
+					CPUCores:     "wrong cpu cores",
 				},
 			}),
 			table.Entry("wrong number of CPU Sockets value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "parsing \"nonsense value\": invalid syntax",
+					ExpectedLogs:   "parsing \"wrong cpu sockets\": invalid syntax",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
-					CPUSockets:   "nonsense value",
+					CPUCores:     CPUCoresTopologyNumberStr,
+					CPUThreads:   CPUThreadsTopologyNumberStr,
+					CPUSockets:   "wrong cpu sockets",
 				},
 			}),
 			table.Entry("wrong number of CPU Threads value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "parsing \"nonsense value\": invalid syntax",
+					ExpectedLogs:   "parsing \"wrong cpu threads\": invalid syntax",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
-					CPUThreads:   "nonsense value",
+					CPUCores:     CPUCoresTopologyNumberStr,
+					CPUThreads:   "wrong cpu threads",
+				},
+			}),
+			table.Entry("wrong template labels value provided", &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					TemplateName:   testtemplate.CirrosTemplateName,
+					CPUCores:       CPUCoresTopologyNumberStr,
+					CPUThreads:     CPUThreadsTopologyNumberStr,
+					CPUSockets:     CPUSocketsTopologyNumberStr,
+					TemplateLabels: []string{"singleLabel"},
+				},
+			}),
+			table.Entry("wrong template annotations value provided", &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					TemplateName:        testtemplate.CirrosTemplateName,
+					CPUCores:            CPUCoresTopologyNumberStr,
+					CPUThreads:          CPUThreadsTopologyNumberStr,
+					CPUSockets:          CPUSocketsTopologyNumberStr,
+					TemplateLabels:      MockArray,
+					TemplateAnnotations: []string{"singleAnnotation"},
+				},
+			}),
+			table.Entry("wrong vm labels value provided", &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					TemplateName:        testtemplate.CirrosTemplateName,
+					CPUCores:            CPUCoresTopologyNumberStr,
+					CPUThreads:          CPUThreadsTopologyNumberStr,
+					CPUSockets:          CPUSocketsTopologyNumberStr,
+					TemplateLabels:      MockArray,
+					TemplateAnnotations: MockArray,
+					VMLabels:            []string{"singleLabel"},
+				},
+			}),
+			table.Entry("wrong template annotations value provided", &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					TemplateName:        testtemplate.CirrosTemplateName,
+					CPUCores:            CPUCoresTopologyNumberStr,
+					CPUThreads:          CPUThreadsTopologyNumberStr,
+					CPUSockets:          CPUSocketsTopologyNumberStr,
+					TemplateLabels:      MockArray,
+					TemplateAnnotations: MockArray,
+					VMLabels:            MockArray,
+					VMAnnotations:       []string{"singleAnnotation"},
 				},
 			}),
 		)
 	})
 	Context("modify template sucess", func() {
-		table.DescribeTable("taskrun succeded and template is updated", func(config *testconfigs.ModifyTemplateTestConfig, checkResults func(*templatev1.Template)) {
+		table.DescribeTable("taskrun succeded and template is updated", func(config *testconfigs.ModifyTemplateTestConfig, expectedResults ExpectedResults) {
 			f.TestSetup(config)
 
 			if template := config.TaskData.Template; template != nil {
@@ -138,12 +243,22 @@ var _ = Describe("Copy template task", func() {
 					"namespace": config.TaskData.TemplateNamespace,
 				})
 
-			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			var err error
+			expectedResults.Template, err = f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(updatedTemplate).ToNot(Equal(nil), "new template should exists")
-			f.ManageTemplates(updatedTemplate)
+			Expect(expectedResults.Template).ToNot(BeNil(), "new template should exists")
+			f.ManageTemplates(expectedResults.Template)
 
-			checkResults(updatedTemplate)
+			expectedResults.VM, err = zutils.DecodeVM(expectedResults.Template)
+			Expect(err).ShouldNot(HaveOccurred(), "decode VM")
+
+			expectedResults.ExpectCPUTopology()
+			expectedResults.ExpectTemplateLabels()
+			expectedResults.ExpectTemplateAnnotations()
+			expectedResults.ExpectVMLabels()
+			expectedResults.ExpectVMAnnotations()
+			expectedResults.ExpectVMMemory()
+
 		},
 			table.Entry("should update template", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
@@ -152,58 +267,25 @@ var _ = Describe("Copy template task", func() {
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:            testtemplate.NewCirrosServerTinyTemplate().Build(),
 					TemplateName:        testtemplate.CirrosTemplateName,
-					CPUCores:            CPUTopologyNumberStr,
-					CPUSockets:          CPUTopologyNumberStr,
-					CPUThreads:          CPUTopologyNumberStr,
+					CPUCores:            CPUCoresTopologyNumberStr,
+					CPUSockets:          CPUSocketsTopologyNumberStr,
+					CPUThreads:          CPUThreadsTopologyNumberStr,
 					Memory:              MemoryValue,
-					TemplateLabels:      mockArray,
-					TemplateAnnotations: mockArray,
-					VMAnnotations:       mockArray,
-					VMLabels:            mockArray,
+					TemplateLabels:      MockArray,
+					TemplateAnnotations: MockArray,
+					VMAnnotations:       MockArray,
+					VMLabels:            MockArray,
 				},
-			}, func(t *templatev1.Template) {
-				checkValuesInMap(t.Labels)
-				checkValuesInMap(t.Annotations)
-
-				vms, err := decodeVM(t)
-				Expect(err).ShouldNot(HaveOccurred())
-				for _, vm := range vms {
-					checkValuesInMap(vm.Labels)
-					checkValuesInMap(vm.Annotations)
-
-					Expect(vm.Spec.Template.Spec.Domain.CPU.Sockets).To(Equal(CPUTopologyNumber), "cpu sockets should equal")
-					Expect(vm.Spec.Template.Spec.Domain.CPU.Cores).To(Equal(CPUTopologyNumber), "cpu cores should equal")
-					Expect(vm.Spec.Template.Spec.Domain.CPU.Threads).To(Equal(CPUTopologyNumber), "cpu threads should equal")
-					memory := resource.MustParse(MemoryValue)
-					Expect(vm.Spec.Template.Spec.Domain.Resources.Requests.Memory()).To(Equal(&memory), "memory should equal")
-				}
+			}, ExpectedResults{
+				ExpectedCPUSocketsTopologyNumber: CPUSocketsTopologyNumber,
+				ExpectedCPUCoresTopologyNumber:   CPUCoresTopologyNumber,
+				ExpectedCPUThreadsTopologyNumber: CPUThreadsTopologyNumber,
+				ExpectedVMMemory:                 resource.MustParse(MemoryValue),
+				ExpectedTemplateLabels:           LabelsAnnotationsMap,
+				ExpectedTemplateAnnotations:      LabelsAnnotationsMap,
+				ExpectedVMLabels:                 LabelsAnnotationsMap,
+				ExpectedVMAnnotations:            LabelsAnnotationsMap,
 			}),
 		)
 	})
 })
-
-func checkValuesInMap(mapToCheck map[string]string) {
-	Expect(mapToCheck["newKey"]).To(Equal("value"))
-	Expect(mapToCheck["test"]).To(Equal("true"))
-}
-
-func decodeVM(template *templatev1.Template) ([]*kubevirtv1.VirtualMachine, error) {
-	var vms []*kubevirtv1.VirtualMachine
-
-	for _, obj := range template.Objects {
-		decoder := kubevirtv1.Codecs.UniversalDecoder(kubevirtv1.GroupVersion)
-		decoded, err := runtime.Decode(decoder, obj.Raw)
-		if err != nil {
-			return nil, err
-		}
-		vm, ok := decoded.(*kubevirtv1.VirtualMachine)
-		if ok {
-			vms = append(vms, vm)
-			break
-		}
-	}
-	if len(vms) == 0 {
-		return nil, zerrors.NewMissingRequiredError("no VM object found in the template")
-	}
-	return vms, nil
-}

@@ -7,10 +7,10 @@ metadata:
     templateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
     templateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
     templateNamespace.params.task.kubevirt.io/kind: {{ task_param_types.namespace }}
-    cpuSockets.params.task.kubevirt.io/type: {{ task_param_types.string }}
-    cpuCores.params.task.kubevirt.io/type: {{ task_param_types.string }}
-    cpuThreads.params.task.kubevirt.io/type: {{ task_param_types.string }}
-    memory.params.task.kubevirt.io/type: {{ task_param_types.string }}
+    cpuSockets.params.task.kubevirt.io/type: {{ task_param_types.number }}
+    cpuCores.params.task.kubevirt.io/type: {{ task_param_types.number }}
+    cpuThreads.params.task.kubevirt.io/type: {{ task_param_types.number }}
+    memory.params.task.kubevirt.io/type: {{ task_param_types.memory }}
   labels:
     task.kubevirt.io/type: {{ task_name }}
     task.kubevirt.io/category: {{ task_category }}
@@ -35,19 +35,19 @@ spec:
     - name: memory
       description: Number of memory vm can use
       type: string
-    - description: Template labels. If template contains same label, it will be replaced.
+    - description: Template labels. If template contains same label, it will be replaced. Each param should have KEY:VAL format. Eg ["key:value", "key:value"].
       name: templateLabels
       type: array
       default: []
-    - description: Template Annotations. If template contains same annotation, it will be replaced.
+    - description: Template Annotations. If template contains same annotation, it will be replaced. Each param should have KEY:VAL format. Eg ["key:value", "key:value"]
       name: templateAnnotations
       type: array
       default: []
-    - description: VM labels. If VM contains same label, it will be replaced.
+    - description: VM labels. If VM contains same label, it will be replaced. Each param should have KEY:VAL format. Eg ["key:value", "key:value"].
       name: vmLabels
       type: array
       default: []
-    - description: VM annotations. If VM contains same annotation, it will be replaced.
+    - description: VM annotations. If VM contains same annotation, it will be replaced. Each param should have KEY:VAL format. Eg ["key:value", "key:value"].
       name: vmAnnotations
       type: array
       default: []
