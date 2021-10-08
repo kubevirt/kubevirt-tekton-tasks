@@ -221,9 +221,11 @@ github.com/kelseyhightower/envconfig
 github.com/kr/logfmt
 # github.com/kubernetes-csi/external-snapshotter/v2 v2.1.1
 github.com/kubernetes-csi/external-snapshotter/v2/pkg/apis/volumesnapshot/v1beta1
-# github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0-20210817085806-121982faec0f
+# github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ../shared
 ## explicit
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils
 # github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
 ## explicit
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants
@@ -1018,7 +1020,7 @@ knative.dev/pkg/tracing/config
 knative.dev/pkg/tracing/propagation
 knative.dev/pkg/tracing/propagation/tracecontextb3
 knative.dev/pkg/tracker
-# kubevirt.io/client-go v0.39.0
+# kubevirt.io/client-go v0.45.0 => kubevirt.io/client-go v0.39.0
 ## explicit
 kubevirt.io/client-go/api/v1
 kubevirt.io/client-go/apis/snapshot
@@ -1047,7 +1049,7 @@ kubevirt.io/client-go/precond
 kubevirt.io/client-go/subresources
 kubevirt.io/client-go/util
 kubevirt.io/client-go/version
-# kubevirt.io/containerized-data-importer v1.31.0 => kubevirt.io/containerized-data-importer v1.31.0
+# kubevirt.io/containerized-data-importer v1.36.0 => kubevirt.io/containerized-data-importer v1.31.0
 ## explicit
 kubevirt.io/containerized-data-importer/pkg/apis/core
 kubevirt.io/containerized-data-importer/pkg/apis/core/v1alpha1
@@ -1090,6 +1092,7 @@ sigs.k8s.io/yaml
 # k8s.io/sample-controller => k8s.io/sample-controller v0.20.2
 # k8s.io/klog => k8s.io/klog v0.4.0
 # github.com/go-kit/kit => github.com/go-kit/kit v0.3.0
+# kubevirt.io/client-go => kubevirt.io/client-go v0.39.0
 # github.com/openshift/api => github.com/openshift/api v0.0.0-20210309190949-7d6cac66d2a4
 # github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
 # github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190128024246-5eb7ae5bdb7a

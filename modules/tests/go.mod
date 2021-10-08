@@ -3,7 +3,7 @@ module github.com/kubevirt/kubevirt-tekton-tasks/modules/tests
 go 1.15
 
 require (
-	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0-20210817085806-121982faec0f
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0
 	github.com/onsi/ginkgo v1.15.1
 	github.com/onsi/gomega v1.11.0
@@ -14,13 +14,16 @@ require (
 	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v12.0.0+incompatible
 	knative.dev/pkg v0.0.0-20210308052421-737401c38b22
-	kubevirt.io/client-go v0.39.0
-	kubevirt.io/containerized-data-importer v1.31.0
+	kubevirt.io/client-go v0.45.0
+	kubevirt.io/containerized-data-importer v1.36.0
 	sigs.k8s.io/yaml v1.2.0
 )
 
 // locally referenced modules
-replace github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
+replace (
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ../shared
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
+)
 
 // Pinned to kubernetes-1.20.2 (due to kubevirt/client-go v0.39.0)
 replace (
@@ -55,6 +58,8 @@ replace k8s.io/klog => k8s.io/klog v0.4.0
 
 // KubeVirt
 replace github.com/go-kit/kit => github.com/go-kit/kit v0.3.0
+
+replace kubevirt.io/client-go => kubevirt.io/client-go v0.39.0
 
 // Openshift
 // Pinned to openshift-master 20210309

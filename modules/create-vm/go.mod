@@ -15,8 +15,8 @@ require (
 	k8s.io/api v0.20.2
 	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v12.0.0+incompatible
-	kubevirt.io/client-go v0.39.0
-	kubevirt.io/containerized-data-importer v1.31.0
+	kubevirt.io/client-go v0.45.0
+	kubevirt.io/containerized-data-importer v1.36.0
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -59,6 +59,8 @@ replace k8s.io/klog => k8s.io/klog v0.4.0
 
 // KubeVirt
 replace github.com/go-kit/kit => github.com/go-kit/kit v0.3.0
+
+replace kubevirt.io/client-go => kubevirt.io/client-go v0.39.0
 
 // Openshift
 // Pinned to openshift-master 20210309
