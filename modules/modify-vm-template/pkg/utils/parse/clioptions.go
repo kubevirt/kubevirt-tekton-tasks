@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/api/resource"
+	kubevirtv1 "kubevirt.io/client-go/api/v1"
 )
 
 const (
@@ -30,12 +32,16 @@ type CLIOptions struct {
 	VMLabels            []string          `arg:"--vm-labels" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds labels to VMs"`
 	VMAnnotations       []string          `arg:"--vm-annotations" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds annotations to VMs"`
 	Output              output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
+	Disks               []string          `arg:"--disks" placeholder:"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}, {\"name\": \"disk2\"}" help:"VM disks in json format, replace vm disk if same name, otherwise new disk is appended"`
+	Volumes             []string          `arg:"--volumes" placeholder:"{\"name\": \"virtiocontainerdisk\", \"containerDisk\": {\"image\": \"kubevirt/virtio-container-disk\"}}, {\"name\": \"disk2\"}" help:"VM volumes in json format, replace vm volume if same name, otherwise new volume is appended"`
 	Debug               bool              `arg:"--debug" help:"Sets DEBUG log level"`
 
 	templateLabels      map[string]string
 	templateAnnotations map[string]string
 	vmLabels            map[string]string
 	vmAnnotations       map[string]string
+	disks               []kubevirtv1.Disk
+	volumes             []kubevirtv1.Volume
 }
 
 func (c *CLIOptions) GetDebugLevel() zapcore.Level {
@@ -45,19 +51,27 @@ func (c *CLIOptions) GetDebugLevel() zapcore.Level {
 	return zapcore.InfoLevel
 }
 
-func (c *CLIOptions) GetCPUSockets() int {
-	res, _ := strconv.Atoi(c.CPUSockets)
-	return res
+func (c *CLIOptions) GetCPUSockets() uint32 {
+	res, _ := strconv.ParseUint(c.CPUSockets, 0, 32)
+	return uint32(res)
 }
 
-func (c *CLIOptions) GetCPUCores() int {
-	res, _ := strconv.Atoi(c.CPUCores)
-	return res
+func (c *CLIOptions) GetCPUCores() uint32 {
+	res, _ := strconv.ParseUint(c.CPUCores, 0, 32)
+	return uint32(res)
 }
 
-func (c *CLIOptions) GetCPUThreads() int {
-	res, _ := strconv.Atoi(c.CPUThreads)
-	return res
+func (c *CLIOptions) GetCPUThreads() uint32 {
+	res, _ := strconv.ParseUint(c.CPUThreads, 0, 32)
+	return uint32(res)
+}
+
+func (c *CLIOptions) GetDisks() []kubevirtv1.Disk {
+	return c.disks
+}
+
+func (c *CLIOptions) GetVolumes() []kubevirtv1.Volume {
+	return c.volumes
 }
 
 func (c *CLIOptions) GetMemory() *resource.Quantity {
@@ -95,6 +109,14 @@ func (c *CLIOptions) GetVMLabels() map[string]string {
 func (c *CLIOptions) Init() error {
 	c.trimSpaces()
 
+	if err := c.convertDisks(); err != nil {
+		return err
+	}
+
+	if err := c.convertVolumes(); err != nil {
+		return err
+	}
+
 	if err := c.assertValidParams(); err != nil {
 		return err
 	}
@@ -105,7 +127,24 @@ func (c *CLIOptions) Init() error {
 
 	c.setDefaultValues()
 
+	c.trimSpacesAnnotations()
+
 	return nil
+}
+
+func (c *CLIOptions) trimSpacesAnnotations() {
+	for key, value := range c.templateAnnotations {
+		newKey := strings.TrimPrefix(strings.TrimSuffix(key, " "), " ")
+		newValue := strings.TrimPrefix(strings.TrimSuffix(value, " "), " ")
+		delete(c.templateAnnotations, key)
+		c.templateAnnotations[newKey] = newValue
+	}
+	for key, value := range c.vmAnnotations {
+		newKey := strings.TrimPrefix(strings.TrimSuffix(key, " "), " ")
+		newValue := strings.TrimPrefix(strings.TrimSuffix(value, " "), " ")
+		delete(c.vmAnnotations, key)
+		c.vmAnnotations[newKey] = newValue
+	}
 }
 
 func (c *CLIOptions) trimSpaces() {
@@ -117,17 +156,9 @@ func (c *CLIOptions) trimSpaces() {
 		value = strings.ReplaceAll(value, " ", "")
 		c.TemplateLabels[i] = value
 	}
-	for i, value := range c.TemplateAnnotations {
-		value = strings.ReplaceAll(value, " ", "")
-		c.TemplateAnnotations[i] = value
-	}
 	for i, value := range c.VMLabels {
 		value = strings.ReplaceAll(value, " ", "")
 		c.VMLabels[i] = value
-	}
-	for i, value := range c.VMAnnotations {
-		value = strings.ReplaceAll(value, " ", "")
-		c.VMAnnotations[i] = value
 	}
 }
 
@@ -143,11 +174,35 @@ func (c *CLIOptions) setDefaultValues() error {
 	return nil
 }
 
+func (c *CLIOptions) convertDisks() error {
+	for _, diskStr := range c.Disks {
+		disk := new(kubevirtv1.Disk)
+		err := json.Unmarshal([]byte(diskStr), disk)
+		if err != nil {
+			return err
+		}
+		c.disks = append(c.disks, *disk)
+	}
+	return nil
+}
+
+func (c *CLIOptions) convertVolumes() error {
+	for _, volumeStr := range c.Volumes {
+		volume := new(kubevirtv1.Volume)
+		err := json.Unmarshal([]byte(volumeStr), volume)
+		if err != nil {
+			return err
+		}
+		c.volumes = append(c.volumes, *volume)
+	}
+	return nil
+}
+
 func checkCorrectInt(value string) error {
 	if value == "" {
 		return nil
 	}
-	_, err := strconv.Atoi(value)
+	_, err := strconv.ParseUint(value, 0, 32)
 	return err
 }
 

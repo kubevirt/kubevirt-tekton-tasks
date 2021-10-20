@@ -14,23 +14,24 @@ func IsTrue(value string) bool {
 	return strings.ToLower(value) == zconstants.True
 }
 
-func DecodeVM(template *templatev1.Template) (*kubevirtv1.VirtualMachine, error) {
+func DecodeVM(template *templatev1.Template) (*kubevirtv1.VirtualMachine, int, error) {
 	var vm *kubevirtv1.VirtualMachine
-
-	for _, obj := range template.Objects {
+	vmIndex := 0
+	for i, obj := range template.Objects {
 		decoder := kubevirtv1.Codecs.UniversalDecoder(kubevirtv1.GroupVersion)
 		decoded, err := runtime.Decode(decoder, obj.Raw)
 		if err != nil {
-			return nil, err
+			return nil, vmIndex, err
 		}
 		done, ok := decoded.(*kubevirtv1.VirtualMachine)
 		if ok {
 			vm = done
+			vmIndex = i
 			break
 		}
 	}
 	if vm == nil {
-		return nil, zerrors.NewMissingRequiredError("no VM object found in the template")
+		return nil, vmIndex, zerrors.NewMissingRequiredError("no VM object found in the template")
 	}
-	return vm, nil
+	return vm, vmIndex, nil
 }

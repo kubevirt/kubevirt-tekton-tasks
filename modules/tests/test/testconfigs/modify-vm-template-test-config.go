@@ -22,6 +22,8 @@ type ModifyTemplateTaskData struct {
 	TemplateAnnotations     []string
 	VMAnnotations           []string
 	VMLabels                []string
+	Disks                   []string
+	Volumes                 []string
 }
 
 type ModifyTemplateTestConfig struct {
@@ -105,6 +107,18 @@ func (m *ModifyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			Value: v1beta1.ArrayOrString{
 				Type:     v1beta1.ParamTypeArray,
 				ArrayVal: m.TaskData.VMLabels,
+			},
+		}, {
+			Name: DisksOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.Disks,
+			},
+		}, {
+			Name: VolumesOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.Volumes,
 			},
 		},
 	}

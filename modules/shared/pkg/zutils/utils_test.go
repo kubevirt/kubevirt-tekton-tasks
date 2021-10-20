@@ -30,9 +30,10 @@ var _ = Describe("Utils", func() {
 
 	Describe("DecodeVM", func() {
 		It("DecodeVM", func() {
-			vm, err := zutils.DecodeVM(template.NewFedoraServerTinyTemplate().Build())
+			vm, vmIndex, err := zutils.DecodeVM(template.NewFedoraServerTinyTemplate().Build())
 			Expect(err).Should(Succeed())
 			Expect(vm.Kind).To(Equal("VirtualMachine"))
+			Expect(vmIndex).To(Equal(0))
 			Expect(vm.Name).To(Equal("${NAME}"))
 			Expect(vm.Spec.Template.Spec.Domain.Devices.Interfaces[0].Name).To(Equal("default"))
 		})
@@ -40,7 +41,7 @@ var _ = Describe("Utils", func() {
 		It("DecodeVM fails", func() {
 			template := template.NewFedoraServerTinyTemplate().Build()
 			template.Objects = nil
-			vm, err := zutils.DecodeVM(template)
+			vm, _, err := zutils.DecodeVM(template)
 			Expect(err).Should(HaveOccurred())
 			Expect(vm).To(BeNil())
 		})

@@ -15,7 +15,6 @@ import (
 	templateclientset "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
@@ -84,24 +83,24 @@ func (t *TemplateUpdator) ModifyTemplate() (*v1.Template, error) {
 
 func (t *TemplateUpdator) UpdateTemplate(template *v1.Template) (*v1.Template, error) {
 	t.setValuesToTemplate(template)
-	vm, err := zutils.DecodeVM(template)
+	vm, vmIndex, err := zutils.DecodeVM(template)
 	if err != nil {
 		return nil, err
 	}
 	updatedVM := t.setValuesToVM(vm)
 
-	return EncodeVMToTemplate(template, updatedVM)
+	return EncodeVMToTemplate(template, updatedVM, vmIndex)
 }
 
 func (t *TemplateUpdator) setValuesToTemplate(template *v1.Template) {
 	labels := t.cliOptions.GetVMLabels()
-	template.Labels = t.concatMaps(template.Labels, labels)
+	template.Labels = appendToMap(template.Labels, labels)
 
 	annotations := t.cliOptions.GetVMAnnotations()
-	template.Annotations = t.concatMaps(template.Annotations, annotations)
+	template.Annotations = appendToMap(template.Annotations, annotations)
 }
 
-func (t *TemplateUpdator) concatMaps(a, b map[string]string) map[string]string {
+func appendToMap(a, b map[string]string) map[string]string {
 	lenB := len(b)
 	if a == nil && lenB > 0 {
 		a = make(map[string]string, lenB)
@@ -117,39 +116,62 @@ func (t *TemplateUpdator) setValuesToVM(vm *kubevirtv1.VirtualMachine) *kubevirt
 	labels := t.cliOptions.GetVMLabels()
 	annotations := t.cliOptions.GetVMAnnotations()
 
-	vm.Labels = t.concatMaps(vm.Labels, labels)
+	vm.Labels = appendToMap(vm.Labels, labels)
 
-	vm.Annotations = t.concatMaps(vm.Annotations, annotations)
+	vm.Annotations = appendToMap(vm.Annotations, annotations)
 
 	if vm.Spec.Template.Spec.Domain.CPU == nil {
 		vm.Spec.Template.Spec.Domain.CPU = &kubevirtv1.CPU{}
 	}
 
 	if sockets := t.cliOptions.GetCPUSockets(); sockets > 0 {
-		vm.Spec.Template.Spec.Domain.CPU.Sockets = uint32(sockets)
+		vm.Spec.Template.Spec.Domain.CPU.Sockets = sockets
 	}
 	if cores := t.cliOptions.GetCPUCores(); cores > 0 {
-		vm.Spec.Template.Spec.Domain.CPU.Cores = uint32(cores)
+		vm.Spec.Template.Spec.Domain.CPU.Cores = cores
 	}
 	if threads := t.cliOptions.GetCPUThreads(); threads > 0 {
-		vm.Spec.Template.Spec.Domain.CPU.Threads = uint32(threads)
+		vm.Spec.Template.Spec.Domain.CPU.Threads = threads
 	}
 	if memory := t.cliOptions.GetMemory(); memory != nil {
 		vm.Spec.Template.Spec.Domain.Resources.Requests[k8sv1.ResourceMemory] = *memory
 	}
 
+	for _, disk := range t.cliOptions.GetDisks() {
+		replaced := false
+		for i, vmDisk := range vm.Spec.Template.Spec.Domain.Devices.Disks {
+			if disk.Name == vmDisk.Name {
+				vm.Spec.Template.Spec.Domain.Devices.Disks[i] = disk
+				replaced = true
+			}
+		}
+		if !replaced {
+			vm.Spec.Template.Spec.Domain.Devices.Disks = append(vm.Spec.Template.Spec.Domain.Devices.Disks, disk)
+		}
+	}
+
+	for _, volume := range t.cliOptions.GetVolumes() {
+		replaced := false
+		for i, vmVolume := range vm.Spec.Template.Spec.Volumes {
+			if volume.Name == vmVolume.Name {
+				vm.Spec.Template.Spec.Volumes[i] = volume
+				replaced = true
+			}
+		}
+		if !replaced {
+			vm.Spec.Template.Spec.Volumes = append(vm.Spec.Template.Spec.Volumes, volume)
+		}
+	}
+
 	return vm
 }
 
-func EncodeVMToTemplate(template *templatev1.Template, vm *kubevirtv1.VirtualMachine) (*v1.Template, error) {
-	objectsRaw := make([]runtime.RawExtension, 1)
-
+func EncodeVMToTemplate(template *templatev1.Template, vm *kubevirtv1.VirtualMachine, vmIndex int) (*v1.Template, error) {
 	raw, err := json.Marshal(vm)
 	if err != nil {
 		return nil, err
 	}
-	objectsRaw[0].Raw = raw
 
-	template.Objects = objectsRaw
+	template.Objects[vmIndex].Raw = raw
 	return template, nil
 }
