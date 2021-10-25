@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
@@ -13,6 +14,7 @@ import (
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubevirtv1 "kubevirt.io/client-go/api/v1"
 )
 
 var _ = Describe("Create VM from template", func() {
@@ -343,6 +345,7 @@ var _ = Describe("Create VM from template", func() {
 				DataVolumesToCreate: []*datavolume.TestDataVolume{
 					datavolume.NewBlankDataVolume("common-templates-src-dv"),
 				},
+				StartVM: "false",
 			},
 		}
 		f.TestSetup(config)
@@ -373,7 +376,7 @@ var _ = Describe("Create VM from template", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
-	It("VM is created from template properly ", func() {
+	It("VM is created from template properly and running", func() {
 		template := testtemplate.NewCirrosServerTinyTemplate().Build()
 		config := &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
@@ -385,6 +388,7 @@ var _ = Describe("Create VM from template", func() {
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
 				},
+				StartVM: "true",
 			},
 		}
 		f.TestSetup(config)
@@ -405,7 +409,7 @@ var _ = Describe("Create VM from template", func() {
 			})
 
 		vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
-			"", config.GetTaskRunTimeout(), false)
+			kubevirtv1.Running, config.GetTaskRunTimeout(), false)
 		Expect(err).ShouldNot(HaveOccurred())
 
 		vmName := expectedVMStub.Name

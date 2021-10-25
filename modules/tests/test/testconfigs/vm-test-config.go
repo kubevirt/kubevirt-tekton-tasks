@@ -1,6 +1,8 @@
 package testconfigs
 
 import (
+	"strings"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	template2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
@@ -13,7 +15,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 	"sigs.k8s.io/yaml"
-	"strings"
 )
 
 type CreateVMTaskData struct {
@@ -30,6 +31,7 @@ type CreateVMTaskData struct {
 	IsCommonTemplate                         bool
 	UseDefaultTemplateNamespacesInTaskParams bool
 	UseDefaultVMNamespacesInTaskParams       bool
+	StartVM                                  string
 	ExpectedAdditionalDiskBus                string
 
 	// Params
@@ -371,6 +373,13 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 				Value: v1beta1.ArrayOrString{
 					Type:      v1beta1.ParamTypeString,
 					StringVal: vmNamespace,
+				},
+			},
+			v1beta1.Param{
+				Name: CreateVMFromTemplateParams.StartVM,
+				Value: v1beta1.ArrayOrString{
+					Type:      v1beta1.ParamTypeString,
+					StringVal: c.TaskData.StartVM,
 				},
 			},
 		)

@@ -39,6 +39,10 @@ spec:
       description: Namespace where to create the VM. (defaults to active namespace)
       default: ""
       type: string
+    - name: startVM
+      description: Start vm after creation.
+      default: ""
+      type: string
     - name: dataVolumes
       description: Add DVs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. ["rootdisk:my-dv", "my-dv2"]
       default: []
@@ -84,6 +88,8 @@ spec:
           value: $(params.templateNamespace)
         - name: VM_NAMESPACE
           value: $(params.vmNamespace)
+        - name: START_VM
+          value: $(params.startVM)
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1

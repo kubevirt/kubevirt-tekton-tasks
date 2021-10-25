@@ -124,6 +124,8 @@ func (v *VMCreator) createVMFromTemplate() (*kubevirtv1.VirtualMachine, error) {
 	}
 
 	vm.Namespace = v.targetNamespace
+	vm.Spec.Running = v.cliOptions.GetStartVMFlag()
+
 	virtualMachine.AddMetadata(vm, processedTemplate)
 	virtualMachine.AddVolumes(vm, templateValidations, v.cliOptions)
 

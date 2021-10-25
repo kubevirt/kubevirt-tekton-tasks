@@ -16,6 +16,8 @@ import (
 var (
 	defaultNS      = "default"
 	testVMManifest = testobjects.NewTestVM().ToString()
+	trueVar        = true
+	falseVar       = false
 )
 
 var _ = Describe("CLIOptions", func() {
@@ -79,6 +81,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetTemplateParams":          map[string]string{},
 			"GetDebugLevel":              zapcore.InfoLevel,
 			"GetCreationMode":            constants.TemplateCreationMode,
+			"GetStartVMFlag":             &falseVar,
 		}),
 		table.Entry("handles template cli arguments", &parse.CLIOptions{
 			TemplateName:              "test",
@@ -91,6 +94,7 @@ var _ = Describe("CLIOptions", func() {
 			DataVolumes:               []string{"dv1", "mydisk2:dv2"},
 			OwnDataVolumes:            []string{"mydisk3:dv3", "dv4", "mydisk4:dv5"},
 			Debug:                     true,
+			StartVM:                   trueVar,
 		}, map[string]interface{}{
 			"GetTemplateNamespace":       defaultNS,
 			"GetVirtualMachineNamespace": defaultNS,
@@ -117,6 +121,7 @@ var _ = Describe("CLIOptions", func() {
 			},
 			"GetDebugLevel":   zapcore.DebugLevel,
 			"GetCreationMode": constants.TemplateCreationMode,
+			"GetStartVMFlag":  &trueVar,
 		}),
 		table.Entry("handles vm cli arguments", &parse.CLIOptions{
 			VirtualMachineManifest:    testVMManifest,
@@ -127,6 +132,7 @@ var _ = Describe("CLIOptions", func() {
 			DataVolumes:               []string{"mydisk2:dv1", ":dv2"},
 			OwnDataVolumes:            []string{"dv3"},
 			Debug:                     true,
+			StartVM:                   falseVar,
 		}, map[string]interface{}{
 			"GetTemplateNamespace":       "",
 			"GetVirtualMachineNamespace": defaultNS,
@@ -148,6 +154,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetTemplateParams": map[string]string{},
 			"GetDebugLevel":     zapcore.DebugLevel,
 			"GetCreationMode":   constants.VMManifestCreationMode,
+			"GetStartVMFlag":    &falseVar,
 		}),
 		table.Entry("handles trim", &parse.CLIOptions{
 			TemplateName:              "test",

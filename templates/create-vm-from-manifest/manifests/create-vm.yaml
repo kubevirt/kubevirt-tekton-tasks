@@ -55,6 +55,10 @@ spec:
       description: Namespace where to create the VM. (defaults to active namespace)
       default: ""
       type: string
+    - name: startVM
+      description: Start vm after creation.
+      default: ""
+      type: string
 {% endif %}
     - name: dataVolumes
       description: Add DVs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. ["rootdisk:my-dv", "my-dv2"]
@@ -102,6 +106,8 @@ spec:
           value: $(params.templateNamespace)
         - name: VM_NAMESPACE
           value: $(params.vmNamespace)
+        - name: START_VM
+          value: $(params.startVM)
 {% elif task_name == "create-vm-from-manifest" %}
       env:
         - name: VM_MANIFEST
