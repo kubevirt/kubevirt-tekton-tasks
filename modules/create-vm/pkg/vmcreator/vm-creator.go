@@ -70,6 +70,10 @@ func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
 	}, nil
 }
 
+func (v *VMCreator) StartVM(namespace, name string) error {
+	return v.virtualMachineProvider.Start(namespace, name)
+}
+
 func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
 	switch v.cliOptions.GetCreationMode() {
 	case constants.TemplateCreationMode:
@@ -124,7 +128,6 @@ func (v *VMCreator) createVMFromTemplate() (*kubevirtv1.VirtualMachine, error) {
 	}
 
 	vm.Namespace = v.targetNamespace
-	vm.Spec.Running = v.cliOptions.GetStartVMFlag()
 
 	virtualMachine.AddMetadata(vm, processedTemplate)
 	virtualMachine.AddVolumes(vm, templateValidations, v.cliOptions)

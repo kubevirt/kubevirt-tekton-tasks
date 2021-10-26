@@ -8,6 +8,7 @@ const (
 	CreateVMErrorExitCode     = 4
 	OwnVolumesErrorExitCode   = 5
 	WriteResultsExitCode      = 6
+	StartVMErrorExitCode      = 7
 )
 
 // Result names

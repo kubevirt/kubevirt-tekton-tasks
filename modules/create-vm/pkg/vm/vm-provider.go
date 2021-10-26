@@ -11,6 +11,7 @@ type virtualMachineProvider struct {
 
 type VirtualMachineProvider interface {
 	Create(namespace string, vm *kubevirtv1.VirtualMachine) (*kubevirtv1.VirtualMachine, error)
+	Start(namespace, name string) error
 }
 
 func NewVirtualMachineProvider(client kubevirtcliv1.KubevirtClient) VirtualMachineProvider {
@@ -21,4 +22,8 @@ func NewVirtualMachineProvider(client kubevirtcliv1.KubevirtClient) VirtualMachi
 
 func (v *virtualMachineProvider) Create(namespace string, vm *kubevirtv1.VirtualMachine) (*kubevirtv1.VirtualMachine, error) {
 	return v.client.VirtualMachine(namespace).Create(vm)
+}
+
+func (v *virtualMachineProvider) Start(namespace, name string) error {
+	return v.client.VirtualMachine(namespace).Start(name)
 }

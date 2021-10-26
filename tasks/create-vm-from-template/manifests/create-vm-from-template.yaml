@@ -18,6 +18,7 @@ metadata:
     persistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
     ownPersistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
     ownPersistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
+    startVM.params.task.kubevirt.io/type: boolean
   labels:
     task.kubevirt.io/type: create-vm-from-template
     task.kubevirt.io/category: create-vm
@@ -102,6 +103,7 @@ rules:
       - list
       - watch
       - create
+      - update
     apiGroups:
       - kubevirt.io
     resources:
@@ -139,6 +141,12 @@ rules:
       - cdi.kubevirt.io
     resources:
       - datavolumes
+  - verbs:
+      - 'update'
+    apiGroups:
+      - subresources.kubevirt.io
+    resources:
+      - virtualmachines/start
 
 ---
 apiVersion: v1

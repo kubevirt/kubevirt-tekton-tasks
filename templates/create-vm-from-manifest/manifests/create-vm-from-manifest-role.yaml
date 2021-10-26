@@ -9,11 +9,18 @@ rules:
       - list
       - watch
       - create
+      - update
     apiGroups:
       - kubevirt.io
     resources:
       - virtualmachines
       - virtualmachineinstances
+  - verbs:
+      - 'update'
+    apiGroups:
+      - subresources.kubevirt.io
+    resources:
+      - virtualmachines/start
   - verbs:
       - '*'
     apiGroups:

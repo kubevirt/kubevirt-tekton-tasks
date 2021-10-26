@@ -14,7 +14,6 @@ import (
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
 )
 
 var _ = Describe("Create VM from template", func() {
@@ -345,7 +344,6 @@ var _ = Describe("Create VM from template", func() {
 				DataVolumesToCreate: []*datavolume.TestDataVolume{
 					datavolume.NewBlankDataVolume("common-templates-src-dv"),
 				},
-				StartVM: "false",
 			},
 		}
 		f.TestSetup(config)
@@ -376,7 +374,7 @@ var _ = Describe("Create VM from template", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
-	It("VM is created from template properly and running", func() {
+	It("VM is created from template properly", func() {
 		template := testtemplate.NewCirrosServerTinyTemplate().Build()
 		config := &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
@@ -388,7 +386,6 @@ var _ = Describe("Create VM from template", func() {
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
 				},
-				StartVM: "true",
 			},
 		}
 		f.TestSetup(config)
@@ -409,7 +406,7 @@ var _ = Describe("Create VM from template", func() {
 			})
 
 		vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
-			kubevirtv1.Running, config.GetTaskRunTimeout(), false)
+			"", config.GetTaskRunTimeout(), false)
 		Expect(err).ShouldNot(HaveOccurred())
 
 		vmName := expectedVMStub.Name
@@ -441,5 +438,71 @@ var _ = Describe("Create VM from template", func() {
 			"kubevirt.io/size":                     "tiny",
 			"vm.kubevirt.io/name":                  vmName,
 		}))
+	})
+
+	Context("with StartVM", func() {
+		table.DescribeTable("VM is created from template with StartVM attribute", func(config *testconfigs.CreateVMTestConfig, running bool) {
+			f.TestSetup(config)
+			template, err := f.TemplateClient.Templates(config.TaskData.Template.Namespace).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageTemplates(template)
+
+			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
+			f.ManageVMs(expectedVMStub)
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					CreateVMResults.Name:      expectedVMStub.Name,
+					CreateVMResults.Namespace: expectedVMStub.Namespace,
+				})
+
+			vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
+				"", config.GetTaskRunTimeout(), false)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(*vm.Spec.Running).To(Equal(running), "vm should be in correct running phase")
+		},
+			table.Entry("with invalid StartVM value", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromTemplateServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
+					TemplateParams: []string{
+						testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
+					},
+					StartVM: "invalid_value",
+				},
+			}, false),
+			table.Entry("with false StartVM value", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromTemplateServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
+					TemplateParams: []string{
+						testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
+					},
+					StartVM: "false",
+				},
+			}, false),
+			table.Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromTemplateServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
+					TemplateParams: []string{
+						testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
+					},
+					StartVM: "true",
+				},
+			}, true),
+		)
 	})
 })

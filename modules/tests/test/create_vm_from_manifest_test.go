@@ -242,4 +242,71 @@ var _ = Describe("Create VM from manifest", func() {
 			"vm.kubevirt.io/name": vmName,
 		}))
 	})
+
+	Context("with StartVM", func() {
+		table.DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig, running bool) {
+			f.TestSetup(config)
+
+			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
+			f.ManageVMs(expectedVMStub)
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					CreateVMResults.Name:      expectedVMStub.Name,
+					CreateVMResults.Namespace: expectedVMStub.Namespace,
+				})
+
+			vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
+				"", config.GetTaskRunTimeout(), false)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			Expect(*vm.Spec.Running).To(Equal(running), "vm should be in correct running phase")
+		},
+			table.Entry("with false StartVM value", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					StartVM: "false",
+				},
+			}, false),
+			table.Entry("with invalid StartVM value", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					StartVM: "invalid_value",
+				},
+			}, false),
+			table.Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					StartVM: "true",
+				},
+			}, true),
+		)
+	})
 })

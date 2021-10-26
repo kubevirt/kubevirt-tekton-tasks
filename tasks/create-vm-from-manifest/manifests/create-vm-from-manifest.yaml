@@ -16,6 +16,7 @@ metadata:
     persistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
     ownPersistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
     ownPersistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
+    startVM.params.task.kubevirt.io/type: boolean
   labels:
     task.kubevirt.io/type: create-vm-from-manifest
     task.kubevirt.io/category: create-vm
@@ -27,6 +28,10 @@ spec:
       type: string
     - name: namespace
       description: Namespace where to create the VM. (defaults to manifest namespace or active namespace)
+      default: ""
+      type: string
+    - name: startVM
+      description: Start vm after creation.
       default: ""
       type: string
     - name: dataVolumes
@@ -70,6 +75,8 @@ spec:
           value: $(params.manifest)
         - name: VM_NAMESPACE
           value: $(params.namespace)
+        - name: START_VM
+          value: $(params.startVM)
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -82,11 +89,18 @@ rules:
       - list
       - watch
       - create
+      - update
     apiGroups:
       - kubevirt.io
     resources:
       - virtualmachines
       - virtualmachineinstances
+  - verbs:
+      - 'update'
+    apiGroups:
+      - subresources.kubevirt.io
+    resources:
+      - virtualmachines/start
   - verbs:
       - '*'
     apiGroups:

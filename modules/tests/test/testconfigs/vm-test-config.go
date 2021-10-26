@@ -309,6 +309,13 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 				ArrayVal: c.TaskData.OwnPersistentVolumeClaims,
 			},
 		},
+		{
+			Name: CreateVMFromTemplateParams.StartVM,
+			Value: v1beta1.ArrayOrString{
+				Type:      v1beta1.ParamTypeString,
+				StringVal: c.TaskData.StartVM,
+			},
+		},
 	}
 	var vmNamespace string
 	if !c.TaskData.UseDefaultVMNamespacesInTaskParams {
@@ -373,13 +380,6 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 				Value: v1beta1.ArrayOrString{
 					Type:      v1beta1.ParamTypeString,
 					StringVal: vmNamespace,
-				},
-			},
-			v1beta1.Param{
-				Name: CreateVMFromTemplateParams.StartVM,
-				Value: v1beta1.ArrayOrString{
-					Type:      v1beta1.ParamTypeString,
-					StringVal: c.TaskData.StartVM,
 				},
 			},
 		)
