@@ -16,7 +16,7 @@ func IsTrue(value string) bool {
 
 func DecodeVM(template *templatev1.Template) (*kubevirtv1.VirtualMachine, int, error) {
 	var vm *kubevirtv1.VirtualMachine
-	vmIndex := 0
+	vmIndex := -1
 	for i, obj := range template.Objects {
 		decoder := kubevirtv1.Codecs.UniversalDecoder(kubevirtv1.GroupVersion)
 		decoded, err := runtime.Decode(decoder, obj.Raw)

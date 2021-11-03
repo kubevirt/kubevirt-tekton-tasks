@@ -1000,11 +1000,11 @@ spec:
       name: vmAnnotations
       type: array
       default: []
-    - description: 'VM disks in json format, replace vm disk if same name, otherwise new disk is appended. Eg ["{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}", "{\"name\": \"disk2\"}"]'
+    - description: 'VM disks in json format, replace vm disk if same name, otherwise new disk is appended. Eg [{"name": "test", "cdrom": {"bus": "sata"}}, {"name": "disk2"}]'
       name: disks
       type: array
       default: []
-    - description: 'VM volumes in json format, replace vm volume if same name, otherwise new volume is appended. Eg ["{\"name\": \"virtiocontainerdisk\", \"containerDisk\": {\"image\": \"kubevirt/virtio-container-disk\"}}"]'
+    - description: 'VM volumes in json format, replace vm volume if same name, otherwise new volume is appended. Eg [{"name": "virtiocontainerdisk", "containerDisk": {"image": "kubevirt/virtio-container-disk"}}]'
       name: volumes
       type: array
       default: []

@@ -32,8 +32,8 @@ type CLIOptions struct {
 	VMLabels            []string          `arg:"--vm-labels" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds labels to VMs"`
 	VMAnnotations       []string          `arg:"--vm-annotations" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds annotations to VMs"`
 	Output              output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
-	Disks               []string          `arg:"--disks" placeholder:"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}, {\"name\": \"disk2\"}" help:"VM disks in json format, replace vm disk if same name, otherwise new disk is appended"`
-	Volumes             []string          `arg:"--volumes" placeholder:"{\"name\": \"virtiocontainerdisk\", \"containerDisk\": {\"image\": \"kubevirt/virtio-container-disk\"}}, {\"name\": \"disk2\"}" help:"VM volumes in json format, replace vm volume if same name, otherwise new volume is appended"`
+	Disks               []string          `arg:"--disks" placeholder:'{"name": "test", "cdrom": {"bus": "sata"}}' '{"name": "disk2"}' help:"VM disks in json format, replace vm disk if same name, otherwise new disk is appended"`
+	Volumes             []string          `arg:"--volumes" placeholder:'{"name": "virtiocontainerdisk", "containerDisk": {"image": "kubevirt/virtio-container-disk"}}' '{"name": "disk2"}' help:"VM volumes in json format, replace vm volume if same name, otherwise new volume is appended"`
 	Debug               bool              `arg:"--debug" help:"Sets DEBUG log level"`
 
 	templateLabels      map[string]string
@@ -52,17 +52,17 @@ func (c *CLIOptions) GetDebugLevel() zapcore.Level {
 }
 
 func (c *CLIOptions) GetCPUSockets() uint32 {
-	res, _ := strconv.ParseUint(c.CPUSockets, 0, 32)
+	res, _ := strconv.ParseUint(c.CPUSockets, 10, 32)
 	return uint32(res)
 }
 
 func (c *CLIOptions) GetCPUCores() uint32 {
-	res, _ := strconv.ParseUint(c.CPUCores, 0, 32)
+	res, _ := strconv.ParseUint(c.CPUCores, 10, 32)
 	return uint32(res)
 }
 
 func (c *CLIOptions) GetCPUThreads() uint32 {
-	res, _ := strconv.ParseUint(c.CPUThreads, 0, 32)
+	res, _ := strconv.ParseUint(c.CPUThreads, 10, 32)
 	return uint32(res)
 }
 
@@ -134,14 +134,14 @@ func (c *CLIOptions) Init() error {
 
 func (c *CLIOptions) trimSpacesAnnotations() {
 	for key, value := range c.templateAnnotations {
-		newKey := strings.TrimPrefix(strings.TrimSuffix(key, " "), " ")
-		newValue := strings.TrimPrefix(strings.TrimSuffix(value, " "), " ")
+		newKey := strings.TrimSpace(key)
+		newValue := strings.TrimSpace(value)
 		delete(c.templateAnnotations, key)
 		c.templateAnnotations[newKey] = newValue
 	}
 	for key, value := range c.vmAnnotations {
-		newKey := strings.TrimPrefix(strings.TrimSuffix(key, " "), " ")
-		newValue := strings.TrimPrefix(strings.TrimSuffix(value, " "), " ")
+		newKey := strings.TrimSpace(key)
+		newValue := strings.TrimSpace(value)
 		delete(c.vmAnnotations, key)
 		c.vmAnnotations[newKey] = newValue
 	}
@@ -175,26 +175,38 @@ func (c *CLIOptions) setDefaultValues() error {
 }
 
 func (c *CLIOptions) convertDisks() error {
+	mError := zerrors.NewMultiError()
 	for _, diskStr := range c.Disks {
-		disk := new(kubevirtv1.Disk)
+		disk := &kubevirtv1.Disk{}
 		err := json.Unmarshal([]byte(diskStr), disk)
 		if err != nil {
-			return err
+			mError.AddC("wrong disk definition", err)
 		}
 		c.disks = append(c.disks, *disk)
 	}
+
+	if !mError.IsEmpty() {
+		return mError
+	}
+
 	return nil
 }
 
 func (c *CLIOptions) convertVolumes() error {
+	mError := zerrors.NewMultiError()
 	for _, volumeStr := range c.Volumes {
-		volume := new(kubevirtv1.Volume)
+		volume := &kubevirtv1.Volume{}
 		err := json.Unmarshal([]byte(volumeStr), volume)
 		if err != nil {
-			return err
+			mError.AddC("wrong volume definition", err)
 		}
 		c.volumes = append(c.volumes, *volume)
 	}
+
+	if !mError.IsEmpty() {
+		return mError
+	}
+
 	return nil
 }
 
@@ -211,47 +223,53 @@ func (c *CLIOptions) assertValidParams() error {
 		return zerrors.NewMissingRequiredError("%s param has to be specified", templateNameOptionName)
 	}
 
+	mError := zerrors.NewMultiError()
 	if c.Memory != "" {
 		_, err := resource.ParseQuantity(c.Memory)
 		if err != nil {
-			return err
+			mError.AddC("wrong memory value", err)
 		}
 	}
 
 	err := checkCorrectInt(c.CPUCores)
 	if err != nil {
-		return err
+		mError.AddC("wrong cpu cores value", err)
 	}
 
 	err = checkCorrectInt(c.CPUThreads)
 	if err != nil {
-		return err
+		mError.AddC("wrong cpu threads value", err)
 	}
 
 	err = checkCorrectInt(c.CPUSockets)
 	if err != nil {
-		return err
+		mError.AddC("wrong cpu sockets value", err)
 	}
 
 	c.templateLabels, err = zutils.ExtractKeysAndValuesByLastKnownKey(c.TemplateLabels, colonSeparator)
 	if err != nil {
-		return err
+		return mError.AddC("wrong template labels", err)
 	}
 
 	c.templateAnnotations, err = zutils.ExtractKeysAndValuesByLastKnownKey(c.TemplateAnnotations, colonSeparator)
 	if err != nil {
-		return err
+		mError.AddC("wrong template annotations", err)
 	}
 
 	c.vmLabels, err = zutils.ExtractKeysAndValuesByLastKnownKey(c.VMLabels, colonSeparator)
 	if err != nil {
-		return err
+		mError.AddC("wrong vm labels", err)
 	}
 
 	c.vmAnnotations, err = zutils.ExtractKeysAndValuesByLastKnownKey(c.VMAnnotations, colonSeparator)
 	if err != nil {
-		return err
+		mError.AddC("wrong vm annotations", err)
 	}
+
+	if !mError.IsEmpty() {
+		return mError
+	}
+
 	return nil
 }
 
