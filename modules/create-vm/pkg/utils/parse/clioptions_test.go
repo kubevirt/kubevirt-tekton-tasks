@@ -16,8 +16,6 @@ import (
 var (
 	defaultNS      = "default"
 	testVMManifest = testobjects.NewTestVM().ToString()
-	trueVar        = true
-	falseVar       = false
 )
 
 var _ = Describe("CLIOptions", func() {
@@ -81,7 +79,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetTemplateParams":          map[string]string{},
 			"GetDebugLevel":              zapcore.InfoLevel,
 			"GetCreationMode":            constants.TemplateCreationMode,
-			"GetStartVMFlag":             falseVar,
+			"GetStartVMFlag":             false,
 		}),
 		table.Entry("handles template cli arguments", &parse.CLIOptions{
 			TemplateName:              "test",
@@ -121,7 +119,7 @@ var _ = Describe("CLIOptions", func() {
 			},
 			"GetDebugLevel":   zapcore.DebugLevel,
 			"GetCreationMode": constants.TemplateCreationMode,
-			"GetStartVMFlag":  trueVar,
+			"GetStartVMFlag":  true,
 		}),
 		table.Entry("handles vm cli arguments", &parse.CLIOptions{
 			VirtualMachineManifest:    testVMManifest,
@@ -154,7 +152,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetTemplateParams": map[string]string{},
 			"GetDebugLevel":     zapcore.DebugLevel,
 			"GetCreationMode":   constants.VMManifestCreationMode,
-			"GetStartVMFlag":    falseVar,
+			"GetStartVMFlag":    false,
 		}),
 		table.Entry("handles trim", &parse.CLIOptions{
 			TemplateName:              "test",

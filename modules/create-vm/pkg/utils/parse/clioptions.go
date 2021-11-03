@@ -53,10 +53,7 @@ func (c *CLIOptions) GetOwnDVNames() []string {
 }
 
 func (c *CLIOptions) GetStartVMFlag() bool {
-	if c.StartVM == "true" {
-		return true
-	}
-	return false
+	return c.StartVM == "true"
 }
 
 func (c *CLIOptions) GetPVCDiskNamesMap() map[string]string {

@@ -14,6 +14,7 @@ import (
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubevirtv1 "kubevirt.io/client-go/api/v1"
 )
 
 var _ = Describe("Create VM from template", func() {
@@ -441,7 +442,7 @@ var _ = Describe("Create VM from template", func() {
 	})
 
 	Context("with StartVM", func() {
-		table.DescribeTable("VM is created from template with StartVM attribute", func(config *testconfigs.CreateVMTestConfig, running bool) {
+		table.DescribeTable("VM is created from template with StartVM attribute", func(config *testconfigs.CreateVMTestConfig, phase kubevirtv1.VirtualMachineInstancePhase, running bool) {
 			f.TestSetup(config)
 			template, err := f.TemplateClient.Templates(config.TaskData.Template.Namespace).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
@@ -460,7 +461,7 @@ var _ = Describe("Create VM from template", func() {
 				})
 
 			vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
-				"", config.GetTaskRunTimeout(), false)
+				phase, config.GetTaskRunTimeout(), false)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(*vm.Spec.Running).To(Equal(running), "vm should be in correct running phase")
 		},
@@ -476,7 +477,7 @@ var _ = Describe("Create VM from template", func() {
 					},
 					StartVM: "invalid_value",
 				},
-			}, false),
+			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
 			table.Entry("with false StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CreateVMFromTemplateServiceAccountName,
@@ -489,7 +490,7 @@ var _ = Describe("Create VM from template", func() {
 					},
 					StartVM: "false",
 				},
-			}, false),
+			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
 			table.Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CreateVMFromTemplateServiceAccountName,
@@ -502,7 +503,7 @@ var _ = Describe("Create VM from template", func() {
 					},
 					StartVM: "true",
 				},
-			}, true),
+			}, kubevirtv1.Running, true),
 		)
 	})
 })

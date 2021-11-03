@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	kubevirtv1 "kubevirt.io/client-go/api/v1"
 )
 
 var _ = Describe("Create VM from manifest", func() {
@@ -244,7 +245,7 @@ var _ = Describe("Create VM from manifest", func() {
 	})
 
 	Context("with StartVM", func() {
-		table.DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig, running bool) {
+		table.DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig, phase kubevirtv1.VirtualMachineInstancePhase, running bool) {
 			f.TestSetup(config)
 
 			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
@@ -260,7 +261,7 @@ var _ = Describe("Create VM from manifest", func() {
 				})
 
 			vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
-				"", config.GetTaskRunTimeout(), false)
+				phase, config.GetTaskRunTimeout(), false)
 			Expect(err).ShouldNot(HaveOccurred())
 
 			Expect(*vm.Spec.Running).To(Equal(running), "vm should be in correct running phase")
@@ -278,7 +279,7 @@ var _ = Describe("Create VM from manifest", func() {
 						Build(),
 					StartVM: "false",
 				},
-			}, false),
+			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
 			table.Entry("with invalid StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CreateVMFromManifestServiceAccountName,
@@ -292,7 +293,7 @@ var _ = Describe("Create VM from manifest", func() {
 						Build(),
 					StartVM: "invalid_value",
 				},
-			}, false),
+			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
 			table.Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CreateVMFromManifestServiceAccountName,
@@ -306,7 +307,7 @@ var _ = Describe("Create VM from manifest", func() {
 						Build(),
 					StartVM: "true",
 				},
-			}, true),
+			}, kubevirtv1.Running, true),
 		)
 	})
 })
