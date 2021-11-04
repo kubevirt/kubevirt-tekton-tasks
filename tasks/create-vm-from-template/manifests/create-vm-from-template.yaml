@@ -41,7 +41,7 @@ spec:
       default: ""
       type: string
     - name: startVM
-      description: Start vm after creation.
+      description: Set to true or false to start / not start vm after creation.
       default: ""
       type: string
     - name: dataVolumes
