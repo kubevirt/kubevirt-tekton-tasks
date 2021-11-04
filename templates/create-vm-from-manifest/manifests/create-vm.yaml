@@ -25,6 +25,7 @@ metadata:
     persistentVolumeClaims.params.task.kubevirt.io/apiVersion: {{ task_param_types.v1_version }}
     ownPersistentVolumeClaims.params.task.kubevirt.io/kind: {{ task_param_types.pvc_kind }}
     ownPersistentVolumeClaims.params.task.kubevirt.io/apiVersion: {{ task_param_types.v1_version }}
+    startVM.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
   labels:
     task.kubevirt.io/type: {{ task_name }}
     task.kubevirt.io/category: {{ task_category }}
@@ -56,6 +57,10 @@ spec:
       default: ""
       type: string
 {% endif %}
+    - name: startVM
+      description: Start vm after creation.
+      default: ""
+      type: string
     - name: dataVolumes
       description: Add DVs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. ["rootdisk:my-dv", "my-dv2"]
       default: []
@@ -109,3 +114,5 @@ spec:
         - name: VM_NAMESPACE
           value: $(params.namespace)
 {% endif %}
+        - name: START_VM
+          value: $(params.startVM)

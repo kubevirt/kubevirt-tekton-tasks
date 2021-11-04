@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	kubevirtv1 "kubevirt.io/client-go/api/v1"
 )
 
 var _ = Describe("Create VM from manifest", func() {
@@ -241,5 +242,72 @@ var _ = Describe("Create VM from manifest", func() {
 			"ra":                  "rara",
 			"vm.kubevirt.io/name": vmName,
 		}))
+	})
+
+	Context("with StartVM", func() {
+		table.DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig, phase kubevirtv1.VirtualMachineInstancePhase, running bool) {
+			f.TestSetup(config)
+
+			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
+			f.ManageVMs(expectedVMStub)
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					CreateVMResults.Name:      expectedVMStub.Name,
+					CreateVMResults.Namespace: expectedVMStub.Namespace,
+				})
+
+			vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
+				phase, config.GetTaskRunTimeout(), false)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			Expect(*vm.Spec.Running).To(Equal(running), "vm should be in correct running phase")
+		},
+			table.Entry("with false StartVM value", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					StartVM: "false",
+				},
+			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
+			table.Entry("with invalid StartVM value", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					StartVM: "invalid_value",
+				},
+			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
+			table.Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					StartVM: "true",
+				},
+			}, kubevirtv1.Running, true),
+		)
 	})
 })

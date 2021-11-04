@@ -51,6 +51,13 @@ func main() {
 		exit.ExitFromError(OwnVolumesErrorExitCode, err)
 	}
 
+	if cliOptions.GetStartVMFlag() {
+		err := vmCreator.StartVM(vm.Namespace, vm.Name)
+		if err != nil {
+			exit.ExitFromError(StartVMErrorExitCode, err)
+		}
+	}
+
 	results := map[string]string{
 		NameResultName:      vm.Name,
 		NamespaceResultName: vm.Namespace,

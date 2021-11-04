@@ -31,6 +31,7 @@ type CLIOptions struct {
 	OwnDataVolumes            []string          `arg:"--own-dvs" placeholder:"DV1 VOLUME_NAME:DV2 DV3" help:"Add DataVolumes to VM Volumes and add VM to DV ownerReferences. These DVs will be deleted once the created VM gets deleted. Replaces a particular volume if in VOLUME_NAME:DV_NAME format."`
 	PersistentVolumeClaims    []string          `arg:"--pvcs" placeholder:"PVC1 VOLUME_NAME:PVC2 PVC3" help:"Add PersistentVolumeClaims to VM Volumes. Replaces a particular volume if in PVC_NAME:DV_NAME format."`
 	OwnPersistentVolumeClaims []string          `arg:"--own-pvcs" placeholder:"PVC1  VOLUME_NAME:PVC2 PVC3" help:"Add PersistentVolumeClaims to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted. Replaces a particular volume if in PVC_NAME:DV_NAME format."`
+	StartVM                   string            `arg:"--start-vm,env:START_VM" help:"Start vm after creation"`
 	Output                    output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
 	Debug                     bool              `arg:"--debug" help:"Sets DEBUG log level"`
 }
@@ -49,6 +50,10 @@ func (c *CLIOptions) GetDVNames() []string {
 
 func (c *CLIOptions) GetOwnDVNames() []string {
 	return removeVolumePrefixes(c.OwnDataVolumes)
+}
+
+func (c *CLIOptions) GetStartVMFlag() bool {
+	return c.StartVM == "true"
 }
 
 func (c *CLIOptions) GetPVCDiskNamesMap() map[string]string {
