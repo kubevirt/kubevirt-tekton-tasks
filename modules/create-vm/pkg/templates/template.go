@@ -2,15 +2,13 @@ package templates
 
 import (
 	"encoding/json"
+	"sort"
+	"strings"
+
 	lab "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants/labels"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	templatev1 "github.com/openshift/api/template/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
-	"sort"
-	"strings"
 )
 
 const (
@@ -29,27 +27,6 @@ func GetFlagLabelByPrefix(template *templatev1.Template, labelPrefix string) (st
 		}
 	}
 	return "", ""
-}
-
-func DecodeVM(template *templatev1.Template) (*kubevirtv1.VirtualMachine, error) {
-	var vm *kubevirtv1.VirtualMachine
-
-	for _, obj := range template.Objects {
-		decoder := kubevirtv1.Codecs.UniversalDecoder(kubevirtv1.GroupVersion)
-		decoded, err := runtime.Decode(decoder, obj.Raw)
-		if err != nil {
-			return nil, err
-		}
-		done, ok := decoded.(*kubevirtv1.VirtualMachine)
-		if ok {
-			vm = done
-			break
-		}
-	}
-	if vm == nil {
-		return nil, zerrors.NewMissingRequiredError("no VM object found in the template")
-	}
-	return vm, nil
 }
 
 func GetTemplateValidations(template *templatev1.Template) (*validations.TemplateValidations, error) {

@@ -17,22 +17,6 @@ var _ = Describe("Template", func() {
 		Expect(value).To(Equal("true"))
 	})
 
-	It("DecodeVM", func() {
-		vm, err := templates.DecodeVM(template.NewFedoraServerTinyTemplate().Build())
-		Expect(err).Should(Succeed())
-		Expect(vm.Kind).To(Equal("VirtualMachine"))
-		Expect(vm.Name).To(Equal("${NAME}"))
-		Expect(vm.Spec.Template.Spec.Domain.Devices.Interfaces[0].Name).To(Equal("default"))
-	})
-
-	It("DecodeVM fails", func() {
-		template := template.NewFedoraServerTinyTemplate().Build()
-		template.Objects = nil
-		vm, err := templates.DecodeVM(template)
-		Expect(err).Should(HaveOccurred())
-		Expect(vm).To(BeNil())
-	})
-
 	It("GetTemplateValidations", func() {
 		validations, err := templates.GetTemplateValidations(template.NewFedoraServerTinyTemplate().Build())
 		Expect(err).Should(Succeed())

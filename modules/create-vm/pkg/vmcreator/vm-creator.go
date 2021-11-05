@@ -113,7 +113,7 @@ func (v *VMCreator) createVMFromTemplate() (*kubevirtv1.VirtualMachine, error) {
 	if err != nil {
 		return nil, err
 	}
-	vm, err := templates.DecodeVM(processedTemplate)
+	vm, _, err := zutils.DecodeVM(processedTemplate)
 	if err != nil {
 		return nil, err
 	}

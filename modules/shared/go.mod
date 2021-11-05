@@ -4,11 +4,14 @@ go 1.15
 
 require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0-20210917104435-f73179eed625
 	github.com/onsi/ginkgo v1.15.1
 	github.com/onsi/gomega v1.11.0
+	github.com/openshift/api v0.0.0
 	go.uber.org/zap v1.16.0
 	k8s.io/api v0.20.2
 	k8s.io/apimachinery v0.20.2
+	kubevirt.io/client-go v0.45.0
 	sigs.k8s.io/yaml v1.2.0
 )
 
