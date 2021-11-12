@@ -44,6 +44,7 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 #### Utilize Templates
 
 - [copy-template](tasks/copy-template)
+- [modify-vm-template](tasks/modify-vm-template)
 
 #### Create DataVolumes
 
