@@ -10,6 +10,6 @@ const (
 
 const (
 	DiskImagePath               = "/mnt/targetpvc/disk.img"
-	GuestFSApplianceArchivePath = "/data/appliance.tar.xz"
+	GuestFSApplianceArchivePath = "/usr/local/lib/guestfs/downloaded"
 	VirtSysprepCommandsFileName = "virt_sysprep_commands"
 )
