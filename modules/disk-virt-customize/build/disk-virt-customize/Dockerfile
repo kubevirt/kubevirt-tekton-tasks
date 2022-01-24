@@ -16,29 +16,12 @@ RUN git clone https://github.com/rwmjones/rhsrvany.git
 WORKDIR /rhsrvany
 RUN autoreconf --install && autoconf && mingw32-configure --disable-dependency-tracking && make
 
-FROM registry.access.redhat.com/ubi8/ubi:latest
+FROM quay.io/kubevirt/libguestfs-tools:v0.49.0
 ENV TASK_NAME=disk-virt-customize
 ENV ENTRY_CMD=/usr/local/bin/${TASK_NAME} \
     USER_UID=1001 \
     USER_NAME=${TASK_NAME} \
-    HOME=/home/${TASK_NAME} \
-    LIBGUESTFS_APPLIANCE_VERSION=1.40.1
-
-
-# HACK: CI injects centos7 images instead of ubi, so setup repos accordingly
-COPY build/${TASK_NAME}/repos/CentOS-Stream.repo /etc/yum.repos.d/CentOS-Stream.repo
-COPY build/${TASK_NAME}/repos/RPM-GPG-KEY-centosofficial /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
-RUN if grep -iq centos /etc/*release; then \
-        rm -rf /etc/yum.repos.d/CentOS-Stream.repo /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial; \
-    else \
-        find /etc/yum.repos.d/ -maxdepth 1 ! -name CentOS-Stream.repo -type f -exec rm -f {} +; \
-    fi
-
-# xz will be used to unpack libguestfs appliance later when running the container
-RUN yum install xz libguestfs-tools-c -y --disableplugin=subscription-manager && \
-    yum clean all --disableplugin=subscription-manager && \
-    rm -rf /etc/yum.repos.d/* /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial /var/cache/yum /var/cache/dnf /var/lib/rpm
-RUN mkdir /data && curl https://download.libguestfs.org/binaries/appliance/appliance-${LIBGUESTFS_APPLIANCE_VERSION}.tar.xz --output /data/appliance.tar.xz
+    HOME=/home/${TASK_NAME}
 
 # install libguestfs rhsrvany.exe win dependency for virt-customize
 COPY --from=rhsrvanyBuilder /rhsrvany/RHSrvAny/rhsrvany.exe /usr/share/virt-tools/rhsrvany.exe
@@ -47,7 +30,7 @@ COPY --from=rhsrvanyBuilder /rhsrvany/RHSrvAny/rhsrvany.exe /usr/share/virt-tool
 COPY --from=taskBuilder /${TASK_NAME} ${ENTRY_CMD}
 COPY build/${TASK_NAME}/bin /usr/local/bin
 
-RUN  /usr/local/bin/user_setup
+#RUN  /usr/local/bin/user_setup
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 CMD ["--help"]
 
