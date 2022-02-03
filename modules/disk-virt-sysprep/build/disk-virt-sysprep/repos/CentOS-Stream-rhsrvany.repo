@@ -1,6 +1,6 @@
 [baseos]
 name=CentOS Stream 8 - BaseOS
-mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=BaseOS&infra=$infra
+mirrorlist=http://mirrorlist.centos.org/?release=8-stream&arch=$basearch&repo=BaseOS&infra=$infra
 #baseurl=http://mirror.centos.org/centos-8/8/BaseOS/$basearch/os/
 gpgcheck=1
 enabled=1
@@ -8,7 +8,7 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
 
 [appstream]
 name=CentOS Stream 8 - AppStream
-mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=AppStream&infra=$infra
+mirrorlist=http://mirrorlist.centos.org/?release=8-stream&arch=$basearch&repo=AppStream&infra=$infra
 #baseurl=http://mirror.centos.org/centos-8/8/AppStream/$basearch/os/
 gpgcheck=1
 enabled=1
@@ -16,7 +16,7 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
 
 [powertools]
 name=CentOS Stream 8 - PowerTools
-mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=PowerTools&infra=$infra
+mirrorlist=http://mirrorlist.centos.org/?release=8-stream&arch=$basearch&repo=PowerTools&infra=$infra
 #baseurl=http://mirror.centos.org/centos-8/8/PowerTools/$basearch/os/
 gpgcheck=1
 enabled=1
