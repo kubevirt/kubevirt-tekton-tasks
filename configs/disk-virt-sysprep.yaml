@@ -1,3 +1,3 @@
 task_name: disk-virt-sysprep
 task_category: disk-virt-sysprep
-main_image: quay.io/kubevirt/tekton-task-disk-virt-sysprep:v0.0.1
+main_image: quay.io/kubevirt/tekton-task-disk-virt-sysprep

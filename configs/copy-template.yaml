@@ -1,4 +1,4 @@
 task_name: copy-template
 task_category: copy-template
-main_image: quay.io/kubevirt/tekton-task-copy-template:v0.0.1
+main_image: quay.io/kubevirt/tekton-task-copy-template
 is_okd: true

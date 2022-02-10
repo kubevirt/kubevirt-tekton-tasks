@@ -1,4 +1,4 @@
 task_name: modify-vm-template
 task_category: modify-vm-template
-main_image: quay.io/kubevirt/tekton-task-modify-vm-template:v0.0.1
+main_image: quay.io/kubevirt/tekton-task-modify-vm-template
 is_okd: true

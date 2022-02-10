@@ -38,7 +38,7 @@ spec:
       description: The namespace of a template that was created.
   steps:
     - name: copytemplate
-      image: {{ main_image }}
+      image: "{{ main_image }}:{{ version }}"
       command:
         - copy-template
       args:

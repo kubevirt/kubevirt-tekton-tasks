@@ -27,7 +27,7 @@ visit "${REPO_DIR}/tasks"
       continue
     fi
     CONFIG_FILE="${REPO_DIR}/configs/${TASK_NAME}.yaml"
-    MAIN_IMAGE="$(sed -n  's/^main_image *: *//p' "${CONFIG_FILE}")"
+    MAIN_IMAGE="$(sed -n  's/^main_image *: *//p' "${CONFIG_FILE}"):${VERSION}"
     CUSTOM_IMAGE="${TASK_NAME_TO_IMAGE[${TASK_NAME}]}"
 
     # cleanup first

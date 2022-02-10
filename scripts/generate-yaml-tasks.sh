@@ -26,6 +26,10 @@ else
   TASK_NAMES=("$@")
 fi
 
+if [ -z "${IMG_TAG}" ]; then
+  IMG_TAG="latest"
+fi
+
 function generateTaskResources() {
   for TASK_NAME in ${TASK_NAMES[*]}; do
     visit "${REPO_DIR}/templates/${TASK_NAME}"
