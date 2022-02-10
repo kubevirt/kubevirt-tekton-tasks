@@ -1,0 +1,47 @@
+on:
+  release:
+    types: [published]
+
+name: Upload Release Asset
+
+jobs:
+  build:
+    name: Upload Release Asset
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
+
+      - name: Publish tekton images and generate release manifests
+        run: |
+          echo ${{ secrets.QUAY_PASSWORD }} | podman login -u="${{ secrets.QUAY_BOT }}" --password-stdin quay.io
+          export IMG_TAG="${{ steps.get_release.outputs.tag_name }}"
+          make release
+
+      - name: Upload kubernetes manifest
+        id: kubernetes-manifest 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: manifests/kubernetes/kubevirt-tekton-tasks-kubernetes.yaml
+          asset_name: kubevirt-tekton-tasks-kubernetes.yaml
+          asset_content_type: text/plain
+
+      - name: Upload okd manifest
+        id: okd-manifest  
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: manifests/okd/kubevirt-tekton-tasks-okd.yaml
+          asset_name: kubevirt-tekton-tasks-okd.yaml
+          asset_content_type: text/plain

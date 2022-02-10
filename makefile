@@ -45,6 +45,14 @@ e2e-tests:
 onboard-new-task-with-ci-stub:
 	./scripts/onboard-new-task-with-ci-stub.sh
 
+build-release-images:
+	./scripts/build-release-images.sh
+
+push-release-images:
+	./scripts/push-release-images.sh
+
+release: generate-yaml-tasks build-release-images push-release-images
+
 vendor:
 	./scripts/vendor.sh
 
@@ -63,6 +71,7 @@ vendor:
 	cluster-test \
 	cluster-clean \
 	cluster-clean-and-skip-images \
+	release \
 	e2e-tests \
 	onboard-new-task-with-ci-stub \
 	vendor
