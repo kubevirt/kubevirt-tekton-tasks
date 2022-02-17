@@ -7,6 +7,10 @@ REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 
 source "${SCRIPT_DIR}/common.sh"
 
+if [ -z "${RELEASE_VERSION}" ]; then
+  echo "RELEASE_VERSION is not defined"
+  exit 1
+fi
 
 # run only for specified tasks in script arguments
 # or default to all if no arguments specified
@@ -27,7 +31,7 @@ visit "${REPO_DIR}/tasks"
       continue
     fi
     CONFIG_FILE="${REPO_DIR}/configs/${TASK_NAME}.yaml"
-    MAIN_IMAGE="$(sed -n  's/^main_image *: *//p' "${CONFIG_FILE}"):${VERSION}"
+    MAIN_IMAGE="$(sed -n  's/^main_image *: *//p' "${CONFIG_FILE}"):${RELEASE_VERSION}"
     CUSTOM_IMAGE="${TASK_NAME_TO_IMAGE[${TASK_NAME}]}"
 
     # cleanup first

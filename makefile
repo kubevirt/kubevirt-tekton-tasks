@@ -1,5 +1,4 @@
-#current version of tekton tasks
-export VERSION ?=v0.0.9
+include scripts/makefile-snippets/makefile-release.mk
 
 all: clean
 
