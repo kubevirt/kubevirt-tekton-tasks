@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -34,9 +35,13 @@ import (
 )
 
 const (
-	KindAnnotation       = "dev.tekton.image.kind"
+	// KindAnnotation is an OCI annotation for the bundle kind
+	KindAnnotation = "dev.tekton.image.kind"
+	// APIVersionAnnotation is an OCI annotation for the bundle version
 	APIVersionAnnotation = "dev.tekton.image.apiVersion"
-	TitleAnnotation      = "dev.tekton.image.name"
+	// TitleAnnotation is an OCI annotation for the bundle title
+	TitleAnnotation = "dev.tekton.image.name"
+	// MaximumBundleObjects defines the maximum number of objects in a bundle
 	MaximumBundleObjects = 10
 )
 
@@ -53,6 +58,7 @@ func NewResolver(ref string, keychain authn.Keychain) remote.Resolver {
 	return &Resolver{imageReference: ref, keychain: keychain, timeout: time.Second * 60}
 }
 
+// List retrieves a flat set of Tekton objects
 func (o *Resolver) List() ([]remote.ResolvedObject, error) {
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), o.timeout)
 	defer cancel()
@@ -82,6 +88,7 @@ func (o *Resolver) List() ([]remote.ResolvedObject, error) {
 	return contents, nil
 }
 
+// Get retrieves a specific object with the given Kind and name
 func (o *Resolver) Get(kind, name string) (runtime.Object, error) {
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), o.timeout)
 	defer cancel()
@@ -104,12 +111,21 @@ func (o *Resolver) Get(kind, name string) (runtime.Object, error) {
 		return nil, fmt.Errorf("could not read image layers: %w", err)
 	}
 
+	layerMap := map[string]v1.Layer{}
+	for _, l := range layers {
+		digest, err := l.Digest()
+		if err != nil {
+			return nil, fmt.Errorf("failed to find digest for layer: %w", err)
+		}
+		layerMap[digest.String()] = l
+	}
+
 	for idx, l := range manifest.Layers {
 		lKind := l.Annotations[KindAnnotation]
 		lName := l.Annotations[TitleAnnotation]
 
 		if kind == lKind && name == lName {
-			obj, err := readTarLayer(layers[idx])
+			obj, err := readTarLayer(layerMap[l.Digest.String()])
 			if err != nil {
 				// This could still be a raw layer so try to read it as that instead.
 				return readRawLayer(layers[idx])
@@ -135,6 +151,27 @@ func (o *Resolver) checkImageCompliance(manifest *v1.Manifest) error {
 	if len(manifest.Layers) > MaximumBundleObjects {
 		return fmt.Errorf("bundle %s contained more than the maximum %d allow objects", o.imageReference, MaximumBundleObjects)
 	}
+
+	// Ensure each layer complies to the spec.
+	for _, l := range manifest.Layers {
+		refDigest := fmt.Sprintf("%s:%s", o.imageReference, l.Digest.String())
+		if _, ok := l.Annotations[APIVersionAnnotation]; !ok {
+			return fmt.Errorf("invalid tekton bundle: %s does not contain a %s annotation", refDigest, APIVersionAnnotation)
+		}
+
+		if _, ok := l.Annotations[TitleAnnotation]; !ok {
+			return fmt.Errorf("invalid tekton bundle: %s does not contain a %s annotation", refDigest, TitleAnnotation)
+		}
+
+		kind, ok := l.Annotations[KindAnnotation]
+		if !ok {
+			return fmt.Errorf("invalid tekton bundle: %s does not contain a %s annotation", refDigest, KindAnnotation)
+		}
+		if strings.TrimSuffix(strings.ToLower(kind), "s") != kind {
+			return fmt.Errorf("invalid tekton bundle: %s annotation for %s must be lowercased and singular, found %s", KindAnnotation, refDigest, kind)
+		}
+	}
+
 	return nil
 }
 

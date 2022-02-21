@@ -7,7 +7,8 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	templatev1 "github.com/openshift/api/template/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 func IsTrue(value string) bool {
@@ -16,9 +17,12 @@ func IsTrue(value string) bool {
 
 func DecodeVM(template *templatev1.Template) (*kubevirtv1.VirtualMachine, int, error) {
 	var vm *kubevirtv1.VirtualMachine
-	vmIndex := 0
+	vmIndex := -1
+	scheme := runtime.NewScheme()
+	scheme.AddKnownTypes(kubevirtv1.GroupVersion, &kubevirtv1.VirtualMachine{})
+	decoder := serializer.NewCodecFactory(scheme).UniversalDecoder(kubevirtv1.GroupVersion)
 	for i, obj := range template.Objects {
-		decoder := kubevirtv1.Codecs.UniversalDecoder(kubevirtv1.GroupVersion)
+
 		decoded, err := runtime.Decode(decoder, obj.Raw)
 		if err != nil {
 			return nil, vmIndex, err

@@ -2,14 +2,16 @@ package template
 
 import (
 	"fmt"
+
 	v1 "github.com/openshift/api/template/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 func GetVM(template *v1.Template) *kubevirtv1.VirtualMachine {
 	for _, obj := range template.Objects {
-		decoder := kubevirtv1.Codecs.UniversalDecoder(kubevirtv1.GroupVersion)
+		decoder := serializer.NewCodecFactory(runtime.NewScheme()).UniversalDecoder(kubevirtv1.GroupVersion)
 		decoded, err := runtime.Decode(decoder, obj.Raw)
 		if err != nil {
 			panic(err)

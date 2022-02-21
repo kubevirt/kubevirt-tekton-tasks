@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"golang.org/x/xerrors"
 )
 
 func equateAlways(_, _ interface{}) bool { return true }
@@ -112,7 +111,7 @@ type timeApproximator struct {
 
 func (a timeApproximator) compare(x, y time.Time) bool {
 	// Avoid subtracting times to avoid overflow when the
-	// difference is larger than the largest representible duration.
+	// difference is larger than the largest representable duration.
 	if x.After(y) {
 		// Ensure x is always before y
 		x, y = y, x
@@ -146,11 +145,4 @@ func areConcreteErrors(x, y interface{}) bool {
 	_, ok1 := x.(error)
 	_, ok2 := y.(error)
 	return ok1 && ok2
-}
-
-func compareErrors(x, y interface{}) bool {
-	xe := x.(error)
-	ye := y.(error)
-	// TODO(≥go1.13): Use standard definition of errors.Is.
-	return xerrors.Is(xe, ye) || xerrors.Is(ye, xe)
 }

@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/rand"
-	v1 "kubevirt.io/client-go/api/v1"
+	v1 "kubevirt.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -20,7 +20,7 @@ func newRandomVMI() *v1.VirtualMachineInstance {
 }
 
 func newRandomVMIWithNS(namespace string) *v1.VirtualMachineInstance {
-	vmi := v1.NewMinimalVMIWithNS(namespace, "testvmi"+rand.String(48))
+	vmi := v1.NewVMIReferenceFromNameWithNS(namespace, "testvmi"+rand.String(48))
 	vmi.Spec.Domain.CPU = &v1.CPU{
 		Cores:   1,
 		Sockets: 1,
