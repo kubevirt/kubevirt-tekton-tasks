@@ -10,7 +10,7 @@ import (
 	templatev1 "github.com/openshift/api/template/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {
@@ -115,7 +115,11 @@ func AddVolumes(vm *kubevirtv1.VirtualMachine, templateValidations *validations.
 
 		if volume.PersistentVolumeClaim == nil {
 			volume.VolumeSource = kubevirtv1.VolumeSource{
-				PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{ClaimName: pvcName},
+				PersistentVolumeClaim: &kubevirtv1.PersistentVolumeClaimVolumeSource{
+					PersistentVolumeClaimVolumeSource: v1.PersistentVolumeClaimVolumeSource{
+						ClaimName: pvcName,
+					},
+				},
 			}
 		} else {
 			volume.PersistentVolumeClaim.ClaimName = pvcName

@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"fmt"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
@@ -15,7 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 var _ = Describe("Create VM", func() {

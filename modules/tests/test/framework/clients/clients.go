@@ -2,6 +2,7 @@ package clients
 
 import (
 	"fmt"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	tknclientversioned "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"

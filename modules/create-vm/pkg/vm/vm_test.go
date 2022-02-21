@@ -1,14 +1,15 @@
 package vm_test
 
 import (
+	"sort"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
-	"sort"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
@@ -106,8 +107,10 @@ var _ = Describe("VM", func() {
 					Name: "disk1",
 					// wrong source - should overwrite
 					VolumeSource: kubevirtv1.VolumeSource{
-						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-							ClaimName: "other1",
+						PersistentVolumeClaim: &kubevirtv1.PersistentVolumeClaimVolumeSource{
+							PersistentVolumeClaimVolumeSource: v1.PersistentVolumeClaimVolumeSource{
+								ClaimName: "other1",
+							},
 						},
 					},
 				},
@@ -120,9 +123,11 @@ var _ = Describe("VM", func() {
 				kubevirtv1.Volume{
 					Name: "disk4",
 					VolumeSource: kubevirtv1.VolumeSource{
-						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-							ClaimName: "other2",
-							ReadOnly:  true,
+						PersistentVolumeClaim: &kubevirtv1.PersistentVolumeClaimVolumeSource{
+							PersistentVolumeClaimVolumeSource: v1.PersistentVolumeClaimVolumeSource{
+								ClaimName: "other2",
+								ReadOnly:  true,
+							},
 						},
 					},
 				},
@@ -170,8 +175,10 @@ var _ = Describe("VM", func() {
 				kubevirtv1.Volume{
 					Name: "disk2",
 					VolumeSource: kubevirtv1.VolumeSource{
-						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-							ClaimName: "pvc4",
+						PersistentVolumeClaim: &kubevirtv1.PersistentVolumeClaimVolumeSource{
+							PersistentVolumeClaimVolumeSource: v1.PersistentVolumeClaimVolumeSource{
+								ClaimName: "pvc4",
+							},
 						},
 					},
 				},
@@ -180,9 +187,11 @@ var _ = Describe("VM", func() {
 				kubevirtv1.Volume{
 					Name: "disk4",
 					VolumeSource: kubevirtv1.VolumeSource{
-						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-							ClaimName: "pvc6",
-							ReadOnly:  true,
+						PersistentVolumeClaim: &kubevirtv1.PersistentVolumeClaimVolumeSource{
+							PersistentVolumeClaimVolumeSource: v1.PersistentVolumeClaimVolumeSource{
+								ClaimName: "pvc6",
+								ReadOnly:  true,
+							},
 						},
 					},
 				},

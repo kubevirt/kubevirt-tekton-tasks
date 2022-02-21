@@ -2,7 +2,8 @@ package vmi
 
 import (
 	"errors"
-	v1 "kubevirt.io/client-go/api/v1"
+
+	v1 "kubevirt.io/api/core/v1"
 )
 
 func GetPodIPAddress(vmi *v1.VirtualMachineInstance) (string, error) {

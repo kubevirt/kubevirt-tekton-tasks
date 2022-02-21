@@ -3,9 +3,11 @@ package template
 import (
 	"encoding/json"
 	"fmt"
+
 	v1 "github.com/openshift/api/template/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 const (
@@ -27,7 +29,7 @@ func (t *TestTemplate) Build() *v1.Template {
 
 func (t *TestTemplate) modifyVM(processVM func(vm *kubevirtv1.VirtualMachine)) {
 	for idx, obj := range t.Data.Objects {
-		decoder := kubevirtv1.Codecs.UniversalDecoder(kubevirtv1.GroupVersion)
+		decoder := serializer.NewCodecFactory(runtime.NewScheme()).UniversalDecoder(kubevirtv1.GroupVersion)
 		decoded, err := runtime.Decode(decoder, obj.Raw)
 		if err != nil {
 			panic(err)

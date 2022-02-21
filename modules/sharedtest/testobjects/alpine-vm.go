@@ -1,8 +1,6 @@
 package testobjects
 
-import (
-	"kubevirt.io/client-go/api/v1"
-)
+import v1 "kubevirt.io/api/core/v1"
 
 func NewTestAlpineVM(name string) *TestVM {
 	containerDiskName := "containerdisk"

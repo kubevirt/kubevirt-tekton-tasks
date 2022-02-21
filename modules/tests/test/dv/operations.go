@@ -2,13 +2,14 @@ package dv
 
 import (
 	"context"
+	"time"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	cdiv1beta12 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1beta1"
+	cdiv1beta12 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 	cdicliv1beta1 "kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/core/v1beta1"
-	"time"
 )
 
 func WaitForSuccessfulDataVolume(cdiClientSet cdicliv1beta1.CdiV1beta1Interface, namespace, name string, timeout time.Duration) error {
