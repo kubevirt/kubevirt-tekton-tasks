@@ -43,7 +43,7 @@ echo "creating ${CONFIG_FILE}"
 cat <<EOF > "${CONFIG_FILE}"
 task_name: ${TASK_NAME}
 task_category: ${TASK_NAME}
-main_image: quay.io/kubevirt/tekton-task-${TASK_NAME}:v0.0.1
+main_image: quay.io/kubevirt/tekton-task-${TASK_NAME}
 EOF
 fi
 
@@ -60,7 +60,7 @@ if [ ! -f "${MAIN_TASK_DOCKERFILE}" ]; then
 echo "creating ${MAIN_TASK_DOCKERFILE}"
 cat <<EOF > "${MAIN_TASK_DOCKERFILE}"
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS builder
-RUN microdnf install -y golang-1.15.* && microdnf clean all
+RUN microdnf install -y golang-1.16.* && microdnf clean all
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 EOF

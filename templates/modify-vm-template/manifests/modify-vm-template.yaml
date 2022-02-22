@@ -67,7 +67,7 @@ spec:
       description: The namespace of a template that was updated.
   steps:
     - name: modifyvmtemplate
-      image: {{ main_image }}
+      image: "{{ main_image }}:{{ version }}"
       command:
         - modify-vm-template
       args:

@@ -2,8 +2,8 @@
 
 set -e
 
-if [ -z "${IMG_TAG}" ]; then
-  echo "IMG_TAG is not defined"
+if [ -z "${RELEASE_VERSION}" ]; then
+  echo "RELEASE_VERSION is not defined"
   exit 1
 fi
 
@@ -21,7 +21,7 @@ visit "${REPO_DIR}"
                 continue
             fi
             visit "${TASK_NAME}"
-                IMAGE_NAME_AND_TAG="tekton-task-${TASK_NAME}:${IMG_TAG}"
+                IMAGE_NAME_AND_TAG="tekton-task-${TASK_NAME}:${RELEASE_VERSION}"
                 export IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
 
                 echo "Pushing ${IMAGE}"

@@ -52,7 +52,7 @@ spec:
       description: The namespace of a private key secret.
   steps:
     - name: generate-ssh-keys
-      image: quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.0.4
+      image: "quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.0.9"
       command:
         - entrypoint
         - '--'

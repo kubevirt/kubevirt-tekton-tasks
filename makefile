@@ -1,3 +1,5 @@
+include scripts/makefile-snippets/makefile-release.mk
+
 all: clean
 
 clean:

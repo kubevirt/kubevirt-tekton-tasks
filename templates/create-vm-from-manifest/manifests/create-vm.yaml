@@ -84,7 +84,7 @@ spec:
       description: The namespace of a VM that was created.
   steps:
     - name: createvm
-      image: {{ main_image }}
+      image: "{{ main_image }}:{{ version }}"
       command:
         - create-vm
       args:
