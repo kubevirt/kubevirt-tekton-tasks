@@ -1,2 +1,2 @@
 #current version of tekton tasks
-export RELEASE_VERSION ?=v0.0.9
+export RELEASE_VERSION ?=v0.9.0
