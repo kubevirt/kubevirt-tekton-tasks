@@ -28,6 +28,7 @@ type CreateVMTaskData struct {
 	VMManifestTargetNamespace TargetNamespace
 
 	DataVolumesToCreate                      []*datavolume.TestDataVolume
+	DataSourcesToCreate                      []*datavolume.TestDataVolume
 	IsCommonTemplate                         bool
 	UseDefaultTemplateNamespacesInTaskParams bool
 	UseDefaultVMNamespacesInTaskParams       bool
@@ -45,6 +46,7 @@ type CreateVMTaskData struct {
 	TemplateParams            []string
 	VMNamespace               string
 	DataVolumes               []string
+	DataSources               []string
 	OwnDataVolumes            []string
 	PersistentVolumeClaims    []string
 	OwnPersistentVolumeClaims []string
@@ -134,7 +136,11 @@ func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
 				}
 			case datavolume.PVC, datavolume.OwnedPVC:
 				originalVolume.VolumeSource = kubevirtv1.VolumeSource{
-					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{ClaimName: name},
+					PersistentVolumeClaim: &kubevirtv1.PersistentVolumeClaimVolumeSource{
+						PersistentVolumeClaimVolumeSource: corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: name,
+						},
+					},
 				}
 			}
 		} else {
@@ -152,8 +158,10 @@ func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
 					Name: name,
 				}
 			case datavolume.PVC, datavolume.OwnedPVC:
-				volume.PersistentVolumeClaim = &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: name,
+				volume.PersistentVolumeClaim = &kubevirtv1.PersistentVolumeClaimVolumeSource{
+					PersistentVolumeClaimVolumeSource: corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: name,
+					},
 				}
 			}
 

@@ -10,10 +10,10 @@ require (
 	github.com/openshift/api v0.0.0
 	github.com/openshift/client-go v0.0.0
 	github.com/tektoncd/pipeline v0.33.0
-	k8s.io/api v0.23.1
-	k8s.io/apimachinery v0.23.1
+	k8s.io/api v0.23.4
+	k8s.io/apimachinery v0.23.4
 	k8s.io/client-go v12.0.0+incompatible
-	knative.dev/pkg v0.0.0-20220131144930-f4b57aef0006
+	knative.dev/pkg v0.0.0-20220318185521-e6e3cf03d765
 	kubevirt.io/api v0.50.0
 	kubevirt.io/client-go v0.50.0
 	kubevirt.io/containerized-data-importer v1.41.0
@@ -85,7 +85,7 @@ require (
 	github.com/openzipkin/zipkin-go v0.3.0 // indirect
 	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/client_golang v1.11.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
@@ -97,10 +97,10 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.19.1 // indirect
-	golang.org/x/net v0.0.0-20220127074510-2fabfed7e28f // indirect
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11 // indirect
@@ -115,18 +115,23 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	k8s.io/apiextensions-apiserver v0.23.1 // indirect
-	k8s.io/klog/v2 v2.40.1 // indirect
+	k8s.io/apiextensions-apiserver v0.23.4 // indirect
+	k8s.io/klog/v2 v2.40.2-0.20220227211518-7ea6d6adb645 // indirect
 	k8s.io/kube-openapi v0.0.0-20220114203427-a0453230fd26 // indirect
-	k8s.io/utils v0.0.0-20211208161948-7d6a63dca704 // indirect
+	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk v0.2.3 // indirect
 	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
 
 replace (
+	k8s.io/api => k8s.io/api v0.23.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.23.4
+	k8s.io/client-go => k8s.io/client-go v0.23.4
+)
+
+replace (
 	github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190128024246-5eb7ae5bdb7a
-	k8s.io/client-go => k8s.io/client-go v0.23.1
 	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.23.1
 	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.42.0
 	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.42.0

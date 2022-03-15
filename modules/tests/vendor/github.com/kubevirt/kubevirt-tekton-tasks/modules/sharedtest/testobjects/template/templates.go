@@ -7,20 +7,29 @@ import (
 	v1 "github.com/openshift/api/template/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 const (
-	descriptionAnnotation = "description"
-	validationsAnnotation = "validations"
-	DescriptionParam      = "DESCRIPTION"
-	NameParam             = "NAME"
-	SrcPvcNameParam       = "SRC_PVC_NAME"
-	SrcPvcNamespaceParam  = "SRC_PVC_NAMESPACE"
+	descriptionAnnotation    = "description"
+	validationsAnnotation    = "validations"
+	DescriptionParam         = "DESCRIPTION"
+	NameParam                = "NAME"
+	DataVolumeNameParam      = "DATA_SOURCE_NAME"
+	DataVolumeNamespaceParam = "DATA_SOURCE_NAMESPACE"
 )
 
 type TestTemplate struct {
 	Data *v1.Template
+}
+
+var (
+	scheme = runtime.NewScheme()
+)
+
+func init() {
+	utilruntime.Must(kubevirtv1.AddToScheme(scheme))
 }
 
 func (t *TestTemplate) Build() *v1.Template {
@@ -29,7 +38,7 @@ func (t *TestTemplate) Build() *v1.Template {
 
 func (t *TestTemplate) modifyVM(processVM func(vm *kubevirtv1.VirtualMachine)) {
 	for idx, obj := range t.Data.Objects {
-		decoder := serializer.NewCodecFactory(runtime.NewScheme()).UniversalDecoder(kubevirtv1.GroupVersion)
+		decoder := serializer.NewCodecFactory(scheme).UniversalDecoder(kubevirtv1.GroupVersion)
 		decoded, err := runtime.Decode(decoder, obj.Raw)
 		if err != nil {
 			panic(err)

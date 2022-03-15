@@ -11,7 +11,7 @@ import (
 
 func GetVM(template *v1.Template) *kubevirtv1.VirtualMachine {
 	for _, obj := range template.Objects {
-		decoder := serializer.NewCodecFactory(runtime.NewScheme()).UniversalDecoder(kubevirtv1.GroupVersion)
+		decoder := serializer.NewCodecFactory(scheme).UniversalDecoder(kubevirtv1.GroupVersion)
 		decoded, err := runtime.Decode(decoder, obj.Raw)
 		if err != nil {
 			panic(err)

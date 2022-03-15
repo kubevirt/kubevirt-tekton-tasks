@@ -1,6 +1,8 @@
 package test
 
 import (
+	"time"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
@@ -10,7 +12,7 @@ import (
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"time"
+	v1 "kubevirt.io/api/core/v1"
 )
 
 var _ = Describe("Wait for VMI Status", func() {
@@ -24,7 +26,7 @@ var _ = Describe("Wait for VMI Status", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageVMs(vm)
 			if config.TaskData.ShouldStartVM {
-				err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(vm.Name)
+				err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(vm.Name, &v1.StartOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 			}
 		}

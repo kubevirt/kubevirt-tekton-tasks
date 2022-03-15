@@ -179,8 +179,10 @@ var _ = Describe("Create VM", func() {
 				Name: datavolumes[1].DiskName,
 				// wrong source - should overwrite
 				VolumeSource: kubevirtv1.VolumeSource{
-					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: "other",
+					PersistentVolumeClaim: &kubevirtv1.PersistentVolumeClaimVolumeSource{
+						PersistentVolumeClaimVolumeSource: corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "other",
+						},
 					},
 				},
 			}

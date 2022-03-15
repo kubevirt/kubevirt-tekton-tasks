@@ -23,6 +23,7 @@ var ClientsInstance = &clients.Clients{}
 type ManagedResources struct {
 	taskRuns    []*pipev1beta1.TaskRun
 	dataVolumes []*cdiv1beta1.DataVolume
+	dataSources []*cdiv1beta1.DataSource
 	vms         []*kubevirtv1.VirtualMachine
 	templates   []*templatev1.Template
 	secrets     []*corev1.Secret
@@ -121,6 +122,9 @@ func (f *Framework) AfterEach() {
 	for _, dv := range f.managedResources.dataVolumes {
 		defer f.CdiClient.DataVolumes(dv.Namespace).Delete(context.TODO(), dv.Name, metav1.DeleteOptions{})
 	}
+	for _, ds := range f.managedResources.dataSources {
+		defer f.CdiClient.DataSources(ds.Namespace).Delete(context.TODO(), ds.Name, metav1.DeleteOptions{})
+	}
 	for _, vm := range f.managedResources.vms {
 		defer f.KubevirtClient.VirtualMachine(vm.Namespace).Delete(vm.Name, &metav1.DeleteOptions{})
 	}
@@ -141,6 +145,15 @@ func (f *Framework) ManageDataVolumes(dataVolumes ...*cdiv1beta1.DataVolume) *Fr
 	for _, dataVolume := range dataVolumes {
 		if dataVolume != nil && dataVolume.Name != "" && dataVolume.Namespace != "" {
 			f.managedResources.dataVolumes = append(f.managedResources.dataVolumes, dataVolume)
+		}
+	}
+	return f
+}
+
+func (f *Framework) ManageDataSources(dataSources ...*cdiv1beta1.DataSource) *Framework {
+	for _, dataSource := range dataSources {
+		if dataSource != nil && dataSource.Name != "" && dataSource.Namespace != "" {
+			f.managedResources.dataSources = append(f.managedResources.dataSources, dataSource)
 		}
 	}
 	return f
