@@ -10,7 +10,7 @@ require (
 	github.com/openshift/api v3.9.0+incompatible
 	github.com/openshift/client-go v3.9.0+incompatible
 	go.uber.org/zap v1.21.0
-	k8s.io/apimachinery v0.23.1
+	k8s.io/apimachinery v0.23.4
 	k8s.io/client-go v12.0.0+incompatible
 )
 
@@ -43,8 +43,8 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.23.1 // indirect
-	k8s.io/apiextensions-apiserver v0.23.1 // indirect
+	k8s.io/api v0.23.4 // indirect
+	k8s.io/apiextensions-apiserver v0.23.4 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
 	kubevirt.io/api v0.50.0 // indirect
@@ -61,10 +61,16 @@ replace (
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
 )
 
-replace k8s.io/client-go => k8s.io/client-go v0.23.1
+// Kubernetes
+replace (
+	k8s.io/api => k8s.io/api v0.23.4
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.23.4
+	k8s.io/client-go => k8s.io/client-go v0.23.4
+)
 
 // Openshift
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20211028023115-7224b732cc14 // release-4.9
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20210831095141-e19a065e79f7 // release-4.9
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20220325173635-8107b7a38e53
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220316161609-20d926360175
 )

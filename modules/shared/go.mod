@@ -9,8 +9,8 @@ require (
 	github.com/onsi/gomega v1.11.0
 	github.com/openshift/api v0.0.0
 	go.uber.org/zap v1.19.0
-	k8s.io/api v0.23.1
-	k8s.io/apimachinery v0.23.1
+	k8s.io/api v0.23.4
+	k8s.io/apimachinery v0.23.4
 	kubevirt.io/api v0.50.0
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -36,7 +36,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/apiextensions-apiserver v0.23.1 // indirect
+	k8s.io/apiextensions-apiserver v0.23.4 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
 	kubevirt.io/containerized-data-importer-api v1.44.0 // indirect
@@ -45,8 +45,15 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
 
+// Kubernetes
+replace (
+	k8s.io/api => k8s.io/api v0.23.4
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.23.4
+)
+
 // locally referenced modules
 replace github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest => ./../sharedtest
 
 // Openshift
-replace github.com/openshift/api => github.com/openshift/api v0.0.0-20211028023115-7224b732cc14 // release-4.9
+replace github.com/openshift/api => github.com/openshift/api v0.0.0-20220325173635-8107b7a38e53

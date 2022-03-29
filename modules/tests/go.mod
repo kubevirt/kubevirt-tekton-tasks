@@ -124,15 +124,18 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
 
+// Kubernetes
 replace (
 	k8s.io/api => k8s.io/api v0.23.4
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.23.4
 	k8s.io/client-go => k8s.io/client-go v0.23.4
+	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.23.4
 )
 
+replace github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190128024246-5eb7ae5bdb7a
+
 replace (
-	github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190128024246-5eb7ae5bdb7a
-	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.23.1
 	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.42.0
 	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.42.0
 )
@@ -145,6 +148,6 @@ replace (
 
 // Openshift
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20211028023115-7224b732cc14 // release-4.9
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20210831095141-e19a065e79f7 // release-4.9
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20220325173635-8107b7a38e53
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220316161609-20d926360175
 )

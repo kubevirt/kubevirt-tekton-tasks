@@ -12,8 +12,8 @@ require (
 	github.com/openshift/api v0.0.0
 	github.com/openshift/client-go v0.0.0
 	go.uber.org/zap v1.19.0
-	k8s.io/api v0.23.1
-	k8s.io/apimachinery v0.23.1
+	k8s.io/api v0.23.4
+	k8s.io/apimachinery v0.23.4
 	k8s.io/client-go v12.0.0+incompatible
 	kubevirt.io/api v0.50.0
 	kubevirt.io/client-go v0.50.0
@@ -63,7 +63,7 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	k8s.io/apiextensions-apiserver v0.23.1 // indirect
+	k8s.io/apiextensions-apiserver v0.23.4 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
@@ -72,10 +72,18 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
 
+replace github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190128024246-5eb7ae5bdb7a
+
+// Kubernetes
 replace (
-	github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190128024246-5eb7ae5bdb7a
-	k8s.io/client-go => k8s.io/client-go v0.23.1
-	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.23.1
+	k8s.io/api => k8s.io/api v0.23.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.23.4
+	k8s.io/client-go => k8s.io/client-go v0.23.4
+	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.23.4
+)
+
+// CDI
+replace (
 	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.42.0
 	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.42.0
 )
@@ -88,6 +96,6 @@ replace (
 
 // Openshift
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20211028023115-7224b732cc14 // release-4.9
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20210831095141-e19a065e79f7 // release-4.9
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20220325173635-8107b7a38e53
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220316161609-20d926360175
 )
