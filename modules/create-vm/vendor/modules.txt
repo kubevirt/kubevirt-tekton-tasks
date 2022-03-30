@@ -326,7 +326,7 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.23.4
+# k8s.io/apiextensions-apiserver v0.23.4 => k8s.io/apiextensions-apiserver v0.23.4
 ## explicit; go 1.16
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
@@ -582,6 +582,7 @@ sigs.k8s.io/structured-merge-diff/v4/value
 sigs.k8s.io/yaml
 # github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190128024246-5eb7ae5bdb7a
 # k8s.io/api => k8s.io/api v0.23.4
+# k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.4
 # k8s.io/apimachinery => k8s.io/apimachinery v0.23.4
 # k8s.io/client-go => k8s.io/client-go v0.23.4
 # k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.23.4

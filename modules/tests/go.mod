@@ -133,9 +133,9 @@ replace (
 	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.23.4
 )
 
-replace github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190128024246-5eb7ae5bdb7a
-
+// CDI
 replace (
+	github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190128024246-5eb7ae5bdb7a
 	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.42.0
 	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.42.0
 )

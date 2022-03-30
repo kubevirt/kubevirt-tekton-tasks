@@ -575,5 +575,6 @@ sigs.k8s.io/yaml
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.4
 # k8s.io/apimachinery => k8s.io/apimachinery v0.23.4
 # k8s.io/client-go => k8s.io/client-go v0.23.4
+# k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.23.4
 # github.com/openshift/api => github.com/openshift/api v0.0.0-20220325173635-8107b7a38e53
 # github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220316161609-20d926360175
