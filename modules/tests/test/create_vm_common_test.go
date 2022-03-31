@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
@@ -17,6 +18,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
+	v1beta1cdi "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
 var _ = Describe("Create VM", func() {
@@ -127,6 +129,14 @@ var _ = Describe("Create VM", func() {
 							Expect(err).ShouldNot(HaveOccurred())
 							f.ManageDataVolumes(dataVolume)
 							config.TaskData.SetDVorPVC(dataVolume.Name, dvWrapper.AttachmentType)
+						}
+
+						for _, dv := range config.TaskData.DataVolumesToCreate {
+							// wait for each DV to finish import, otherwise test will fail, because of not finished import of DV
+							Eventually(func() bool {
+								dv, _ := f.CdiClient.DataVolumes(dv.Data.Namespace).Get(context.TODO(), dv.Data.Name, v1.GetOptions{})
+								return dv.Status.Phase == v1beta1cdi.Succeeded
+							}, time.Second*180, time.Second).Should(BeTrue(), dv.Data.Name+" datavolume should be ready")
 						}
 
 						expectedVM := config.TaskData.GetExpectedVMStubMeta()
@@ -257,6 +267,14 @@ var _ = Describe("Create VM", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageDataVolumes(dataVolume)
 				config.TaskData.SetDVorPVC(fmt.Sprintf("%v:%v", dvWrapper.DiskName, dataVolume.Name), dvWrapper.AttachmentType)
+			}
+
+			for _, dv := range config.TaskData.DataVolumesToCreate {
+				// wait for each DV to finish import, otherwise test will fail, because of not finished import of DV
+				Eventually(func() bool {
+					dv, _ := f.CdiClient.DataVolumes(dv.Data.Namespace).Get(context.TODO(), dv.Data.Name, v1.GetOptions{})
+					return dv.Status.Phase == v1beta1cdi.Succeeded
+				}, time.Second*180, time.Second).Should(BeTrue(), dv.Data.Name+" datavolume should be ready")
 			}
 
 			expectedVM := config.TaskData.GetExpectedVMStubMeta()
