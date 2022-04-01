@@ -2,6 +2,8 @@ package execute
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/execattributes"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/log"
@@ -13,9 +15,8 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/rest"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 	"kubevirt.io/client-go/kubecli"
-	"time"
 )
 
 type Executor struct {
@@ -232,7 +233,7 @@ func (e *Executor) ensureVMStarted() error {
 	if !e.attemptedStart {
 		e.attemptedStart = true
 		log.Logger().Debug("starting a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
-		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Start(vmName); err != nil {
+		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Start(vmName, &kubevirtv1.StartOptions{}); err != nil {
 			return err
 		}
 	}
@@ -246,7 +247,7 @@ func (e *Executor) ensureVMStop() error {
 		e.attemptedStop = true
 
 		log.Logger().Debug("stopping a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
-		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Stop(vmName); err != nil {
+		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Stop(vmName, &kubevirtv1.StopOptions{}); err != nil {
 			return err
 		}
 	}

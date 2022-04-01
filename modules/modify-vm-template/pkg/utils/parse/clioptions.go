@@ -11,7 +11,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/api/resource"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 const (

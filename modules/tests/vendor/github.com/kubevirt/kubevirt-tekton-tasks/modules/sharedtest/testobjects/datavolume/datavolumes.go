@@ -4,7 +4,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1beta12 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1beta1"
+	v1beta12 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
 const (
@@ -47,7 +47,7 @@ func NewBlankDataVolume(name string) *TestDataVolume {
 				},
 				VolumeMode: &volumeMode,
 			},
-			Source: v1beta12.DataVolumeSource{
+			Source: &v1beta12.DataVolumeSource{
 				Blank: &v1beta12.DataVolumeBlankImage{},
 			},
 		},
@@ -87,7 +87,7 @@ func (d *TestDataVolume) WithURLSource(url string) *TestDataVolume {
 func (d *TestDataVolume) WithRegistrySource(registryURL string) *TestDataVolume {
 	d.Data.Spec.Source.Blank = nil
 	d.Data.Spec.Source.Registry = &v1beta12.DataVolumeSourceRegistry{
-		URL: registryURL,
+		URL: &registryURL,
 	}
 	return d
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright 2021 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,6 +31,9 @@ import (
 
 func init() {
 	injection.Fake.RegisterClient(withClient)
+	injection.Fake.RegisterClientFetcher(func(ctx context.Context) interface{} {
+		return Get(ctx)
+	})
 }
 
 func withClient(ctx context.Context, cfg *rest.Config) context.Context {

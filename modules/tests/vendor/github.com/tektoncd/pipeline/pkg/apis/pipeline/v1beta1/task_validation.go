@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tektoncd/pipeline/pkg/apis/config"
 	"github.com/tektoncd/pipeline/pkg/apis/validate"
 	"github.com/tektoncd/pipeline/pkg/substitution"
 	corev1 "k8s.io/api/core/v1"
@@ -33,17 +34,23 @@ import (
 
 var _ apis.Validatable = (*Task)(nil)
 
+// Validate implements apis.Validatable
 func (t *Task) Validate(ctx context.Context) *apis.FieldError {
 	errs := validate.ObjectMetadata(t.GetObjectMeta()).ViaField("metadata")
+	if apis.IsInDelete(ctx) {
+		return nil
+	}
 	return errs.Also(t.Spec.Validate(apis.WithinSpec(ctx)).ViaField("spec"))
 }
 
+// Validate implements apis.Validatable
 func (ts *TaskSpec) Validate(ctx context.Context) (errs *apis.FieldError) {
 	if len(ts.Steps) == 0 {
 		errs = errs.Also(apis.ErrMissingField("steps"))
 	}
 	errs = errs.Also(ValidateVolumes(ts.Volumes).ViaField("volumes"))
 	errs = errs.Also(validateDeclaredWorkspaces(ts.Workspaces, ts.Steps, ts.StepTemplate).ViaField("workspaces"))
+	errs = errs.Also(validateWorkspaceUsages(ctx, ts))
 	mergedSteps, err := MergeStepsWithStepTemplate(ts.StepTemplate, ts.Steps)
 	if err != nil {
 		errs = errs.Also(&apis.FieldError{
@@ -53,7 +60,7 @@ func (ts *TaskSpec) Validate(ctx context.Context) (errs *apis.FieldError) {
 		})
 	}
 
-	errs = errs.Also(validateSteps(mergedSteps).ViaField("steps"))
+	errs = errs.Also(validateSteps(ctx, mergedSteps).ViaField("steps"))
 	errs = errs.Also(ts.Resources.Validate(ctx).ViaField("resources"))
 	errs = errs.Also(ValidateParameterTypes(ts.Params).ViaField("params"))
 	errs = errs.Also(ValidateParameterVariables(ts.Steps, ts.Params))
@@ -70,6 +77,7 @@ func validateResults(ctx context.Context, results []TaskResult) (errs *apis.Fiel
 	return errs
 }
 
+// Validate implements apis.Validatable
 func (tr TaskResult) Validate(_ context.Context) *apis.FieldError {
 	if !resultNameFormatRegex.MatchString(tr.Name) {
 		return apis.ErrInvalidKeyName(tr.Name, "name", fmt.Sprintf("Name must consist of alphanumeric characters, '-', '_', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my-name',  or 'my_name', regex used for validation is '%s')", ResultNameFormat))
@@ -110,6 +118,47 @@ func validateDeclaredWorkspaces(workspaces []WorkspaceDeclaration, steps []Step,
 	return errs
 }
 
+// validateWorkspaceUsages checks that all WorkspaceUsage objects in Steps
+// refer to workspaces that are defined in the Task.
+//
+// This is an alpha feature and will fail validation if it's used by a step
+// or sidecar when the enable-api-fields feature gate is anything but "alpha".
+func validateWorkspaceUsages(ctx context.Context, ts *TaskSpec) (errs *apis.FieldError) {
+	workspaces := ts.Workspaces
+	steps := ts.Steps
+	sidecars := ts.Sidecars
+
+	wsNames := sets.NewString()
+	for _, w := range workspaces {
+		wsNames.Insert(w.Name)
+	}
+
+	for stepIdx, step := range steps {
+		if len(step.Workspaces) != 0 {
+			errs = errs.Also(ValidateEnabledAPIFields(ctx, "step workspaces", config.AlphaAPIFields).ViaIndex(stepIdx).ViaField("steps"))
+		}
+		for workspaceIdx, w := range step.Workspaces {
+			if !wsNames.Has(w.Name) {
+				errs = errs.Also(apis.ErrGeneric(fmt.Sprintf("undefined workspace %q", w.Name), "name").ViaIndex(workspaceIdx).ViaField("workspaces").ViaIndex(stepIdx).ViaField("steps"))
+			}
+		}
+	}
+
+	for sidecarIdx, sidecar := range sidecars {
+		if len(sidecar.Workspaces) != 0 {
+			errs = errs.Also(ValidateEnabledAPIFields(ctx, "sidecar workspaces", config.AlphaAPIFields).ViaIndex(sidecarIdx).ViaField("sidecars"))
+		}
+		for workspaceIdx, w := range sidecar.Workspaces {
+			if !wsNames.Has(w.Name) {
+				errs = errs.Also(apis.ErrGeneric(fmt.Sprintf("undefined workspace %q", w.Name), "name").ViaIndex(workspaceIdx).ViaField("workspaces").ViaIndex(sidecarIdx).ViaField("sidecars"))
+			}
+		}
+	}
+
+	return errs
+}
+
+// ValidateVolumes validates a slice of volumes to make sure there are no dupilcate names
 func ValidateVolumes(volumes []corev1.Volume) (errs *apis.FieldError) {
 	// Task must not have duplicate volume names.
 	vols := sets.NewString()
@@ -123,16 +172,16 @@ func ValidateVolumes(volumes []corev1.Volume) (errs *apis.FieldError) {
 	return errs
 }
 
-func validateSteps(steps []Step) (errs *apis.FieldError) {
+func validateSteps(ctx context.Context, steps []Step) (errs *apis.FieldError) {
 	// Task must not have duplicate step names.
 	names := sets.NewString()
 	for idx, s := range steps {
-		errs = errs.Also(validateStep(s, names).ViaIndex(idx))
+		errs = errs.Also(validateStep(ctx, s, names).ViaIndex(idx))
 	}
 	return errs
 }
 
-func validateStep(s Step, names sets.String) (errs *apis.FieldError) {
+func validateStep(ctx context.Context, s Step, names sets.String) (errs *apis.FieldError) {
 	if s.Image == "" {
 		errs = errs.Also(apis.ErrMissingField("Image"))
 	}
@@ -175,9 +224,27 @@ func validateStep(s Step, names sets.String) (errs *apis.FieldError) {
 			errs = errs.Also(apis.ErrGeneric(fmt.Sprintf(`volumeMount name %q cannot start with "tekton-internal-"`, vm.Name), "name").ViaFieldIndex("volumeMounts", j))
 		}
 	}
+
+	if s.OnError != "" {
+		if s.OnError != "continue" && s.OnError != "stopAndFail" {
+			errs = errs.Also(&apis.FieldError{
+				Message: fmt.Sprintf("invalid value: %v", s.OnError),
+				Paths:   []string{"onError"},
+				Details: "Task step onError must be either continue or stopAndFail",
+			})
+		}
+	}
+
+	if s.Script != "" {
+		cleaned := strings.TrimSpace(s.Script)
+		if strings.HasPrefix(cleaned, "#!win") {
+			errs = errs.Also(ValidateEnabledAPIFields(ctx, "windows script support", config.AlphaAPIFields).ViaField("script"))
+		}
+	}
 	return errs
 }
 
+// ValidateParameterTypes validates all the types within a slice of ParamSpecs
 func ValidateParameterTypes(params []ParamSpec) (errs *apis.FieldError) {
 	for _, p := range params {
 		errs = errs.Also(p.ValidateType())
@@ -185,6 +252,7 @@ func ValidateParameterTypes(params []ParamSpec) (errs *apis.FieldError) {
 	return errs
 }
 
+// ValidateType checks that the type of a ParamSpec is allowed and its default value matches that type
 func (p ParamSpec) ValidateType() *apis.FieldError {
 	// Ensure param has a valid type.
 	validType := false
@@ -211,6 +279,7 @@ func (p ParamSpec) ValidateType() *apis.FieldError {
 	return nil
 }
 
+// ValidateParameterVariables validates all variables within a slice of ParamSpecs against a slice of Steps
 func ValidateParameterVariables(steps []Step, params []ParamSpec) *apis.FieldError {
 	parameterNames := sets.NewString()
 	arrayParameterNames := sets.NewString()
@@ -234,11 +303,13 @@ func validateTaskContextVariables(steps []Step) *apis.FieldError {
 	)
 	taskContextNames := sets.NewString().Insert(
 		"name",
+		"retry-count",
 	)
 	errs := validateVariables(steps, "context\\.taskRun", taskRunContextNames)
 	return errs.Also(validateVariables(steps, "context\\.task", taskContextNames))
 }
 
+// ValidateResourcesVariables validates all variables within a TaskResources against a slice of Steps
 func ValidateResourcesVariables(steps []Step, resources *TaskResources) *apis.FieldError {
 	if resources == nil {
 		return nil

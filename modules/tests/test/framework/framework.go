@@ -3,6 +3,7 @@ package framework
 import (
 	"context"
 	"fmt"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/clients"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
@@ -12,8 +13,8 @@ import (
 	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
-	cdiv1beta1 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1beta1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
+	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
 var TestOptionsInstance = &testoptions.TestOptions{}
@@ -22,6 +23,7 @@ var ClientsInstance = &clients.Clients{}
 type ManagedResources struct {
 	taskRuns    []*pipev1beta1.TaskRun
 	dataVolumes []*cdiv1beta1.DataVolume
+	dataSources []*cdiv1beta1.DataSource
 	vms         []*kubevirtv1.VirtualMachine
 	templates   []*templatev1.Template
 	secrets     []*corev1.Secret
@@ -120,6 +122,9 @@ func (f *Framework) AfterEach() {
 	for _, dv := range f.managedResources.dataVolumes {
 		defer f.CdiClient.DataVolumes(dv.Namespace).Delete(context.TODO(), dv.Name, metav1.DeleteOptions{})
 	}
+	for _, ds := range f.managedResources.dataSources {
+		defer f.CdiClient.DataSources(ds.Namespace).Delete(context.TODO(), ds.Name, metav1.DeleteOptions{})
+	}
 	for _, vm := range f.managedResources.vms {
 		defer f.KubevirtClient.VirtualMachine(vm.Namespace).Delete(vm.Name, &metav1.DeleteOptions{})
 	}
@@ -140,6 +145,15 @@ func (f *Framework) ManageDataVolumes(dataVolumes ...*cdiv1beta1.DataVolume) *Fr
 	for _, dataVolume := range dataVolumes {
 		if dataVolume != nil && dataVolume.Name != "" && dataVolume.Namespace != "" {
 			f.managedResources.dataVolumes = append(f.managedResources.dataVolumes, dataVolume)
+		}
+	}
+	return f
+}
+
+func (f *Framework) ManageDataSources(dataSources ...*cdiv1beta1.DataSource) *Framework {
+	for _, dataSource := range dataSources {
+		if dataSource != nil && dataSource.Name != "" && dataSource.Namespace != "" {
+			f.managedResources.dataSources = append(f.managedResources.dataSources, dataSource)
 		}
 	}
 	return f

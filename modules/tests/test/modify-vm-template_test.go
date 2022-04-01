@@ -10,7 +10,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	. "github.com/onsi/ginkgo"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"

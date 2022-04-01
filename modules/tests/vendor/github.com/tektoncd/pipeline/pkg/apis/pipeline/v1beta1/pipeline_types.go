@@ -17,14 +17,37 @@ limitations under the License.
 package v1beta1
 
 import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/tektoncd/pipeline/pkg/apis/config"
+	"github.com/tektoncd/pipeline/pkg/apis/pipeline"
+
 	"github.com/tektoncd/pipeline/pkg/reconciler/pipeline/dag"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation"
+	"knative.dev/pkg/apis"
+	"knative.dev/pkg/kmeta"
+)
+
+const (
+	// PipelineTasksAggregateStatus is a param representing aggregate status of all dag pipelineTasks
+	PipelineTasksAggregateStatus = "tasks.status"
+	// PipelineTasks is a value representing a task is a member of "tasks" section of the pipeline
+	PipelineTasks = "tasks"
+	// PipelineFinallyTasks is a value representing a task is a member of "finally" section of the pipeline
+	PipelineFinallyTasks = "finally"
 )
 
 // +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +genclient:noStatus
+// +genreconciler:krshapedlogic=false
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Pipeline describes a list of Tasks to execute. It expresses how outputs
 // of tasks feed into inputs of subsequent tasks.
@@ -39,16 +62,26 @@ type Pipeline struct {
 	Spec PipelineSpec `json:"spec"`
 }
 
+var _ kmeta.OwnerRefable = (*Pipeline)(nil)
+
+// PipelineMetadata returns the Pipeline's ObjectMeta, implementing PipelineObject
 func (p *Pipeline) PipelineMetadata() metav1.ObjectMeta {
 	return p.ObjectMeta
 }
 
+// PipelineSpec returns the Pipeline's Spec, implementing PipelineObject
 func (p *Pipeline) PipelineSpec() PipelineSpec {
 	return p.Spec
 }
 
+// Copy returns a deep copy of the Pipeline, implementing PipelineObject
 func (p *Pipeline) Copy() PipelineObject {
 	return p.DeepCopy()
+}
+
+// GetGroupVersionKind implements kmeta.OwnerRefable.
+func (*Pipeline) GetGroupVersionKind() schema.GroupVersionKind {
+	return SchemeGroupVersion.WithKind(pipeline.PipelineControllerName)
 }
 
 // PipelineSpec defines the desired state of Pipeline.
@@ -91,6 +124,7 @@ type PipelineResult struct {
 	Value string `json:"value"`
 }
 
+// PipelineTaskMetadata contains the labels or annotations for an EmbeddedTask
 type PipelineTaskMetadata struct {
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
@@ -99,11 +133,20 @@ type PipelineTaskMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
+// EmbeddedTask is used to define a Task inline within a Pipeline's PipelineTasks.
 type EmbeddedTask struct {
+	// +optional
+	runtime.TypeMeta `json:",inline,omitempty"`
+
+	// Spec is a specification of a custom task
+	// +optional
+	Spec runtime.RawExtension `json:"spec,omitempty"`
+
 	// +optional
 	Metadata PipelineTaskMetadata `json:"metadata,omitempty"`
 
 	// TaskSpec is a specification of a task
+	// +optional
 	TaskSpec `json:",inline,omitempty"`
 }
 
@@ -161,14 +204,129 @@ type PipelineTask struct {
 	Timeout *metav1.Duration `json:"timeout,omitempty"`
 }
 
+// validateRefOrSpec validates at least one of taskRef or taskSpec is specified
+func (pt PipelineTask) validateRefOrSpec() (errs *apis.FieldError) {
+	// can't have both taskRef and taskSpec at the same time
+	if pt.TaskRef != nil && pt.TaskSpec != nil {
+		errs = errs.Also(apis.ErrMultipleOneOf("taskRef", "taskSpec"))
+	}
+	// Check that one of TaskRef and TaskSpec is present
+	if pt.TaskRef == nil && pt.TaskSpec == nil {
+		errs = errs.Also(apis.ErrMissingOneOf("taskRef", "taskSpec"))
+	}
+	return errs
+}
+
+// validateCustomTask validates custom task specifications - checking kind and fail if not yet supported features specified
+func (pt PipelineTask) validateCustomTask() (errs *apis.FieldError) {
+	if pt.TaskRef != nil && pt.TaskRef.Kind == "" {
+		errs = errs.Also(apis.ErrInvalidValue("custom task ref must specify kind", "taskRef.kind"))
+	}
+	if pt.TaskSpec != nil && pt.TaskSpec.Kind == "" {
+		errs = errs.Also(apis.ErrInvalidValue("custom task spec must specify kind", "taskSpec.kind"))
+	}
+	if pt.TaskRef != nil && pt.TaskRef.APIVersion == "" {
+		errs = errs.Also(apis.ErrInvalidValue("custom task ref must specify apiVersion", "taskRef.apiVersion"))
+	}
+	if pt.TaskSpec != nil && pt.TaskSpec.APIVersion == "" {
+		errs = errs.Also(apis.ErrInvalidValue("custom task spec must specify apiVersion", "taskSpec.apiVersion"))
+	}
+
+	// Conditions are deprecated so the effort to support them with custom tasks is not justified.
+	// When expressions should be used instead.
+	if len(pt.Conditions) > 0 {
+		errs = errs.Also(apis.ErrInvalidValue("custom tasks do not support conditions - use when expressions instead", "conditions"))
+	}
+	// TODO(#3133): Support these features if possible.
+	if pt.Resources != nil {
+		errs = errs.Also(apis.ErrInvalidValue("custom tasks do not support PipelineResources", "resources"))
+	}
+	return errs
+}
+
+// validateBundle validates bundle specifications - checking name and bundle
+func (pt PipelineTask) validateBundle() (errs *apis.FieldError) {
+	// bundle requires a TaskRef to be specified
+	if (pt.TaskRef != nil && pt.TaskRef.Bundle != "") && pt.TaskRef.Name == "" {
+		errs = errs.Also(apis.ErrMissingField("taskRef.name"))
+	}
+	// If a bundle url is specified, ensure it is parsable
+	if pt.TaskRef != nil && pt.TaskRef.Bundle != "" {
+		if _, err := name.ParseReference(pt.TaskRef.Bundle); err != nil {
+			errs = errs.Also(apis.ErrInvalidValue(fmt.Sprintf("invalid bundle reference (%s)", err.Error()), "taskRef.bundle"))
+		}
+	}
+	return errs
+}
+
+// validateTask validates a pipeline task or a final task for taskRef and taskSpec
+func (pt PipelineTask) validateTask(ctx context.Context) (errs *apis.FieldError) {
+	// Validate TaskSpec if it's present
+	if pt.TaskSpec != nil {
+		errs = errs.Also(pt.TaskSpec.Validate(ctx).ViaField("taskSpec"))
+	}
+	if pt.TaskRef != nil {
+		if pt.TaskRef.Name != "" {
+			// TaskRef name must be a valid k8s name
+			if errSlice := validation.IsQualifiedName(pt.TaskRef.Name); len(errSlice) != 0 {
+				errs = errs.Also(apis.ErrInvalidValue(strings.Join(errSlice, ","), "name"))
+			}
+		} else {
+			errs = errs.Also(apis.ErrInvalidValue("taskRef must specify name", "taskRef.name"))
+		}
+		// fail if bundle is present when EnableTektonOCIBundles feature flag is off (as it won't be allowed nor used)
+		if pt.TaskRef.Bundle != "" {
+			errs = errs.Also(apis.ErrDisallowedFields("taskref.bundle"))
+		}
+	}
+	return errs
+}
+
+// TaskSpecMetadata returns the metadata of the PipelineTask's EmbeddedTask spec.
 func (pt *PipelineTask) TaskSpecMetadata() PipelineTaskMetadata {
 	return pt.TaskSpec.Metadata
 }
 
+// HashKey is the name of the PipelineTask, and is used as the key for this PipelineTask in the DAG
 func (pt PipelineTask) HashKey() string {
 	return pt.Name
 }
 
+// ValidateName checks whether the PipelineTask's name is a valid DNS label
+func (pt PipelineTask) ValidateName() *apis.FieldError {
+	if err := validation.IsDNS1123Label(pt.Name); len(err) > 0 {
+		return &apis.FieldError{
+			Message: fmt.Sprintf("invalid value %q", pt.Name),
+			Paths:   []string{"name"},
+			Details: "Pipeline Task name must be a valid DNS Label." +
+				"For more info refer to https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+		}
+	}
+	return nil
+}
+
+// Validate classifies whether a task is a custom task, bundle, or a regular task(dag/final)
+// calls the validation routine based on the type of the task
+func (pt PipelineTask) Validate(ctx context.Context) (errs *apis.FieldError) {
+	errs = errs.Also(pt.validateRefOrSpec())
+	cfg := config.FromContextOrDefaults(ctx)
+	// If EnableCustomTasks feature flag is on, validate custom task specifications
+	// pipeline task having taskRef with APIVersion is classified as custom task
+	switch {
+	case cfg.FeatureFlags.EnableCustomTasks && pt.TaskRef != nil && pt.TaskRef.APIVersion != "":
+		errs = errs.Also(pt.validateCustomTask())
+	case cfg.FeatureFlags.EnableCustomTasks && pt.TaskSpec != nil && pt.TaskSpec.APIVersion != "":
+		errs = errs.Also(pt.validateCustomTask())
+		// If EnableTektonOCIBundles feature flag is on, validate bundle specifications
+	case cfg.FeatureFlags.EnableTektonOCIBundles && pt.TaskRef != nil && pt.TaskRef.Bundle != "":
+		errs = errs.Also(pt.validateBundle())
+	default:
+		errs = errs.Also(pt.validateTask(ctx))
+	}
+	return
+}
+
+// Deps returns all other PipelineTask dependencies of this PipelineTask, based on resource usage or ordering
 func (pt PipelineTask) Deps() []string {
 	deps := []string{}
 
@@ -217,6 +375,7 @@ func (pt PipelineTask) orderingDeps() []string {
 	return orderingDeps
 }
 
+// PipelineTaskList is a list of PipelineTasks
 type PipelineTaskList []PipelineTask
 
 // Deps returns a map with key as name of a pipelineTask and value as a list of its dependencies
@@ -233,6 +392,7 @@ func (l PipelineTaskList) Deps() map[string][]string {
 	return deps
 }
 
+// Items returns a slice of all tasks in the PipelineTaskList, converted to dag.Tasks
 func (l PipelineTaskList) Items() []dag.Task {
 	tasks := []dag.Task{}
 	for _, t := range l {
@@ -248,6 +408,22 @@ func (l PipelineTaskList) Names() sets.String {
 		names.Insert(pt.Name)
 	}
 	return names
+}
+
+// Validate a list of pipeline tasks including custom task and bundles
+func (l PipelineTaskList) Validate(ctx context.Context, taskNames sets.String, path string) (errs *apis.FieldError) {
+	for i, t := range l {
+		// validate pipeline task name
+		errs = errs.Also(t.ValidateName().ViaFieldIndex(path, i))
+		// names cannot be duplicated - checking that pipelineTask names are unique
+		if _, ok := taskNames[t.Name]; ok {
+			errs = errs.Also(apis.ErrMultipleOneOf("name").ViaFieldIndex(path, i))
+		}
+		taskNames.Insert(t.Name)
+		// validate custom task, bundle, dag, or final task
+		errs = errs.Also(t.Validate(ctx).ViaFieldIndex(path, i))
+	}
+	return errs
 }
 
 // PipelineTaskParam is used to provide arbitrary string parameters to a Task.

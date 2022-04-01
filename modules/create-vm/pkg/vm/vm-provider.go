@@ -1,7 +1,7 @@
 package vm
 
 import (
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 	kubevirtcliv1 "kubevirt.io/client-go/kubecli"
 )
 
@@ -25,5 +25,5 @@ func (v *virtualMachineProvider) Create(namespace string, vm *kubevirtv1.Virtual
 }
 
 func (v *virtualMachineProvider) Start(namespace, name string) error {
-	return v.client.VirtualMachine(namespace).Start(name)
+	return v.client.VirtualMachine(namespace).Start(name, &kubevirtv1.StartOptions{})
 }

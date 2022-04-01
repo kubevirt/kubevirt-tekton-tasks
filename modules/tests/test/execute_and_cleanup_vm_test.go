@@ -2,6 +2,8 @@ package test
 
 import (
 	"context"
+	"time"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
@@ -14,7 +16,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"time"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 const (
@@ -83,7 +85,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageVMs(vm)
 				if config.TaskData.ShouldStartVM {
-					err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(vm.Name)
+					err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(vm.Name, &kubevirtv1.StartOptions{})
 					Expect(err).ShouldNot(HaveOccurred())
 					time.Sleep(Timeouts.WaitBeforeExecutingVM.Duration)
 				}
@@ -448,7 +450,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageVMs(vm)
 			if config.TaskData.ShouldStartVM {
-				err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(vm.Name)
+				err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(vm.Name, &kubevirtv1.StartOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				time.Sleep(Timeouts.WaitBeforeExecutingVM.Duration)
 			}

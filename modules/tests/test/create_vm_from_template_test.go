@@ -14,7 +14,8 @@ import (
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
+	cdiv1beta12 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
 var _ = Describe("Create VM from template", func() {
@@ -356,8 +357,27 @@ var _ = Describe("Create VM from template", func() {
 			dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dataVolume)
-			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, testtemplate.TemplateParam(SpacesSmall+testtemplate.SrcPvcNameParam, dataVolume.Name))
-			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, testtemplate.TemplateParam(SpacesSmall+testtemplate.SrcPvcNamespaceParam, dataVolume.Namespace))
+
+			datasource := cdiv1beta12.DataSource{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      dvWrapper.Data.Name,
+					Namespace: dvWrapper.Data.Namespace,
+				},
+				Spec: cdiv1beta12.DataSourceSpec{
+					Source: cdiv1beta12.DataSourceSource{
+						PVC: &cdiv1beta12.DataVolumeSourcePVC{
+							Name:      dvWrapper.Data.Name,
+							Namespace: dvWrapper.Data.Namespace,
+						},
+					},
+				},
+			}
+			ds, err := f.CdiClient.DataSources(dvWrapper.Data.Namespace).Create(context.TODO(), &datasource, v1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageDataSources(ds)
+
+			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, testtemplate.TemplateParam(SpacesSmall+testtemplate.DataVolumeNameParam, dataVolume.Name))
+			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, testtemplate.TemplateParam(SpacesSmall+testtemplate.DataVolumeNamespaceParam, dataVolume.Namespace))
 		}
 
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).

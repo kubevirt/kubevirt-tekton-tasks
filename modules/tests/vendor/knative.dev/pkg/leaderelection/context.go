@@ -27,6 +27,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
+
 	"knative.dev/pkg/hash"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/network"
@@ -94,7 +95,11 @@ func BuildElector(ctx context.Context, la reconciler.LeaderAware, queueName stri
 	return &unopposedElector{
 		la:  la,
 		bkt: reconciler.UniversalBucket(),
-		enq: enq,
+		// The UniversalBucket owns everything, so there is never a need to
+		// enqueue things (no possible state change).  We pass nil here to
+		// avoid filling the queue for an extra resynce at startup along
+		// this path.
+		enq: nil,
 	}, nil
 }
 
@@ -188,7 +193,11 @@ func newStandardBuckets(queueName string, cc ComponentConfig) []reconciler.Bucke
 }
 
 func standardBucketName(ordinal uint32, queueName string, cc ComponentConfig) string {
-	return strings.ToLower(fmt.Sprintf("%s.%s.%02d-of-%02d", cc.Component, queueName, ordinal, cc.Buckets))
+	prefix := fmt.Sprintf("%s.%s", cc.Component, queueName)
+	if v, ok := cc.LeaseNamesPrefixMapping[prefix]; ok && len(v) > 0 {
+		prefix = v
+	}
+	return strings.ToLower(fmt.Sprintf("%s.%02d-of-%02d", prefix, ordinal, cc.Buckets))
 }
 
 type statefulSetBuilder struct {

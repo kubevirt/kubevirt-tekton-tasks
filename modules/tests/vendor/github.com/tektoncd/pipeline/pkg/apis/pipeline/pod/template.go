@@ -22,7 +22,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// PodTemplate holds pod specific configuration
+// Template holds pod specific configuration
 // +k8s:deepcopy-gen=true
 // +k8s:openapi-gen=true
 type Template struct {
@@ -101,11 +101,17 @@ type Template struct {
 	// +optional
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 
+	// HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts
+	// file if specified. This is only valid for non-hostNetwork pods.
+	// +optional
+	HostAliases []corev1.HostAlias `json:"hostAliases,omitempty"`
+
 	// HostNetwork specifies whether the pod may use the node network namespace
 	// +optional
 	HostNetwork bool `json:"hostNetwork,omitempty"`
 }
 
+// Equals checks if this Template is identical to the given Template.
 func (tpl *Template) Equals(other *Template) bool {
 	if tpl == nil && other == nil {
 		return true

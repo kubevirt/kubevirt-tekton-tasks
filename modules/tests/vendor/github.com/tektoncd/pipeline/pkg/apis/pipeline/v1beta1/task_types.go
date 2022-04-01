@@ -17,23 +17,27 @@ limitations under the License.
 package v1beta1
 
 import (
+	"github.com/tektoncd/pipeline/pkg/apis/pipeline"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"knative.dev/pkg/kmeta"
 )
 
 const (
 	// TaskRunResultType default task run result value
-	TaskRunResultType ResultType = "TaskRunResult"
+	TaskRunResultType ResultType = 1
 	// PipelineResourceResultType default pipeline result value
-	PipelineResourceResultType ResultType = "PipelineResourceResult"
+	PipelineResourceResultType = 2
 	// InternalTektonResultType default internal tekton result value
-	InternalTektonResultType ResultType = "InternalTektonResult"
+	InternalTektonResultType = 3
 	// UnknownResultType default unknown result type value
-	UnknownResultType ResultType = ""
+	UnknownResultType = 10
 )
 
 // +genclient
 // +genclient:noStatus
+// +genreconciler:krshapedlogic=false
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Task represents a collection of sequential steps that are run as part of a
@@ -52,16 +56,26 @@ type Task struct {
 	Spec TaskSpec `json:"spec"`
 }
 
+var _ kmeta.OwnerRefable = (*Task)(nil)
+
+// TaskSpec returns the task's spec
 func (t *Task) TaskSpec() TaskSpec {
 	return t.Spec
 }
 
+// TaskMetadata returns the task's ObjectMeta
 func (t *Task) TaskMetadata() metav1.ObjectMeta {
 	return t.ObjectMeta
 }
 
+// Copy returns a deep copy of the task
 func (t *Task) Copy() TaskObject {
 	return t.DeepCopy()
+}
+
+// GetGroupVersionKind implements kmeta.OwnerRefable.
+func (*Task) GetGroupVersionKind() schema.GroupVersionKind {
+	return SchemeGroupVersion.WithKind(pipeline.TaskControllerName)
 }
 
 // TaskSpec defines the desired state of Task.
@@ -124,10 +138,29 @@ type Step struct {
 	// Script is the contents of an executable file to execute.
 	//
 	// If Script is not empty, the Step cannot have an Command and the Args will be passed to the Script.
+	// +optional
 	Script string `json:"script,omitempty"`
+
 	// Timeout is the time after which the step times out. Defaults to never.
 	// Refer to Go's ParseDuration documentation for expected format: https://golang.org/pkg/time/#ParseDuration
+	// +optional
 	Timeout *metav1.Duration `json:"timeout,omitempty"`
+
+	// This is an alpha field. You must set the "enable-api-fields" feature flag to "alpha"
+	// for this field to be supported.
+	//
+	// Workspaces is a list of workspaces from the Task that this Step wants
+	// exclusive access to. Adding a workspace to this list means that any
+	// other Step or Sidecar that does not also request this Workspace will
+	// not have access to it.
+	// +optional
+	Workspaces []WorkspaceUsage `json:"workspaces,omitempty"`
+
+	// OnError defines the exiting behavior of a container on error
+	// can be set to [ continue | stopAndFail ]
+	// stopAndFail indicates exit the taskRun if the container exits with non-zero exit code
+	// continue indicates continue executing the rest of the steps irrespective of the container exit code
+	OnError string `json:"onError,omitempty"`
 }
 
 // Sidecar has nearly the same data structure as Step, consisting of a Container and an optional Script, but does not have the ability to timeout.
@@ -137,11 +170,22 @@ type Sidecar struct {
 	// Script is the contents of an executable file to execute.
 	//
 	// If Script is not empty, the Step cannot have an Command or Args.
+	// +optional
 	Script string `json:"script,omitempty"`
+
+	// This is an alpha field. You must set the "enable-api-fields" feature flag to "alpha"
+	// for this field to be supported.
+	//
+	// Workspaces is a list of workspaces from the Task that this Sidecar wants
+	// exclusive access to. Adding a workspace to this list means that any
+	// other Step or Sidecar that does not also request this Workspace will
+	// not have access to it.
+	// +optional
+	Workspaces []WorkspaceUsage `json:"workspaces,omitempty"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // TaskList contains a list of Task
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type TaskList struct {
 	metav1.TypeMeta `json:",inline"`
 	// +optional
@@ -162,9 +206,16 @@ type TaskRef struct {
 	// Bundle url reference to a Tekton Bundle.
 	// +optional
 	Bundle string `json:"bundle,omitempty"`
+
+	// ResolverRef allows referencing a Task in a remote location
+	// like a git repo. This field is only supported when the alpha
+	// feature gate is enabled.
+	// +optional
+	ResolverRef `json:",omitempty"`
 }
 
 // Check that Pipeline may be validated and defaulted.
+
 // TaskKind defines the type of Task used by the pipeline.
 type TaskKind string
 
