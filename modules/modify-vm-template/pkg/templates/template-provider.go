@@ -137,6 +137,10 @@ func (t *TemplateUpdator) setValuesToVM(vm *kubevirtv1.VirtualMachine) *kubevirt
 		vm.Spec.Template.Spec.Domain.Resources.Requests[k8sv1.ResourceMemory] = *memory
 	}
 
+	if t.cliOptions.GetDeleteDatavolumeTemplate() {
+		deleteDatavolumeTemplateFromVM(vm)
+	}
+
 	for _, disk := range t.cliOptions.GetDisks() {
 		replaced := false
 		for i, vmDisk := range vm.Spec.Template.Spec.Domain.Devices.Disks {
@@ -174,4 +178,36 @@ func EncodeVMToTemplate(template *templatev1.Template, vm *kubevirtv1.VirtualMac
 
 	template.Objects[vmIndex].Raw = raw
 	return template, nil
+}
+
+func deleteDatavolumeTemplateFromVM(vm *kubevirtv1.VirtualMachine) {
+	dvsToDelete := make(map[string]bool)
+	for _, dvTemplate := range vm.Spec.DataVolumeTemplates {
+		dvsToDelete[dvTemplate.Name] = true
+	}
+
+	if vm.Spec.Template != nil {
+		disksToDelete := make(map[string]bool)
+		newVolumes := []kubevirtv1.Volume{}
+		for _, volume := range vm.Spec.Template.Spec.Volumes {
+			if volume.DataVolume != nil {
+				if val, ok := dvsToDelete[volume.DataVolume.Name]; ok && val {
+					disksToDelete[volume.Name] = true
+					continue
+				}
+			}
+			newVolumes = append(newVolumes, volume)
+		}
+		vm.Spec.Template.Spec.Volumes = newVolumes
+
+		newDisks := []kubevirtv1.Disk{}
+		for _, disk := range vm.Spec.Template.Spec.Domain.Devices.Disks {
+			if _, ok := disksToDelete[disk.Name]; !ok {
+				newDisks = append(newDisks, disk)
+			}
+		}
+		vm.Spec.Template.Spec.Domain.Devices.Disks = newDisks
+	}
+
+	vm.Spec.DataVolumeTemplates = []kubevirtv1.DataVolumeTemplateSpec{}
 }

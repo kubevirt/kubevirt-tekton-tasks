@@ -1,6 +1,8 @@
 package testconfigs
 
 import (
+	"strconv"
+
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	v1 "github.com/openshift/api/template/v1"
@@ -11,19 +13,20 @@ import (
 type ModifyTemplateTaskData struct {
 	Template *v1.Template
 
-	TemplateName            string
-	SourceTemplateNamespace TargetNamespace
-	CPUCores                string
-	CPUSockets              string
-	CPUThreads              string
-	Memory                  string
-	TemplateNamespace       string
-	TemplateLabels          []string
-	TemplateAnnotations     []string
-	VMAnnotations           []string
-	VMLabels                []string
-	Disks                   []string
-	Volumes                 []string
+	TemplateName             string
+	SourceTemplateNamespace  TargetNamespace
+	CPUCores                 string
+	CPUSockets               string
+	CPUThreads               string
+	Memory                   string
+	TemplateNamespace        string
+	TemplateLabels           []string
+	TemplateAnnotations      []string
+	VMAnnotations            []string
+	VMLabels                 []string
+	Disks                    []string
+	Volumes                  []string
+	DeleteDatavolumeTemplate bool
 }
 
 type ModifyTemplateTestConfig struct {
@@ -119,6 +122,12 @@ func (m *ModifyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			Value: v1beta1.ArrayOrString{
 				Type:     v1beta1.ParamTypeArray,
 				ArrayVal: m.TaskData.Volumes,
+			},
+		}, {
+			Name: DeleteDatavolumeTemplateName,
+			Value: v1beta1.ArrayOrString{
+				Type:      v1beta1.ParamTypeString,
+				StringVal: strconv.FormatBool(m.TaskData.DeleteDatavolumeTemplate),
 			},
 		},
 	}

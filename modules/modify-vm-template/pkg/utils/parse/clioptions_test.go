@@ -68,15 +68,16 @@ var _ = Describe("CLIOptions", func() {
 				Debug:        true,
 			}),
 			table.Entry("should succeed with all options", &parse.CLIOptions{
-				TemplateName:        testString,
-				CPUCores:            testNumberOfCPU,
-				CPUThreads:          testNumberOfCPU,
-				TemplateLabels:      mockArray,
-				TemplateAnnotations: mockArray,
-				VMLabels:            mockArray,
-				VMAnnotations:       mockArray,
-				Disks:               diskArray,
-				Volumes:             volumeArray,
+				TemplateName:             testString,
+				CPUCores:                 testNumberOfCPU,
+				CPUThreads:               testNumberOfCPU,
+				TemplateLabels:           mockArray,
+				TemplateAnnotations:      mockArray,
+				VMLabels:                 mockArray,
+				VMAnnotations:            mockArray,
+				Disks:                    diskArray,
+				Volumes:                  volumeArray,
+				DeleteDatavolumeTemplate: true,
 			}),
 		)
 
@@ -119,13 +120,14 @@ var _ = Describe("CLIOptions", func() {
 		)
 
 		cli := &parse.CLIOptions{
-			TemplateName:        testString,
-			TemplateLabels:      mockArray,
-			TemplateAnnotations: mockArray,
-			VMLabels:            mockArray,
-			VMAnnotations:       mockArray,
-			Disks:               diskArray,
-			Volumes:             volumeArray,
+			TemplateName:             testString,
+			TemplateLabels:           mockArray,
+			TemplateAnnotations:      mockArray,
+			VMLabels:                 mockArray,
+			VMAnnotations:            mockArray,
+			Disks:                    diskArray,
+			Volumes:                  volumeArray,
+			DeleteDatavolumeTemplate: true,
 		}
 		table.DescribeTable("CLI options should return correct map of annotations / labels", func(obj *parse.CLIOptions, fnToCall func() map[string]string, result map[string]string) {
 			Expect(obj.Init()).To(Succeed(), "should succeeded")
@@ -153,6 +155,13 @@ var _ = Describe("CLIOptions", func() {
 			Expect(r[0].ContainerDisk.Image).To(Equal(result[0].ContainerDisk.Image), "volume image should equal")
 		},
 			table.Entry("GetVolumes should return correct value", cli, cli.GetVolumes, parsedVolume),
+		)
+
+		table.DescribeTable("CLI options should return correct value for DeleteDatavolumeTemplate", func(obj *parse.CLIOptions, fnToCall func() bool, result bool) {
+			Expect(obj.Init()).To(Succeed(), "should succeeded")
+			Expect(fnToCall()).To(Equal(result), "bool should equal")
+		},
+			table.Entry("GetDeleteDatavolumeTemplate should return correct value", cli, cli.GetDeleteDatavolumeTemplate, true),
 		)
 	})
 })
