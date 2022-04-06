@@ -67,7 +67,7 @@ spec:
       description: The namespace of a template that was updated.
   steps:
     - name: modifyvmtemplate
-      image: "quay.io/kubevirt/tekton-task-modify-vm-template:v0.5.0"
+      image: "quay.io/kubevirt/tekton-task-modify-vm-template:v0.6.0"
       command:
         - modify-vm-template
       args:
