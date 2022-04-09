@@ -22,6 +22,7 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 - **vmAnnotations**: VM annotations. If VM contains same annotation, it will be replaced. Each param should have KEY:VAL format. Eg [`key:value`, `key:value`].
 - **disks**: VM disks in json format, replace vm disk if same name, otherwise new disk is appended. Eg [{`name`: `test`, `cdrom`: {`bus`: `sata`}}, {`name`: `disk2`}]
 - **volumes**: VM volumes in json format, replace vm volume if same name, otherwise new volume is appended. Eg [{`name`: `virtiocontainerdisk`, `containerDisk`: {`image`: `kubevirt/virtio-container-disk`}}]
+- **deleteDatavolumeTemplate**: Set to `true` or `false` if task should delete datavolume template in template and all associated volumes and disks.
 
 ### Results
 

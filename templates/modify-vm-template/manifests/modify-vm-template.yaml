@@ -11,6 +11,7 @@ metadata:
     cpuCores.params.task.kubevirt.io/type: {{ task_param_types.number }}
     cpuThreads.params.task.kubevirt.io/type: {{ task_param_types.number }}
     memory.params.task.kubevirt.io/type: {{ task_param_types.memory }}
+    deleteDatavolumeTemplate.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
   labels:
     task.kubevirt.io/type: {{ task_name }}
     task.kubevirt.io/category: {{ task_category }}
@@ -59,6 +60,10 @@ spec:
       name: volumes
       type: array
       default: []
+    - name: deleteDatavolumeTemplate
+      description: Set to "true" or "false" if task should delete datavolume template in template and all associated volumes and disks.
+      default: 'false'
+      type: string
 
   results:
     - name: name
@@ -97,3 +102,5 @@ spec:
           value: $(params.cpuThreads)
         - name: MEMORY
           value: $(params.memory)
+        - name: DELETE_DATAVOLUME_TEMPLATE
+          value: $(params.deleteDatavolumeTemplate)

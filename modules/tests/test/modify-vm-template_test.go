@@ -351,5 +351,52 @@ var _ = Describe("Modify template task", func() {
 				ExpectedVolumes:                  Volumes,
 			}),
 		)
+
+		It("taskrun succeded and template datavolume is removed and volumes, disks are updated", func() {
+			config := &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					LimitTestScope: ClusterTestScope,
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					Template:                 testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName:             testtemplate.RhelTemplateName,
+					SourceTemplateNamespace:  DeployTargetNS,
+					DeleteDatavolumeTemplate: true,
+				},
+			}
+			f.TestSetup(config)
+
+			if template := config.TaskData.Template; template != nil {
+				t, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				Expect(err).ShouldNot(HaveOccurred())
+				f.ManageTemplates(t)
+			}
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					"name":      config.TaskData.TemplateName,
+					"namespace": config.TaskData.TemplateNamespace,
+				})
+
+			template, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(template).ToNot(BeNil(), "new template should exists")
+			f.ManageTemplates(template)
+
+			vm, _, err := zutils.DecodeVM(template)
+			Expect(err).ShouldNot(HaveOccurred(), "decode VM")
+			Expect(len(vm.Spec.DataVolumeTemplates)).To(Equal(0), "datavolume template should be empty")
+
+			Expect(len(vm.Spec.Template.Spec.Volumes)).To(Equal(1), "there should be only 1 volume")
+			emptyVolume := kubevirtv1.Volume{}
+			Expect(vm.Spec.Template.Spec.Volumes[0].DataVolume).To(Equal(emptyVolume.DataVolume), "data volume should be nil")
+
+			Expect(len(vm.Spec.Template.Spec.Domain.Devices.Disks)).To(Equal(1), "there should be only 1 disk")
+			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[0].Name).ToNot(Equal("rootdisk"), "disk should not have name rootdisk")
+		})
 	})
 })

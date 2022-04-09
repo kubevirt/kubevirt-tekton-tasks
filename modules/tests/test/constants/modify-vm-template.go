@@ -21,6 +21,7 @@ const (
 	VMAnnotationsOptionName       = "vmAnnotations"
 	DisksOptionName               = "disks"
 	VolumesOptionName             = "volumes"
+	DeleteDatavolumeTemplateName  = "deleteDatavolumeTemplate"
 
 	CPUSocketsTopologyNumber    uint32 = 1
 	CPUCoresTopologyNumber      uint32 = 2
