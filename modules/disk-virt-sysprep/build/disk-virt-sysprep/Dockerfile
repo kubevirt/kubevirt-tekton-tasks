@@ -18,7 +18,7 @@ RUN git clone https://github.com/rwmjones/rhsrvany.git
 WORKDIR /rhsrvany
 RUN autoreconf --install && autoconf && mingw32-configure --disable-dependency-tracking && make
 
-FROM quay.io/kubevirt/libguestfs-tools:v0.49.0
+FROM quay.io/kubevirt/libguestfs-tools:v0.52.0
 ENV TASK_NAME=disk-virt-sysprep
 ENV ENTRY_CMD=/usr/local/bin/${TASK_NAME} \
     USER_UID=1001 \
