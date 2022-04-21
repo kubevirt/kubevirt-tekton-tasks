@@ -24,18 +24,23 @@ spec:
     - name: templateNamespace
       description: Namespace of an source OpenShift template. (defaults to active namespace)
       type: string
+      default: ""
     - name: cpuSockets
       description: Number of CPU sockets
       type: string
+      default: "0"
     - name: cpuCores
       description: Number of CPU cores
       type: string
+      default: "0"
     - name: cpuThreads
       description: Number of CPU threads
       type: string
+      default: "0"
     - name: memory
       description: Number of memory vm can use
       type: string
+      default: ""
     - description: Template labels. If template contains same label, it will be replaced. Each param should have KEY:VAL format. Eg ["key:value", "key:value"].
       name: templateLabels
       type: array
