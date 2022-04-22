@@ -60,6 +60,10 @@ spec:
       name: volumes
       type: array
       default: []
+    - description: 'Datavolume templates in json format, replace datavolume if same name, otherwise new datavolume is appended. If deleteDatavolumeTemplate is set, first datavolumes are deleted and then datavolumes from this attribute are added. Eg [{"apiVersion": "cdi.kubevirt.io/v1beta1", "kind": "DataVolume", "metadata":{"name": "test1"}, "spec": {"source": {"http": {"url": "test.somenonexisting"}}}}]'
+      name: datavolumeTemplates
+      type: array
+      default: []
     - name: deleteDatavolumeTemplate
       description: Set to "true" or "false" if task should delete datavolume template in template and all associated volumes and disks.
       default: 'false'
@@ -89,6 +93,8 @@ spec:
         - $(params.disks)
         - "--volumes"
         - $(params.volumes)
+        - "--datavolumeTemplates"
+        - $(params.datavolumeTemplates)
       env:
         - name: TEMPLATE_NAME
           value: $(params.templateName)

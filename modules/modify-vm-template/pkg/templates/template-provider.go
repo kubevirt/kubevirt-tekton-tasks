@@ -141,6 +141,19 @@ func (t *TemplateUpdator) setValuesToVM(vm *kubevirtv1.VirtualMachine) *kubevirt
 		deleteDatavolumeTemplateFromVM(vm)
 	}
 
+	for _, datavolumeTemplate := range t.cliOptions.GetDatavolumeTemplates() {
+		replaced := false
+		for i, vmDatavolumeTemplate := range vm.Spec.DataVolumeTemplates {
+			if datavolumeTemplate.Name == vmDatavolumeTemplate.Name {
+				vm.Spec.DataVolumeTemplates[i] = datavolumeTemplate
+				replaced = true
+			}
+		}
+		if !replaced {
+			vm.Spec.DataVolumeTemplates = append(vm.Spec.DataVolumeTemplates, datavolumeTemplate)
+		}
+	}
+
 	for _, disk := range t.cliOptions.GetDisks() {
 		replaced := false
 		for i, vmDisk := range vm.Spec.Template.Spec.Domain.Devices.Disks {

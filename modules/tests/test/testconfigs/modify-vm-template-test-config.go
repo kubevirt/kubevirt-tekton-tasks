@@ -26,6 +26,7 @@ type ModifyTemplateTaskData struct {
 	VMLabels                 []string
 	Disks                    []string
 	Volumes                  []string
+	DataVolumeTemplates      []string
 	DeleteDatavolumeTemplate bool
 }
 
@@ -122,6 +123,12 @@ func (m *ModifyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			Value: v1beta1.ArrayOrString{
 				Type:     v1beta1.ParamTypeArray,
 				ArrayVal: m.TaskData.Volumes,
+			},
+		}, {
+			Name: DataVolumeTemplatesName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.DataVolumeTemplates,
 			},
 		}, {
 			Name: DeleteDatavolumeTemplateName,

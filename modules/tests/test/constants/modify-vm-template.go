@@ -1,7 +1,9 @@
 package constants
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
+	cdiv1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
 const (
@@ -21,6 +23,7 @@ const (
 	VMAnnotationsOptionName       = "vmAnnotations"
 	DisksOptionName               = "disks"
 	VolumesOptionName             = "volumes"
+	DataVolumeTemplatesName       = "datavolumeTemplates"
 	DeleteDatavolumeTemplateName  = "deleteDatavolumeTemplate"
 
 	CPUSocketsTopologyNumber    uint32 = 1
@@ -38,8 +41,9 @@ var (
 	MockArray          = []string{"newKey: value", "test: true"}
 	WrongStrSlice      = []string{"wrong vaue"}
 
-	MockDisks   = []string{"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}", "{\"name\": \"containerdisk\", \"disk\": {\"bus\": \"sata\"}, \"bootOrder\": 2}"}
-	MockVolumes = []string{"{\"name\": \"containerdisk\", \"containerDisk\": {\"image\": \"URL\"}}", "{\"name\": \"cloudinitdisk\"}", "{\"name\": \"test3\"}"}
+	MockDisks               = []string{"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}", "{\"name\": \"containerdisk\", \"disk\": {\"bus\": \"sata\"}, \"bootOrder\": 2}"}
+	MockVolumes             = []string{"{\"name\": \"containerdisk\", \"containerDisk\": {\"image\": \"URL\"}}", "{\"name\": \"cloudinitdisk\"}", "{\"name\": \"test3\"}"}
+	MockDataVolumeTemplates = []string{"{\"apiVersion\": \"cdi.kubevirt.io/v1beta1\", \"kind\": \"DataVolume\", \"metadata\":{\"name\": \"test1\"}, \"spec\": {\"source\": {\"http\": {\"url\": \"test.somenonexisting\"}}}}"}
 
 	LabelsAnnotationsMap = map[string]string{
 		"newKey": "value",
@@ -84,6 +88,25 @@ var (
 		},
 		{
 			Name: "test3",
+		},
+	}
+
+	DataVolumeTemplates = []kubevirtv1.DataVolumeTemplateSpec{
+		{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "DataVolume",
+				APIVersion: "cdi.kubevirt.io/v1beta1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test1",
+			},
+			Spec: cdiv1.DataVolumeSpec{
+				Source: &cdiv1.DataVolumeSource{
+					HTTP: &cdiv1.DataVolumeSourceHTTP{
+						URL: "test.somenonexisting",
+					},
+				},
+			},
 		},
 	}
 )

@@ -30,6 +30,7 @@ type ExpectedResults struct {
 	ExpectedVMMemory                 resource.Quantity
 	ExpectedDisks                    []kubevirtv1.Disk
 	ExpectedVolumes                  []kubevirtv1.Volume
+	ExpectedDataVolumeTemplates      []kubevirtv1.DataVolumeTemplateSpec
 }
 
 func (e ExpectedResults) ExpectCPUTopology(vm *kubevirtv1.VirtualMachine) {
@@ -64,6 +65,10 @@ func (e ExpectedResults) ExpectVMDisks(vm *kubevirtv1.VirtualMachine) {
 
 func (e ExpectedResults) ExpectVMVolumes(vm *kubevirtv1.VirtualMachine) {
 	Expect(vm.Spec.Template.Spec.Volumes).To(Equal(e.ExpectedVolumes), "vm volumes should equal")
+}
+
+func (e ExpectedResults) ExpectDataVolumeTemplates(vm *kubevirtv1.VirtualMachine) {
+	Expect(vm.Spec.DataVolumeTemplates[0]).To(Equal(e.ExpectedDataVolumeTemplates[0]), "vm datavolume templates should equal")
 }
 
 func checkValuesInMap(updatedMap, expectedResult map[string]string, message string) {
@@ -286,6 +291,7 @@ var _ = Describe("Modify template task", func() {
 			expectedResults.ExpectVMMemory(vm)
 			expectedResults.ExpectVMDisks(vm)
 			expectedResults.ExpectVMVolumes(vm)
+			expectedResults.ExpectDataVolumeTemplates(vm)
 
 		},
 			table.Entry("should update template in the same namespace", &testconfigs.ModifyTemplateTestConfig{
@@ -305,6 +311,7 @@ var _ = Describe("Modify template task", func() {
 					VMLabels:            MockArray,
 					Disks:               MockDisks,
 					Volumes:             MockVolumes,
+					DataVolumeTemplates: MockDataVolumeTemplates,
 				},
 			}, ExpectedResults{
 				ExpectedCPUSocketsTopologyNumber: CPUSocketsTopologyNumber,
@@ -317,6 +324,7 @@ var _ = Describe("Modify template task", func() {
 				ExpectedVMAnnotations:            LabelsAnnotationsMap,
 				ExpectedDisks:                    Disks,
 				ExpectedVolumes:                  Volumes,
+				ExpectedDataVolumeTemplates:      DataVolumeTemplates,
 			}),
 			table.Entry("should update template across namespaces", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
@@ -337,6 +345,7 @@ var _ = Describe("Modify template task", func() {
 					VMLabels:                MockArray,
 					Disks:                   MockDisks,
 					Volumes:                 MockVolumes,
+					DataVolumeTemplates:     MockDataVolumeTemplates,
 				},
 			}, ExpectedResults{
 				ExpectedCPUSocketsTopologyNumber: CPUSocketsTopologyNumber,
@@ -349,6 +358,7 @@ var _ = Describe("Modify template task", func() {
 				ExpectedVMAnnotations:            LabelsAnnotationsMap,
 				ExpectedDisks:                    Disks,
 				ExpectedVolumes:                  Volumes,
+				ExpectedDataVolumeTemplates:      DataVolumeTemplates,
 			}),
 		)
 
@@ -397,6 +407,48 @@ var _ = Describe("Modify template task", func() {
 
 			Expect(len(vm.Spec.Template.Spec.Domain.Devices.Disks)).To(Equal(1), "there should be only 1 disk")
 			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[0].Name).ToNot(Equal("rootdisk"), "disk should not have name rootdisk")
+		})
+
+		It("taskrun succeded and template datavolume is removed and replaced by a new one", func() {
+			config := &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					LimitTestScope: ClusterTestScope,
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					Template:                 testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName:             testtemplate.RhelTemplateName,
+					SourceTemplateNamespace:  DeployTargetNS,
+					DataVolumeTemplates:      MockDataVolumeTemplates,
+					DeleteDatavolumeTemplate: true,
+				},
+			}
+			f.TestSetup(config)
+
+			if template := config.TaskData.Template; template != nil {
+				t, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				Expect(err).ShouldNot(HaveOccurred())
+				f.ManageTemplates(t)
+			}
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					"name":      config.TaskData.TemplateName,
+					"namespace": config.TaskData.TemplateNamespace,
+				})
+
+			template, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(template).ToNot(BeNil(), "new template should exists")
+			f.ManageTemplates(template)
+
+			vm, _, err := zutils.DecodeVM(template)
+			Expect(err).ShouldNot(HaveOccurred(), "decode VM")
+			Expect(len(vm.Spec.DataVolumeTemplates)).To(Equal(1), "there should be only one datavolume template")
+			Expect(vm.Spec.DataVolumeTemplates[0]).To(Equal(DataVolumeTemplates[0]), "vm datavolume templates should equal")
 		})
 	})
 })
