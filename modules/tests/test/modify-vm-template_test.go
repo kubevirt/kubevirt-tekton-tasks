@@ -10,13 +10,13 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	. "github.com/onsi/ginkgo"
-	kubevirtv1 "kubevirt.io/api/core/v1"
-
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	templatev1 "github.com/openshift/api/template/v1"
+	k8sv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 type ExpectedResults struct {
@@ -449,6 +449,63 @@ var _ = Describe("Modify template task", func() {
 			Expect(err).ShouldNot(HaveOccurred(), "decode VM")
 			Expect(len(vm.Spec.DataVolumeTemplates)).To(Equal(1), "there should be only one datavolume template")
 			Expect(vm.Spec.DataVolumeTemplates[0]).To(Equal(DataVolumeTemplates[0]), "vm datavolume templates should equal")
+		})
+
+		It("taskrun succeded and defaults do not modify template", func() {
+			config := &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					LimitTestScope: ClusterTestScope,
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName:            testtemplate.RhelTemplateName,
+					SourceTemplateNamespace: DeployTargetNS,
+				},
+			}
+			f.TestSetup(config)
+
+			template := config.TaskData.Template
+			if template != nil {
+				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				Expect(err).ShouldNot(HaveOccurred())
+				f.ManageTemplates(template)
+			}
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					"name":      config.TaskData.TemplateName,
+					"namespace": config.TaskData.TemplateNamespace,
+				})
+
+			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(updatedTemplate).ToNot(BeNil(), "new template should exists")
+			f.ManageTemplates(updatedTemplate)
+
+			vm, _, err := zutils.DecodeVM(template)
+			Expect(err).ShouldNot(HaveOccurred(), "decode VM")
+			updatedVm, _, err := zutils.DecodeVM(updatedTemplate)
+			Expect(err).ShouldNot(HaveOccurred(), "decode updated VM")
+
+			Expect(updatedTemplate.Labels).To(Equal(template.Labels), "templateLabels should be unchanged")
+			Expect(updatedTemplate.Annotations).To(Equal(updatedTemplate.Annotations), "templateAnnotations should be unchanged")
+			Expect(updatedVm.Spec.Template.Spec.Domain.CPU.Sockets).To(Equal(vm.Spec.Template.Spec.Domain.CPU.Sockets), "cpuSockets should be unchanged")
+			Expect(updatedVm.Spec.Template.Spec.Domain.CPU.Cores).To(Equal(vm.Spec.Template.Spec.Domain.CPU.Cores), "cpuCores should be unchanged")
+			Expect(updatedVm.Spec.Template.Spec.Domain.CPU.Threads).To(Equal(vm.Spec.Template.Spec.Domain.CPU.Threads), "cpuThreads should be unchanged")
+			Expect(updatedVm.Labels).To(Equal(vm.Labels), "vmLabels should be unchanged")
+			Expect(updatedVm.Annotations).To(Equal(vm.Annotations), "vmAnnotations should be unchanged")
+			Expect(updatedVm.Spec.Template.Spec.Domain.Devices.Disks).To(Equal(vm.Spec.Template.Spec.Domain.Devices.Disks), "disks should be unchanged")
+			Expect(updatedVm.Spec.Template.Spec.Volumes).To(Equal(vm.Spec.Template.Spec.Volumes), "volumes should be unchanged")
+			Expect(updatedVm.Spec.DataVolumeTemplates).To(Equal(vm.Spec.DataVolumeTemplates), "datavolumeTemplates should be unchanged")
+
+			memory := vm.Spec.Template.Spec.Domain.Resources.Requests[k8sv1.ResourceMemory]
+			memoryUpdated := updatedVm.Spec.Template.Spec.Domain.Resources.Requests[k8sv1.ResourceMemory]
+			Expect(memoryUpdated.Value()).To(Equal(memory.Value()), "memory should be unchanged")
+
 		})
 	})
 })
