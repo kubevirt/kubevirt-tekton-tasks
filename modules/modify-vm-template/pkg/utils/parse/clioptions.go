@@ -21,21 +21,23 @@ const (
 )
 
 type CLIOptions struct {
-	TemplateName             string            `arg:"--template-name,env:TEMPLATE_NAME,required" placeholder:"NAME" help:"Name of a template"`
-	TemplateNamespace        string            `arg:"--template-namespace,env:TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a template"`
-	CPUSockets               string            `arg:"--cpu-sockets,env:CPU_SOCKETS" placeholder:"CPU_SOCKETS" help:"Number of CPU sockets"`
-	CPUCores                 string            `arg:"--cpu-cores,env:CPU_CORES" placeholder:"CPU_CORES" help:"Number of CPU cores"`
-	CPUThreads               string            `arg:"--cpu-threads,env:CPU_THREADS" placeholder:"CPU_THREADS" help:"Number of CPU threads"`
-	Memory                   string            `arg:"--memory,env:MEMORY" placeholder:"MEMORY" help:"Memory of the vm, format 1M, 1G"`
-	TemplateLabels           []string          `arg:"--template-labels" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds labels to template"`
-	TemplateAnnotations      []string          `arg:"--template-annotations" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds annotations to template"`
-	VMLabels                 []string          `arg:"--vm-labels" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds labels to VMs"`
-	VMAnnotations            []string          `arg:"--vm-annotations" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds annotations to VMs"`
-	Output                   output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
-	Disks                    []string          `arg:"--disks" placeholder:'{"name": "test", "cdrom": {"bus": "sata"}}' '{"name": "disk2"}' help:"VM disks in json format, replace vm disk if same name, otherwise new disk is appended"`
-	Volumes                  []string          `arg:"--volumes" placeholder:'{"name": "virtiocontainerdisk", "containerDisk": {"image": "kubevirt/virtio-container-disk"}}' '{"name": "disk2"}' help:"VM volumes in json format, replace vm volume if same name, otherwise new volume is appended"`
-	DeleteDatavolumeTemplate bool              `arg:"--delete-datavolume-template,env:DELETE_DATAVOLUME_TEMPLATE" help:"Delete datavolume template from template. It deletes associated volumes and disks from VM definition"`
-	Debug                    bool              `arg:"--debug" help:"Sets DEBUG log level"`
+	TemplateName        string            `arg:"--template-name,env:TEMPLATE_NAME,required" placeholder:"NAME" help:"Name of a template"`
+	TemplateNamespace   string            `arg:"--template-namespace,env:TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a template"`
+	CPUSockets          string            `arg:"--cpu-sockets,env:CPU_SOCKETS" placeholder:"CPU_SOCKETS" help:"Number of CPU sockets"`
+	CPUCores            string            `arg:"--cpu-cores,env:CPU_CORES" placeholder:"CPU_CORES" help:"Number of CPU cores"`
+	CPUThreads          string            `arg:"--cpu-threads,env:CPU_THREADS" placeholder:"CPU_THREADS" help:"Number of CPU threads"`
+	Memory              string            `arg:"--memory,env:MEMORY" placeholder:"MEMORY" help:"Memory of the vm, format 1M, 1G"`
+	TemplateLabels      []string          `arg:"--template-labels" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds labels to template"`
+	TemplateAnnotations []string          `arg:"--template-annotations" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds annotations to template"`
+	VMLabels            []string          `arg:"--vm-labels" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds labels to VMs"`
+	VMAnnotations       []string          `arg:"--vm-annotations" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds annotations to VMs"`
+	Output              output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
+	Disks               []string          `arg:"--disks" placeholder:'{"name": "test", "cdrom": {"bus": "sata"}}' '{"name": "disk2"}' help:"VM disks in json format, replace vm disk if same name, otherwise new disk is appended"`
+	Volumes             []string          `arg:"--volumes" placeholder:'{"name": "virtiocontainerdisk", "containerDisk": {"image": "kubevirt/virtio-container-disk"}}' '{"name": "disk2"}' help:"VM volumes in json format, replace vm volume if same name, otherwise new volume is appended"`
+	DatavolumeTemplates []string          `arg:"--datavolumeTemplates" placeholder:'{"apiVersion": "cdi.kubevirt.io/v1beta1", "kind": "DataVolume", "metadata":{"name": "test1"}, "spec": {"source": {"http": {"url": "test.somenonexisting"}}}}' help:"Datavolume templates in json format, replace datavolume if same name, otherwise new datavolume is appended. If deleteDatavolumeTemplate is set, first datavolumes are deleted and then datavolumes from this attribute are added."`
+
+	DeleteDatavolumeTemplate bool `arg:"--delete-datavolume-template,env:DELETE_DATAVOLUME_TEMPLATE" help:"Delete datavolume template from template. It deletes associated volumes and disks from VM definition"`
+	Debug                    bool `arg:"--debug" help:"Sets DEBUG log level"`
 
 	templateLabels      map[string]string
 	templateAnnotations map[string]string
@@ -43,6 +45,7 @@ type CLIOptions struct {
 	vmAnnotations       map[string]string
 	disks               []kubevirtv1.Disk
 	volumes             []kubevirtv1.Volume
+	datavolumeTemplates []kubevirtv1.DataVolumeTemplateSpec
 }
 
 func (c *CLIOptions) GetDebugLevel() zapcore.Level {
@@ -73,6 +76,10 @@ func (c *CLIOptions) GetCPUThreads() uint32 {
 
 func (c *CLIOptions) GetDisks() []kubevirtv1.Disk {
 	return c.disks
+}
+
+func (c *CLIOptions) GetDatavolumeTemplates() []kubevirtv1.DataVolumeTemplateSpec {
+	return c.datavolumeTemplates
 }
 
 func (c *CLIOptions) GetVolumes() []kubevirtv1.Volume {
@@ -119,6 +126,10 @@ func (c *CLIOptions) Init() error {
 	}
 
 	if err := c.convertVolumes(); err != nil {
+		return err
+	}
+
+	if err := c.convertDatavolumeTemplates(); err != nil {
 		return err
 	}
 
@@ -188,6 +199,24 @@ func (c *CLIOptions) convertDisks() error {
 			mError.AddC("wrong disk definition", err)
 		}
 		c.disks = append(c.disks, *disk)
+	}
+
+	if !mError.IsEmpty() {
+		return mError
+	}
+
+	return nil
+}
+
+func (c *CLIOptions) convertDatavolumeTemplates() error {
+	mError := zerrors.NewMultiError()
+	for _, datavolumeStr := range c.DatavolumeTemplates {
+		datavolume := &kubevirtv1.DataVolumeTemplateSpec{}
+		err := json.Unmarshal([]byte(datavolumeStr), datavolume)
+		if err != nil {
+			mError.AddC("wrong datavolume template definition", err)
+		}
+		c.datavolumeTemplates = append(c.datavolumeTemplates, *datavolume)
 	}
 
 	if !mError.IsEmpty() {

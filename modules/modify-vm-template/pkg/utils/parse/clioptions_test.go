@@ -9,7 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
+	cdiv1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
 const (
@@ -20,13 +22,32 @@ const (
 )
 
 var (
-	mockArray                = []string{"newKey: value", "test: true"}
-	diskArray                = []string{"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}"}
-	volumeArray              = []string{"{\"name\": \"test\", \"containerDisk\": {\"image\": \"URL\"}}"}
-	resultMap                = map[string]string{"newKey": "value", "test": "true"}
-	testStringMemoryResource = resource.MustParse(testStringMemory)
-	parsedDisk               = []kubevirtv1.Disk{{Name: "test", DiskDevice: kubevirtv1.DiskDevice{CDRom: &kubevirtv1.CDRomTarget{Bus: "sata"}}}}
-	parsedVolume             = []kubevirtv1.Volume{{Name: "test", VolumeSource: kubevirtv1.VolumeSource{ContainerDisk: &kubevirtv1.ContainerDiskSource{Image: "URL"}}}}
+	mockArray                 = []string{"newKey: value", "test: true"}
+	diskArray                 = []string{"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}"}
+	volumeArray               = []string{"{\"name\": \"test\", \"containerDisk\": {\"image\": \"URL\"}}"}
+	dataVolumeArray           = []string{"{\"apiVersion\": \"cdi.kubevirt.io/v1beta1\", \"kind\": \"DataVolume\", \"metadata\":{\"name\": \"test1\"}, \"spec\": {\"source\": {\"http\": {\"url\": \"test.somenonexisting\"}}}}"}
+	resultMap                 = map[string]string{"newKey": "value", "test": "true"}
+	testStringMemoryResource  = resource.MustParse(testStringMemory)
+	parsedDisk                = []kubevirtv1.Disk{{Name: "test", DiskDevice: kubevirtv1.DiskDevice{CDRom: &kubevirtv1.CDRomTarget{Bus: "sata"}}}}
+	parsedVolume              = []kubevirtv1.Volume{{Name: "test", VolumeSource: kubevirtv1.VolumeSource{ContainerDisk: &kubevirtv1.ContainerDiskSource{Image: "URL"}}}}
+	parsedDataVolumeTemplates = []kubevirtv1.DataVolumeTemplateSpec{
+		{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "DataVolume",
+				APIVersion: "cdi.kubevirt.io/v1beta1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test1",
+			},
+			Spec: cdiv1.DataVolumeSpec{
+				Source: &cdiv1.DataVolumeSource{
+					HTTP: &cdiv1.DataVolumeSourceHTTP{
+						URL: "test.somenonexisting",
+					},
+				},
+			},
+		},
+	}
 )
 
 var _ = Describe("CLIOptions", func() {
@@ -51,6 +72,7 @@ var _ = Describe("CLIOptions", func() {
 			table.Entry("wrong vm annotations", "pair should be in \"KEY:VAL\" format", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: mockArray, VMLabels: mockArray, VMAnnotations: []string{"singleKey"}}),
 			table.Entry("wrong disk json", "invalid character 'w'", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: mockArray, VMLabels: mockArray, Disks: []string{"{wrongJson: value}"}}),
 			table.Entry("wrong volume json", "invalid character 'k'", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: mockArray, VMLabels: mockArray, Volumes: []string{"{key: value}"}}),
+			table.Entry("wrong dataVolumeTemplate json", "invalid character 'e' in literal true", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: mockArray, VMLabels: mockArray, Volumes: mockArray, DatavolumeTemplates: []string{"{wrong value}"}}),
 		)
 	})
 	Context("correct cli options", func() {
@@ -78,6 +100,7 @@ var _ = Describe("CLIOptions", func() {
 				Disks:                    diskArray,
 				Volumes:                  volumeArray,
 				DeleteDatavolumeTemplate: true,
+				DatavolumeTemplates:      dataVolumeArray,
 			}),
 		)
 
@@ -127,6 +150,7 @@ var _ = Describe("CLIOptions", func() {
 			VMAnnotations:            mockArray,
 			Disks:                    diskArray,
 			Volumes:                  volumeArray,
+			DatavolumeTemplates:      dataVolumeArray,
 			DeleteDatavolumeTemplate: true,
 		}
 		table.DescribeTable("CLI options should return correct map of annotations / labels", func(obj *parse.CLIOptions, fnToCall func() map[string]string, result map[string]string) {
@@ -155,6 +179,15 @@ var _ = Describe("CLIOptions", func() {
 			Expect(r[0].ContainerDisk.Image).To(Equal(result[0].ContainerDisk.Image), "volume image should equal")
 		},
 			table.Entry("GetVolumes should return correct value", cli, cli.GetVolumes, parsedVolume),
+		)
+
+		table.DescribeTable("CLI options should return correct dataVolume templates values", func(obj *parse.CLIOptions, fnToCall func() []kubevirtv1.DataVolumeTemplateSpec, result []kubevirtv1.DataVolumeTemplateSpec) {
+			Expect(obj.Init()).To(Succeed(), "should succeeded")
+			r := fnToCall()
+			Expect(r[0].Name).To(Equal(result[0].Name), "volume name should equal")
+			Expect(r[0].Spec.Source.HTTP.URL).To(Equal(result[0].Spec.Source.HTTP.URL), "URL should equal")
+		},
+			table.Entry("GetVolumes should return correct value", cli, cli.GetDatavolumeTemplates, parsedDataVolumeTemplates),
 		)
 
 		table.DescribeTable("CLI options should return correct value for DeleteDatavolumeTemplate", func(obj *parse.CLIOptions, fnToCall func() bool, result bool) {
