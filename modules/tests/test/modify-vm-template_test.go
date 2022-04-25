@@ -492,7 +492,7 @@ var _ = Describe("Modify template task", func() {
 			Expect(err).ShouldNot(HaveOccurred(), "decode updated VM")
 
 			Expect(updatedTemplate.Labels).To(Equal(template.Labels), "templateLabels should be unchanged")
-			Expect(updatedTemplate.Annotations).To(Equal(updatedTemplate.Annotations), "templateAnnotations should be unchanged")
+			Expect(updatedTemplate.Annotations).To(Equal(template.Annotations), "templateAnnotations should be unchanged")
 			Expect(updatedVm.Spec.Template.Spec.Domain.CPU.Sockets).To(Equal(vm.Spec.Template.Spec.Domain.CPU.Sockets), "cpuSockets should be unchanged")
 			Expect(updatedVm.Spec.Template.Spec.Domain.CPU.Cores).To(Equal(vm.Spec.Template.Spec.Domain.CPU.Cores), "cpuCores should be unchanged")
 			Expect(updatedVm.Spec.Template.Spec.Domain.CPU.Threads).To(Equal(vm.Spec.Template.Spec.Domain.CPU.Threads), "cpuThreads should be unchanged")
