@@ -1,10 +1,11 @@
 package testconstants
 
 import (
-	"github.com/onsi/ginkgo"
 	"hash/fnv"
 	"strconv"
 	"strings"
+
+	"github.com/onsi/ginkgo/v2"
 )
 
 func fiveDigitTestHash(s string) string {
