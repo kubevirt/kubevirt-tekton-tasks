@@ -10,6 +10,7 @@ metadata:
     targetTemplateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
     targetTemplateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
     targetTemplateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
+    allowReplace.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
   labels:
     task.kubevirt.io/type: {{ task_name }}
     task.kubevirt.io/category: {{ task_category }}
@@ -31,6 +32,10 @@ spec:
       description: Namespace of an target OpenShift template to create in. (defaults to active namespace)
       type: string
       default: ""
+    - name: allowReplace
+      description: Allow replacing already existing template (same combination name/namespace). Allowed values true/false
+      type: string
+      default: "false"
   results:
     - name: name
       description: The name of a template that was created.
@@ -52,3 +57,5 @@ spec:
           value: $(params.targetTemplateName)
         - name: TARGET_TEMPLATE_NAMESPACE
           value: $(params.targetTemplateNamespace)
+        - name: ALLOW_REPLACE
+          value: $(params.allowReplace)

@@ -17,13 +17,13 @@ const (
 )
 
 type CLIOptions struct {
-	SourceTemplateName      string `arg:"--source-template-name,env:SOURCE_TEMPLATE_NAME,required" placeholder:"NAME" help:"Name of a source template"`
-	SourceTemplateNamespace string `arg:"--source-template-namespace,env:SOURCE_TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a source template"`
-	TargetTemplateName      string `arg:"--target-template-name,env:TARGET_TEMPLATE_NAME" placeholder:"NAME" help:"Name of a target template"`
-	TargetTemplateNamespace string `arg:"--target-template-namespace,env:TARGET_TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a target template"`
-
-	Output output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
-	Debug  bool              `arg:"--debug" help:"Sets DEBUG log level"`
+	SourceTemplateName      string            `arg:"--source-template-name,env:SOURCE_TEMPLATE_NAME,required" placeholder:"NAME" help:"Name of a source template"`
+	SourceTemplateNamespace string            `arg:"--source-template-namespace,env:SOURCE_TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a source template"`
+	TargetTemplateName      string            `arg:"--target-template-name,env:TARGET_TEMPLATE_NAME" placeholder:"NAME" help:"Name of a target template"`
+	TargetTemplateNamespace string            `arg:"--target-template-namespace,env:TARGET_TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a target template"`
+	AllowReplace            string            `arg:"--allow-replace,env:ALLOW_REPLACE" placeholder:"false" help:"Allow replacing already existing template (same combination name/namespace). Allowed values true/false"`
+	Output                  output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
+	Debug                   bool              `arg:"--debug" help:"Sets DEBUG log level"`
 }
 
 func (c *CLIOptions) GetDebugLevel() zapcore.Level {
@@ -47,6 +47,10 @@ func (c *CLIOptions) GetTargetTemplateNamespace() string {
 
 func (c *CLIOptions) GetTargetTemplateName() string {
 	return c.TargetTemplateName
+}
+
+func (c *CLIOptions) GetAllowReplaceValue() bool {
+	return c.AllowReplace == "true"
 }
 
 func (c *CLIOptions) Init() error {
