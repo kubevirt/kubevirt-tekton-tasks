@@ -4,8 +4,7 @@ import (
 	"sort"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utilstest/testobjects"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,12 +50,12 @@ var _ = Describe("VM", func() {
 			Expect(cliOptions.Init()).Should(Succeed())
 		})
 
-		table.DescribeTable("adds all volumes with various validations", func(templateValidations *validations.TemplateValidations, expectedBus string) {
+		DescribeTable("adds all volumes with various validations", func(templateValidations *validations.TemplateValidations, expectedBus string) {
 			addsVolumesCorrectly(vm, templateValidations, cliOptions, []string{expectedBus})
 		},
-			table.Entry("no validations", nil, Virtio),
-			table.Entry("empty validations", validations.NewTemplateValidations(nil), Virtio),
-			table.Entry("empty validations", validations.NewTemplateValidations(testobjects.NewTestCommonTemplateValidations(Scsi)), Scsi),
+			Entry("no validations", nil, Virtio),
+			Entry("empty validations", validations.NewTemplateValidations(nil), Virtio),
+			Entry("empty validations", validations.NewTemplateValidations(testobjects.NewTestCommonTemplateValidations(Scsi)), Scsi),
 		)
 
 		It("adds some volumes", func() {

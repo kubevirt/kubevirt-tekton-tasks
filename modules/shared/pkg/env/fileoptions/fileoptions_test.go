@@ -2,14 +2,14 @@ package fileoptions_test
 
 import (
 	"fmt"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env/fileoptions"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
-	. "github.com/onsi/gomega"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env/fileoptions"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 
 var _ = Describe("Fileoptions", func() {
 
-	table.DescribeTable("should read file option", func(content string, expectedContent interface{}) {
+	DescribeTable("should read file option", func(content string, expectedContent interface{}) {
 		By("prepare initial data and defer temp file removal")
 		tempFile, err := ioutil.TempFile("", "shared-file-options-test")
 		Expect(err).Should(Succeed())
@@ -44,20 +44,20 @@ var _ = Describe("Fileoptions", func() {
 			Expect(result).Should(Equal(expected))
 		}
 	},
-		table.Entry("False", "false", false),
-		table.Entry("Bad", "falzee", false),
-		table.Entry("UpperCase", "FALSE", false),
-		table.Entry("Partially UpperCase", "FAlsE", false),
+		Entry("False", "false", false),
+		Entry("Bad", "falzee", false),
+		Entry("UpperCase", "FALSE", false),
+		Entry("Partially UpperCase", "FAlsE", false),
 
-		table.Entry("True", "true", true),
-		table.Entry("UpperCase", "TRUE", true),
-		table.Entry("Partially UpperCase", "True", true),
+		Entry("True", "true", true),
+		Entry("UpperCase", "TRUE", true),
+		Entry("Partially UpperCase", "True", true),
 
-		table.Entry("basic content", "hello world", "hello world"),
-		table.Entry("i18n content", i18nContent, i18nContent),
+		Entry("basic content", "hello world", "hello world"),
+		Entry("i18n content", i18nContent, i18nContent),
 	)
 
-	table.DescribeTable("should return default when file does not exist", func(expectedContent interface{}) {
+	DescribeTable("should return default when file does not exist", func(expectedContent interface{}) {
 		nonExistentFile := path.Join(os.TempDir(), "non-existent", fmt.Sprintf("non-existent-%v", rand.Float64()))
 		switch expected := expectedContent.(type) {
 		case bool:
@@ -72,7 +72,7 @@ var _ = Describe("Fileoptions", func() {
 			Expect(result).Should(Equal(expected))
 		}
 	},
-		table.Entry("empty bool", false),
-		table.Entry("empty string", ""),
+		Entry("empty bool", false),
+		Entry("empty string", ""),
 	)
 })

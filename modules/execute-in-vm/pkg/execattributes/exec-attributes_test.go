@@ -1,17 +1,17 @@
 package execattributes_test
 
 import (
+	"os"
+	"path"
+	"reflect"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/execattributes"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap"
-	"os"
-	"path"
-	"reflect"
 )
 
 type resultChecker func(result interface{})
@@ -30,7 +30,7 @@ var _ = Describe("ExecAttributes", func() {
 		Expect(err).Should(Succeed())
 	})
 
-	table.DescribeTable("Init fails", func(expectedErrMessage string, secretPath string, secretSetup map[string]string, expectedAttributes map[string]interface{}) {
+	DescribeTable("Init fails", func(expectedErrMessage string, secretPath string, secretSetup map[string]string, expectedAttributes map[string]interface{}) {
 		if secretPath == "" {
 			secretPath = testSecretPath
 		}
@@ -56,35 +56,35 @@ var _ = Describe("ExecAttributes", func() {
 				Expect(results[0].Interface()).To(Equal(expectedValue))
 			}
 		}
-		log.Logger().Debug(CurrentGinkgoTestDescription().FullTestText, zap.Object("execAttributes", attributes)) // test MarshalLogObject
+		log.Logger().Debug(CurrentSpecReport().FullText(), zap.Object("execAttributes", attributes)) // test MarshalLogObject
 	},
-		table.Entry("secret missing", "secret does not exist", "invalid/path/to/secret", map[string]string{}, map[string]interface{}{
+		Entry("secret missing", "secret does not exist", "invalid/path/to/secret", map[string]string{}, map[string]interface{}{
 			"GetType":          constants.ExecSecretType(""),
 			"GetSSHAttributes": nil,
 		}),
-		table.Entry("secret type file missing", "type secret attribute is required", "", map[string]string{}, map[string]interface{}{
+		Entry("secret type file missing", "type secret attribute is required", "", map[string]string{}, map[string]interface{}{
 			"GetType":          constants.ExecSecretType(""),
 			"GetSSHAttributes": nil,
 		}),
-		table.Entry("secret type missing", "type secret attribute is required", "", map[string]string{
+		Entry("secret type missing", "type secret attribute is required", "", map[string]string{
 			"type": "",
 		}, map[string]interface{}{
 			"GetType":          constants.ExecSecretType(""),
 			"GetSSHAttributes": nil,
 		}),
-		table.Entry("invalid secret type", "is invalid type", "", map[string]string{
+		Entry("invalid secret type", "is invalid type", "", map[string]string{
 			"type": "authenticate",
 		}, map[string]interface{}{
 			"GetType":          constants.ExecSecretType(""),
 			"GetSSHAttributes": nil,
 		}),
-		table.Entry("empty ssh type", "", "", map[string]string{
+		Entry("empty ssh type", "", "", map[string]string{
 			"type": "ssh",
 		}, map[string]interface{}{
 			"GetType":          constants.SSHSecretType,
 			"GetSSHAttributes": execattributes.NewSSHAttributes(),
 		}),
-		table.Entry("empty ssh type detected via ssh-privatekey", "", "", map[string]string{
+		Entry("empty ssh type detected via ssh-privatekey", "", "", map[string]string{
 			"ssh-privatekey": testconstants.SSHTestPrivateKey,
 		}, map[string]interface{}{
 			"GetType": constants.SSHSecretType,

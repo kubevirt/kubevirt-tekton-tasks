@@ -1,10 +1,11 @@
 package utils_test
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"time"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/utils"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("VMI", func() {

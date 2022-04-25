@@ -17,6 +17,8 @@ ARTIFACT_DIR="${ARTIFACT_DIR:=dist}"
 ARTIFACT_DIR="$(readlink -m "${ARTIFACT_DIR}")"
 TEST_OUT="${ARTIFACT_DIR}/test.out"
 
+export JUNIT_FOLDER="$(pwd)/dist"
+
 rm -rf "${TEST_OUT}" "${ARTIFACT_DIR}/"junit*
 mkdir -p "${ARTIFACT_DIR}"
 
@@ -33,10 +35,12 @@ kubectl config set-context --current --namespace="$DEPLOY_NAMESPACE"
 
 pushd modules/tests || exit
   rm -rf dist
+  mkdir dist
+  
   set +e
   set -o pipefail
 
-  ginkgo -r -p --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --nodes="${NUM_NODES}" -- \
+  ginkgo -r -p --randomize-all --randomize-suites --fail-on-pending --trace --race --nodes="${NUM_NODES}" -- \
     --deploy-namespace="${DEPLOY_NAMESPACE}" \
     --test-namespace="${TEST_NAMESPACE}" \
     --kubeconfig-path="${KUBECONFIG}" \

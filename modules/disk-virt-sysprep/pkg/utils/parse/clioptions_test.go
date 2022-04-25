@@ -1,12 +1,12 @@
 package parse_test
 
 import (
+	"reflect"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utils/parse"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap/zapcore"
-	"reflect"
 )
 
 const (
@@ -17,12 +17,12 @@ operations firewall-rules,defaults
 )
 
 var _ = Describe("CLIOptions", func() {
-	table.DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
+	DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
 		Expect(options.Init().Error()).To(ContainSubstring(expectedErrMessage))
 	},
-		table.Entry("no sysprep commands", "sysprep-commands option or SYSPREP_COMMANDS env variable is required", &parse.CLIOptions{}),
+		Entry("no sysprep commands", "sysprep-commands option or SYSPREP_COMMANDS env variable is required", &parse.CLIOptions{}),
 	)
-	table.DescribeTable("Parses and returns correct values", func(options *parse.CLIOptions, expectedOptions map[string]interface{}) {
+	DescribeTable("Parses and returns correct values", func(options *parse.CLIOptions, expectedOptions map[string]interface{}) {
 		Expect(options.Init()).Should(Succeed())
 
 		for methodName, expectedValue := range expectedOptions {
@@ -30,7 +30,7 @@ var _ = Describe("CLIOptions", func() {
 			Expect(results[0].Interface()).To(Equal(expectedValue))
 		}
 	},
-		table.Entry("returns valid defaults", &parse.CLIOptions{
+		Entry("returns valid defaults", &parse.CLIOptions{
 			SysprepCommands: "test",
 		}, map[string]interface{}{
 			"GetSysprepCommands":              "test",
@@ -38,7 +38,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetDebugLevel":                   zapcore.InfoLevel,
 			"IsVerbose":                       false,
 		}),
-		table.Entry("handles cli arguments", &parse.CLIOptions{
+		Entry("handles cli arguments", &parse.CLIOptions{
 			SysprepCommands:              sysprepCommands,
 			AdditionalVirtSysprepOptions: "--network --dry-run -q -v",
 			Verbose:                      "true",

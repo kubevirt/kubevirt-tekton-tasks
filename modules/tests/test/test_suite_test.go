@@ -3,27 +3,27 @@ package test
 import (
 	"context"
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/clients"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/utils"
-	"github.com/onsi/ginkgo/config"
-	"github.com/onsi/ginkgo/reporters"
+	. "github.com/onsi/ginkgo/v2"
 	v1 "github.com/openshift/api/template/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
-	"testing"
 
-	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 func TestExit(t *testing.T) {
 	RegisterFailHandler(Fail)
 	BuildTestSuite()
-	junitReporter := reporters.NewJUnitReporter(fmt.Sprintf("../dist/junit_%d.xml", config.GinkgoConfig.ParallelNode))
-	RunSpecsWithDefaultAndCustomReporters(t, "E2E Tests Suite", []Reporter{junitReporter})
+	suiteConfig, reporterConfig := GinkgoConfiguration()
+	reporterConfig.JUnitReport = fmt.Sprintf("../dist/junit_%d.xml", suiteConfig.ParallelProcess)
+	RunSpecs(t, "E2E Tests Suite", suiteConfig, reporterConfig)
 }
 
 func BuildTestSuite() {

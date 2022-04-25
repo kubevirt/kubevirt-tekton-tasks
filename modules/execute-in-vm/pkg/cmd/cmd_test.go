@@ -1,20 +1,20 @@
 package cmd_test
 
 import (
+	"os/exec"
+	"time"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/cmd"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"os/exec"
-	"time"
 )
 
 var _ = Describe("cmd", func() {
 
 	Describe("RunCmdWithTimeout", func() {
-		table.DescribeTable("finish without reaching timeout", func(command *exec.Cmd, timeout time.Duration, exitCode int, shouldRun bool) {
+		DescribeTable("finish without reaching timeout", func(command *exec.Cmd, timeout time.Duration, exitCode int, shouldRun bool) {
 			start := time.Now()
 			err := cmd.RunCmdWithTimeout(timeout, command)
 			runDuration := time.Since(start)
@@ -35,13 +35,13 @@ var _ = Describe("cmd", func() {
 				Expect(runDuration).Should(BeNumerically("<=", timeout))
 			}
 		},
-			table.Entry("unlimited timeout", exec.Command("echo", "-n"), 0*time.Second, 0, true),
-			table.Entry("unlimited timeout fail", exec.Command("false"), 0*time.Second, 1, true),
-			table.Entry("unlimited timeout invalid cmd", exec.Command("invalidcmd"), 0*time.Second, -1, false),
+			Entry("unlimited timeout", exec.Command("echo", "-n"), 0*time.Second, 0, true),
+			Entry("unlimited timeout fail", exec.Command("false"), 0*time.Second, 1, true),
+			Entry("unlimited timeout invalid cmd", exec.Command("invalidcmd"), 0*time.Second, -1, false),
 			//
-			table.Entry("3 sec timeout", exec.Command("echo", "-n"), 3*time.Second, 0, true),
-			table.Entry("3 sec timeout fail", exec.Command("false"), 3*time.Second, 1, true),
-			table.Entry("3 sec timeout invalid cmd", exec.Command("invalidcmd"), 3*time.Second, -1, false),
+			Entry("3 sec timeout", exec.Command("echo", "-n"), 3*time.Second, 0, true),
+			Entry("3 sec timeout fail", exec.Command("false"), 3*time.Second, 1, true),
+			Entry("3 sec timeout invalid cmd", exec.Command("invalidcmd"), 3*time.Second, -1, false),
 		)
 
 		It("times out", func() {

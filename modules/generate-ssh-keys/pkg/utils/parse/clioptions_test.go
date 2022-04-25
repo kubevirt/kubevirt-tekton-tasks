@@ -1,12 +1,12 @@
 package parse_test
 
 import (
+	"reflect"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utils/parse"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap/zapcore"
-	"reflect"
 )
 
 var (
@@ -14,30 +14,30 @@ var (
 )
 
 var _ = Describe("CLIOptions", func() {
-	table.DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
+	DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
 		Expect(options.Init().Error()).To(ContainSubstring(expectedErrMessage))
 	},
-		table.Entry("invalid public secret name", "invalid public-key-secret-name value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
+		Entry("invalid public secret name", "invalid public-key-secret-name value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
 			PublicKeySecretName: "invalid name",
 		}),
-		table.Entry("invalid public secret namespace", "invalid public-key-secret-namespace value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
+		Entry("invalid public secret namespace", "invalid public-key-secret-namespace value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
 			PublicKeySecretNamespace: "invalid ns",
 		}),
-		table.Entry("invalid private secret name", "invalid private-key-secret-name value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
+		Entry("invalid private secret name", "invalid private-key-secret-name value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
 			PrivateKeySecretName: "%invalid-name",
 		}),
-		table.Entry("invalid private secret namespace", "invalid private-key-secret-namespace value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
+		Entry("invalid private secret namespace", "invalid private-key-secret-namespace value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
 			PrivateKeySecretNamespace: "(-invalid-ns",
 		}),
-		table.Entry("invalid connection options 1", "invalid private-key connection options: no key found before \"root\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
+		Entry("invalid connection options 1", "invalid private-key connection options: no key found before \"root\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
 			PrivateKeyConnectionOptions: []string{"root", "K2=V2"},
 		}),
-		table.Entry("invalid connection options 2", "invalid private-key connection options: no key found before \":root\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
+		Entry("invalid connection options 2", "invalid private-key connection options: no key found before \":root\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
 			PrivateKeyConnectionOptions: []string{":root"},
 		}),
 	)
 
-	table.DescribeTable("Parses and returns correct values", func(options *parse.CLIOptions, expectedOptions map[string]interface{}) {
+	DescribeTable("Parses and returns correct values", func(options *parse.CLIOptions, expectedOptions map[string]interface{}) {
 		Expect(options.Init()).Should(Succeed())
 
 		for methodName, expectedValue := range expectedOptions {
@@ -45,7 +45,7 @@ var _ = Describe("CLIOptions", func() {
 			Expect(results[0].Interface()).To(Equal(expectedValue))
 		}
 	},
-		table.Entry("returns valid defaults", &parse.CLIOptions{
+		Entry("returns valid defaults", &parse.CLIOptions{
 			PublicKeySecretNamespace:  defaultNS,
 			PrivateKeySecretNamespace: defaultNS,
 		}, map[string]interface{}{
@@ -57,7 +57,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetPrivateKeyConnectionOptions": map[string]string{},
 			"GetDebugLevel":                  zapcore.InfoLevel,
 		}),
-		table.Entry("handles cli arguments + trim", &parse.CLIOptions{
+		Entry("handles cli arguments + trim", &parse.CLIOptions{
 			PublicKeySecretName:         "test-public ",
 			PublicKeySecretNamespace:    " my-test-ns",
 			PrivateKeySecretName:        "test-private",

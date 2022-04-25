@@ -2,23 +2,23 @@ package zerrors_test
 
 import (
 	"errors"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
-	. "github.com/onsi/gomega"
 	"strconv"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("MultiError", func() {
 	Describe("test CRUD", func() {
-		table.DescribeTable("should be empty by default", func(err *zerrors.MultiError) {
+		DescribeTable("should be empty by default", func(err *zerrors.MultiError) {
 			Expect(err.IsEmpty()).To(BeTrue())
 			Expect(err.Len()).To(BeZero())
 			Expect(err.AsOptional()).To(BeNil())
 		},
-			table.Entry("nil", nil),
-			table.Entry("new", &zerrors.MultiError{}),
-			table.Entry("new func", zerrors.NewMultiError()),
+			Entry("nil", nil),
+			Entry("new", &zerrors.MultiError{}),
+			Entry("new func", zerrors.NewMultiError()),
 		)
 
 		It("add and get works and error is not optional", func() {
@@ -65,20 +65,20 @@ var _ = Describe("MultiError", func() {
 		})
 	})
 
-	table.DescribeTable("correctly reports soft errors", func(tested *zerrors.MultiError, result bool) {
+	DescribeTable("correctly reports soft errors", func(tested *zerrors.MultiError, result bool) {
 		Expect(tested.IsSoft()).To(Equal(result))
 		Expect(zerrors.IsErrorSoft(tested)).To(Equal(result))
 	},
-		table.Entry("nil soft", nil, true),
-		table.Entry("new soft", &zerrors.MultiError{}, true),
-		table.Entry("new func soft", zerrors.NewMultiError(), true),
-		table.Entry("soft with only soft errors", zerrors.NewMultiError().
+		Entry("nil soft", nil, true),
+		Entry("new soft", &zerrors.MultiError{}, true),
+		Entry("new func soft", zerrors.NewMultiError(), true),
+		Entry("soft with only soft errors", zerrors.NewMultiError().
 			AddC("soft1", zerrors.NewMissingRequiredError("soft1")).
 			AddC("soft2", zerrors.NewSoftError("soft2")), true),
-		table.Entry("not soft with one hard and one soft", zerrors.NewMultiError().
+		Entry("not soft with one hard and one soft", zerrors.NewMultiError().
 			AddC("soft1", zerrors.NewMissingRequiredError("soft1")).
 			AddC("hard2", errors.New("hard2")), false),
-		table.Entry("not soft with only hard", zerrors.NewMultiError().
+		Entry("not soft with only hard", zerrors.NewMultiError().
 			AddC("hard2", errors.New("hard2")).
 			AddC("hard2", errors.New("hard2")), false),
 	)

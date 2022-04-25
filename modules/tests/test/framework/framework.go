@@ -8,7 +8,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/clients"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	templatev1 "github.com/openshift/api/template/v1"
 	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -92,7 +92,7 @@ func (f *Framework) TestSetup(config TestConfig) {
 }
 
 func (f *Framework) AfterEach() {
-	failed := CurrentGinkgoTestDescription().Failed
+	failed := CurrentSpecReport().Failed()
 	taskRuns := f.managedResources.taskRuns
 
 	if failed {
