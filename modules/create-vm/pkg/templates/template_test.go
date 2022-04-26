@@ -2,7 +2,7 @@ package templates_test
 
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"

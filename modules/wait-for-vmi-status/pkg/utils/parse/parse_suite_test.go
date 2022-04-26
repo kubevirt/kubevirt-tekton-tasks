@@ -1,11 +1,12 @@
 package parse_test
 
 import (
-	log2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/wait-for-vmi-status/pkg/utils/log"
-	"go.uber.org/zap"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
+	log2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/wait-for-vmi-status/pkg/utils/log"
+	"go.uber.org/zap"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

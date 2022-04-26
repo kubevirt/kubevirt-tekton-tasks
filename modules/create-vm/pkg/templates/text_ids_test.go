@@ -1,16 +1,16 @@
 package templates
 
 import (
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
-	. "github.com/onsi/gomega"
 	"math/rand"
 	"sort"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("TextIds", func() {
 
-	table.DescribeTable("check correct ascending order", func(ids []string) {
+	DescribeTable("check correct ascending order", func(ids []string) {
 		toSort := textIDs{}
 		toSort = append(toSort, ids...)
 		result := textIDs{}
@@ -23,7 +23,7 @@ var _ = Describe("TextIds", func() {
 
 		Expect(toSort).To(Equal(result))
 	},
-		table.Entry("ids", []string{
+		Entry("ids", []string{
 			"os-a-0.",
 			"os-a-0.0,0",
 			"os-a-1",
@@ -34,14 +34,14 @@ var _ = Describe("TextIds", func() {
 			"os-a-1.2,4",
 			"os-a-2",
 		}),
-		table.Entry("fedora", []string{
+		Entry("fedora", []string{
 			"fedora27",
 			"silverblue28",
 			"fedora28",
 			"silverblue29",
 			"fedora29",
 		}),
-		table.Entry("win", []string{
+		Entry("win", []string{
 			"win2k8",
 			"win2k8r2",
 			"win2k12r2",
@@ -49,7 +49,7 @@ var _ = Describe("TextIds", func() {
 			"win2k19",
 			"win10",
 		}),
-		table.Entry("win", []string{
+		Entry("win", []string{
 			"win2k8",
 			"win2k8r2",
 			"win2k12r2",
@@ -57,7 +57,7 @@ var _ = Describe("TextIds", func() {
 			"win2k19",
 			"win10",
 		}),
-		table.Entry("rhel", []string{
+		Entry("rhel", []string{
 			"rhel7.0",
 			"rhel7.1",
 			"rhel7.2",
@@ -67,7 +67,7 @@ var _ = Describe("TextIds", func() {
 			"rhel8.1",
 			"rhel8.2",
 		}),
-		table.Entry("text based", []string{
+		Entry("text based", []string{
 			"centos",
 			"fedora",
 			"rhel",

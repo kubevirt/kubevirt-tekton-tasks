@@ -10,8 +10,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/vm"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
@@ -27,7 +26,7 @@ var _ = Describe("Create VM from template", func() {
 			}
 		})
 
-	table.DescribeTable("taskrun fails and no VM is created", func(config *testconfigs.CreateVMTestConfig) {
+	DescribeTable("taskrun fails and no VM is created", func(config *testconfigs.CreateVMTestConfig) {
 		f.TestSetup(config)
 
 		if template := config.TaskData.Template; template != nil {
@@ -49,7 +48,7 @@ var _ = Describe("Create VM from template", func() {
 			"", config.GetTaskRunTimeout(), false)
 		Expect(err).Should(HaveOccurred())
 	},
-		table.Entry("no service account", &testconfigs.CreateVMTestConfig{
+		Entry("no service account", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ExpectedLogs: "cannot get resource \"templates\" in API group \"template.openshift.io\"",
 			},
@@ -60,14 +59,14 @@ var _ = Describe("Create VM from template", func() {
 				},
 			},
 		}),
-		table.Entry("no template specified", &testconfigs.CreateVMTestConfig{
+		Entry("no template specified", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "one of vm-manifest, template-name should be specified",
 			},
 			TaskData: testconfigs.CreateVMTaskData{},
 		}),
-		table.Entry("template with no VM", &testconfigs.CreateVMTestConfig{
+		Entry("template with no VM", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "no VM object found",
@@ -79,7 +78,7 @@ var _ = Describe("Create VM from template", func() {
 				},
 			},
 		}),
-		table.Entry("non existent template", &testconfigs.CreateVMTestConfig{
+		Entry("non existent template", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "templates.template.openshift.io \"non-existent-template\" not found",
@@ -89,7 +88,7 @@ var _ = Describe("Create VM from template", func() {
 				TemplateName:            "non-existent-template",
 			},
 		}),
-		table.Entry("invalid template params", &testconfigs.CreateVMTestConfig{
+		Entry("invalid template params", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "invalid template-params: no key found before \"InvalidDescription\"; pair should be in \"KEY:VAL\" format",
@@ -102,7 +101,7 @@ var _ = Describe("Create VM from template", func() {
 				},
 			},
 		}),
-		table.Entry("missing template params", &testconfigs.CreateVMTestConfig{
+		Entry("missing template params", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "required params are missing values: NAME",
@@ -112,7 +111,7 @@ var _ = Describe("Create VM from template", func() {
 			},
 		}),
 
-		table.Entry("missing one template param", &testconfigs.CreateVMTestConfig{
+		Entry("missing one template param", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "required params are missing values: DESCRIPTION",
@@ -124,7 +123,7 @@ var _ = Describe("Create VM from template", func() {
 				},
 			},
 		}),
-		table.Entry("non existent dv", &testconfigs.CreateVMTestConfig{
+		Entry("non existent dv", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "datavolumes.cdi.kubevirt.io \"non-existent-dv\" not found",
@@ -137,7 +136,7 @@ var _ = Describe("Create VM from template", func() {
 				DataVolumes: []string{"non-existent-dv"},
 			},
 		}),
-		table.Entry("non existent owned dv", &testconfigs.CreateVMTestConfig{
+		Entry("non existent owned dv", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "datavolumes.cdi.kubevirt.io \"non-existent-own-dv\" not found",
@@ -150,7 +149,7 @@ var _ = Describe("Create VM from template", func() {
 				OwnDataVolumes: []string{"non-existent-own-dv"},
 			},
 		}),
-		table.Entry("non existent pvc", &testconfigs.CreateVMTestConfig{
+		Entry("non existent pvc", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "persistentvolumeclaims \"non-existent-pvc\" not found",
@@ -163,7 +162,7 @@ var _ = Describe("Create VM from template", func() {
 				PersistentVolumeClaims: []string{"non-existent-pvc"},
 			},
 		}),
-		table.Entry("non existent owned pvcs", &testconfigs.CreateVMTestConfig{
+		Entry("non existent owned pvcs", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "persistentvolumeclaims \"non-existent-own-pvc\" not found\npersistentvolumeclaims \"non-existent-own-pvc-2\" not found",
@@ -176,7 +175,7 @@ var _ = Describe("Create VM from template", func() {
 				OwnPersistentVolumeClaims: []string{"non-existent-own-pvc", "non-existent-own-pvc-2"},
 			},
 		}),
-		table.Entry("create vm with non matching disk fails", &testconfigs.CreateVMTestConfig{
+		Entry("create vm with non matching disk fails", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "admission webhook \"virtualmachine-validator.kubevirt.io\" denied the request: spec.template.spec.domain.devices.disks[0].Name",
@@ -188,7 +187,7 @@ var _ = Describe("Create VM from template", func() {
 				},
 			},
 		}),
-		table.Entry("[NAMESPACE SCOPED] cannot create a VM in different namespace", &testconfigs.CreateVMTestConfig{
+		Entry("[NAMESPACE SCOPED] cannot create a VM in different namespace", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "processedtemplates.template.openshift.io is forbidden",
@@ -202,7 +201,7 @@ var _ = Describe("Create VM from template", func() {
 				VMTargetNamespace: SystemTargetNS,
 			},
 		}),
-		table.Entry("[NAMESPACE SCOPED] cannot use template from a different namespace", &testconfigs.CreateVMTestConfig{
+		Entry("[NAMESPACE SCOPED] cannot use template from a different namespace", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "templates.template.openshift.io \"unreachable-template\" is forbidden",
@@ -218,7 +217,7 @@ var _ = Describe("Create VM from template", func() {
 		}),
 	)
 
-	table.DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig) {
+	DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig) {
 		f.TestSetup(config)
 		if template := config.TaskData.Template; template != nil {
 			template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
@@ -242,7 +241,7 @@ var _ = Describe("Create VM from template", func() {
 			"", config.GetTaskRunTimeout(), false)
 		Expect(err).ShouldNot(HaveOccurred())
 	},
-		table.Entry("simple vm", &testconfigs.CreateVMTestConfig{
+		Entry("simple vm", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
@@ -254,7 +253,7 @@ var _ = Describe("Create VM from template", func() {
 				},
 			},
 		}),
-		table.Entry("vm to deploy namespace by default", &testconfigs.CreateVMTestConfig{
+		Entry("vm to deploy namespace by default", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
@@ -268,7 +267,7 @@ var _ = Describe("Create VM from template", func() {
 				UseDefaultVMNamespacesInTaskParams: true,
 			},
 		}),
-		table.Entry("vm with template from deploy namespace by default", &testconfigs.CreateVMTestConfig{
+		Entry("vm with template from deploy namespace by default", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
@@ -282,7 +281,7 @@ var _ = Describe("Create VM from template", func() {
 				UseDefaultTemplateNamespacesInTaskParams: true,
 			},
 		}),
-		table.Entry("vm with template to deploy namespace by default", &testconfigs.CreateVMTestConfig{
+		Entry("vm with template to deploy namespace by default", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
@@ -298,7 +297,7 @@ var _ = Describe("Create VM from template", func() {
 				UseDefaultTemplateNamespacesInTaskParams: true,
 			},
 		}),
-		table.Entry("vm with multiple params with template in deploy NS", &testconfigs.CreateVMTestConfig{
+		Entry("vm with multiple params with template in deploy NS", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				ExpectedLogs:   "description: e2e description with spaces",
@@ -313,7 +312,7 @@ var _ = Describe("Create VM from template", func() {
 				},
 			},
 		}),
-		table.Entry("[CLUSTER SCOPED] works also in the same namespace as deploy", &testconfigs.CreateVMTestConfig{
+		Entry("[CLUSTER SCOPED] works also in the same namespace as deploy", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
 				LimitTestScope: ClusterTestScope,
@@ -462,7 +461,7 @@ var _ = Describe("Create VM from template", func() {
 	})
 
 	Context("with StartVM", func() {
-		table.DescribeTable("VM is created from template with StartVM attribute", func(config *testconfigs.CreateVMTestConfig, phase kubevirtv1.VirtualMachineInstancePhase, running bool) {
+		DescribeTable("VM is created from template with StartVM attribute", func(config *testconfigs.CreateVMTestConfig, phase kubevirtv1.VirtualMachineInstancePhase, running bool) {
 			f.TestSetup(config)
 			template, err := f.TemplateClient.Templates(config.TaskData.Template.Namespace).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
@@ -485,7 +484,7 @@ var _ = Describe("Create VM from template", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(*vm.Spec.Running).To(Equal(running), "vm should be in correct running phase")
 		},
-			table.Entry("with invalid StartVM value", &testconfigs.CreateVMTestConfig{
+			Entry("with invalid StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CreateVMFromTemplateServiceAccountName,
 					ExpectedLogs:   ExpectedSuccessfulVMCreation,
@@ -498,7 +497,7 @@ var _ = Describe("Create VM from template", func() {
 					StartVM: "invalid_value",
 				},
 			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
-			table.Entry("with false StartVM value", &testconfigs.CreateVMTestConfig{
+			Entry("with false StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CreateVMFromTemplateServiceAccountName,
 					ExpectedLogs:   ExpectedSuccessfulVMCreation,
@@ -511,7 +510,7 @@ var _ = Describe("Create VM from template", func() {
 					StartVM: "false",
 				},
 			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
-			table.Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
+			Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CreateVMFromTemplateServiceAccountName,
 					ExpectedLogs:   ExpectedSuccessfulVMCreation,

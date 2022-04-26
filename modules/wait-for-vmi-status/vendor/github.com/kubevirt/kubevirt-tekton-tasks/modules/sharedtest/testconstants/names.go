@@ -1,10 +1,11 @@
 package testconstants
 
 import (
-	"github.com/onsi/ginkgo"
 	"hash/fnv"
 	"strconv"
 	"strings"
+
+	. "github.com/onsi/ginkgo/v2"
 )
 
 func fiveDigitTestHash(s string) string {
@@ -14,9 +15,9 @@ func fiveDigitTestHash(s string) string {
 	_, _ = h.Write([]byte(s))
 
 	hash := h.Sum64()
-
+	suiteConfig, _ := GinkgoConfiguration()
 	// mix with the seed and node number
-	hash = hash ^ uint64(ginkgo.GinkgoRandomSeed()+int64(ginkgo.GinkgoParallelNode()))
+	hash = hash ^ uint64(suiteConfig.RandomSeed+int64(suiteConfig.ParallelProcess))
 
 	// xor lower 32 bits with higher 32 bits and keep only lower bits
 	hash32 := uint32(((hash ^ (hash >> 32)) << 32) >> 32)
@@ -35,7 +36,7 @@ func fiveDigitTestHash(s string) string {
 
 func TestRandomName(name string) string {
 	// convert Full Test description into ID
-	id := fiveDigitTestHash(ginkgo.CurrentGinkgoTestDescription().FullTestText)
+	id := fiveDigitTestHash(CurrentSpecReport().FullText())
 
 	return strings.Join([]string{name, id}, "-")
 }

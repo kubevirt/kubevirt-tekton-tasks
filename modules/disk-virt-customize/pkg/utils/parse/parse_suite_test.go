@@ -1,10 +1,11 @@
 package parse_test
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-customize/pkg/utilstest"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-customize/pkg/utilstest"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

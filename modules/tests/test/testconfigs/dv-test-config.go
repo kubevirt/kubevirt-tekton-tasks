@@ -5,7 +5,7 @@ import (
 
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
-	"github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/v2"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1beta12 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"

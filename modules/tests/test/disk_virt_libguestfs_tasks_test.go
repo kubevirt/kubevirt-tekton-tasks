@@ -2,18 +2,18 @@ package test
 
 import (
 	"context"
+	"time"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"time"
 )
 
 const (
@@ -30,7 +30,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 	f := framework.NewFramework()
 	for _, t := range []constants.LibguestfsTaskType{constants.VirtCustomizeTaskType, constants.VirtSysPrepTaskType} {
 		taskType := t
-		table.DescribeTable(string(taskType)+" taskrun fails", func(config *testconfigs.DiskVirtLibguestfsTestConfig) {
+		DescribeTable(string(taskType)+" taskrun fails", func(config *testconfigs.DiskVirtLibguestfsTestConfig) {
 			config.TaskData.LibguestfsTaskType = taskType
 			f.TestSetup(config)
 
@@ -48,11 +48,11 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 				ExpectLogs(config.GetAllExpectedLogs()...).
 				ExpectResults(nil)
 		},
-			table.Entry("no pvc", &testconfigs.DiskVirtLibguestfsTestConfig{
+			Entry("no pvc", &testconfigs.DiskVirtLibguestfsTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData:          testconfigs.DiskVirtLibguestfsTaskData{},
 			}),
-			table.Entry("invalid pvc", &testconfigs.DiskVirtLibguestfsTestConfig{
+			Entry("invalid pvc", &testconfigs.DiskVirtLibguestfsTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					Timeout: &metav1.Duration{time.Minute},
 				},
@@ -60,7 +60,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 					PVCName: "illegal-test-pvc-1548748",
 				},
 			}),
-			table.Entry("no commands", &testconfigs.DiskVirtLibguestfsTestConfig{
+			Entry("no commands", &testconfigs.DiskVirtLibguestfsTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "env variable is required",
 				},
@@ -68,7 +68,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 					Datavolume: datavolume.NewBlankDataVolume("no-customize-commands").Build(),
 				},
 			}),
-			table.Entry("wrong customize commands", &testconfigs.DiskVirtLibguestfsTestConfig{
+			Entry("wrong customize commands", &testconfigs.DiskVirtLibguestfsTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "command 'illegal-operation' not valid",
 				},
@@ -77,7 +77,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 					Commands:   "illegal-operation",
 				},
 			}),
-			table.Entry("wrong additional options", &testconfigs.DiskVirtLibguestfsTestConfig{
+			Entry("wrong additional options", &testconfigs.DiskVirtLibguestfsTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "unrecognized option '--illegal-command'",
 				},
@@ -87,7 +87,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 					AdditionalOptions: "--verbose --illegal-command illegal args",
 				},
 			}),
-			table.Entry("empty disk fails", &testconfigs.DiskVirtLibguestfsTestConfig{
+			Entry("empty disk fails", &testconfigs.DiskVirtLibguestfsTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogsList: []string{
 						"no operating systems were found in the guest image",

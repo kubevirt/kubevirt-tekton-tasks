@@ -8,8 +8,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "kubevirt.io/api/core/v1"
@@ -18,7 +17,7 @@ import (
 var _ = Describe("Wait for VMI Status", func() {
 	f := framework.NewFramework()
 
-	table.DescribeTable("executes correctly", func(config *testconfigs.WaitForVMIStatusTestConfig) {
+	DescribeTable("executes correctly", func(config *testconfigs.WaitForVMIStatusTestConfig) {
 		f.TestSetup(config)
 
 		if vm := config.TaskData.VM; vm != nil {
@@ -39,13 +38,13 @@ var _ = Describe("Wait for VMI Status", func() {
 			ExpectResults(nil)
 	},
 		// negative validation cases
-		table.Entry("no vmi", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("no vmi", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ExpectedLogs: "vmi-name should not be empty",
 			},
 			TaskData: testconfigs.WaitForVMIStatusTaskData{},
 		}),
-		table.Entry("invalid vmi name", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("invalid vmi name", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ExpectedLogs: "invalid vmi-name value: a lowercase RFC 1123 subdomain must consist of",
 			},
@@ -53,7 +52,7 @@ var _ = Describe("Wait for VMI Status", func() {
 				VMIName: "name with spaces",
 			},
 		}),
-		table.Entry("invalid vmi namespace", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("invalid vmi namespace", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ExpectedLogs: "invalid vmi-namespace value: a lowercase RFC 1123 subdomain must consist of",
 			},
@@ -62,7 +61,7 @@ var _ = Describe("Wait for VMI Status", func() {
 				VMINamespace: "namespace with spaces",
 			},
 		}),
-		table.Entry("invalid success condition", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("invalid success condition", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ExpectedLogs: "success-condition: invalid condition: cannot parse jsonpath",
 			},
@@ -71,7 +70,7 @@ var _ = Describe("Wait for VMI Status", func() {
 				SuccessCondition: "test.....test",
 			},
 		}),
-		table.Entry("invalid failure condition", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("invalid failure condition", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ExpectedLogs: "failure-condition: could not parse condition",
 			},
@@ -80,7 +79,7 @@ var _ = Describe("Wait for VMI Status", func() {
 				FailureCondition: "invalid#$%^$&",
 			},
 		}),
-		table.Entry("no service account", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("no service account", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ExpectedLogs: "cannot list resource \"virtualmachineinstances\" in API group \"kubevirt.io\"",
 				Timeout:      &metav1.Duration{1 * time.Minute},
@@ -90,7 +89,7 @@ var _ = Describe("Wait for VMI Status", func() {
 				SuccessCondition: "status.phase == Running",
 			},
 		}),
-		table.Entry("[NAMESPACE SCOPED] cannot check status for VMI in different namespace", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("[NAMESPACE SCOPED] cannot check status for VMI in different namespace", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
 				LimitTestScope: constants.NamespaceTestScope,
@@ -104,7 +103,7 @@ var _ = Describe("Wait for VMI Status", func() {
 			},
 		}),
 		// negative cases
-		table.Entry("fulfills failure condition", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("fulfills failure condition", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
 				ExpectedTermination: &testconfigs.TaskRunExpectedTermination{
@@ -118,7 +117,7 @@ var _ = Describe("Wait for VMI Status", func() {
 			},
 		}),
 		// positive cases
-		table.Entry("no conditions report success immediately", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("no conditions report success immediately", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
 				ExpectSuccess:  true,
@@ -127,7 +126,7 @@ var _ = Describe("Wait for VMI Status", func() {
 				VMIName: "test",
 			},
 		}),
-		table.Entry("fulfills success condition", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("fulfills success condition", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
 				ExpectSuccess:  true,
@@ -139,7 +138,7 @@ var _ = Describe("Wait for VMI Status", func() {
 				ShouldStartVM:    true,
 			},
 		}),
-		table.Entry("fulfills complex success condition", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("fulfills complex success condition", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
 				ExpectSuccess:  true,
@@ -151,7 +150,7 @@ var _ = Describe("Wait for VMI Status", func() {
 				ShouldStartVM:    true,
 			},
 		}),
-		table.Entry("[CLUSTER SCOPED] fulfills success condition in the same namespace as deploy", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("[CLUSTER SCOPED] fulfills success condition in the same namespace as deploy", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
 				ExpectSuccess:  true,

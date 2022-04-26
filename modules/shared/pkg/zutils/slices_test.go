@@ -2,7 +2,7 @@ package zutils_test
 
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

@@ -2,7 +2,7 @@ package options_test
 
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

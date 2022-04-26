@@ -3,28 +3,27 @@ package zutils_test
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Utils", func() {
 	Describe("IsTrue", func() {
-		table.DescribeTable("returns false", func(tested string) {
+		DescribeTable("returns false", func(tested string) {
 			Expect(zutils.IsTrue(tested)).To(BeFalse())
 		},
-			table.Entry("False", "false"),
-			table.Entry("Bad", "falzee"),
-			table.Entry("UpperCase", "FALSE"),
-			table.Entry("Partially UpperCase", "FAlsE"),
+			Entry("False", "false"),
+			Entry("Bad", "falzee"),
+			Entry("UpperCase", "FALSE"),
+			Entry("Partially UpperCase", "FAlsE"),
 		)
 
-		table.DescribeTable("returns true", func(tested string) {
+		DescribeTable("returns true", func(tested string) {
 			Expect(zutils.IsTrue(tested)).To(BeTrue())
 		},
-			table.Entry("True", "true"),
-			table.Entry("UpperCase", "TRUE"),
-			table.Entry("Partially UpperCase", "True"),
+			Entry("True", "true"),
+			Entry("UpperCase", "TRUE"),
+			Entry("Partially UpperCase", "True"),
 		)
 	})
 

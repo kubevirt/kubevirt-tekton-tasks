@@ -1,10 +1,11 @@
 package parse_test
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utilstest"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utilstest"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

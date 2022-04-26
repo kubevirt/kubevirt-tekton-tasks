@@ -1,15 +1,15 @@
 package parse_test
 
 import (
+	"reflect"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/wait-for-vmi-status/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/wait-for-vmi-status/pkg/utilstest"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
-	"reflect"
 )
 
 var (
@@ -17,40 +17,40 @@ var (
 )
 
 var _ = Describe("CLIOptions", func() {
-	table.DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
+	DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
 		Expect(options.Init().Error()).To(ContainSubstring(expectedErrMessage))
 	},
-		table.Entry("empty vmi name", "vmi-name should not be empty", &parse.CLIOptions{}),
-		table.Entry("invalid vmi name", "invalid vmi-name value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
+		Entry("empty vmi name", "vmi-name should not be empty", &parse.CLIOptions{}),
+		Entry("invalid vmi name", "invalid vmi-name value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
 			VirtualMachineInstanceName: "invalid name",
 		}),
-		table.Entry("invalid vm namespace", "invalid vmi-namespace value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
+		Entry("invalid vm namespace", "invalid vmi-namespace value: a lowercase RFC 1123 subdomain must consist of", &parse.CLIOptions{
 			VirtualMachineInstanceName:      "test",
 			VirtualMachineInstanceNamespace: "@ns",
 		}),
-		table.Entry("invalid success condition", "success-condition: could not parse condition", &parse.CLIOptions{
+		Entry("invalid success condition", "success-condition: could not parse condition", &parse.CLIOptions{
 			VirtualMachineInstanceName:      "test",
 			VirtualMachineInstanceNamespace: defaultNS,
 			SuccessCondition:                "invalid#$%^$&",
 		}),
-		table.Entry("invalid success condition jsonpath", "success-condition: invalid condition: cannot parse jsonpath", &parse.CLIOptions{
+		Entry("invalid success condition jsonpath", "success-condition: invalid condition: cannot parse jsonpath", &parse.CLIOptions{
 			VirtualMachineInstanceName:      "test",
 			VirtualMachineInstanceNamespace: defaultNS,
 			SuccessCondition:                "test.....test",
 		}),
-		table.Entry("invalid failure condition", "failure-condition: could not parse condition", &parse.CLIOptions{
+		Entry("invalid failure condition", "failure-condition: could not parse condition", &parse.CLIOptions{
 			VirtualMachineInstanceName:      "test",
 			VirtualMachineInstanceNamespace: defaultNS,
 			FailureCondition:                "invalid#$%^$&",
 		}),
-		table.Entry("invalid failure condition jsonpath", "failure-condition: invalid condition: cannot parse jsonpath", &parse.CLIOptions{
+		Entry("invalid failure condition jsonpath", "failure-condition: invalid condition: cannot parse jsonpath", &parse.CLIOptions{
 			VirtualMachineInstanceName:      "test",
 			VirtualMachineInstanceNamespace: defaultNS,
 			FailureCondition:                "test.....test",
 		}),
 	)
 
-	table.DescribeTable("Parses and returns correct values", func(options *parse.CLIOptions, expectedOptions map[string]interface{}) {
+	DescribeTable("Parses and returns correct values", func(options *parse.CLIOptions, expectedOptions map[string]interface{}) {
 		Expect(options.Init()).Should(Succeed())
 
 		for methodName, expectedValue := range expectedOptions {
@@ -58,7 +58,7 @@ var _ = Describe("CLIOptions", func() {
 			Expect(results[0].Interface()).To(Equal(expectedValue))
 		}
 	},
-		table.Entry("returns valid defaults", &parse.CLIOptions{
+		Entry("returns valid defaults", &parse.CLIOptions{
 			VirtualMachineInstanceName:      "test",
 			VirtualMachineInstanceNamespace: defaultNS,
 		}, map[string]interface{}{
@@ -70,7 +70,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetFailureRequirements":             labels.Requirements(nil),
 			"GetDebugLevel":                      zapcore.InfoLevel,
 		}),
-		table.Entry("handles cli arguments + trim", &parse.CLIOptions{
+		Entry("handles cli arguments + trim", &parse.CLIOptions{
 			VirtualMachineInstanceName:      " test  ",
 			VirtualMachineInstanceNamespace: "  " + defaultNS,
 			SuccessCondition:                " metadata.name in (fedora, ubuntu), status.phase == Succeeded  ",

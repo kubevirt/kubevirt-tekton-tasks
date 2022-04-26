@@ -3,19 +3,21 @@ package tekton
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"time"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/clients"
-	"github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	tkntest "github.com/tektoncd/pipeline/test"
-	"io/ioutil"
 	v1 "k8s.io/api/core/v1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/yaml"
-	"time"
 )
 
 func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) (*v1beta1.TaskRun, string) {
@@ -38,7 +40,7 @@ func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeo
 				isCapturing = true
 				go func() {
 					defer podLogs.Close()
-					defer ginkgo.GinkgoRecover()
+					defer GinkgoRecover()
 
 					result, err := ioutil.ReadAll(podLogs)
 					logs <- string(result)

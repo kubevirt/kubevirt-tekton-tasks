@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-export GO111MODULE=on
-go get github.com/jstemmer/go-junit-report
+GOFLAGS='' go install github.com/jstemmer/go-junit-report@latest
 
-go get github.com/onsi/ginkgo/ginkgo@v1.15.2
-go get github.com/onsi/gomega/...@v1.15.0
-go get github.com/onsi/ginkgo/extensions/table@v1.15.2
+GOFLAGS='' go install github.com/onsi/ginkgo/v2/ginkgo@v2.1.3
+GOFLAGS='' go install github.com/onsi/gomega/...@v1.19.0

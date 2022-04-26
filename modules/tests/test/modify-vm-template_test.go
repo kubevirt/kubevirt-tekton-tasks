@@ -9,8 +9,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	templatev1 "github.com/openshift/api/template/v1"
 	k8sv1 "k8s.io/api/core/v1"
@@ -80,7 +79,7 @@ func checkValuesInMap(updatedMap, expectedResult map[string]string, message stri
 var _ = Describe("Modify template task", func() {
 	f := framework.NewFramework().LimitEnvScope(OKDEnvScope)
 	Context("modify template fail", func() {
-		table.DescribeTable("taskrun fails and no template is created", func(config *testconfigs.ModifyTemplateTestConfig) {
+		DescribeTable("taskrun fails and no template is created", func(config *testconfigs.ModifyTemplateTestConfig) {
 			f.TestSetup(config)
 
 			if template := config.TaskData.Template; template != nil {
@@ -94,7 +93,7 @@ var _ = Describe("Modify template task", func() {
 				ExpectLogs(config.GetAllExpectedLogs()...).
 				ExpectResults(nil)
 		},
-			table.Entry("no source template name specified", &testconfigs.ModifyTemplateTestConfig{
+			Entry("no source template name specified", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "template-name param has to be specified",
@@ -103,7 +102,7 @@ var _ = Describe("Modify template task", func() {
 					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
-			table.Entry("no template specified", &testconfigs.ModifyTemplateTestConfig{
+			Entry("no template specified", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "templates.template.openshift.io \"cirros-vm-template\" not found",
@@ -112,7 +111,7 @@ var _ = Describe("Modify template task", func() {
 					TemplateName: testtemplate.CirrosTemplateName,
 				},
 			}),
-			table.Entry("no service account", &testconfigs.ModifyTemplateTestConfig{
+			Entry("no service account", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "cannot get resource \"templates\" in API group \"template.openshift.io\"",
 				},
@@ -121,7 +120,7 @@ var _ = Describe("Modify template task", func() {
 					Template:     testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
-			table.Entry("[NAMESPACE SCOPED] cannot updated template in different namespace", &testconfigs.ModifyTemplateTestConfig{
+			Entry("[NAMESPACE SCOPED] cannot updated template in different namespace", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "cannot get resource \"templates\" in API group \"template.openshift.io\"",
@@ -133,7 +132,7 @@ var _ = Describe("Modify template task", func() {
 					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
-			table.Entry("wrong memory value provided", &testconfigs.ModifyTemplateTestConfig{
+			Entry("wrong memory value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "quantities must match the regular expression",
@@ -143,7 +142,7 @@ var _ = Describe("Modify template task", func() {
 					Memory:       "wrong memory value",
 				},
 			}),
-			table.Entry("wrong number of CPU cores value provided", &testconfigs.ModifyTemplateTestConfig{
+			Entry("wrong number of CPU cores value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "parsing \"wrong cpu cores\": invalid syntax",
@@ -153,7 +152,7 @@ var _ = Describe("Modify template task", func() {
 					CPUCores:     "wrong cpu cores",
 				},
 			}),
-			table.Entry("wrong number of CPU Sockets value provided", &testconfigs.ModifyTemplateTestConfig{
+			Entry("wrong number of CPU Sockets value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "parsing \"wrong cpu sockets\": invalid syntax",
@@ -165,7 +164,7 @@ var _ = Describe("Modify template task", func() {
 					CPUSockets:   "wrong cpu sockets",
 				},
 			}),
-			table.Entry("wrong number of CPU Threads value provided", &testconfigs.ModifyTemplateTestConfig{
+			Entry("wrong number of CPU Threads value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "parsing \"wrong cpu threads\": invalid syntax",
@@ -176,7 +175,7 @@ var _ = Describe("Modify template task", func() {
 					CPUThreads:   "wrong cpu threads",
 				},
 			}),
-			table.Entry("wrong template labels value provided", &testconfigs.ModifyTemplateTestConfig{
+			Entry("wrong template labels value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
@@ -189,7 +188,7 @@ var _ = Describe("Modify template task", func() {
 					TemplateLabels: []string{"singleLabel"},
 				},
 			}),
-			table.Entry("wrong template annotations value provided", &testconfigs.ModifyTemplateTestConfig{
+			Entry("wrong template annotations value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
@@ -203,7 +202,7 @@ var _ = Describe("Modify template task", func() {
 					TemplateAnnotations: []string{"singleAnnotation"},
 				},
 			}),
-			table.Entry("wrong vm labels value provided", &testconfigs.ModifyTemplateTestConfig{
+			Entry("wrong vm labels value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
@@ -218,7 +217,7 @@ var _ = Describe("Modify template task", func() {
 					VMLabels:            []string{"singleLabel"},
 				},
 			}),
-			table.Entry("wrong template annotations value provided", &testconfigs.ModifyTemplateTestConfig{
+			Entry("wrong template annotations value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
@@ -234,7 +233,7 @@ var _ = Describe("Modify template task", func() {
 					VMAnnotations:       []string{"singleAnnotation"},
 				},
 			}),
-			table.Entry("wrong disks value provided", &testconfigs.ModifyTemplateTestConfig{
+			Entry("wrong disks value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "invalid character 'w' looking for beginning of value",
@@ -244,7 +243,7 @@ var _ = Describe("Modify template task", func() {
 					Disks:        WrongStrSlice,
 				},
 			}),
-			table.Entry("wrong volumes value provided", &testconfigs.ModifyTemplateTestConfig{
+			Entry("wrong volumes value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					ExpectedLogs:   "invalid character 'w' looking for beginning of value",
@@ -257,7 +256,7 @@ var _ = Describe("Modify template task", func() {
 		)
 	})
 	Context("modify template sucess", func() {
-		table.DescribeTable("taskrun succeded and template is updated", func(config *testconfigs.ModifyTemplateTestConfig, expectedResults ExpectedResults) {
+		DescribeTable("taskrun succeded and template is updated", func(config *testconfigs.ModifyTemplateTestConfig, expectedResults ExpectedResults) {
 			f.TestSetup(config)
 
 			if template := config.TaskData.Template; template != nil {
@@ -294,7 +293,7 @@ var _ = Describe("Modify template task", func() {
 			expectedResults.ExpectDataVolumeTemplates(vm)
 
 		},
-			table.Entry("should update template in the same namespace", &testconfigs.ModifyTemplateTestConfig{
+			Entry("should update template in the same namespace", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 				},
@@ -326,7 +325,7 @@ var _ = Describe("Modify template task", func() {
 				ExpectedVolumes:                  Volumes,
 				ExpectedDataVolumeTemplates:      DataVolumeTemplates,
 			}),
-			table.Entry("should update template across namespaces", &testconfigs.ModifyTemplateTestConfig{
+			Entry("should update template across namespaces", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
 					LimitTestScope: ClusterTestScope,

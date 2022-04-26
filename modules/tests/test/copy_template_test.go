@@ -8,8 +8,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -19,7 +18,7 @@ var _ = Describe("Copy template task", func() {
 
 	Context("copy template fail", func() {
 
-		table.DescribeTable("taskrun fails and no template is created", func(config *testconfigs.CopyTemplateTestConfig) {
+		DescribeTable("taskrun fails and no template is created", func(config *testconfigs.CopyTemplateTestConfig) {
 			f.TestSetup(config)
 
 			if template := config.TaskData.Template; template != nil {
@@ -34,7 +33,7 @@ var _ = Describe("Copy template task", func() {
 				ExpectLogs(config.GetAllExpectedLogs()...).
 				ExpectResults(nil)
 		},
-			table.Entry("no source template name specified", &testconfigs.CopyTemplateTestConfig{
+			Entry("no source template name specified", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
 					ExpectedLogs:   "source-template-name param has to be specified",
@@ -43,7 +42,7 @@ var _ = Describe("Copy template task", func() {
 					TargetTemplateName: NewTemplateName,
 				},
 			}),
-			table.Entry("source template doesn't exist", &testconfigs.CopyTemplateTestConfig{
+			Entry("source template doesn't exist", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
 					ExpectedLogs:   "templates.template.openshift.io \"cirros-vm-template\" not found",
@@ -52,7 +51,7 @@ var _ = Describe("Copy template task", func() {
 					SourceTemplateName: testtemplate.CirrosTemplateName,
 				},
 			}),
-			table.Entry("no service account", &testconfigs.CopyTemplateTestConfig{
+			Entry("no service account", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "cannot get resource \"templates\" in API group \"template.openshift.io\"",
 				},
@@ -60,7 +59,7 @@ var _ = Describe("Copy template task", func() {
 					SourceTemplateName: testtemplate.CirrosTemplateName,
 				},
 			}),
-			table.Entry("[NAMESPACE SCOPED] cannot copy template in different namespace", &testconfigs.CopyTemplateTestConfig{
+			Entry("[NAMESPACE SCOPED] cannot copy template in different namespace", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
 					ExpectedLogs:   "templates.template.openshift.io is forbidden",
@@ -75,7 +74,7 @@ var _ = Describe("Copy template task", func() {
 		)
 	})
 	Context("copy template sucess", func() {
-		table.DescribeTable("taskrun succeded and template is created", func(config *testconfigs.CopyTemplateTestConfig) {
+		DescribeTable("taskrun succeded and template is created", func(config *testconfigs.CopyTemplateTestConfig) {
 			f.TestSetup(config)
 
 			if template := config.TaskData.Template; template != nil {
@@ -99,7 +98,7 @@ var _ = Describe("Copy template task", func() {
 
 			f.ManageTemplates(newTemplate)
 		},
-			table.Entry("should create template in the same namespace", &testconfigs.CopyTemplateTestConfig{
+			Entry("should create template in the same namespace", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
 				},
@@ -109,7 +108,7 @@ var _ = Describe("Copy template task", func() {
 					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
-			table.Entry("should create template in different namespace", &testconfigs.CopyTemplateTestConfig{
+			Entry("should create template in different namespace", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
 					LimitTestScope: ClusterTestScope,
@@ -121,7 +120,7 @@ var _ = Describe("Copy template task", func() {
 					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
-			table.Entry("no target template name specified", &testconfigs.CopyTemplateTestConfig{
+			Entry("no target template name specified", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
 				},
@@ -130,7 +129,7 @@ var _ = Describe("Copy template task", func() {
 					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
-			table.Entry("no target namespaces specified", &testconfigs.CopyTemplateTestConfig{
+			Entry("no target namespaces specified", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
 				},
@@ -140,7 +139,7 @@ var _ = Describe("Copy template task", func() {
 					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
-			table.Entry("no source namespaces specified", &testconfigs.CopyTemplateTestConfig{
+			Entry("no source namespaces specified", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
 				},
@@ -151,7 +150,7 @@ var _ = Describe("Copy template task", func() {
 					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
-			table.Entry("no namespaces specified", &testconfigs.CopyTemplateTestConfig{
+			Entry("no namespaces specified", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
 				},

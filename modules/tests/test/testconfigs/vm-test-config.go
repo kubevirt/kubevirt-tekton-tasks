@@ -8,7 +8,7 @@ import (
 	template2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
-	"github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/v2"
 	v1 "github.com/openshift/api/template/v1"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"

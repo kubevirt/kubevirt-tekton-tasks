@@ -10,8 +10,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,7 +49,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 	for _, c := range []ExecInVMMode{ExecuteInVMMode, CleanupVMMode} {
 		execInVMMode := c
 
-		table.DescribeTable(string(execInVMMode), func(config *testconfigs.ExecuteOrCleanupVMTestConfig) {
+		DescribeTable(string(execInVMMode), func(config *testconfigs.ExecuteOrCleanupVMTestConfig) {
 			config.TaskData.ExecInVMMode = execInVMMode
 			f.TestSetup(config)
 
@@ -99,7 +98,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				ExpectResults(nil)
 		},
 			// negative cases
-			table.Entry("no vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("no vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "missing value for vm-name option",
 				},
@@ -107,7 +106,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Secret: testobjects.NewTestSecret(map[string]string{}),
 				},
 			}),
-			table.Entry("invalid vm name", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("invalid vm name", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "vm-name is not a valid name: a lowercase RFC 1123 subdomain must consist of",
 				},
@@ -116,7 +115,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Secret: testobjects.NewTestSecret(map[string]string{}),
 				},
 			}),
-			table.Entry("no action", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("no action", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "no action was specified: at least one of the following options is required: command|script|stop|delete",
 				},
@@ -125,7 +124,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Secret: testobjects.NewTestSecret(map[string]string{}),
 				},
 			}),
-			table.Entry("too many actions", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("too many actions", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "only one of command|script options is allowed",
 				},
@@ -136,7 +135,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Command: []string{"echo"},
 				},
 			}),
-			table.Entry("no secret", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("no secret", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "connection secret should not be empty",
 				},
@@ -146,7 +145,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script:     helloWorldScript,
 				},
 			}),
-			table.Entry("no secret type", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("no secret type", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "type secret attribute is required",
 				},
@@ -156,7 +155,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("invalid secret type", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("invalid secret type", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "Ssh is invalid type",
 				},
@@ -168,7 +167,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("no secret private-key", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("no secret private-key", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "ssh-privatekey secret attribute is required",
 				},
@@ -180,7 +179,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("no secret user", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("no secret user", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "user secret attribute is required",
 				},
@@ -193,7 +192,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("no secret host-key", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("no secret host-key", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "host-public-key or disable-strict-host-key-checking=true secret attribute is required",
 				},
@@ -207,7 +206,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("no service account", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("no service account", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: "cannot get resource \"virtualmachineinstances\" in API group \"kubevirt.io\"",
 				},
@@ -217,7 +216,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("non existent VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("non existent VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "virtualmachine.kubevirt.io \"non-existent\" not found",
@@ -228,7 +227,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("not working VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("not working VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					Timeout:        Timeouts.QuickTaskRun,
@@ -239,7 +238,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("not authorized VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("not authorized VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "Permission denied",
@@ -251,7 +250,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					VMTargetNamespace: TestTargetNS,
 				},
 			}),
-			table.Entry("fail script", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("fail script", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					Timeout:        Timeouts.QuickTaskRun,
@@ -266,7 +265,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: failScript,
 				},
 			}),
-			table.Entry("execute with wrong public key", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("execute with wrong public key", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "REMOTE HOST IDENTIFICATION HAS CHANGED",
@@ -282,7 +281,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("[NAMESPACE SCOPED] cannot execute command in different namespace", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("[NAMESPACE SCOPED] cannot execute command in different namespace", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					LimitTestScope: NamespaceTestScope,
@@ -295,7 +294,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				},
 			}),
 			// positive cases
-			table.Entry("execute script", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("execute script", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "hello world",
@@ -308,7 +307,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					VMTargetNamespace: TestTargetNS,
 				},
 			}),
-			table.Entry("execute command in running vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("execute command in running vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "hello",
@@ -321,7 +320,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Command:       []string{"echo", "hello"},
 				},
 			}),
-			table.Entry("execute command with args", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("execute command with args", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "hello world !",
@@ -334,7 +333,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					CommandArgs: []string{"world", "!"},
 				},
 			}),
-			table.Entry("[CLUSTER SCOPED] execute command in the same namespace as deploy", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("[CLUSTER SCOPED] execute command in the same namespace as deploy", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "hello world",
@@ -348,7 +347,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					VMTargetNamespace: DeployTargetNS,
 				},
 			}),
-			table.Entry("execute script with options", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("execute script with options", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "hello world",
@@ -367,7 +366,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("execute with public key", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("execute with public key", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "hello world",
@@ -392,7 +391,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("execute with malformed private key", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("execute with malformed private key", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "hello world",
@@ -409,7 +408,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			table.Entry("execute with kubernetes.io/ssh-auth secret type", &testconfigs.ExecuteOrCleanupVMTestConfig{
+			Entry("execute with kubernetes.io/ssh-auth secret type", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,
 					ExpectedLogs:   "hello world",
@@ -435,7 +434,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		)
 	}
 
-	table.DescribeTable("cleanup vm actions", func(config *testconfigs.ExecuteOrCleanupVMTestConfig) {
+	DescribeTable("cleanup vm actions", func(config *testconfigs.ExecuteOrCleanupVMTestConfig) {
 		config.TaskData.ExecInVMMode = CleanupVMMode
 		f.TestSetup(config)
 
@@ -473,7 +472,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}
 	},
 		// negative cases
-		table.Entry("execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
+		Entry("execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectedLogs:   "command timed out",
@@ -490,7 +489,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			},
 		}),
 
-		table.Entry("starts and execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
+		Entry("starts and execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectedLogs:   "command timed out",
@@ -506,7 +505,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			},
 		}),
 		// positive cases
-		table.Entry("stop vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
+		Entry("stop vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectSuccess:  true,
@@ -518,7 +517,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				Stop:          true,
 			},
 		}),
-		table.Entry("stop non running vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
+		Entry("stop non running vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectSuccess:  true,
@@ -529,7 +528,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				Stop:       true,
 			},
 		}),
-		table.Entry("delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
+		Entry("delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectSuccess:  true,
@@ -541,7 +540,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				Delete:        true,
 			},
 		}),
-		table.Entry("stop and delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
+		Entry("stop and delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectSuccess:  true,
@@ -554,7 +553,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				Delete:        true,
 			},
 		}),
-		table.Entry("execute and stop and delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
+		Entry("execute and stop and delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectedLogs:   "hello world",
@@ -569,7 +568,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				Delete:        true,
 			},
 		}),
-		table.Entry("execute and stops vm with timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
+		Entry("execute and stops vm with timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectedLogs:   "hello world",
@@ -584,7 +583,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				Timeout:       Timeouts.WaitForVMStart,
 			},
 		}),
-		table.Entry("execute and deletes vm with timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
+		Entry("execute and deletes vm with timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectedLogs:   "hello world",
@@ -599,7 +598,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				Timeout:       Timeouts.WaitForVMStart,
 			},
 		}),
-		table.Entry("stops failed VMI", &testconfigs.ExecuteOrCleanupVMTestConfig{
+		Entry("stops failed VMI", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CleanupVMClusterTaskName,
 				ExpectSuccess:  true,

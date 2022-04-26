@@ -7,8 +7,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap/zapcore"
 )
@@ -19,42 +18,42 @@ var (
 )
 
 var _ = Describe("CLIOptions", func() {
-	table.DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
+	DescribeTable("Init return correct assertion errors", func(expectedErrMessage string, options *parse.CLIOptions) {
 		err := options.Init()
 		Expect(err).Should(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring(expectedErrMessage))
 	},
-		table.Entry("no mode", "one of vm-manifest, template-name should be specified", &parse.CLIOptions{}),
-		table.Entry("both modes", "only one of vm-manifest, template-name should be specified", &parse.CLIOptions{
+		Entry("no mode", "one of vm-manifest, template-name should be specified", &parse.CLIOptions{}),
+		Entry("both modes", "only one of vm-manifest, template-name should be specified", &parse.CLIOptions{
 			TemplateName:           "test",
 			VirtualMachineManifest: testVMManifest,
 		}),
-		table.Entry("useless template ns", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
+		Entry("useless template ns", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
 			VirtualMachineManifest: testVMManifest,
 			TemplateNamespace:      defaultNS,
 		}),
-		table.Entry("useless template params", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
+		Entry("useless template params", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
 			VirtualMachineManifest: testVMManifest,
 			TemplateParams:         []string{"K1:V1"},
 		}),
-		table.Entry("invalidManifest", "could not read VM manifest", &parse.CLIOptions{
+		Entry("invalidManifest", "could not read VM manifest", &parse.CLIOptions{
 			VirtualMachineManifest: "blabla",
 		}),
-		table.Entry("invalid output", "not a valid output type", &parse.CLIOptions{
+		Entry("invalid output", "not a valid output type", &parse.CLIOptions{
 			TemplateName: "test",
 			Output:       "incorrect-fmt",
 		}),
-		table.Entry("invalid template params 1", "invalid template-params: no key found before \"V1\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
+		Entry("invalid template params 1", "invalid template-params: no key found before \"V1\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
 			TemplateName:   "test",
 			TemplateParams: []string{"V1", "K2=V2"},
 		}),
-		table.Entry("invalid template params 2", "invalid template-params: no key found before \":V1\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
+		Entry("invalid template params 2", "invalid template-params: no key found before \":V1\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
 			TemplateName:   "test",
 			TemplateParams: []string{":V1"},
 		}),
 	)
 
-	table.DescribeTable("Parses and returns correct values", func(options *parse.CLIOptions, expectedOptions map[string]interface{}) {
+	DescribeTable("Parses and returns correct values", func(options *parse.CLIOptions, expectedOptions map[string]interface{}) {
 		Expect(options.Init()).Should(Succeed())
 
 		for methodName, expectedValue := range expectedOptions {
@@ -62,7 +61,7 @@ var _ = Describe("CLIOptions", func() {
 			Expect(results[0].Interface()).To(Equal(expectedValue))
 		}
 	},
-		table.Entry("returns valid defaults", &parse.CLIOptions{
+		Entry("returns valid defaults", &parse.CLIOptions{
 			TemplateName:            "test",
 			TemplateNamespace:       defaultNS,
 			VirtualMachineNamespace: defaultNS,
@@ -81,7 +80,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetCreationMode":            constants.TemplateCreationMode,
 			"GetStartVMFlag":             false,
 		}),
-		table.Entry("handles template cli arguments", &parse.CLIOptions{
+		Entry("handles template cli arguments", &parse.CLIOptions{
 			TemplateName:              "test",
 			TemplateNamespace:         defaultNS,
 			TemplateParams:            []string{"K1:V1", "with", "space", "K2:V2"},
@@ -121,7 +120,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetCreationMode": constants.TemplateCreationMode,
 			"GetStartVMFlag":  true,
 		}),
-		table.Entry("handles vm cli arguments", &parse.CLIOptions{
+		Entry("handles vm cli arguments", &parse.CLIOptions{
 			VirtualMachineManifest:    testVMManifest,
 			VirtualMachineNamespace:   defaultNS,
 			Output:                    output.YamlOutput, // check if passes validation
@@ -154,7 +153,7 @@ var _ = Describe("CLIOptions", func() {
 			"GetCreationMode":   constants.VMManifestCreationMode,
 			"GetStartVMFlag":    false,
 		}),
-		table.Entry("handles trim", &parse.CLIOptions{
+		Entry("handles trim", &parse.CLIOptions{
 			TemplateName:              "test",
 			TemplateNamespace:         "  " + defaultNS + " ",
 			VirtualMachineNamespace:   defaultNS + "  ",

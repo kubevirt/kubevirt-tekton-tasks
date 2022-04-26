@@ -3,8 +3,7 @@ package env_test
 import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/utilstest"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
@@ -24,23 +23,23 @@ var _ = Describe("Env", func() {
 			Expect(env.IsEnvVarTrue(nonExistingVar)).To(BeFalse())
 		})
 
-		table.DescribeTable("should identify false flag", func(tested string) {
+		DescribeTable("should identify false flag", func(tested string) {
 			SetEnv(existingVar, tested)
 			Expect(env.IsEnvVarTrue(existingVar)).To(BeFalse())
 		},
-			table.Entry("False", "false"),
-			table.Entry("Bad", "falzee"),
-			table.Entry("UpperCase", "FALSE"),
-			table.Entry("Partially UpperCase", "FAlsE"),
+			Entry("False", "false"),
+			Entry("Bad", "falzee"),
+			Entry("UpperCase", "FALSE"),
+			Entry("Partially UpperCase", "FAlsE"),
 		)
 
-		table.DescribeTable("should identify true flag", func(tested string) {
+		DescribeTable("should identify true flag", func(tested string) {
 			SetEnv(existingVar, tested)
 			Expect(env.IsEnvVarTrue(existingVar)).To(BeTrue())
 		},
-			table.Entry("True", "true"),
-			table.Entry("UpperCase", "TRUE"),
-			table.Entry("Partially UpperCase", "True"),
+			Entry("True", "true"),
+			Entry("UpperCase", "TRUE"),
+			Entry("Partially UpperCase", "True"),
 		)
 	})
 

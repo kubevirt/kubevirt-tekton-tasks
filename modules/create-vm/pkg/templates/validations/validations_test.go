@@ -1,8 +1,7 @@
 package validations_test
 
 import (
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
@@ -11,13 +10,13 @@ import (
 )
 
 var _ = Describe("Validations", func() {
-	table.DescribeTable("gets default bus", func(templateValidations []validations.CommonTemplateValidation, expectedBus string) {
+	DescribeTable("gets default bus", func(templateValidations []validations.CommonTemplateValidation, expectedBus string) {
 		Expect(validations.NewTemplateValidations(templateValidations).GetDefaultDiskBus()).To(Equal(expectedBus))
 	},
-		table.Entry("nil", nil, Virtio),
-		table.Entry("empty", testobjects.NewTestCommonTemplateValidations(), Virtio),
-		table.Entry("one", testobjects.NewTestCommonTemplateValidations(Scsi), Scsi),
-		table.Entry("two with virtio", testobjects.NewTestCommonTemplateValidations(Scsi, Virtio), Virtio),
+		Entry("nil", nil, Virtio),
+		Entry("empty", testobjects.NewTestCommonTemplateValidations(), Virtio),
+		Entry("one", testobjects.NewTestCommonTemplateValidations(Scsi), Scsi),
+		Entry("two with virtio", testobjects.NewTestCommonTemplateValidations(Scsi, Virtio), Virtio),
 	)
 
 	It("gets prefered bus", func() {
