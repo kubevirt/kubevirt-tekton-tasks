@@ -55,6 +55,24 @@ var _ = Describe("CLIOptions", func() {
 				Output:                  "json",
 				Debug:                   true,
 			}),
+			Entry("with AllowReplace", &parse.CLIOptions{
+				SourceTemplateName:      testStringSourceName,
+				SourceTemplateNamespace: testStringSourceNamespace,
+				TargetTemplateName:      testStringTargetName,
+				TargetTemplateNamespace: testStringTargetNamespace,
+				AllowReplace:            "false",
+				Output:                  "json",
+				Debug:                   true,
+			}),
+			Entry("with AllowReplace", &parse.CLIOptions{
+				SourceTemplateName:      testStringSourceName,
+				SourceTemplateNamespace: testStringSourceNamespace,
+				TargetTemplateName:      testStringTargetName,
+				TargetTemplateNamespace: testStringTargetNamespace,
+				AllowReplace:            "true",
+				Output:                  "json",
+				Debug:                   true,
+			}),
 			Entry("no source-template-namespace", &parse.CLIOptions{SourceTemplateName: testStringSourceName}),
 			Entry("no target-template-name", &parse.CLIOptions{
 				SourceTemplateName:      testStringSourceName,
@@ -89,6 +107,14 @@ var _ = Describe("CLIOptions", func() {
 			Entry("GetSourceTemplateNamespace should return correct value", (&parse.CLIOptions{SourceTemplateNamespace: testStringSourceNamespace}).GetSourceTemplateNamespace, testStringSourceNamespace),
 			Entry("GetTargetTemplateNamespace should return correct value", (&parse.CLIOptions{TargetTemplateNamespace: testStringTargetNamespace}).GetTargetTemplateNamespace, testStringTargetNamespace),
 			Entry("GetTargetTemplateName should return correct value", (&parse.CLIOptions{TargetTemplateName: testStringTargetName}).GetTargetTemplateName, testStringTargetName),
+		)
+
+		DescribeTable("GetAllowReplaceValue should return correct values", func(fnToCall func() bool, result bool) {
+			Expect(fnToCall()).To(Equal(result), "result should equal")
+		},
+			Entry("should return correct true", (&parse.CLIOptions{AllowReplace: "true"}).GetAllowReplaceValue, true),
+			Entry("should return correct false", (&parse.CLIOptions{AllowReplace: "false"}).GetAllowReplaceValue, false),
+			Entry("should return correct false, when wrong string", (&parse.CLIOptions{AllowReplace: "notAValue"}).GetAllowReplaceValue, false),
 		)
 
 		DescribeTable("CLI options should return correct log level", func(options *parse.CLIOptions, level zapcore.Level) {

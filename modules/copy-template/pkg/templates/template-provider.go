@@ -21,6 +21,7 @@ type templateProvider struct {
 type TemplateProvider interface {
 	Get(string, string) (*templatev1.Template, error)
 	Create(*templatev1.Template) (*templatev1.Template, error)
+	Update(*templatev1.Template) (*templatev1.Template, error)
 }
 
 func NewTemplateProvider(client tempclient.TemplateV1Interface) TemplateProvider {
@@ -35,6 +36,10 @@ func (t *templateProvider) Get(namespace string, name string) (*templatev1.Templ
 
 func (t *templateProvider) Create(template *templatev1.Template) (*templatev1.Template, error) {
 	return t.client.Templates(template.Namespace).Create(context.TODO(), template, metav1.CreateOptions{})
+}
+
+func (t *templateProvider) Update(template *templatev1.Template) (*templatev1.Template, error) {
+	return t.client.Templates(template.Namespace).Update(context.TODO(), template, metav1.UpdateOptions{})
 }
 
 type TemplateCreator struct {
@@ -68,6 +73,12 @@ func (t *TemplateCreator) CopyTemplate() (*v1.Template, error) {
 	updatedTemplate := t.UpdateTemplateMetaObject(template)
 
 	log.Logger().Debug("Updated template metadata", zap.Any("ObjectMeta", updatedTemplate.ObjectMeta))
+	existingTemplate, err := t.templateProvider.Get(t.cliOptions.GetTargetTemplateNamespace(), t.cliOptions.GetTargetTemplateName())
+
+	if t.cliOptions.GetAllowReplaceValue() && existingTemplate != nil && err == nil {
+		updatedTemplate.ResourceVersion = existingTemplate.ResourceVersion
+		return t.templateProvider.Update(updatedTemplate)
+	}
 
 	return t.templateProvider.Create(updatedTemplate)
 }

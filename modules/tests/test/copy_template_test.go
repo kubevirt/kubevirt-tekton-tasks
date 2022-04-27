@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 var _ = Describe("Copy template task", func() {
@@ -163,5 +164,85 @@ var _ = Describe("Copy template task", func() {
 				},
 			}),
 		)
+	})
+
+	Context("Allow replace", func() {
+		It("taskrun fails and new template is not created", func() {
+			config := &testconfigs.CopyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CopyTemplateServiceAccountName,
+					LimitTestScope: ClusterTestScope,
+					ExpectedLogs:   "templates.template.openshift.io \"test-template\" already exists",
+				},
+				TaskData: testconfigs.CopyTemplateTaskData{
+					SourceTemplateName:      testtemplate.CirrosTemplateName,
+					TargetTemplateName:      NewTemplateName,
+					TargetTemplateNamespace: TestTargetNS,
+					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
+				},
+			}
+			f.TestSetup(config)
+
+			t, err := f.TemplateClient.Templates(config.TaskData.SourceNamespace).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageTemplates(t)
+
+			//create template which has the same name as template which will be created
+			config.TaskData.Template.Name = NewTemplateName
+			t, err = f.TemplateClient.Templates(string(config.TaskData.SourceNamespace)).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageTemplates(t)
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectFailure().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(nil)
+		})
+
+		It("taskrun succeeds and template is updated", func() {
+			config := &testconfigs.CopyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CopyTemplateServiceAccountName,
+					LimitTestScope: ClusterTestScope,
+				},
+				TaskData: testconfigs.CopyTemplateTaskData{
+					SourceTemplateName:      testtemplate.CirrosTemplateName,
+					TargetTemplateName:      NewTemplateName,
+					TargetTemplateNamespace: TestTargetNS,
+					AllowReplace:            "true",
+					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
+				},
+			}
+			f.TestSetup(config)
+
+			t, err := f.TemplateClient.Templates(config.TaskData.SourceNamespace).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageTemplates(t)
+
+			//create template which has the same name as template which will be created
+			config.TaskData.Template.Name = NewTemplateName
+			config.TaskData.Template.Objects = []runtime.RawExtension{}
+			t, err = f.TemplateClient.Templates(string(config.TaskData.SourceNamespace)).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
+
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageTemplates(t)
+
+			r := runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...)
+
+			results := r.GetResults()
+			resultTemplateName := results["name"]
+			resultTemplateNamespace := results["namespace"]
+
+			newTemplate, err := f.TemplateClient.Templates(resultTemplateNamespace).Get(context.TODO(), resultTemplateName, v1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(newTemplate).ToNot(BeNil(), " template should exists")
+			Expect(len(newTemplate.Objects)).To(Equal(1), "template should be updated")
+
+			f.ManageTemplates(newTemplate)
+		})
 	})
 })

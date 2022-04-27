@@ -14,6 +14,7 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 - **sourceTemplateNamespace**: Namespace of an source OpenShift template to copy template from. (defaults to active namespace)
 - **targetTemplateName**: Name of an target OpenShift template.
 - **targetTemplateNamespace**: Namespace of an target OpenShift template to create in. (defaults to active namespace)
+- **allowReplace**: Allow replacing already existing template (same combination name/namespace). Allowed values true/false
 
 ### Results
 

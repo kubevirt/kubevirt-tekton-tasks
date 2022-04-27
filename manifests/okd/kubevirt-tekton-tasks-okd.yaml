@@ -140,6 +140,7 @@ metadata:
     targetTemplateName.params.task.kubevirt.io/kind: Template
     targetTemplateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
     targetTemplateNamespace.params.task.kubevirt.io/type: namespace
+    allowReplace.params.task.kubevirt.io/type: boolean
   labels:
     task.kubevirt.io/type: copy-template
     task.kubevirt.io/category: copy-template
@@ -161,6 +162,10 @@ spec:
       description: Namespace of an target OpenShift template to create in. (defaults to active namespace)
       type: string
       default: ""
+    - name: allowReplace
+      description: Allow replacing already existing template (same combination name/namespace). Allowed values true/false
+      type: string
+      default: "false"
   results:
     - name: name
       description: The name of a template that was created.
@@ -182,6 +187,8 @@ spec:
           value: $(params.targetTemplateName)
         - name: TARGET_TEMPLATE_NAMESPACE
           value: $(params.targetTemplateNamespace)
+        - name: ALLOW_REPLACE
+          value: $(params.allowReplace)
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -194,6 +201,7 @@ rules:
       - list
       - watch
       - create
+      - update
     apiGroups:
       - template.openshift.io
     resources:

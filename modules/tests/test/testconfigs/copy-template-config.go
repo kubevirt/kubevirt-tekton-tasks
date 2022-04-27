@@ -17,6 +17,7 @@ type CopyTemplateTaskData struct {
 	TargetTemplateNamespace TargetNamespace
 	SourceNamespace         string
 	TargetNamespace         string
+	AllowReplace            string
 	TemplateNamespace       TargetNamespace
 }
 
@@ -73,6 +74,12 @@ func (c *CopyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			Value: v1beta1.ArrayOrString{
 				Type:      v1beta1.ParamTypeString,
 				StringVal: c.TaskData.TargetNamespace,
+			},
+		}, {
+			Name: AllowReplaceOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:      v1beta1.ParamTypeString,
+				StringVal: c.TaskData.AllowReplace,
 			},
 		},
 	}

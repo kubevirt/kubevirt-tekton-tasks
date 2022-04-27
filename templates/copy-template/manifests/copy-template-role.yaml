@@ -9,6 +9,7 @@ rules:
       - list
       - watch
       - create
+      - update
     apiGroups:
       - template.openshift.io
     resources:
