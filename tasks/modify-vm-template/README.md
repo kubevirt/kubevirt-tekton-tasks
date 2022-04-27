@@ -21,9 +21,13 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 - **vmLabels**: VM labels. If VM contains same label, it will be replaced. Each param should have KEY:VAL format. Eg [`key:value`, `key:value`].
 - **vmAnnotations**: VM annotations. If VM contains same annotation, it will be replaced. Each param should have KEY:VAL format. Eg [`key:value`, `key:value`].
 - **disks**: VM disks in json format, replace vm disk if same name, otherwise new disk is appended. Eg [{`name`: `test`, `cdrom`: {`bus`: `sata`}}, {`name`: `disk2`}]
+- **deleteDisks**: Set to `true` or `false` if task should delete VM disks. New disks (from disks parameter) are applied, after old disks are deleted.
 - **volumes**: VM volumes in json format, replace vm volume if same name, otherwise new volume is appended. Eg [{`name`: `virtiocontainerdisk`, `containerDisk`: {`image`: `kubevirt/virtio-container-disk`}}]
 - **datavolumeTemplates**: Datavolume templates in json format, replace datavolume if same name, otherwise new datavolume is appended. If deleteDatavolumeTemplate is set, first datavolumes are deleted and then datavolumes from this attribute are added. Eg [{`apiVersion`: `cdi.kubevirt.io/v1beta1`, `kind`: `DataVolume`, `metadata`:{`name`: `test1`}, `spec`: {`source`: {`http`: {`url`: `test.somenonexisting`}}}}]
 - **deleteDatavolumeTemplate**: Set to `true` or `false` if task should delete datavolume template in template and all associated volumes and disks.
+- **deleteVolumes**: Set to `true` or `false` if task should delete VM volumes. New volumes (from volumes parameter) are applied, after old volumes are deleted.
+- **templateParameters**: Definition of template parameters. Eg [{`description`: `VM name`, `name`: `NAME`}]
+- **deleteTemplateParameters**: Set to `true` or `false` if task should delete template parameters. New parameters (from templateParameters parameter) are applied, after old parameters are deleted.
 
 ### Results
 

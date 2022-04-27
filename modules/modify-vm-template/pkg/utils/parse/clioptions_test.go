@@ -24,6 +24,7 @@ var (
 	mockArray                 = []string{"newKey: value", "test: true"}
 	diskArray                 = []string{"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}"}
 	volumeArray               = []string{"{\"name\": \"test\", \"containerDisk\": {\"image\": \"URL\"}}"}
+	templateParametersArray   = []string{"{\"description\": \"VM name\", \"name\": \"NAME\"}"}
 	dataVolumeArray           = []string{"{\"apiVersion\": \"cdi.kubevirt.io/v1beta1\", \"kind\": \"DataVolume\", \"metadata\":{\"name\": \"test1\"}, \"spec\": {\"source\": {\"http\": {\"url\": \"test.somenonexisting\"}}}}"}
 	resultMap                 = map[string]string{"newKey": "value", "test": "true"}
 	testStringMemoryResource  = resource.MustParse(testStringMemory)
@@ -72,6 +73,7 @@ var _ = Describe("CLIOptions", func() {
 			Entry("wrong disk json", "invalid character 'w'", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: mockArray, VMLabels: mockArray, Disks: []string{"{wrongJson: value}"}}),
 			Entry("wrong volume json", "invalid character 'k'", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: mockArray, VMLabels: mockArray, Volumes: []string{"{key: value}"}}),
 			Entry("wrong dataVolumeTemplate json", "invalid character 'e' in literal true", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: mockArray, VMLabels: mockArray, Volumes: mockArray, DatavolumeTemplates: []string{"{wrong value}"}}),
+			Entry("wrong templateParameters json", "invalid character 'e' in literal true", &parse.CLIOptions{TemplateName: testString, CPUCores: testNumberOfCPU, CPUThreads: testNumberOfCPU, TemplateLabels: mockArray, TemplateAnnotations: mockArray, VMLabels: mockArray, Volumes: mockArray, DatavolumeTemplates: mockArray, TemplateParameters: []string{"{wrong value}"}}),
 		)
 	})
 	Context("correct cli options", func() {
@@ -98,8 +100,12 @@ var _ = Describe("CLIOptions", func() {
 				VMAnnotations:            mockArray,
 				Disks:                    diskArray,
 				Volumes:                  volumeArray,
+				DeleteVolumes:            true,
+				DeleteDisks:              true,
+				DeleteTemplateParameters: true,
 				DeleteDatavolumeTemplate: true,
 				DatavolumeTemplates:      dataVolumeArray,
+				TemplateParameters:       templateParametersArray,
 			}),
 		)
 
@@ -151,6 +157,9 @@ var _ = Describe("CLIOptions", func() {
 			Volumes:                  volumeArray,
 			DatavolumeTemplates:      dataVolumeArray,
 			DeleteDatavolumeTemplate: true,
+			DeleteDisks:              true,
+			DeleteVolumes:            true,
+			DeleteTemplateParameters: true,
 		}
 		DescribeTable("CLI options should return correct map of annotations / labels", func(obj *parse.CLIOptions, fnToCall func() map[string]string, result map[string]string) {
 			Expect(obj.Init()).To(Succeed(), "should succeeded")
@@ -189,11 +198,14 @@ var _ = Describe("CLIOptions", func() {
 			Entry("GetVolumes should return correct value", cli, cli.GetDatavolumeTemplates, parsedDataVolumeTemplates),
 		)
 
-		DescribeTable("CLI options should return correct value for DeleteDatavolumeTemplate", func(obj *parse.CLIOptions, fnToCall func() bool, result bool) {
+		DescribeTable("CLI options should return correct value for bool functions", func(obj *parse.CLIOptions, fnToCall func() bool, result bool) {
 			Expect(obj.Init()).To(Succeed(), "should succeeded")
 			Expect(fnToCall()).To(Equal(result), "bool should equal")
 		},
 			Entry("GetDeleteDatavolumeTemplate should return correct value", cli, cli.GetDeleteDatavolumeTemplate, true),
+			Entry("GetDeleteDisks should return correct value", cli, cli.GetDeleteDisks, true),
+			Entry("GetDeleteVolumes should return correct value", cli, cli.GetDeleteVolumes, true),
+			Entry("GetDeleteTemplateParameters should return correct value", cli, cli.GetDeleteTemplateParameters, true),
 		)
 	})
 })

@@ -27,7 +27,11 @@ type ModifyTemplateTaskData struct {
 	Disks                    []string
 	Volumes                  []string
 	DataVolumeTemplates      []string
+	TemplateParameters       []string
 	DeleteDatavolumeTemplate bool
+	DeleteDisks              bool
+	DeleteVolumes            bool
+	DeleteTemplateParameters bool
 }
 
 type ModifyTemplateTestConfig struct {
@@ -125,16 +129,40 @@ func (m *ModifyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 				ArrayVal: m.TaskData.Volumes,
 			},
 		}, {
-			Name: DataVolumeTemplatesName,
+			Name: DataVolumeTemplatesOptionName,
 			Value: v1beta1.ArrayOrString{
 				Type:     v1beta1.ParamTypeArray,
 				ArrayVal: m.TaskData.DataVolumeTemplates,
 			},
 		}, {
-			Name: DeleteDatavolumeTemplateName,
+			Name: TemplateParametersOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.TemplateParameters,
+			},
+		}, {
+			Name: DeleteDatavolumeTemplateOptionName,
 			Value: v1beta1.ArrayOrString{
 				Type:      v1beta1.ParamTypeString,
 				StringVal: strconv.FormatBool(m.TaskData.DeleteDatavolumeTemplate),
+			},
+		}, {
+			Name: DeleteDisksOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:      v1beta1.ParamTypeString,
+				StringVal: strconv.FormatBool(m.TaskData.DeleteDisks),
+			},
+		}, {
+			Name: DeleteVolumesOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:      v1beta1.ParamTypeString,
+				StringVal: strconv.FormatBool(m.TaskData.DeleteVolumes),
+			},
+		}, {
+			Name: DeleteTemplateParametersOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:      v1beta1.ParamTypeString,
+				StringVal: strconv.FormatBool(m.TaskData.DeleteTemplateParameters),
 			},
 		},
 	}

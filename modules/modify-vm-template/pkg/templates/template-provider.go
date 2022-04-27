@@ -98,6 +98,23 @@ func (t *TemplateUpdator) setValuesToTemplate(template *v1.Template) {
 
 	annotations := t.cliOptions.GetVMAnnotations()
 	template.Annotations = appendToMap(template.Annotations, annotations)
+
+	if t.cliOptions.GetDeleteTemplateParameters() {
+		template.Parameters = []v1.Parameter{}
+	}
+
+	for _, parameter := range t.cliOptions.GetTemplateParameters() {
+		replaced := false
+		for i, templateParam := range template.Parameters {
+			if parameter.Name == templateParam.Name {
+				template.Parameters[i] = parameter
+				replaced = true
+			}
+		}
+		if !replaced {
+			template.Parameters = append(template.Parameters, parameter)
+		}
+	}
 }
 
 func appendToMap(a, b map[string]string) map[string]string {
@@ -127,14 +144,25 @@ func (t *TemplateUpdator) setValuesToVM(vm *kubevirtv1.VirtualMachine) *kubevirt
 	if sockets := t.cliOptions.GetCPUSockets(); sockets > 0 {
 		vm.Spec.Template.Spec.Domain.CPU.Sockets = sockets
 	}
+
 	if cores := t.cliOptions.GetCPUCores(); cores > 0 {
 		vm.Spec.Template.Spec.Domain.CPU.Cores = cores
 	}
+
 	if threads := t.cliOptions.GetCPUThreads(); threads > 0 {
 		vm.Spec.Template.Spec.Domain.CPU.Threads = threads
 	}
+
 	if memory := t.cliOptions.GetMemory(); memory != nil {
 		vm.Spec.Template.Spec.Domain.Resources.Requests[k8sv1.ResourceMemory] = *memory
+	}
+
+	if t.cliOptions.GetDeleteDisks() {
+		vm.Spec.Template.Spec.Domain.Devices.Disks = []kubevirtv1.Disk{}
+	}
+
+	if t.cliOptions.GetDeleteVolumes() {
+		vm.Spec.Template.Spec.Volumes = []kubevirtv1.Volume{}
 	}
 
 	if t.cliOptions.GetDeleteDatavolumeTemplate() {
