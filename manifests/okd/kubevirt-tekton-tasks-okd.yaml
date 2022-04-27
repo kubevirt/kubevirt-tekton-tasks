@@ -53,7 +53,7 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: "quay.io/kubevirt/tekton-task-execute-in-vm:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-execute-in-vm:v0.8.0"
       command:
         - entrypoint
       args:
@@ -173,7 +173,7 @@ spec:
       description: The namespace of a template that was created.
   steps:
     - name: copytemplate
-      image: "quay.io/kubevirt/tekton-task-copy-template:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-copy-template:v0.8.0"
       command:
         - copy-template
       args:
@@ -386,7 +386,7 @@ spec:
       description: The namespace of a VM that was created.
   steps:
     - name: createvm
-      image: "quay.io/kubevirt/tekton-task-create-vm:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-create-vm:v0.8.0"
       command:
         - create-vm
       args:
@@ -536,7 +536,7 @@ spec:
       description: The namespace of a VM that was created.
   steps:
     - name: createvm
-      image: "quay.io/kubevirt/tekton-task-create-vm:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-create-vm:v0.8.0"
       command:
         - create-vm
       args:
@@ -667,7 +667,7 @@ spec:
       default: ""
   steps:
     - name: run-virt-customize
-      image: "quay.io/kubevirt/tekton-task-disk-virt-customize:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-disk-virt-customize:v0.8.0"
       command:
         - entrypoint
       args:
@@ -736,7 +736,7 @@ spec:
       default: ""
   steps:
     - name: run-virt-sysprep
-      image: "quay.io/kubevirt/tekton-task-disk-virt-sysprep:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-disk-virt-sysprep:v0.8.0"
       command:
         - entrypoint
       args:
@@ -813,7 +813,7 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: "quay.io/kubevirt/tekton-task-execute-in-vm:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-execute-in-vm:v0.8.0"
       command:
         - entrypoint
       args:
@@ -935,7 +935,7 @@ spec:
       description: The namespace of a private key secret.
   steps:
     - name: generate-ssh-keys
-      image: "quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.8.0"
       command:
         - entrypoint
         - '--'
@@ -1083,7 +1083,7 @@ spec:
       description: The namespace of a template that was updated.
   steps:
     - name: modifyvmtemplate
-      image: "quay.io/kubevirt/tekton-task-modify-vm-template:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-modify-vm-template:v0.8.0"
       command:
         - modify-vm-template
       args:
@@ -1187,7 +1187,7 @@ spec:
       description: A label selector expression to decide if the VirtualMachineInstance (VMI) is in a failed state. Eg. "status.phase in (Failed, Unknown)". It is evaluated on each VMI update and will result in this task failing if true.
   steps:
     - name: wait-for-vmi-status
-      image: "quay.io/kubevirt/tekton-task-wait-for-vmi-status:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-wait-for-vmi-status:v0.8.0"
       command:
         - entrypoint
       env:

@@ -30,7 +30,7 @@ spec:
       default: ""
   steps:
     - name: run-virt-sysprep
-      image: "quay.io/kubevirt/tekton-task-disk-virt-sysprep:v0.7.0"
+      image: "quay.io/kubevirt/tekton-task-disk-virt-sysprep:v0.8.0"
       command:
         - entrypoint
       args:
