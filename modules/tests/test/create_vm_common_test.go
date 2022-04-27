@@ -136,7 +136,7 @@ var _ = Describe("Create VM", func() {
 							Eventually(func() bool {
 								dv, _ := f.CdiClient.DataVolumes(dv.Data.Namespace).Get(context.TODO(), dv.Data.Name, v1.GetOptions{})
 								return dv.Status.Phase == v1beta1cdi.Succeeded
-							}, time.Second*180, time.Second).Should(BeTrue(), dv.Data.Name+" datavolume should be ready")
+							}, time.Second*360, time.Second).Should(BeTrue(), dv.Data.Name+" datavolume should be ready")
 						}
 
 						expectedVM := config.TaskData.GetExpectedVMStubMeta()
@@ -274,7 +274,7 @@ var _ = Describe("Create VM", func() {
 				Eventually(func() bool {
 					dv, _ := f.CdiClient.DataVolumes(dv.Data.Namespace).Get(context.TODO(), dv.Data.Name, v1.GetOptions{})
 					return dv.Status.Phase == v1beta1cdi.Succeeded
-				}, time.Second*180, time.Second).Should(BeTrue(), dv.Data.Name+" datavolume should be ready")
+				}, time.Second*360, time.Second).Should(BeTrue(), dv.Data.Name+" datavolume should be ready")
 			}
 
 			expectedVM := config.TaskData.GetExpectedVMStubMeta()

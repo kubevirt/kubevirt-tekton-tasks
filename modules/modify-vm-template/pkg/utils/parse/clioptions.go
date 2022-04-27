@@ -9,6 +9,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
+	templatev1 "github.com/openshift/api/template/v1"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/api/resource"
 	kubevirtv1 "kubevirt.io/api/core/v1"
@@ -32,12 +33,17 @@ type CLIOptions struct {
 	VMLabels            []string          `arg:"--vm-labels" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds labels to VMs"`
 	VMAnnotations       []string          `arg:"--vm-annotations" placeholder:"KEY: VALUE KEY: VALUE" help:"Adds annotations to VMs"`
 	Output              output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
-	Disks               []string          `arg:"--disks" placeholder:'{"name": "test", "cdrom": {"bus": "sata"}}' '{"name": "disk2"}' help:"VM disks in json format, replace vm disk if same name, otherwise new disk is appended"`
-	Volumes             []string          `arg:"--volumes" placeholder:'{"name": "virtiocontainerdisk", "containerDisk": {"image": "kubevirt/virtio-container-disk"}}' '{"name": "disk2"}' help:"VM volumes in json format, replace vm volume if same name, otherwise new volume is appended"`
+	Disks               []string          `arg:"--disks" placeholder:'{"name": "test", "cdrom": {"bus": "sata"}}' '{"name": "disk2"}' help:"VM disks in json format, replace vm disk if same name, otherwise new disk is appended. If deleteDisks is set, first disks are deleted and then disks from this attribute are added."`
+	Volumes             []string          `arg:"--volumes" placeholder:'{"name": "virtiocontainerdisk", "containerDisk": {"image": "kubevirt/virtio-container-disk"}}' '{"name": "disk2"}' help:"VM volumes in json format, replace vm volume if same name, otherwise new volume is appended. If deleteVolumes is set, first volumes are deleted and then volumes from this attribute are added."`
 	DatavolumeTemplates []string          `arg:"--datavolumeTemplates" placeholder:'{"apiVersion": "cdi.kubevirt.io/v1beta1", "kind": "DataVolume", "metadata":{"name": "test1"}, "spec": {"source": {"http": {"url": "test.somenonexisting"}}}}' help:"Datavolume templates in json format, replace datavolume if same name, otherwise new datavolume is appended. If deleteDatavolumeTemplate is set, first datavolumes are deleted and then datavolumes from this attribute are added."`
+	TemplateParameters  []string          `arg:"--templateParameters" placeholder:'{"description": "VM name", "name": "NAME"}' help:"Definition of template parameters"`
 
 	DeleteDatavolumeTemplate bool `arg:"--delete-datavolume-template,env:DELETE_DATAVOLUME_TEMPLATE" help:"Delete datavolume template from template. It deletes associated volumes and disks from VM definition"`
-	Debug                    bool `arg:"--debug" help:"Sets DEBUG log level"`
+	DeleteVolumes            bool `arg:"--delete-volumes,env:DELETE_VOLUMES" help:"Delete all VM volumes"`
+	DeleteDisks              bool `arg:"--delete-disks,env:DELETE_DISKS" help:"Delete all VM disks"`
+	DeleteTemplateParameters bool `arg:"--delete-template-parameters,env:DELETE_TEMPLATE_PARAMETERS" help:"Delete datavolume template from template. It deletes associated volumes and disks from VM definition"`
+
+	Debug bool `arg:"--debug" help:"Sets DEBUG log level"`
 
 	templateLabels      map[string]string
 	templateAnnotations map[string]string
@@ -46,6 +52,7 @@ type CLIOptions struct {
 	disks               []kubevirtv1.Disk
 	volumes             []kubevirtv1.Volume
 	datavolumeTemplates []kubevirtv1.DataVolumeTemplateSpec
+	templateParameters  []templatev1.Parameter
 }
 
 func (c *CLIOptions) GetDebugLevel() zapcore.Level {
@@ -69,6 +76,18 @@ func (c *CLIOptions) GetDeleteDatavolumeTemplate() bool {
 	return c.DeleteDatavolumeTemplate
 }
 
+func (c *CLIOptions) GetDeleteDisks() bool {
+	return c.DeleteDisks
+}
+
+func (c *CLIOptions) GetDeleteVolumes() bool {
+	return c.DeleteVolumes
+}
+
+func (c *CLIOptions) GetDeleteTemplateParameters() bool {
+	return c.DeleteTemplateParameters
+}
+
 func (c *CLIOptions) GetCPUThreads() uint32 {
 	res, _ := strconv.ParseUint(c.CPUThreads, 10, 32)
 	return uint32(res)
@@ -84,6 +103,10 @@ func (c *CLIOptions) GetDatavolumeTemplates() []kubevirtv1.DataVolumeTemplateSpe
 
 func (c *CLIOptions) GetVolumes() []kubevirtv1.Volume {
 	return c.volumes
+}
+
+func (c *CLIOptions) GetTemplateParameters() []templatev1.Parameter {
+	return c.templateParameters
 }
 
 func (c *CLIOptions) GetMemory() *resource.Quantity {
@@ -130,6 +153,10 @@ func (c *CLIOptions) Init() error {
 	}
 
 	if err := c.convertDatavolumeTemplates(); err != nil {
+		return err
+	}
+
+	if err := c.convertTemplateParameters(); err != nil {
 		return err
 	}
 
@@ -199,6 +226,24 @@ func (c *CLIOptions) convertDisks() error {
 			mError.AddC("wrong disk definition", err)
 		}
 		c.disks = append(c.disks, *disk)
+	}
+
+	if !mError.IsEmpty() {
+		return mError
+	}
+
+	return nil
+}
+
+func (c *CLIOptions) convertTemplateParameters() error {
+	mError := zerrors.NewMultiError()
+	for _, parameterStr := range c.TemplateParameters {
+		parameter := &templatev1.Parameter{}
+		err := json.Unmarshal([]byte(parameterStr), parameter)
+		if err != nil {
+			mError.AddC("wrong parameter definition", err)
+		}
+		c.templateParameters = append(c.templateParameters, *parameter)
 	}
 
 	if !mError.IsEmpty() {

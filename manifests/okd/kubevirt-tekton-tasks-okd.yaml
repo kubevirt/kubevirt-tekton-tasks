@@ -997,6 +997,7 @@ metadata:
     cpuThreads.params.task.kubevirt.io/type: number
     memory.params.task.kubevirt.io/type: memory
     deleteDatavolumeTemplate.params.task.kubevirt.io/type: boolean
+    deleteTemplateParameters.params.task.kubevirt.io/type: boolean
   labels:
     task.kubevirt.io/type: modify-vm-template
     task.kubevirt.io/category: modify-vm-template
@@ -1046,6 +1047,10 @@ spec:
       name: disks
       type: array
       default: []
+    - name: deleteDisks
+      description: Set to "true" or "false" if task should delete VM disks. New disks (from disks parameter) are applied, after old disks are deleted.
+      default: 'false'
+      type: string
     - description: 'VM volumes in json format, replace vm volume if same name, otherwise new volume is appended. Eg [{"name": "virtiocontainerdisk", "containerDisk": {"image": "kubevirt/virtio-container-disk"}}]'
       name: volumes
       type: array
@@ -1056,6 +1061,18 @@ spec:
       default: []
     - name: deleteDatavolumeTemplate
       description: Set to "true" or "false" if task should delete datavolume template in template and all associated volumes and disks.
+      default: 'false'
+      type: string
+    - name: deleteVolumes
+      description: Set to "true" or "false" if task should delete VM volumes. New volumes (from volumes parameter) are applied, after old volumes are deleted.
+      default: 'false'
+      type: string
+    - name: templateParameters
+      description: 'Definition of template parameters. Eg [{"description": "VM name", "name": "NAME"}]'
+      default: []
+      type: array
+    - name: deleteTemplateParameters
+      description: Set to "true" or "false" if task should delete template parameters. New parameters (from templateParameters parameter) are applied, after old parameters are deleted.
       default: 'false'
       type: string
 
@@ -1085,6 +1102,8 @@ spec:
         - $(params.volumes)
         - "--datavolumeTemplates"
         - $(params.datavolumeTemplates)
+        - "--templateParameters"
+        - $(params.templateParameters)
       env:
         - name: TEMPLATE_NAME
           value: $(params.templateName)
@@ -1100,6 +1119,12 @@ spec:
           value: $(params.memory)
         - name: DELETE_DATAVOLUME_TEMPLATE
           value: $(params.deleteDatavolumeTemplate)
+        - name: DELETE_DISKS
+          value: $(params.deleteDisks)
+        - name: DELETE_VOLUMES
+          value: $(params.deleteVolumes)
+        - name: DELETE_TEMPLATE_PARAMETERS
+          value: $(params.deleteTemplateParameters)
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1

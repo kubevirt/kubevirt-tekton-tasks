@@ -1,6 +1,7 @@
 package constants
 
 import (
+	templatev1 "github.com/openshift/api/template/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 	cdiv1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
@@ -11,20 +12,24 @@ const (
 	ModifyTemplateServiceAccountName = "modify-vm-template-task"
 	ModifyTemplateTaskRunName        = "taskrun-modify-vm-template"
 
-	TemplateNameOptionName        = "templateName"
-	TemplateNamespaceOptionName   = "templateNamespace"
-	CPUCoresOptionName            = "cpuCores"
-	CPUSocketsOptionName          = "cpuSockets"
-	CPUThreadsOptionName          = "cpuThreads"
-	MemoryOptionName              = "memory"
-	TemplateLabelsOptionName      = "templateLabels"
-	TemplateAnnotationsOptionName = "templateAnnotations"
-	VMLabelsOptionName            = "vmLabels"
-	VMAnnotationsOptionName       = "vmAnnotations"
-	DisksOptionName               = "disks"
-	VolumesOptionName             = "volumes"
-	DataVolumeTemplatesName       = "datavolumeTemplates"
-	DeleteDatavolumeTemplateName  = "deleteDatavolumeTemplate"
+	TemplateNameOptionName             = "templateName"
+	TemplateNamespaceOptionName        = "templateNamespace"
+	CPUCoresOptionName                 = "cpuCores"
+	CPUSocketsOptionName               = "cpuSockets"
+	CPUThreadsOptionName               = "cpuThreads"
+	MemoryOptionName                   = "memory"
+	TemplateLabelsOptionName           = "templateLabels"
+	TemplateAnnotationsOptionName      = "templateAnnotations"
+	VMLabelsOptionName                 = "vmLabels"
+	VMAnnotationsOptionName            = "vmAnnotations"
+	DisksOptionName                    = "disks"
+	VolumesOptionName                  = "volumes"
+	DataVolumeTemplatesOptionName      = "datavolumeTemplates"
+	DeleteDatavolumeTemplateOptionName = "deleteDatavolumeTemplate"
+	DeleteDisksOptionName              = "deleteDisks"
+	DeleteVolumesOptionName            = "deleteVolumes"
+	DeleteTemplateParametersOptionName = "deleteTemplateParameters"
+	TemplateParametersOptionName       = "templateParameters"
 
 	CPUSocketsTopologyNumber    uint32 = 1
 	CPUCoresTopologyNumber      uint32 = 2
@@ -37,13 +42,15 @@ const (
 )
 
 var (
-	bootOrder     uint = 2
-	MockArray          = []string{"newKey: value", "test: true"}
-	WrongStrSlice      = []string{"wrong vaue"}
-
-	MockDisks               = []string{"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}", "{\"name\": \"containerdisk\", \"disk\": {\"bus\": \"sata\"}, \"bootOrder\": 2}"}
-	MockVolumes             = []string{"{\"name\": \"containerdisk\", \"containerDisk\": {\"image\": \"URL\"}}", "{\"name\": \"cloudinitdisk\"}", "{\"name\": \"test3\"}"}
-	MockDataVolumeTemplates = []string{"{\"apiVersion\": \"cdi.kubevirt.io/v1beta1\", \"kind\": \"DataVolume\", \"metadata\":{\"name\": \"test1\"}, \"spec\": {\"source\": {\"http\": {\"url\": \"test.somenonexisting\"}}}}"}
+	bootOrder               uint = 2
+	MockArray                    = []string{"newKey: value", "test: true"}
+	WrongStrSlice                = []string{"wrong value"}
+	MockDisk                     = []string{"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}"}
+	MockDisks                    = []string{"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}", "{\"name\": \"containerdisk\", \"disk\": {\"bus\": \"sata\"}, \"bootOrder\": 2}"}
+	MockVolume                   = []string{"{\"name\": \"test3\"}"}
+	MockVolumes                  = []string{"{\"name\": \"containerdisk\", \"containerDisk\": {\"image\": \"URL\"}}", "{\"name\": \"cloudinitdisk\"}", "{\"name\": \"test3\"}"}
+	MockDataVolumeTemplates      = []string{"{\"apiVersion\": \"cdi.kubevirt.io/v1beta1\", \"kind\": \"DataVolume\", \"metadata\":{\"name\": \"test1\"}, \"spec\": {\"source\": {\"http\": {\"url\": \"test.somenonexisting\"}}}}"}
+	MockTemplateParameter        = []string{"{\"name\": \"test\", \"value\": \"test\"}"}
 
 	LabelsAnnotationsMap = map[string]string{
 		"newKey": "value",
@@ -74,6 +81,18 @@ var (
 			},
 		},
 	}
+	Disk = kubevirtv1.Disk{
+		Name: "test",
+		DiskDevice: kubevirtv1.DiskDevice{
+			CDRom: &kubevirtv1.CDRomTarget{
+				Bus: "sata",
+			},
+		},
+	}
+	Volume = kubevirtv1.Volume{
+		Name: "test3",
+	}
+
 	Volumes = []kubevirtv1.Volume{
 		{
 			Name: "containerdisk",
@@ -88,6 +107,13 @@ var (
 		},
 		{
 			Name: "test3",
+		},
+	}
+
+	TemplateParameters = []templatev1.Parameter{
+		{
+			Name:  "test",
+			Value: "test",
 		},
 	}
 

@@ -506,5 +506,134 @@ var _ = Describe("Modify template task", func() {
 			Expect(memoryUpdated.Value()).To(Equal(memory.Value()), "memory should be unchanged")
 
 		})
+
+		It("taskrun succeded and disks are deleted and replaced by a new one", func() {
+			config := &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					LimitTestScope: ClusterTestScope,
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName:            testtemplate.RhelTemplateName,
+					SourceTemplateNamespace: DeployTargetNS,
+					DeleteDisks:             true,
+					Disks:                   MockDisk,
+				},
+			}
+			f.TestSetup(config)
+
+			template := config.TaskData.Template
+			if template != nil {
+				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				Expect(err).ShouldNot(HaveOccurred())
+				f.ManageTemplates(template)
+			}
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					"name":      config.TaskData.TemplateName,
+					"namespace": config.TaskData.TemplateNamespace,
+				})
+
+			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(updatedTemplate).ToNot(BeNil(), "new template should exists")
+			f.ManageTemplates(updatedTemplate)
+
+			updatedVm, _, err := zutils.DecodeVM(updatedTemplate)
+			Expect(err).ShouldNot(HaveOccurred(), "decode updated VM")
+
+			Expect(len(updatedVm.Spec.Template.Spec.Domain.Devices.Disks)).To(Equal(1), "disks should equal")
+			Expect(updatedVm.Spec.Template.Spec.Domain.Devices.Disks[0].Name).To(Equal(Disk.Name), "disk name should equal")
+		})
+
+		It("taskrun succeded and volumes are deleted and replaced by a new one", func() {
+			config := &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					LimitTestScope: ClusterTestScope,
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName:            testtemplate.RhelTemplateName,
+					SourceTemplateNamespace: DeployTargetNS,
+					DeleteVolumes:           true,
+					Volumes:                 MockVolume,
+				},
+			}
+			f.TestSetup(config)
+
+			template := config.TaskData.Template
+			if template != nil {
+				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				Expect(err).ShouldNot(HaveOccurred())
+				f.ManageTemplates(template)
+			}
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					"name":      config.TaskData.TemplateName,
+					"namespace": config.TaskData.TemplateNamespace,
+				})
+
+			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(updatedTemplate).ToNot(BeNil(), "new template should exists")
+			f.ManageTemplates(updatedTemplate)
+
+			updatedVm, _, err := zutils.DecodeVM(updatedTemplate)
+			Expect(err).ShouldNot(HaveOccurred(), "decode updated VM")
+
+			Expect(len(updatedVm.Spec.Template.Spec.Volumes)).To(Equal(1), "Volumes should equal")
+			Expect(updatedVm.Spec.Template.Spec.Volumes[0].Name).To(Equal(Volume.Name), "Volumes should equal")
+		})
+
+		It("taskrun succeded and template parameters are deleted and replaced by a new one", func() {
+			config := &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					LimitTestScope: ClusterTestScope,
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					Template:                 testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName:             testtemplate.RhelTemplateName,
+					SourceTemplateNamespace:  DeployTargetNS,
+					DeleteTemplateParameters: true,
+					TemplateParameters:       MockTemplateParameter,
+				},
+			}
+			f.TestSetup(config)
+
+			template := config.TaskData.Template
+			if template != nil {
+				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				Expect(err).ShouldNot(HaveOccurred())
+				f.ManageTemplates(template)
+			}
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					"name":      config.TaskData.TemplateName,
+					"namespace": config.TaskData.TemplateNamespace,
+				})
+
+			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(updatedTemplate).ToNot(BeNil(), "new template should exists")
+			f.ManageTemplates(updatedTemplate)
+
+			Expect(len(updatedTemplate.Parameters)).To(Equal(1), "parameters should equal")
+			Expect(updatedTemplate.Parameters[0].Name).To(Equal(TemplateParameters[0].Name), "parameter name should equal")
+		})
 	})
 })
