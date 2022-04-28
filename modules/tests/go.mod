@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/tests
 
-go 1.17
+go 1.18
 
 require (
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0
