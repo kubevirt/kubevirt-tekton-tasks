@@ -32,6 +32,7 @@ type CLIOptions struct {
 	PersistentVolumeClaims    []string          `arg:"--pvcs" placeholder:"PVC1 VOLUME_NAME:PVC2 PVC3" help:"Add PersistentVolumeClaims to VM Volumes. Replaces a particular volume if in PVC_NAME:DV_NAME format."`
 	OwnPersistentVolumeClaims []string          `arg:"--own-pvcs" placeholder:"PVC1  VOLUME_NAME:PVC2 PVC3" help:"Add PersistentVolumeClaims to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted. Replaces a particular volume if in PVC_NAME:DV_NAME format."`
 	StartVM                   string            `arg:"--start-vm,env:START_VM" help:"Start vm after creation"`
+	RunStrategy               string            `arg:"--run-strategy,env:RUN_STRATEGY" help:"Set run strategy to vm"`
 	Output                    output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
 	Debug                     bool              `arg:"--debug" help:"Sets DEBUG log level"`
 }
@@ -54,6 +55,10 @@ func (c *CLIOptions) GetOwnDVNames() []string {
 
 func (c *CLIOptions) GetStartVMFlag() bool {
 	return c.StartVM == "true"
+}
+
+func (c *CLIOptions) GetRunStrategy() string {
+	return c.RunStrategy
 }
 
 func (c *CLIOptions) GetPVCDiskNamesMap() map[string]string {

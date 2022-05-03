@@ -97,6 +97,12 @@ func (v *VMCreator) createVMFromManifest() (*kubevirtv1.VirtualMachine, error) {
 	templateValidations := validations.NewTemplateValidations(nil) // fallback to defaults
 	virtualMachine.AddVolumes(&vm, templateValidations, v.cliOptions)
 
+	runStrategy := kubevirtv1.VirtualMachineRunStrategy(v.cliOptions.GetRunStrategy())
+	if runStrategy != "" {
+		vm.Spec.Running = nil
+		vm.Spec.RunStrategy = &runStrategy
+	}
+
 	log.Logger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, &vm)
 }
@@ -131,6 +137,12 @@ func (v *VMCreator) createVMFromTemplate() (*kubevirtv1.VirtualMachine, error) {
 
 	virtualMachine.AddMetadata(vm, processedTemplate)
 	virtualMachine.AddVolumes(vm, templateValidations, v.cliOptions)
+
+	runStrategy := kubevirtv1.VirtualMachineRunStrategy(v.cliOptions.GetRunStrategy())
+	if runStrategy != "" {
+		vm.Spec.Running = nil
+		vm.Spec.RunStrategy = &runStrategy
+	}
 
 	log.Logger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, vm)

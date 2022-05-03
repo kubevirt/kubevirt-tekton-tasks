@@ -525,4 +525,101 @@ var _ = Describe("Create VM from template", func() {
 			}, kubevirtv1.Running, true),
 		)
 	})
+
+	Context("with RunStrategy", func() {
+		DescribeTable("VM is created from template with runStrategy attribute", func(config *testconfigs.CreateVMTestConfig, expectedRunStrategy kubevirtv1.VirtualMachineRunStrategy) {
+			f.TestSetup(config)
+
+			template, err := f.TemplateClient.Templates(config.TaskData.Template.Namespace).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageTemplates(template)
+
+			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
+			f.ManageVMs(expectedVMStub)
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					CreateVMResults.Name:      expectedVMStub.Name,
+					CreateVMResults.Namespace: expectedVMStub.Namespace,
+				})
+
+			vm, err := f.KubevirtClient.VirtualMachine(expectedVMStub.Namespace).Get(expectedVMStub.Name, &v1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			Expect(*vm.Spec.RunStrategy).To(Equal(expectedRunStrategy), "vm should have correct run strategy")
+		},
+			Entry("with RunStrategy always", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromTemplateServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
+					TemplateParams: []string{
+						testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
+					},
+					RunStrategy: "Always",
+					StartVM:     "true",
+				},
+			}, kubevirtv1.RunStrategyAlways),
+			Entry("with RunStrategy halted", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromTemplateServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
+					TemplateParams: []string{
+						testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
+					},
+					RunStrategy: "Halted",
+				},
+			}, kubevirtv1.RunStrategyHalted),
+			Entry("with RunStrategy halted and startVM", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromTemplateServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
+					TemplateParams: []string{
+						testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
+					},
+					RunStrategy: "Halted",
+					StartVM:     "true",
+				},
+			}, kubevirtv1.RunStrategyAlways),
+			Entry("with RunStrategy Manual", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromTemplateServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
+					TemplateParams: []string{
+						testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
+					},
+					RunStrategy: "Manual",
+					StartVM:     "true",
+				},
+			}, kubevirtv1.RunStrategyManual),
+			Entry("with RunStrategy RerunOnFailure", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromTemplateServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
+					TemplateParams: []string{
+						testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-template-data")),
+					},
+					RunStrategy: "RerunOnFailure",
+					StartVM:     "true",
+				},
+			}, kubevirtv1.RunStrategyRerunOnFailure),
+		)
+	})
 })

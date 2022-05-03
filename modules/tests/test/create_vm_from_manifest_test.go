@@ -9,6 +9,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/vm"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
@@ -307,6 +308,104 @@ var _ = Describe("Create VM from manifest", func() {
 					StartVM: "true",
 				},
 			}, kubevirtv1.Running, true),
+		)
+	})
+
+	Context("with RunStrategy", func() {
+		DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig, expectedRunStrategy kubevirtv1.VirtualMachineRunStrategy) {
+			f.TestSetup(config)
+
+			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
+			f.ManageVMs(expectedVMStub)
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					CreateVMResults.Name:      expectedVMStub.Name,
+					CreateVMResults.Namespace: expectedVMStub.Namespace,
+				})
+
+			vm, err := f.KubevirtClient.VirtualMachine(expectedVMStub.Namespace).Get(expectedVMStub.Name, &v1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			Expect(*vm.Spec.RunStrategy).To(Equal(expectedRunStrategy), "vm should have correct run strategy")
+		},
+			Entry("with RunStrategy always", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					RunStrategy: "Always",
+					StartVM:     "true",
+				},
+			}, kubevirtv1.RunStrategyAlways),
+			Entry("with RunStrategy halted", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					RunStrategy: "Halted",
+				},
+			}, kubevirtv1.RunStrategyHalted),
+			Entry("with RunStrategy halted and startVM", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					RunStrategy: "Halted",
+					StartVM:     "true",
+				},
+			}, kubevirtv1.RunStrategyAlways),
+			Entry("with RunStrategy Manual", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					RunStrategy: "Manual",
+					StartVM:     "true",
+				},
+			}, kubevirtv1.RunStrategyManual),
+			Entry("with RunStrategy RerunOnFailure", &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
+						WithLabel("app", "my-custom-app").
+						WithVMILabel("name", "test").
+						WithVMILabel("ra", "rara").
+						Build(),
+					RunStrategy: "RerunOnFailure",
+					StartVM:     "true",
+				},
+			}, kubevirtv1.RunStrategyRerunOnFailure),
 		)
 	})
 })

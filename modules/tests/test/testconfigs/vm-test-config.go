@@ -33,6 +33,7 @@ type CreateVMTaskData struct {
 	UseDefaultTemplateNamespacesInTaskParams bool
 	UseDefaultVMNamespacesInTaskParams       bool
 	StartVM                                  string
+	RunStrategy                              string
 	ExpectedAdditionalDiskBus                string
 
 	// Params
@@ -322,6 +323,13 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			Value: v1beta1.ArrayOrString{
 				Type:      v1beta1.ParamTypeString,
 				StringVal: c.TaskData.StartVM,
+			},
+		},
+		{
+			Name: CreateVMFromTemplateParams.RunStrategy,
+			Value: v1beta1.ArrayOrString{
+				Type:      v1beta1.ParamTypeString,
+				StringVal: c.TaskData.RunStrategy,
 			},
 		},
 	}
