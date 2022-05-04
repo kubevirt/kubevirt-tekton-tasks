@@ -13,7 +13,7 @@ ADD . .
 COPY automation/generatetasks/build/bin /usr/local/bin
 RUN  /usr/local/bin/user_setup
 
-RUN dnf install -y jq ansible make diffutils which git && rm -rf /var/cache/yum /var/cache/dnf
+RUN dnf install -y jq ansible make diffutils which git gcc && rm -rf /var/cache/yum /var/cache/dnf
 
 #set permissions for ansible tmp folder
 RUN mkdir -p /.ansible/tmp
