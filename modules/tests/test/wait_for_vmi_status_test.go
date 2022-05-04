@@ -79,16 +79,6 @@ var _ = Describe("Wait for VMI Status", func() {
 				FailureCondition: "invalid#$%^$&",
 			},
 		}),
-		Entry("no service account", &testconfigs.WaitForVMIStatusTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ExpectedLogs: "cannot list resource \"virtualmachineinstances\" in API group \"kubevirt.io\"",
-				Timeout:      &metav1.Duration{1 * time.Minute},
-			},
-			TaskData: testconfigs.WaitForVMIStatusTaskData{
-				VM:               testobjects.NewTestAlpineVM("no-serviceaccount").Build(),
-				SuccessCondition: "status.phase == Running",
-			},
-		}),
 		Entry("[NAMESPACE SCOPED] cannot check status for VMI in different namespace", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,

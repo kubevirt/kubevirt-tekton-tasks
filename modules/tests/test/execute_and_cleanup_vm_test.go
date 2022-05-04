@@ -206,16 +206,6 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			Entry("no service account", &testconfigs.ExecuteOrCleanupVMTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ExpectedLogs: "cannot get resource \"virtualmachineinstances\" in API group \"kubevirt.io\"",
-				},
-				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
-					VM:     testobjects.NewTestFedoraCloudVM("no-service-account").Build(),
-					Secret: testobjects.NewTestSecret(sshConnectionInfo),
-					Script: helloWorldScript,
-				},
-			}),
 			Entry("non existent VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ExecuteInVMServiceAccountName,

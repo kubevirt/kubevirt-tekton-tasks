@@ -48,17 +48,6 @@ var _ = Describe("Create VM from template", func() {
 			"", config.GetTaskRunTimeout(), false)
 		Expect(err).Should(HaveOccurred())
 	},
-		Entry("no service account", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ExpectedLogs: "cannot get resource \"templates\" in API group \"template.openshift.io\"",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
-				TemplateParams: []string{
-					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("no-sa")),
-				},
-			},
-		}),
 		Entry("no template specified", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,

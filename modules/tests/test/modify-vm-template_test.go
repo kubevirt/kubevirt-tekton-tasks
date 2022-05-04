@@ -111,15 +111,6 @@ var _ = Describe("Modify template task", func() {
 					TemplateName: testtemplate.CirrosTemplateName,
 				},
 			}),
-			Entry("no service account", &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ExpectedLogs: "cannot get resource \"templates\" in API group \"template.openshift.io\"",
-				},
-				TaskData: testconfigs.ModifyTemplateTaskData{
-					TemplateName: testtemplate.CirrosTemplateName,
-					Template:     testtemplate.NewCirrosServerTinyTemplate().Build(),
-				},
-			}),
 			Entry("[NAMESPACE SCOPED] cannot updated template in different namespace", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
