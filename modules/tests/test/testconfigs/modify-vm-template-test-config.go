@@ -108,13 +108,13 @@ func (m *ModifyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			Name: VMLabelsOptionName,
 			Value: v1beta1.ArrayOrString{
 				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: m.TaskData.VMAnnotations,
+				ArrayVal: m.TaskData.VMLabels,
 			},
 		}, {
 			Name: VMAnnotationsOptionName,
 			Value: v1beta1.ArrayOrString{
 				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: m.TaskData.VMLabels,
+				ArrayVal: m.TaskData.VMAnnotations,
 			},
 		}, {
 			Name: DisksOptionName,
