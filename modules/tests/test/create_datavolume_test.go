@@ -52,14 +52,6 @@ var _ = Describe("Create DataVolume", func() {
 				Datavolume: datavolume.NewBlankDataVolume("malformed").WithoutTypeMeta().Build(),
 			},
 		}),
-		Entry("no service account", &testconfigs.CreateDVTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ExpectedLogs: "datavolumes.cdi.kubevirt.io is forbidden",
-			},
-			TaskData: testconfigs.CreateDVTaskData{
-				Datavolume: datavolume.NewBlankDataVolume("no-sa").Build(),
-			},
-		}),
 		Entry("missing name", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,

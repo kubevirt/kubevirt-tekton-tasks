@@ -42,14 +42,6 @@ var _ = Describe("Create VM from manifest", func() {
 			},
 			TaskData: testconfigs.CreateVMTaskData{},
 		}),
-		Entry("no service account", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ExpectedLogs: "cannot create resource \"virtualmachines\" in API group \"kubevirt.io\"",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				VM: testobjects.NewTestAlpineVM("no-sa").Build(),
-			},
-		}),
 		Entry("invalid manifest", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromManifestServiceAccountName,

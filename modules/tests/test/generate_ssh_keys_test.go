@@ -31,12 +31,6 @@ var _ = Describe("Generate SSH Keys", func() {
 			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(nil)
 	},
-		Entry("no service account", &testconfigs.GenerateSshKeysTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ExpectedLogs: "secrets is forbidden",
-			},
-			TaskData: testconfigs.GenerateSshKeysTaskData{},
-		}),
 		Entry("invalid public secret name", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: GenerateSshKeysServiceAccountName,

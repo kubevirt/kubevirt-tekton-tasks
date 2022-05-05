@@ -52,14 +52,6 @@ var _ = Describe("Copy template task", func() {
 					SourceTemplateName: testtemplate.CirrosTemplateName,
 				},
 			}),
-			Entry("no service account", &testconfigs.CopyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ExpectedLogs: "cannot get resource \"templates\" in API group \"template.openshift.io\"",
-				},
-				TaskData: testconfigs.CopyTemplateTaskData{
-					SourceTemplateName: testtemplate.CirrosTemplateName,
-				},
-			}),
 			Entry("[NAMESPACE SCOPED] cannot copy template in different namespace", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
