@@ -24,6 +24,7 @@ type createVMFromTemplateParams struct {
 	TemplateParams    string
 	VmNamespace       string
 	StartVM           string
+	RunStrategy       string
 }
 
 var CreateVMParams = createVMParams{
@@ -44,6 +45,7 @@ var CreateVMFromTemplateParams = createVMFromTemplateParams{
 	TemplateParams:    "templateParams",
 	VmNamespace:       "vmNamespace",
 	StartVM:           "startVM",
+	RunStrategy:       "runStrategy",
 }
 
 type createVMResults struct {

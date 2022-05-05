@@ -13,6 +13,7 @@ import (
 	res "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 func main() {
@@ -50,8 +51,8 @@ func main() {
 	if err := vmCreator.OwnVolumes(vm); err != nil {
 		exit.ExitFromError(OwnVolumesErrorExitCode, err)
 	}
-
-	if cliOptions.GetStartVMFlag() {
+	runStrategy := cliOptions.GetRunStrategy()
+	if cliOptions.GetStartVMFlag() && kubevirtv1.RunStrategyAlways != kubevirtv1.VirtualMachineRunStrategy(runStrategy) {
 		err := vmCreator.StartVM(vm.Namespace, vm.Name)
 		if err != nil {
 			exit.ExitFromError(StartVMErrorExitCode, err)
