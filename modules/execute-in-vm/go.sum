@@ -1369,7 +1369,6 @@ k8s.io/klog v0.0.0-20190306015804-8e90cee79f82/go.mod h1:Gq+BEi5rUBO/HRz0bTSXDUc
 k8s.io/klog v0.3.0/go.mod h1:Gq+BEi5rUBO/HRz0bTSXDUcqjScdoY3a9IHpCEIOOfk=
 k8s.io/klog v0.3.1/go.mod h1:Gq+BEi5rUBO/HRz0bTSXDUcqjScdoY3a9IHpCEIOOfk=
 k8s.io/klog v0.4.0/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
-k8s.io/klog v1.0.0 h1:Pt+yjF5aB1xDSVbau4VsWe+dQNzA0qv1LlXdC2dF6Q8=
 k8s.io/klog v1.0.0/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
 k8s.io/klog/v2 v2.0.0/go.mod h1:PBfzABfn139FHAV07az/IF9Wp1bkk3vpT2XSJ76fSDE=
 k8s.io/klog/v2 v2.2.0/go.mod h1:Od+F08eJP+W3HUb4pSrPpgp9DGU4GzlpG/TmITuYh/Y=
@@ -1388,18 +1387,14 @@ k8s.io/utils v0.0.0-20191114200735-6ca3b61696b6/go.mod h1:sZAwmy6armz5eXlNoLmJcl
 k8s.io/utils v0.0.0-20201110183641-67b214c5f920/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 k8s.io/utils v0.0.0-20210111153108-fddb29f9d009/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 k8s.io/utils v0.0.0-20210802155522-efc7438f0176/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
-k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 k8s.io/utils v0.0.0-20211116205334-6203023598ed h1:ck1fRPWPJWsMd8ZRFsWc6mh/zHp5fZ/shhbrgPUxDAE=
 k8s.io/utils v0.0.0-20211116205334-6203023598ed/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
-kubevirt.io/api v0.0.0-20220210141352-d5bdb96c99b2/go.mod h1:RPYFWI69OVi7i6YtW5gHN3fjYsjlRfRilKVNcpxEMmM=
 kubevirt.io/api v0.50.0 h1:UEL3Y19DP2bKn6OjL155CBhnwPpMCXSSEMGMandJUBg=
 kubevirt.io/api v0.50.0/go.mod h1:RPYFWI69OVi7i6YtW5gHN3fjYsjlRfRilKVNcpxEMmM=
 kubevirt.io/client-go v0.50.0 h1:4UvADLkbNGGc9MmRbLyXNe4qxhedTQQkT3242WoINjo=
 kubevirt.io/client-go v0.50.0/go.mod h1:fA0D4PDY1WpFwjk8Xa6Qng74219+LqcWMcBRUAr8Fio=
-kubevirt.io/containerized-data-importer-api v1.42.0/go.mod h1:Ty5GJ+6nKlpcBKjeebb/e6IrF8bNFgOus9hfuMjEt6A=
 kubevirt.io/containerized-data-importer-api v1.44.0 h1:SkqNC3Ccb3rv8vVvrwu/DPYK59cKOp7agC3WfSjwzPU=
 kubevirt.io/containerized-data-importer-api v1.44.0/go.mod h1:NHg5vXGs/B/QUaAwyLwmxkEShlCxYDWtNaHXRwptJr4=
-kubevirt.io/controller-lifecycle-operator-sdk v0.2.1/go.mod h1:ZJhLceiY2Gl5CXFGSp5eMGt/sksOiJP0289nAZFCQf0=
 kubevirt.io/controller-lifecycle-operator-sdk v0.2.3 h1:auv8LrA7gnLfQREnlGVPwgJpTxOEgnw4+mzXlUqKTxY=
 kubevirt.io/controller-lifecycle-operator-sdk v0.2.3/go.mod h1:ZJhLceiY2Gl5CXFGSp5eMGt/sksOiJP0289nAZFCQf0=
 modernc.org/cc v1.0.0/go.mod h1:1Sk4//wdnYJiUIxnW8ddKpaOJCF37yAdqYnkxUpaYxw=
@@ -1416,7 +1411,6 @@ sigs.k8s.io/controller-tools v0.2.4/go.mod h1:m/ztfQNocGYBgTTCmFdnK94uVvgxeZeE3L
 sigs.k8s.io/controller-tools v0.5.0/go.mod h1:JTsstrMpxs+9BUj6eGuAaEb6SDSPTeVtUyp0jmnAM/I=
 sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 h1:fD1pz4yfdADVNfFmcP2aBEtudwUQ1AlLnRBALr33v3s=
 sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6/go.mod h1:p4QtZmO4uMYipTQNzagwnNoseA6OxSUutVw05NhYDRs=
-sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e h1:4Z09Hglb792X0kfOBBJUPFEyvVfQWrYT/l8h5EKA6JQ=
 sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e/go.mod h1:wWxsB5ozmmv/SG7nM11ayaAW51xMvak/t1r0CSlcokI=
 sigs.k8s.io/structured-merge-diff/v4 v4.0.2/go.mod h1:bJZC9H9iH24zzfZ/41RGcq60oK1F7G282QMXDPYydCw=
 sigs.k8s.io/structured-merge-diff/v4 v4.1.2/go.mod h1:j/nl6xW8vLS49O8YvXW1ocPhZawJtm+Yrr7PPRQ0Vg4=

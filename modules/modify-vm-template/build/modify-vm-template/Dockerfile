@@ -1,10 +1,10 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS builder
-RUN microdnf install -y wget tar gzip && microdnf clean all
+RUN microdnf install -y tar gzip && microdnf clean all
 ENV TASK_NAME=modify-vm-template \
     GOFLAGS="-mod=vendor" \
     GO111MODULE=on
 WORKDIR /src/${TASK_NAME}
-RUN wget https://go.dev/dl/go1.17.7.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.17.7.linux-amd64.tar.gz
+RUN curl -L https://go.dev/dl/go1.18.1.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 ENV PATH=$PATH:/usr/local/go/bin
 COPY . .
 RUN	CGO_ENABLED=0 GOOS=linux go build -o /${TASK_NAME} cmd/${TASK_NAME}/main.go
