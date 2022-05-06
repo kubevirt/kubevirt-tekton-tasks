@@ -93,10 +93,10 @@ func (t *TemplateUpdator) UpdateTemplate(template *v1.Template) (*v1.Template, e
 }
 
 func (t *TemplateUpdator) setValuesToTemplate(template *v1.Template) {
-	labels := t.cliOptions.GetVMLabels()
+	labels := t.cliOptions.GetTemplateLabels()
 	template.Labels = appendToMap(template.Labels, labels)
 
-	annotations := t.cliOptions.GetVMAnnotations()
+	annotations := t.cliOptions.GetTemplateAnnotations()
 	template.Annotations = appendToMap(template.Annotations, annotations)
 
 	if t.cliOptions.GetDeleteTemplateParameters() {

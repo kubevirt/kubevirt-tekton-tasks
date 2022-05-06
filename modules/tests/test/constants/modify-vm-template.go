@@ -43,7 +43,10 @@ const (
 
 var (
 	bootOrder               uint = 2
-	MockArray                    = []string{"newKey: value", "test: true"}
+	MockTemplateAnnotations      = []string{"newKey: TemplateAnnotation", "testTemplateAnnotation: true"}
+	MockTemplateLabels           = []string{"newKey: TemplateLabel", "testTemplateLabel: true"}
+	MockVMAnnotations            = []string{"newKey: VMAnnotation", "testVMAnnotation: true"}
+	MockVMLabels                 = []string{"newKey: VMLabel", "testVMLabel: true"}
 	WrongStrSlice                = []string{"wrong value"}
 	MockDisk                     = []string{"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}"}
 	MockDisks                    = []string{"{\"name\": \"test\", \"cdrom\": {\"bus\": \"sata\"}}", "{\"name\": \"containerdisk\", \"disk\": {\"bus\": \"sata\"}, \"bootOrder\": 2}"}
@@ -52,9 +55,21 @@ var (
 	MockDataVolumeTemplates      = []string{"{\"apiVersion\": \"cdi.kubevirt.io/v1beta1\", \"kind\": \"DataVolume\", \"metadata\":{\"name\": \"test1\"}, \"spec\": {\"source\": {\"http\": {\"url\": \"test.somenonexisting\"}}}}"}
 	MockTemplateParameter        = []string{"{\"name\": \"test\", \"value\": \"test\"}"}
 
-	LabelsAnnotationsMap = map[string]string{
-		"newKey": "value",
-		"test":   "true",
+	TemplateAnnotationsMap = map[string]string{
+		"newKey":                 "TemplateAnnotation",
+		"testTemplateAnnotation": "true",
+	}
+	TemplateLabelsMap = map[string]string{
+		"newKey":            "TemplateLabel",
+		"testTemplateLabel": "true",
+	}
+	VMAnnotationsMap = map[string]string{
+		"newKey":           "VMAnnotation",
+		"testVMAnnotation": "true",
+	}
+	VMLabelsMap = map[string]string{
+		"newKey":      "VMLabel",
+		"testVMLabel": "true",
 	}
 	Disks = []kubevirtv1.Disk{
 		{
