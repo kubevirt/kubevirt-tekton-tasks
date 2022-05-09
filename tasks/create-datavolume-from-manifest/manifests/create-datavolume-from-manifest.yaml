@@ -81,6 +81,12 @@ rules:
       - cdi.kubevirt.io
     resources:
       - datavolumes
+  - verbs:
+      - create
+    apiGroups:
+      - ""
+    resources:
+      - pods
 
 ---
 apiVersion: v1
