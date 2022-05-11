@@ -161,7 +161,7 @@ spec:
       description: The namespace of DataVolume that was created.
   steps:
     - name: create
-      image: quay.io/openshift/origin-cli:4.8
+      image: quay.io/openshift/origin-cli:4.11
       script: |
         #!/usr/bin/env bash
 
