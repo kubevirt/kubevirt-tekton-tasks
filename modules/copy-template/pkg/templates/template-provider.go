@@ -84,6 +84,11 @@ func (t *TemplateCreator) CopyTemplate() (*v1.Template, error) {
 }
 
 func (t *TemplateCreator) UpdateTemplateMetaObject(template *v1.Template) *v1.Template {
+	if isCommonTemplate(template) {
+		removeCommonTemplateInformations(template.Labels)
+		removeCommonTemplateInformations(template.Annotations)
+	}
+
 	newObjectMeta := metav1.ObjectMeta{
 		Namespace:   t.cliOptions.GetTargetTemplateNamespace(),
 		Labels:      template.Labels,
@@ -98,4 +103,38 @@ func (t *TemplateCreator) UpdateTemplateMetaObject(template *v1.Template) *v1.Te
 
 	template.ObjectMeta = newObjectMeta
 	return template
+}
+
+func isCommonTemplate(template *v1.Template) bool {
+	if val, ok := template.Labels[TemplateTypeLabel]; ok && val == templateTypeBaseValue {
+		return true
+	}
+	return false
+}
+
+func removeCommonTemplateInformations(obj map[string]string) {
+	delete(obj, TemplateVersionLabel)
+	delete(obj, TemplateTypeLabel)
+	delete(obj, TemplateOsLabelPrefix)
+	delete(obj, TemplateFlavorLabelPrefix)
+	delete(obj, TemplateWorkloadLabelPrefix)
+	delete(obj, TemplateDeprecatedAnnotation)
+	delete(obj, KubevirtDefaultOSVariant)
+
+	delete(obj, OpenshiftDocURL)
+	delete(obj, OpenshiftProviderDisplayName)
+	delete(obj, OpenshiftSupportURL)
+
+	delete(obj, TemplateKubevirtProvider)
+	delete(obj, TemplateKubevirtProviderSupportLevel)
+	delete(obj, TemplateKubevirtProviderURL)
+
+	delete(obj, OperatorSDKPrimaryResource)
+	delete(obj, OperatorSDKPrimaryResourceType)
+
+	delete(obj, AppKubernetesComponent)
+	delete(obj, AppKubernetesName)
+	delete(obj, AppKubernetesPartOf)
+	delete(obj, AppKubernetesVersion)
+	delete(obj, AppKubernetesManagedBy)
 }
