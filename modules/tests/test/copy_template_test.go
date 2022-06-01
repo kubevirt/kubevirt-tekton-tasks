@@ -3,6 +3,8 @@ package test
 import (
 	"context"
 
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template/pkg/templates"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
@@ -158,6 +160,54 @@ var _ = Describe("Copy template task", func() {
 		)
 	})
 
+	Context("Remove common templates labels / annotations", func() {
+		It("taskrun succeeds and template is updated", func() {
+			config := &testconfigs.CopyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CopyTemplateServiceAccountName,
+					LimitTestScope: ClusterTestScope,
+				},
+				TaskData: testconfigs.CopyTemplateTaskData{
+					SourceTemplateName:      testtemplate.RhelTemplateName,
+					TargetTemplateName:      NewTemplateName,
+					TargetTemplateNamespace: TestTargetNS,
+					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
+				},
+			}
+			f.TestSetup(config)
+
+			t, err := f.TemplateClient.Templates(config.TaskData.SourceNamespace).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageTemplates(t)
+
+			r := runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					"name":      config.TaskData.TargetTemplateName,
+					"namespace": string(config.TaskData.TargetTemplateNamespace),
+				})
+
+			results := r.GetResults()
+			resultTemplateName := results["name"]
+			resultTemplateNamespace := results["namespace"]
+
+			newTemplate, err := f.TemplateClient.Templates(resultTemplateNamespace).Get(context.TODO(), resultTemplateName, v1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(newTemplate).ToNot(BeNil(), " template should exists")
+			f.ManageTemplates(newTemplate)
+
+			checkRemovedRecordsTemplate(newTemplate.Labels)
+			checkRemovedRecordsTemplate(newTemplate.Annotations)
+
+			vm, _, err := zutils.DecodeVM(newTemplate)
+			Expect(err).ToNot(HaveOccurred())
+			checkRemovedRecordsVM(vm.Labels)
+			checkRemovedRecordsVM(vm.Annotations)
+		})
+	})
+
 	Context("Allow replace", func() {
 		It("taskrun fails and new template is not created", func() {
 			config := &testconfigs.CopyTemplateTestConfig{
@@ -238,3 +288,39 @@ var _ = Describe("Copy template task", func() {
 		})
 	})
 })
+
+func checkRemovedRecordsTemplate(obj map[string]string) {
+	Expect(obj[templates.TemplateVersionLabel]).To(Equal(""))
+	Expect(obj[templates.TemplateTypeLabel]).To(Equal(""))
+	Expect(obj[templates.TemplateOsLabelPrefix]).To(Equal(""))
+	Expect(obj[templates.TemplateFlavorLabelPrefix]).To(Equal(""))
+	Expect(obj[templates.TemplateWorkloadLabelPrefix]).To(Equal(""))
+	Expect(obj[templates.TemplateDeprecatedAnnotation]).To(Equal(""))
+	Expect(obj[templates.KubevirtDefaultOSVariant]).To(Equal(""))
+
+	Expect(obj[templates.OpenshiftDocURL]).To(Equal(""))
+	Expect(obj[templates.OpenshiftProviderDisplayName]).To(Equal(""))
+	Expect(obj[templates.OpenshiftSupportURL]).To(Equal(""))
+
+	Expect(obj[templates.TemplateKubevirtProvider]).To(Equal(""))
+	Expect(obj[templates.TemplateKubevirtProviderSupportLevel]).To(Equal(""))
+	Expect(obj[templates.TemplateKubevirtProviderURL]).To(Equal(""))
+
+	Expect(obj[templates.OperatorSDKPrimaryResource]).To(Equal(""))
+	Expect(obj[templates.OperatorSDKPrimaryResourceType]).To(Equal(""))
+
+	Expect(obj[templates.AppKubernetesComponent]).To(Equal(""))
+	Expect(obj[templates.AppKubernetesName]).To(Equal(""))
+	Expect(obj[templates.AppKubernetesPartOf]).To(Equal(""))
+	Expect(obj[templates.AppKubernetesVersion]).To(Equal(""))
+	Expect(obj[templates.AppKubernetesManagedBy]).To(Equal(""))
+}
+
+func checkRemovedRecordsVM(obj map[string]string) {
+	Expect(obj[templates.VMFlavorAnnotation]).To(Equal(""))
+	Expect(obj[templates.VMOSAnnotation]).To(Equal(""))
+	Expect(obj[templates.VMWorkloadAnnotation]).To(Equal(""))
+	Expect(obj[templates.VMDomainLabel]).To(Equal(""))
+	Expect(obj[templates.VMSizeLabel]).To(Equal(""))
+
+}

@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 	v1 "github.com/openshift/api/template/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 var _ = Describe("Template provider", func() {
@@ -80,6 +81,52 @@ var _ = Describe("Template provider", func() {
 					Expect(updatedTemplate.Labels[key]).To(Equal(""))
 				}
 			}
+
+		})
+
+		It("should remove Common template informations from VM", func() {
+			tProvider := &templates.TemplateCreator{}
+
+			vm := &kubevirtv1.VirtualMachine{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						templates.VMFlavorAnnotation:   "test",
+						templates.VMOSAnnotation:       "test",
+						templates.VMWorkloadAnnotation: "test",
+						templates.VMDomainLabel:        "test",
+						templates.VMSizeLabel:          "test",
+						"someOtherLabel":               "test",
+					},
+					Annotations: map[string]string{
+						templates.VMFlavorAnnotation:   "test",
+						templates.VMOSAnnotation:       "test",
+						templates.VMWorkloadAnnotation: "test",
+						templates.VMDomainLabel:        "test",
+						templates.VMSizeLabel:          "test",
+						"someOtherLabel":               "test",
+					},
+				},
+			}
+
+			tProvider.UpdateVMMetaObject(vm)
+			Expect(len(vm.GetLabels())).To(Equal(1))
+			Expect(len(vm.GetAnnotations())).To(Equal(1))
+
+			for key, val := range vm.GetLabels() {
+				if key == "someOtherLabel" {
+					Expect(vm.Labels[key]).To(Equal(val))
+				} else {
+					Expect(vm.Labels[key]).To(Equal(""))
+				}
+			}
+			for key, val := range vm.GetAnnotations() {
+				if key == "someOtherLabel" {
+					Expect(vm.Labels[key]).To(Equal(val))
+				} else {
+					Expect(vm.Labels[key]).To(Equal(""))
+				}
+			}
+
 		})
 	})
 })
