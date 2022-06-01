@@ -2,9 +2,11 @@ package templates
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	templatev1 "github.com/openshift/api/template/v1"
 	v1 "github.com/openshift/api/template/v1"
 	tempclient "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
@@ -12,6 +14,7 @@ import (
 	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 type templateProvider struct {
@@ -70,6 +73,16 @@ func (t *TemplateCreator) CopyTemplate() (*v1.Template, error) {
 
 	log.Logger().Debug("Original template metadata", zap.Any("ObjectMeta", template.ObjectMeta))
 
+	if isCommonTemplate(template) {
+		vm, vmIndex, err := zutils.DecodeVM(template)
+		if err != nil {
+			return nil, err
+		}
+		t.UpdateVMMetaObject(vm)
+
+		t.EncodeVMToTemplate(template, vm, vmIndex)
+	}
+
 	updatedTemplate := t.UpdateTemplateMetaObject(template)
 
 	log.Logger().Debug("Updated template metadata", zap.Any("ObjectMeta", updatedTemplate.ObjectMeta))
@@ -83,11 +96,29 @@ func (t *TemplateCreator) CopyTemplate() (*v1.Template, error) {
 	return t.templateProvider.Create(updatedTemplate)
 }
 
+func (t *TemplateCreator) UpdateVMMetaObject(vm *kubevirtv1.VirtualMachine) {
+	removeCommonTemplateInformationsFromVM(vm.Labels)
+	removeCommonTemplateInformationsFromVM(vm.Annotations)
+}
+
+func (t *TemplateCreator) EncodeVMToTemplate(template *templatev1.Template, vm *kubevirtv1.VirtualMachine, vmIndex int) (*v1.Template, error) {
+	raw, err := json.Marshal(vm)
+	if err != nil {
+		return nil, err
+	}
+
+	template.Objects[vmIndex].Raw = raw
+	return template, nil
+}
+
 func (t *TemplateCreator) UpdateTemplateMetaObject(template *v1.Template) *v1.Template {
 	if isCommonTemplate(template) {
-		removeCommonTemplateInformations(template.Labels)
-		removeCommonTemplateInformations(template.Annotations)
+		removeCommonTemplateInformationsFromTemplate(template.Labels)
+		removeCommonTemplateInformationsFromTemplate(template.Annotations)
 	}
+
+	//set "template.kubevirt.io/type" label to VM so it is visible in UI
+	template.Labels[TemplateTypeLabel] = VMTypeLabelValue
 
 	newObjectMeta := metav1.ObjectMeta{
 		Namespace:   t.cliOptions.GetTargetTemplateNamespace(),
@@ -112,7 +143,7 @@ func isCommonTemplate(template *v1.Template) bool {
 	return false
 }
 
-func removeCommonTemplateInformations(obj map[string]string) {
+func removeCommonTemplateInformationsFromTemplate(obj map[string]string) {
 	delete(obj, TemplateVersionLabel)
 	delete(obj, TemplateTypeLabel)
 	delete(obj, TemplateOsLabelPrefix)
@@ -137,4 +168,12 @@ func removeCommonTemplateInformations(obj map[string]string) {
 	delete(obj, AppKubernetesPartOf)
 	delete(obj, AppKubernetesVersion)
 	delete(obj, AppKubernetesManagedBy)
+}
+
+func removeCommonTemplateInformationsFromVM(obj map[string]string) {
+	delete(obj, VMFlavorAnnotation)
+	delete(obj, VMOSAnnotation)
+	delete(obj, VMWorkloadAnnotation)
+	delete(obj, VMDomainLabel)
+	delete(obj, VMSizeLabel)
 }
