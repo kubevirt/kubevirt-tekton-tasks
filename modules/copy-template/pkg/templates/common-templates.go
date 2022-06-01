@@ -22,10 +22,18 @@ const (
 
 	TemplateVersionLabel         = "template.kubevirt.io/version"
 	TemplateTypeLabel            = "template.kubevirt.io/type"
+	VMTypeLabelValue             = "vm"
 	TemplateOsLabelPrefix        = "os.template.kubevirt.io/"
 	TemplateFlavorLabelPrefix    = "flavor.template.kubevirt.io/"
 	TemplateWorkloadLabelPrefix  = "workload.template.kubevirt.io/"
 	TemplateDeprecatedAnnotation = "template.kubevirt.io/deprecated"
 
 	templateTypeBaseValue = "base"
+
+	VMFlavorAnnotation   = "vm.kubevirt.io/flavor"
+	VMOSAnnotation       = "vm.kubevirt.io/os"
+	VMWorkloadAnnotation = "vm.kubevirt.io/workload"
+
+	VMDomainLabel = "kubevirt.io/domain"
+	VMSizeLabel   = "kubevirt.io/size"
 )
