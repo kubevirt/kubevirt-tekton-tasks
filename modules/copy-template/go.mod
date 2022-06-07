@@ -12,6 +12,7 @@ require (
 	go.uber.org/zap v1.21.0
 	k8s.io/apimachinery v0.23.4
 	k8s.io/client-go v12.0.0+incompatible
+	kubevirt.io/api v0.50.0
 )
 
 require (
@@ -44,7 +45,6 @@ require (
 	k8s.io/apiextensions-apiserver v0.23.4 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
-	kubevirt.io/api v0.50.0 // indirect
 	kubevirt.io/containerized-data-importer-api v1.44.0 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk v0.2.3 // indirect
 	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
