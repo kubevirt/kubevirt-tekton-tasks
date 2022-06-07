@@ -100,26 +100,32 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			},
 		},
 		{
-			Name: ExecuteOrCleanupVMParams.Command,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: c.TaskData.Command,
-			},
-		},
-		{
-			Name: ExecuteOrCleanupVMParams.Args,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: c.TaskData.CommandArgs,
-			},
-		},
-		{
 			Name: ExecuteOrCleanupVMParams.Script,
 			Value: v1beta1.ArrayOrString{
 				Type:      v1beta1.ParamTypeString,
 				StringVal: c.TaskData.Script,
 			},
 		},
+	}
+
+	if len(c.TaskData.Command) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: ExecuteOrCleanupVMParams.Command,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: c.TaskData.Command,
+			},
+		})
+	}
+
+	if len(c.TaskData.CommandArgs) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: ExecuteOrCleanupVMParams.Args,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: c.TaskData.CommandArgs,
+			},
+		})
 	}
 
 	if c.TaskData.ExecInVMMode == CleanupVMMode {
