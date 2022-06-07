@@ -3,12 +3,13 @@ module github.com/kubevirt/kubevirt-tekton-tasks/modules/tests
 go 1.18
 
 require (
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template v0.0.0
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0
 	github.com/onsi/ginkgo/v2 v2.1.3
-	github.com/onsi/gomega v1.17.0
-	github.com/openshift/api v0.0.0
-	github.com/openshift/client-go v0.0.0
+	github.com/onsi/gomega v1.18.1
+	github.com/openshift/api v3.9.0+incompatible
+	github.com/openshift/client-go v3.9.0+incompatible
 	github.com/tektoncd/pipeline v0.33.0
 	k8s.io/api v0.23.4
 	k8s.io/apimachinery v0.23.4
@@ -94,7 +95,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
-	go.uber.org/zap v1.19.1 // indirect
+	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
@@ -139,6 +140,7 @@ replace (
 
 // locally referenced modules
 replace (
+	github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template v0.0.0 => ../copy-template
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ../shared
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
 )

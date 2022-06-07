@@ -2,6 +2,8 @@ package test
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template/pkg/templates"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
@@ -183,11 +185,7 @@ var _ = Describe("Copy template task", func() {
 			r := runner.NewTaskRunRunner(f, config.GetTaskRun()).
 				CreateTaskRun().
 				ExpectSuccess().
-				ExpectLogs(config.GetAllExpectedLogs()...).
-				ExpectResults(map[string]string{
-					"name":      config.TaskData.TargetTemplateName,
-					"namespace": string(config.TaskData.TargetTemplateNamespace),
-				})
+				ExpectLogs(config.GetAllExpectedLogs()...)
 
 			results := r.GetResults()
 			resultTemplateName := results["name"]
@@ -197,14 +195,18 @@ var _ = Describe("Copy template task", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(newTemplate).ToNot(BeNil(), " template should exists")
 			f.ManageTemplates(newTemplate)
+			//check template type
+			Expect(newTemplate.Labels[templates.TemplateTypeLabel]).To(Equal("vm"), "template type should equal VM")
 
 			checkRemovedRecordsTemplate(newTemplate.Labels)
 			checkRemovedRecordsTemplate(newTemplate.Annotations)
 
 			vm, _, err := zutils.DecodeVM(newTemplate)
 			Expect(err).ToNot(HaveOccurred())
-			checkRemovedRecordsVM(vm.Labels)
-			checkRemovedRecordsVM(vm.Annotations)
+
+			checkRemovedRecordsVM(vm.Spec.Template.ObjectMeta.Labels)
+			checkRemovedRecordsVM(vm.Spec.Template.ObjectMeta.Annotations)
+			Expect(vm.Labels[templates.VMTemplateNameLabel]).To(Equal(newTemplate.Name), "template name should be changed")
 		})
 	})
 
@@ -290,11 +292,22 @@ var _ = Describe("Copy template task", func() {
 })
 
 func checkRemovedRecordsTemplate(obj map[string]string) {
+
+	for record, _ := range obj {
+
+		if strings.HasPrefix(record, templates.TemplateOsLabelPrefix) {
+			Expect(record).To(Equal(""), fmt.Sprintf("there should be no %s labels", templates.TemplateOsLabelPrefix))
+		}
+
+		if strings.HasPrefix(record, templates.TemplateFlavorLabelPrefix) {
+			Expect(record).To(Equal(""), fmt.Sprintf("there should be no %s labels", templates.TemplateFlavorLabelPrefix))
+		}
+
+		if strings.HasPrefix(record, templates.TemplateWorkloadLabelPrefix) {
+			Expect(record).To(Equal(""), fmt.Sprintf("there should be no %s labels", templates.TemplateWorkloadLabelPrefix))
+		}
+	}
 	Expect(obj[templates.TemplateVersionLabel]).To(Equal(""))
-	Expect(obj[templates.TemplateTypeLabel]).To(Equal(""))
-	Expect(obj[templates.TemplateOsLabelPrefix]).To(Equal(""))
-	Expect(obj[templates.TemplateFlavorLabelPrefix]).To(Equal(""))
-	Expect(obj[templates.TemplateWorkloadLabelPrefix]).To(Equal(""))
 	Expect(obj[templates.TemplateDeprecatedAnnotation]).To(Equal(""))
 	Expect(obj[templates.KubevirtDefaultOSVariant]).To(Equal(""))
 
@@ -322,5 +335,6 @@ func checkRemovedRecordsVM(obj map[string]string) {
 	Expect(obj[templates.VMWorkloadAnnotation]).To(Equal(""))
 	Expect(obj[templates.VMDomainLabel]).To(Equal(""))
 	Expect(obj[templates.VMSizeLabel]).To(Equal(""))
-
+	Expect(obj[templates.VMTemplateRevisionLabel]).To(Equal(""))
+	Expect(obj[templates.VMTemplateVersionLabel]).To(Equal(""))
 }
