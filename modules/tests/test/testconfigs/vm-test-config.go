@@ -291,34 +291,6 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 
 	params := []v1beta1.Param{
 		{
-			Name: CreateVMParams.DataVolumes,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: c.TaskData.DataVolumes,
-			},
-		},
-		{
-			Name: CreateVMParams.OwnDataVolumes,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: c.TaskData.OwnDataVolumes,
-			},
-		},
-		{
-			Name: CreateVMParams.PersistentVolumeClaims,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: c.TaskData.PersistentVolumeClaims,
-			},
-		},
-		{
-			Name: CreateVMParams.OwnPersistentVolumeClaims,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: c.TaskData.OwnPersistentVolumeClaims,
-			},
-		},
-		{
 			Name: CreateVMFromTemplateParams.StartVM,
 			Value: v1beta1.ArrayOrString{
 				Type:      v1beta1.ParamTypeString,
@@ -333,6 +305,47 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			},
 		},
 	}
+
+	if len(c.TaskData.DataVolumes) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: CreateVMParams.DataVolumes,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: c.TaskData.DataVolumes,
+			},
+		})
+	}
+
+	if len(c.TaskData.OwnDataVolumes) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: CreateVMParams.OwnDataVolumes,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: c.TaskData.OwnDataVolumes,
+			},
+		})
+	}
+
+	if len(c.TaskData.PersistentVolumeClaims) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: CreateVMParams.PersistentVolumeClaims,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: c.TaskData.PersistentVolumeClaims,
+			},
+		})
+	}
+
+	if len(c.TaskData.OwnPersistentVolumeClaims) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: CreateVMParams.OwnPersistentVolumeClaims,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: c.TaskData.OwnPersistentVolumeClaims,
+			},
+		})
+	}
+
 	var vmNamespace string
 	if !c.TaskData.UseDefaultVMNamespacesInTaskParams {
 		vmNamespace = c.TaskData.VMNamespace
@@ -384,13 +397,7 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 					StringVal: templateNamespace,
 				},
 			},
-			v1beta1.Param{
-				Name: CreateVMFromTemplateParams.TemplateParams,
-				Value: v1beta1.ArrayOrString{
-					Type:     v1beta1.ParamTypeArray,
-					ArrayVal: c.TaskData.TemplateParams,
-				},
-			},
+
 			v1beta1.Param{
 				Name: CreateVMFromTemplateParams.VmNamespace,
 				Value: v1beta1.ArrayOrString{
@@ -399,6 +406,16 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 				},
 			},
 		)
+
+		if len(c.TaskData.TemplateParams) > 0 {
+			params = append(params, v1beta1.Param{
+				Name: CreateVMFromTemplateParams.TemplateParams,
+				Value: v1beta1.ArrayOrString{
+					Type:     v1beta1.ParamTypeArray,
+					ArrayVal: c.TaskData.TemplateParams,
+				},
+			})
+		}
 	}
 
 	return &v1beta1.TaskRun{
