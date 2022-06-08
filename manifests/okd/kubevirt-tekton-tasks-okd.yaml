@@ -1016,6 +1016,7 @@ metadata:
     memory.params.task.kubevirt.io/type: memory
     deleteDatavolumeTemplate.params.task.kubevirt.io/type: boolean
     deleteTemplateParameters.params.task.kubevirt.io/type: boolean
+    deleteTemplate.params.task.kubevirt.io/type: boolean
   labels:
     task.kubevirt.io/type: modify-vm-template
     task.kubevirt.io/category: modify-vm-template
@@ -1093,6 +1094,10 @@ spec:
       description: Set to "true" or "false" if task should delete template parameters. New parameters (from templateParameters parameter) are applied, after old parameters are deleted.
       default: 'false'
       type: string
+    - name: deleteTemplate
+      description: Set to `true` or `false` if task should delete the specified template. If set to 'true' the template will be deleted and all other parameters are ignored.
+      default: 'false'
+      type: string
 
   results:
     - name: name
@@ -1143,6 +1148,8 @@ spec:
           value: $(params.deleteVolumes)
         - name: DELETE_TEMPLATE_PARAMETERS
           value: $(params.deleteTemplateParameters)
+        - name: DELETE_TEMPLATE
+          value: $(params.deleteTemplate)
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1154,6 +1161,7 @@ rules:
       - get
       - list
       - patch
+      - delete
     apiGroups:
       - template.openshift.io
     resources:

@@ -32,6 +32,7 @@ type ModifyTemplateTaskData struct {
 	DeleteDisks              bool
 	DeleteVolumes            bool
 	DeleteTemplateParameters bool
+	DeleteTemplate           bool
 }
 
 type ModifyTemplateTestConfig struct {
@@ -115,6 +116,12 @@ func (m *ModifyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			Value: v1beta1.ArrayOrString{
 				Type:      v1beta1.ParamTypeString,
 				StringVal: strconv.FormatBool(m.TaskData.DeleteTemplateParameters),
+			},
+		}, {
+			Name: DeleteTemplateOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:      v1beta1.ParamTypeString,
+				StringVal: strconv.FormatBool(m.TaskData.DeleteTemplate),
 			},
 		},
 	}
