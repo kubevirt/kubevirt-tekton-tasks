@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template/pkg/templates"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
@@ -196,7 +195,7 @@ var _ = Describe("Copy template task", func() {
 			Expect(newTemplate).ToNot(BeNil(), " template should exists")
 			f.ManageTemplates(newTemplate)
 			//check template type
-			Expect(newTemplate.Labels[templates.TemplateTypeLabel]).To(Equal("vm"), "template type should equal VM")
+			Expect(newTemplate.Labels).To(HaveKeyWithValue(templates.TemplateTypeLabel, "vm"), "template type should equal VM")
 
 			checkRemovedRecordsTemplate(newTemplate.Labels)
 			checkRemovedRecordsTemplate(newTemplate.Annotations)
@@ -206,7 +205,7 @@ var _ = Describe("Copy template task", func() {
 
 			checkRemovedRecordsVM(vm.Spec.Template.ObjectMeta.Labels)
 			checkRemovedRecordsVM(vm.Spec.Template.ObjectMeta.Annotations)
-			Expect(vm.Labels[templates.VMTemplateNameLabel]).To(Equal(newTemplate.Name), "template name should be changed")
+			Expect(vm.Labels).To(HaveKeyWithValue(templates.VMTemplateNameLabel, newTemplate.Name), "template name should be changed")
 		})
 	})
 
@@ -284,7 +283,7 @@ var _ = Describe("Copy template task", func() {
 			newTemplate, err := f.TemplateClient.Templates(resultTemplateNamespace).Get(context.TODO(), resultTemplateName, v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(newTemplate).ToNot(BeNil(), " template should exists")
-			Expect(len(newTemplate.Objects)).To(Equal(1), "template should be updated")
+			Expect(newTemplate.Objects).To(HaveLen(1), "template should be updated")
 
 			f.ManageTemplates(newTemplate)
 		})
@@ -292,49 +291,40 @@ var _ = Describe("Copy template task", func() {
 })
 
 func checkRemovedRecordsTemplate(obj map[string]string) {
-
 	for record, _ := range obj {
-
-		if strings.HasPrefix(record, templates.TemplateOsLabelPrefix) {
-			Expect(record).To(Equal(""), fmt.Sprintf("there should be no %s labels", templates.TemplateOsLabelPrefix))
-		}
-
-		if strings.HasPrefix(record, templates.TemplateFlavorLabelPrefix) {
-			Expect(record).To(Equal(""), fmt.Sprintf("there should be no %s labels", templates.TemplateFlavorLabelPrefix))
-		}
-
-		if strings.HasPrefix(record, templates.TemplateWorkloadLabelPrefix) {
-			Expect(record).To(Equal(""), fmt.Sprintf("there should be no %s labels", templates.TemplateWorkloadLabelPrefix))
-		}
+		Expect(record).ToNot(HavePrefix(templates.TemplateOsLabelPrefix), fmt.Sprintf("there should be no %s labels", templates.TemplateOsLabelPrefix))
+		Expect(record).ToNot(HavePrefix(templates.TemplateFlavorLabelPrefix), fmt.Sprintf("there should be no %s labels", templates.TemplateFlavorLabelPrefix))
+		Expect(record).ToNot(HavePrefix(templates.TemplateWorkloadLabelPrefix), fmt.Sprintf("there should be no %s labels", templates.TemplateWorkloadLabelPrefix))
 	}
-	Expect(obj[templates.TemplateVersionLabel]).To(Equal(""))
-	Expect(obj[templates.TemplateDeprecatedAnnotation]).To(Equal(""))
-	Expect(obj[templates.KubevirtDefaultOSVariant]).To(Equal(""))
 
-	Expect(obj[templates.OpenshiftDocURL]).To(Equal(""))
-	Expect(obj[templates.OpenshiftProviderDisplayName]).To(Equal(""))
-	Expect(obj[templates.OpenshiftSupportURL]).To(Equal(""))
+	Expect(obj).ToNot(HaveKey(templates.TemplateVersionLabel))
+	Expect(obj).ToNot(HaveKey(templates.TemplateDeprecatedAnnotation))
+	Expect(obj).ToNot(HaveKey(templates.KubevirtDefaultOSVariant))
 
-	Expect(obj[templates.TemplateKubevirtProvider]).To(Equal(""))
-	Expect(obj[templates.TemplateKubevirtProviderSupportLevel]).To(Equal(""))
-	Expect(obj[templates.TemplateKubevirtProviderURL]).To(Equal(""))
+	Expect(obj).ToNot(HaveKey(templates.OpenshiftDocURL))
+	Expect(obj).ToNot(HaveKey(templates.OpenshiftProviderDisplayName))
+	Expect(obj).ToNot(HaveKey(templates.OpenshiftSupportURL))
 
-	Expect(obj[templates.OperatorSDKPrimaryResource]).To(Equal(""))
-	Expect(obj[templates.OperatorSDKPrimaryResourceType]).To(Equal(""))
+	Expect(obj).ToNot(HaveKey(templates.TemplateKubevirtProvider))
+	Expect(obj).ToNot(HaveKey(templates.TemplateKubevirtProviderSupportLevel))
+	Expect(obj).ToNot(HaveKey(templates.TemplateKubevirtProviderURL))
 
-	Expect(obj[templates.AppKubernetesComponent]).To(Equal(""))
-	Expect(obj[templates.AppKubernetesName]).To(Equal(""))
-	Expect(obj[templates.AppKubernetesPartOf]).To(Equal(""))
-	Expect(obj[templates.AppKubernetesVersion]).To(Equal(""))
-	Expect(obj[templates.AppKubernetesManagedBy]).To(Equal(""))
+	Expect(obj).ToNot(HaveKey(templates.OperatorSDKPrimaryResource))
+	Expect(obj).ToNot(HaveKey(templates.OperatorSDKPrimaryResourceType))
+
+	Expect(obj).ToNot(HaveKey(templates.AppKubernetesComponent))
+	Expect(obj).ToNot(HaveKey(templates.AppKubernetesName))
+	Expect(obj).ToNot(HaveKey(templates.AppKubernetesPartOf))
+	Expect(obj).ToNot(HaveKey(templates.AppKubernetesVersion))
+	Expect(obj).ToNot(HaveKey(templates.AppKubernetesManagedBy))
 }
 
 func checkRemovedRecordsVM(obj map[string]string) {
-	Expect(obj[templates.VMFlavorAnnotation]).To(Equal(""))
-	Expect(obj[templates.VMOSAnnotation]).To(Equal(""))
-	Expect(obj[templates.VMWorkloadAnnotation]).To(Equal(""))
-	Expect(obj[templates.VMDomainLabel]).To(Equal(""))
-	Expect(obj[templates.VMSizeLabel]).To(Equal(""))
-	Expect(obj[templates.VMTemplateRevisionLabel]).To(Equal(""))
-	Expect(obj[templates.VMTemplateVersionLabel]).To(Equal(""))
+	Expect(obj).ToNot(HaveKey(templates.VMFlavorAnnotation))
+	Expect(obj).ToNot(HaveKey(templates.VMOSAnnotation))
+	Expect(obj).ToNot(HaveKey(templates.VMWorkloadAnnotation))
+	Expect(obj).ToNot(HaveKey(templates.VMDomainLabel))
+	Expect(obj).ToNot(HaveKey(templates.VMSizeLabel))
+	Expect(obj).ToNot(HaveKey(templates.VMTemplateRevisionLabel))
+	Expect(obj).ToNot(HaveKey(templates.VMTemplateVersionLabel))
 }
