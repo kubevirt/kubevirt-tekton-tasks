@@ -1,21 +1,22 @@
 package templates
 
 import (
+	"bytes"
 	"context"
-	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	templatev1 "github.com/openshift/api/template/v1"
 	v1 "github.com/openshift/api/template/v1"
 	tempclient "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	templateclientset "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/rest"
-	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 type templateProvider struct {
@@ -75,16 +76,24 @@ func (t *TemplateCreator) CopyTemplate() (*v1.Template, error) {
 	log.Logger().Debug("Original template metadata", zap.Any("ObjectMeta", template.ObjectMeta))
 
 	if isCommonTemplate(template) {
-		vm, vmIndex, err := zutils.DecodeVM(template)
+		removeCommonTemplateInformationFromTemplate(template.Labels)
+		removeCommonTemplateInformationFromTemplate(template.Annotations)
+
+		unstructuredVM, err := getUnstructuredVM(template)
 		if err != nil {
 			return nil, err
 		}
-		t.UpdateVMMetaObject(vm)
 
-		t.EncodeVMToTemplate(template, vm, vmIndex)
+		if !(unstructuredVM.GetAPIVersion() == "kubevirt.io/v1" && unstructuredVM.GetKind() == "VirtualMachine") {
+			return nil, fmt.Errorf("template %s contains unexpected object: %s, %s", template.Name, unstructuredVM.GetAPIVersion(), unstructuredVM.GetKind())
+		}
+
+		t.UpdateVMMetadata(unstructuredVM)
+
+		t.EncodeVMToTemplate(template, unstructuredVM)
 	}
 
-	updatedTemplate := t.UpdateTemplateMetaObject(template)
+	updatedTemplate := t.UpdateTemplateMetadata(template)
 
 	log.Logger().Debug("Updated template metadata", zap.Any("ObjectMeta", updatedTemplate.ObjectMeta))
 	existingTemplate, err := t.templateProvider.Get(t.cliOptions.GetTargetTemplateNamespace(), t.cliOptions.GetTargetTemplateName())
@@ -96,30 +105,65 @@ func (t *TemplateCreator) CopyTemplate() (*v1.Template, error) {
 
 	return t.templateProvider.Create(updatedTemplate)
 }
+func removeCommonTemplateMetadataFromUnstructuredVM(unstructuredVM *unstructured.Unstructured, path []string, additionalMetadata map[string]string) error {
+	obj, foundObj, err := unstructured.NestedStringMap(unstructuredVM.UnstructuredContent(), path...)
+	if err != nil {
+		return err
+	}
+	if foundObj {
+		removeCommonTemplateInformationFromObj(obj)
+		for key, value := range additionalMetadata {
+			obj[key] = value
+		}
 
-func (t *TemplateCreator) UpdateVMMetaObject(vm *kubevirtv1.VirtualMachine) {
-	removeCommonTemplateInformationsFromVM(vm.Spec.Template.ObjectMeta.Labels)
-	removeCommonTemplateInformationsFromVM(vm.Spec.Template.ObjectMeta.Annotations)
-	// update template name in VM labels
-	vm.Labels[VMTemplateNameLabel] = t.cliOptions.TargetTemplateName
+		err := unstructured.SetNestedStringMap(unstructuredVM.UnstructuredContent(), obj, path...)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (t *TemplateCreator) EncodeVMToTemplate(template *templatev1.Template, vm *kubevirtv1.VirtualMachine, vmIndex int) (*v1.Template, error) {
-	raw, err := json.Marshal(vm)
+func (t *TemplateCreator) UpdateVMMetadata(unstructuredVM *unstructured.Unstructured) error {
+	labelPath := []string{"metadata", "labels"}
+	err := removeCommonTemplateMetadataFromUnstructuredVM(unstructuredVM, labelPath, map[string]string{VMTemplateNameLabel: t.cliOptions.TargetTemplateName})
+	if err != nil {
+		return err
+	}
+
+	templateLabelPath := []string{"spec", "template", "metadata", "labels"}
+
+	err = removeCommonTemplateMetadataFromUnstructuredVM(unstructuredVM, templateLabelPath, nil)
+	if err != nil {
+		return err
+	}
+
+	templateAnnotationsPath := []string{"spec", "template", "metadata", "annotations"}
+	err = removeCommonTemplateMetadataFromUnstructuredVM(unstructuredVM, templateAnnotationsPath, nil)
+	if err != nil {
+		return err
+	}
+
+	annotationsPath := []string{"metadata", "annotations"}
+	err = removeCommonTemplateMetadataFromUnstructuredVM(unstructuredVM, annotationsPath, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *TemplateCreator) EncodeVMToTemplate(template *templatev1.Template, unstructuredVM *unstructured.Unstructured) (*v1.Template, error) {
+	raw, err := unstructuredVM.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	template.Objects[vmIndex].Raw = raw
+	template.Objects[0].Raw = raw
 	return template, nil
 }
 
-func (t *TemplateCreator) UpdateTemplateMetaObject(template *v1.Template) *v1.Template {
-	if isCommonTemplate(template) {
-		removeCommonTemplateInformationsFromTemplate(template.Labels)
-		removeCommonTemplateInformationsFromTemplate(template.Annotations)
-	}
-
+func (t *TemplateCreator) UpdateTemplateMetadata(template *v1.Template) *v1.Template {
 	//set "template.kubevirt.io/type" label to VM so it is visible in UI
 	template.Labels[TemplateTypeLabel] = VMTypeLabelValue
 
@@ -146,7 +190,7 @@ func isCommonTemplate(template *v1.Template) bool {
 	return false
 }
 
-func removeCommonTemplateInformationsFromTemplate(obj map[string]string) {
+func removeCommonTemplateInformationFromTemplate(obj map[string]string) {
 	for record, _ := range obj {
 		if strings.HasPrefix(record, TemplateOsLabelPrefix) {
 			delete(obj, record)
@@ -182,7 +226,7 @@ func removeCommonTemplateInformationsFromTemplate(obj map[string]string) {
 	delete(obj, AppKubernetesManagedBy)
 }
 
-func removeCommonTemplateInformationsFromVM(obj map[string]string) {
+func removeCommonTemplateInformationFromObj(obj map[string]string) {
 	delete(obj, VMFlavorAnnotation)
 	delete(obj, VMOSAnnotation)
 	delete(obj, VMWorkloadAnnotation)
@@ -190,4 +234,13 @@ func removeCommonTemplateInformationsFromVM(obj map[string]string) {
 	delete(obj, VMSizeLabel)
 	delete(obj, VMTemplateRevisionLabel)
 	delete(obj, VMTemplateVersionLabel)
+}
+
+func getUnstructuredVM(template *templatev1.Template) (*unstructured.Unstructured, error) {
+	unstructuredVM := &unstructured.Unstructured{}
+	err := yaml.NewYAMLOrJSONDecoder(bytes.NewReader(template.Objects[0].Raw), 1024).Decode(unstructuredVM)
+	if err != nil {
+		return nil, err
+	}
+	return unstructuredVM, nil
 }
