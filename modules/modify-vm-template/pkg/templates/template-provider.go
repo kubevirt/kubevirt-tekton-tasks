@@ -27,6 +27,7 @@ type templateProvider struct {
 type TemplateProvider interface {
 	Get(string, string) (*templatev1.Template, error)
 	Patch(*v1.Template) (*templatev1.Template, error)
+	Delete(*v1.Template) error
 }
 
 func NewTemplateProvider(client tempclient.TemplateV1Interface) TemplateProvider {
@@ -45,6 +46,10 @@ func (t *templateProvider) Patch(template *v1.Template) (*templatev1.Template, e
 		return nil, err
 	}
 	return t.client.Templates(template.Namespace).Patch(context.TODO(), template.Name, types.StrategicMergePatchType, data, metav1.PatchOptions{})
+}
+
+func (t *templateProvider) Delete(template *v1.Template) error {
+	return t.client.Templates(template.Namespace).Delete(context.TODO(), template.Name, metav1.DeleteOptions{})
 }
 
 type TemplateUpdator struct {
@@ -71,6 +76,13 @@ func (t *TemplateUpdator) ModifyTemplate() (*v1.Template, error) {
 	template, err := t.templateProvider.Get(t.cliOptions.GetTemplateNamespace(), t.cliOptions.GetTemplateName())
 	if err != nil {
 		return nil, err
+	}
+
+	if t.cliOptions.GetDeleteTemplate() {
+		if err := t.templateProvider.Delete(template); err != nil {
+			return nil, err
+		}
+		return template, nil
 	}
 
 	updatedTemplate, err := t.UpdateTemplate(template)

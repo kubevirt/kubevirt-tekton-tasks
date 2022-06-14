@@ -42,6 +42,7 @@ type CLIOptions struct {
 	DeleteVolumes            bool `arg:"--delete-volumes,env:DELETE_VOLUMES" help:"Delete all VM volumes"`
 	DeleteDisks              bool `arg:"--delete-disks,env:DELETE_DISKS" help:"Delete all VM disks"`
 	DeleteTemplateParameters bool `arg:"--delete-template-parameters,env:DELETE_TEMPLATE_PARAMETERS" help:"Delete datavolume template from template. It deletes associated volumes and disks from VM definition"`
+	DeleteTemplate           bool `arg:"--delete-template,env:DELETE_TEMPLATE" help:"Delete the template instead of modifying it. All other options are ignored when this is set."`
 
 	Debug bool `arg:"--debug" help:"Sets DEBUG log level"`
 
@@ -86,6 +87,10 @@ func (c *CLIOptions) GetDeleteVolumes() bool {
 
 func (c *CLIOptions) GetDeleteTemplateParameters() bool {
 	return c.DeleteTemplateParameters
+}
+
+func (c *CLIOptions) GetDeleteTemplate() bool {
+	return c.DeleteTemplate
 }
 
 func (c *CLIOptions) GetCPUThreads() uint32 {

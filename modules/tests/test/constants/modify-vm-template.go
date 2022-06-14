@@ -29,6 +29,7 @@ const (
 	DeleteDisksOptionName              = "deleteDisks"
 	DeleteVolumesOptionName            = "deleteVolumes"
 	DeleteTemplateParametersOptionName = "deleteTemplateParameters"
+	DeleteTemplateOptionName           = "deleteTemplate"
 	TemplateParametersOptionName       = "templateParameters"
 
 	CPUSocketsTopologyNumber    uint32 = 1

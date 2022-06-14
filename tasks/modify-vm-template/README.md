@@ -28,6 +28,7 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 - **deleteVolumes**: Set to `true` or `false` if task should delete VM volumes. New volumes (from volumes parameter) are applied, after old volumes are deleted.
 - **templateParameters**: Definition of template parameters. Eg [{`description`: `VM name`, `name`: `NAME`}]
 - **deleteTemplateParameters**: Set to `true` or `false` if task should delete template parameters. New parameters (from templateParameters parameter) are applied, after old parameters are deleted.
+- **deleteTemplate**: Set to `true` or `false` if task should delete the specified template. If set to 'true' the template will be deleted and all other parameters are ignored.
 
 ### Results
 

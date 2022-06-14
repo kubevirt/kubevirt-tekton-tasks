@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"time"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
@@ -13,6 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 	templatev1 "github.com/openshift/api/template/v1"
 	k8sv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
@@ -242,6 +244,16 @@ var _ = Describe("Modify template task", func() {
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
 					Volumes:      WrongStrSlice,
+				},
+			}),
+			Entry("cannot delete non-existent template", &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					ExpectedLogs:   "templates.template.openshift.io \"" + testtemplate.CirrosTemplateName + "\" not found",
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					TemplateName:   testtemplate.CirrosTemplateName,
+					DeleteTemplate: true,
 				},
 			}),
 		)
@@ -625,6 +637,43 @@ var _ = Describe("Modify template task", func() {
 
 			Expect(len(updatedTemplate.Parameters)).To(Equal(1), "parameters should equal")
 			Expect(updatedTemplate.Parameters[0].Name).To(Equal(TemplateParameters[0].Name), "parameter name should equal")
+		})
+
+		It("taskrun succeeded and template was deleted", func() {
+			config := &testconfigs.ModifyTemplateTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyTemplateServiceAccountName,
+					LimitTestScope: ClusterTestScope,
+				},
+				TaskData: testconfigs.ModifyTemplateTaskData{
+					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName:            testtemplate.RhelTemplateName,
+					SourceTemplateNamespace: DeployTargetNS,
+					DeleteTemplate:          true,
+				},
+			}
+			f.TestSetup(config)
+
+			template := config.TaskData.Template
+			if template != nil {
+				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				Expect(err).ShouldNot(HaveOccurred())
+				f.ManageTemplates(template)
+			}
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectResults(map[string]string{
+					"name":      config.TaskData.TemplateName,
+					"namespace": config.TaskData.TemplateNamespace,
+				})
+
+			Eventually(func() bool {
+				_, err := f.TemplateClient.Templates(config.TaskData.TemplateNamespace).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+				return errors.IsNotFound(err)
+			}, time.Second*360, time.Second).Should(BeTrue())
 		})
 	})
 })

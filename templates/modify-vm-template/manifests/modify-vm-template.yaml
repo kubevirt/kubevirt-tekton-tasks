@@ -13,6 +13,7 @@ metadata:
     memory.params.task.kubevirt.io/type: {{ task_param_types.memory }}
     deleteDatavolumeTemplate.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
     deleteTemplateParameters.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
+    deleteTemplate.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
   labels:
     task.kubevirt.io/type: {{ task_name }}
     task.kubevirt.io/category: {{ task_category }}
@@ -90,6 +91,10 @@ spec:
       description: Set to "true" or "false" if task should delete template parameters. New parameters (from templateParameters parameter) are applied, after old parameters are deleted.
       default: 'false'
       type: string
+    - name: deleteTemplate
+      description: Set to `true` or `false` if task should delete the specified template. If set to 'true' the template will be deleted and all other parameters are ignored.
+      default: 'false'
+      type: string
 
   results:
     - name: name
@@ -140,3 +145,5 @@ spec:
           value: $(params.deleteVolumes)
         - name: DELETE_TEMPLATE_PARAMETERS
           value: $(params.deleteTemplateParameters)
+        - name: DELETE_TEMPLATE
+          value: $(params.deleteTemplate)

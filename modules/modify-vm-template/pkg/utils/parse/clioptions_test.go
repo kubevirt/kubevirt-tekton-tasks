@@ -103,6 +103,7 @@ var _ = Describe("CLIOptions", func() {
 				DeleteVolumes:            true,
 				DeleteDisks:              true,
 				DeleteTemplateParameters: true,
+				DeleteTemplate:           true,
 				DeleteDatavolumeTemplate: true,
 				DatavolumeTemplates:      dataVolumeArray,
 				TemplateParameters:       templateParametersArray,
@@ -160,6 +161,7 @@ var _ = Describe("CLIOptions", func() {
 			DeleteDisks:              true,
 			DeleteVolumes:            true,
 			DeleteTemplateParameters: true,
+			DeleteTemplate:           true,
 		}
 		DescribeTable("CLI options should return correct map of annotations / labels", func(obj *parse.CLIOptions, fnToCall func() map[string]string, result map[string]string) {
 			Expect(obj.Init()).To(Succeed(), "should succeeded")
@@ -206,6 +208,7 @@ var _ = Describe("CLIOptions", func() {
 			Entry("GetDeleteDisks should return correct value", cli, cli.GetDeleteDisks, true),
 			Entry("GetDeleteVolumes should return correct value", cli, cli.GetDeleteVolumes, true),
 			Entry("GetDeleteTemplateParameters should return correct value", cli, cli.GetDeleteTemplateParameters, true),
+			Entry("GetDeleteTemplate should return correct value", cli, cli.GetDeleteTemplate, true),
 		)
 	})
 })
