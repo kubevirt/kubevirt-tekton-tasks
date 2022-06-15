@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"time"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
@@ -37,7 +38,7 @@ var _ = Describe("Create DataVolume", func() {
 		Entry("empty dv", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
-				ExpectedLogs:   "manifest does not contain DataVolume kind",
+				ExpectedLogs:   "manifest does not contain DataVolume or DataSource kind",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
 				Datavolume: nil,
@@ -46,7 +47,7 @@ var _ = Describe("Create DataVolume", func() {
 		Entry("malformed dv", &testconfigs.CreateDVTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateDataVolumeFromManifestServiceAccountName,
-				ExpectedLogs:   "manifest does not contain DataVolume kind",
+				ExpectedLogs:   "manifest does not contain DataVolume or DataSource kind",
 			},
 			TaskData: testconfigs.CreateDVTaskData{
 				Datavolume: datavolume.NewBlankDataVolume("malformed").WithoutTypeMeta().Build(),
@@ -148,11 +149,15 @@ var _ = Describe("Create DataVolume", func() {
 
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
-			ExpectFailure()
+			ExpectSuccess()
 
-		d, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Get(context.TODO(), dataVolume.Name, metav1.GetOptions{})
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(d.Spec.Source.HTTP.URL).To(Equal(dataVolume.Spec.Source.HTTP.URL))
-		Expect(dv.HasDataVolumeFailedToImport(d)).To(BeTrue())
+		Eventually(func() bool {
+			d, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Get(context.TODO(), dataVolume.Name, metav1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(d.Spec.Source.HTTP.URL).To(Equal(dataVolume.Spec.Source.HTTP.URL))
+
+			return dv.HasDataVolumeFailedToImport(d)
+		}, 30*time.Second, 1*time.Second).Should(BeTrue())
+
 	})
 })
