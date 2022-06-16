@@ -93,54 +93,6 @@ func (m *ModifyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 				StringVal: m.TaskData.Memory,
 			},
 		}, {
-			Name: TemplateLabelsOptionName,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: m.TaskData.TemplateLabels,
-			},
-		}, {
-			Name: TemplateAnnotationsOptionName,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: m.TaskData.TemplateAnnotations,
-			},
-		}, {
-			Name: VMLabelsOptionName,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: m.TaskData.VMLabels,
-			},
-		}, {
-			Name: VMAnnotationsOptionName,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: m.TaskData.VMAnnotations,
-			},
-		}, {
-			Name: DisksOptionName,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: m.TaskData.Disks,
-			},
-		}, {
-			Name: VolumesOptionName,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: m.TaskData.Volumes,
-			},
-		}, {
-			Name: DataVolumeTemplatesOptionName,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: m.TaskData.DataVolumeTemplates,
-			},
-		}, {
-			Name: TemplateParametersOptionName,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: m.TaskData.TemplateParameters,
-			},
-		}, {
 			Name: DeleteDatavolumeTemplateOptionName,
 			Value: v1beta1.ArrayOrString{
 				Type:      v1beta1.ParamTypeString,
@@ -165,6 +117,85 @@ func (m *ModifyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 				StringVal: strconv.FormatBool(m.TaskData.DeleteTemplateParameters),
 			},
 		},
+	}
+	if len(m.TaskData.TemplateLabels) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: TemplateLabelsOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.TemplateLabels,
+			},
+		})
+	}
+
+	if len(m.TaskData.TemplateAnnotations) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: TemplateAnnotationsOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.TemplateAnnotations,
+			},
+		})
+	}
+
+	if len(m.TaskData.VMLabels) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: VMLabelsOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.VMLabels,
+			},
+		})
+	}
+
+	if len(m.TaskData.VMAnnotations) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: VMAnnotationsOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.VMAnnotations,
+			},
+		})
+	}
+
+	if len(m.TaskData.Disks) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: DisksOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.Disks,
+			},
+		})
+	}
+
+	if len(m.TaskData.Volumes) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: VolumesOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.Volumes,
+			},
+		})
+	}
+
+	if len(m.TaskData.DataVolumeTemplates) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: DataVolumeTemplatesOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.DataVolumeTemplates,
+			},
+		})
+	}
+
+	if len(m.TaskData.TemplateParameters) > 0 {
+		params = append(params, v1beta1.Param{
+			Name: TemplateParametersOptionName,
+			Value: v1beta1.ArrayOrString{
+				Type:     v1beta1.ParamTypeArray,
+				ArrayVal: m.TaskData.TemplateParameters,
+			},
+		})
 	}
 
 	return &v1beta1.TaskRun{
