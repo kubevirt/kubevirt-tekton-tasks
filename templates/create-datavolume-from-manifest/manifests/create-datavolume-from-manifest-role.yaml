@@ -14,6 +14,15 @@ rules:
     resources:
       - datavolumes
   - verbs:
+      - get
+      - list
+      - watch
+      - create
+    apiGroups:
+      - cdi.kubevirt.io
+    resources:
+      - datasources
+  - verbs:
       - create
     apiGroups:
       - ""

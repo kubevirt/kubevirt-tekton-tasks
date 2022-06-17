@@ -18,15 +18,30 @@ type CreateDVTaskData struct {
 	Namespace      TargetNamespace
 }
 
+type CreateDSTaskData struct {
+	DataSource     *v1beta12.DataSource
+	WaitForSuccess bool
+	Namespace      TargetNamespace
+	TestDV         *v1beta12.DataVolume
+}
+
 type CreateDVTestConfig struct {
 	TaskRunTestConfig
-	TaskData CreateDVTaskData
+	TaskData   CreateDVTaskData
+	DataSource CreateDSTaskData
 
 	deploymentNamespace string
 }
 
 func (c *CreateDVTestConfig) GetWaitForDVTimeout() time.Duration {
 	if c.TaskData.WaitForSuccess {
+		return Timeouts.Zero.Duration
+	}
+	return c.GetTaskRunTimeout()
+}
+
+func (c *CreateDVTestConfig) GetWaitForDSTimeout() time.Duration {
+	if c.DataSource.WaitForSuccess {
 		return Timeouts.Zero.Duration
 	}
 	return c.GetTaskRunTimeout()
@@ -46,19 +61,47 @@ func (c *CreateDVTestConfig) Init(options *testoptions.TestOptions) {
 		}
 	}
 
-	if c.Timeout == nil || !c.TaskData.WaitForSuccess {
+	if c.DataSource.DataSource != nil {
+		ds := c.DataSource.DataSource
+		if ds.Name != "" {
+			ds.Name = E2ETestsRandomName(ds.Name)
+		}
+
+		ds.Namespace = options.ResolveNamespace(c.DataSource.Namespace, "")
+		ds.Spec.Source.PVC.Name = ds.Name
+		ds.Spec.Source.PVC.Namespace = ds.Namespace
+
+		if c.DataSource.TestDV != nil {
+			c.DataSource.TestDV.Name = ds.Name
+			c.DataSource.TestDV.Namespace = ds.Namespace
+		}
+	}
+
+	if c.Timeout == nil || !c.TaskData.WaitForSuccess || !c.DataSource.WaitForSuccess {
 		c.Timeout = Timeouts.DefaultTaskRun
 	}
 }
 
 func (c *CreateDVTestConfig) GetTaskRun() *v1beta1.TaskRun {
-	var dv string
+	var obj string
+	var waitForSuccess string
 	if c.TaskData.Datavolume != nil {
 		dvbytes, err := yaml.Marshal(c.TaskData.Datavolume)
 		if err != nil {
 			ginkgo.Fail(err.Error())
 		}
-		dv = string(dvbytes)
+		obj = string(dvbytes)
+		waitForSuccess = ToStringBoolean(c.TaskData.WaitForSuccess)
+	}
+
+	if c.DataSource.DataSource != nil {
+		dsbytes, err := yaml.Marshal(c.DataSource.DataSource)
+		if err != nil {
+			ginkgo.Fail(err.Error())
+		}
+		obj = string(dsbytes)
+
+		waitForSuccess = ToStringBoolean(c.DataSource.WaitForSuccess)
 	}
 
 	return &v1beta1.TaskRun{
@@ -78,14 +121,14 @@ func (c *CreateDVTestConfig) GetTaskRun() *v1beta1.TaskRun {
 					Name: CreateDataVolumeFromManifestParams.Manifest,
 					Value: v1beta1.ArrayOrString{
 						Type:      v1beta1.ParamTypeString,
-						StringVal: dv,
+						StringVal: obj,
 					},
 				},
 				{
 					Name: CreateDataVolumeFromManifestParams.WaitForSuccess,
 					Value: v1beta1.ArrayOrString{
 						Type:      v1beta1.ParamTypeString,
-						StringVal: ToStringBoolean(c.TaskData.WaitForSuccess),
+						StringVal: waitForSuccess,
 					},
 				},
 			},
