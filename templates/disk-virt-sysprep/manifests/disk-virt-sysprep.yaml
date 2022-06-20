@@ -32,7 +32,7 @@ spec:
     - name: run-virt-sysprep
       image: "{{ main_image }}:{{ version }}"
       command:
-        - entrypoint
+        - disk-virt-sysprep
       args:
         - '--verbose'
         - $(params.verbose)

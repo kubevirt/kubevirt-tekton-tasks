@@ -55,7 +55,7 @@ spec:
     - name: execute-in-vm
       image: "quay.io/kubevirt/tekton-task-execute-in-vm:v0.9.2"
       command:
-        - entrypoint
+        - execute-in-vm
       args:
         - '--stop'
         - $(params.stop)
@@ -416,7 +416,7 @@ spec:
     - name: run-virt-customize
       image: "quay.io/kubevirt/tekton-task-disk-virt-customize:v0.9.2"
       command:
-        - entrypoint
+        - disk-virt-customize
       args:
         - '--verbose'
         - $(params.verbose)
@@ -485,7 +485,7 @@ spec:
     - name: run-virt-sysprep
       image: "quay.io/kubevirt/tekton-task-disk-virt-sysprep:v0.9.2"
       command:
-        - entrypoint
+        - disk-virt-sysprep
       args:
         - '--verbose'
         - $(params.verbose)
@@ -562,7 +562,7 @@ spec:
     - name: execute-in-vm
       image: "quay.io/kubevirt/tekton-task-execute-in-vm:v0.9.2"
       command:
-        - entrypoint
+        - execute-in-vm
       args:
         - '--'
         - $(params.command)
@@ -684,7 +684,7 @@ spec:
     - name: generate-ssh-keys
       image: "quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.9.2"
       command:
-        - entrypoint
+        - generate-ssh-keys
         - '--'
         - $(params.privateKeyConnectionOptions)
       env:

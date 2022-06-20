@@ -54,7 +54,7 @@ spec:
     - name: generate-ssh-keys
       image: "{{ main_image }}:{{ version }}"
       command:
-        - entrypoint
+        - generate-ssh-keys
         - '--'
         - $(params.privateKeyConnectionOptions)
       env:

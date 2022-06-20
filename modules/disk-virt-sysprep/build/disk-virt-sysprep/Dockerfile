@@ -20,20 +20,13 @@ RUN autoreconf --install && autoconf && mingw32-configure --disable-dependency-t
 
 FROM quay.io/kubevirt/libguestfs-tools:v0.52.0
 ENV TASK_NAME=disk-virt-sysprep
-ENV ENTRY_CMD=/usr/local/bin/${TASK_NAME} \
-    USER_UID=1001 \
-    USER_NAME=${TASK_NAME} \
-    HOME=/home/${TASK_NAME} 
+ENV ENTRY_CMD=/usr/local/bin/${TASK_NAME}
 
 # install libguestfs rhsrvany.exe win dependency for virt-sysprep
 COPY --from=rhsrvanyBuilder /rhsrvany/RHSrvAny/rhsrvany.exe /usr/share/virt-tools/rhsrvany.exe
 
 # install task binary
 COPY --from=taskBuilder /${TASK_NAME} ${ENTRY_CMD}
-COPY build/${TASK_NAME}/bin /usr/local/bin
 
-#RUN  /usr/local/bin/user_setup
-ENTRYPOINT ["/usr/local/bin/entrypoint"]
+ENTRYPOINT ["/usr/local/bin/${TASK_NAME}"]
 CMD ["--help"]
-
-USER ${USER_UID}

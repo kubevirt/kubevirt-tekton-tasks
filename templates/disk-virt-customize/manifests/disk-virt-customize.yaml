@@ -32,7 +32,7 @@ spec:
     - name: run-virt-customize
       image: "{{ main_image }}:{{ version }}"
       command:
-        - entrypoint
+        - disk-virt-customize
       args:
         - '--verbose'
         - $(params.verbose)

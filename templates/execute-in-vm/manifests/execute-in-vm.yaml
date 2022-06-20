@@ -59,7 +59,7 @@ spec:
     - name: execute-in-vm
       image: "{{ main_image }}:{{ version }}"
       command:
-        - entrypoint
+        - execute-in-vm
       args:
 {% if is_cleanup %}
         - '--stop'

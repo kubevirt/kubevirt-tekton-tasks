@@ -32,7 +32,7 @@ spec:
     - name: run-virt-customize
       image: "quay.io/kubevirt/tekton-task-disk-virt-customize:v0.9.2"
       command:
-        - entrypoint
+        - disk-virt-customize
       args:
         - '--verbose'
         - $(params.verbose)
