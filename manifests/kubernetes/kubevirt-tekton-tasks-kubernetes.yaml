@@ -133,6 +133,100 @@ apiVersion: tekton.dev/v1beta1
 kind: ClusterTask
 metadata:
   annotations:
+    task.kubevirt.io/associatedServiceAccount: create-data-object-task
+    manifest.params.task.kubevirt.io/type: resource-yaml
+    manifest.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
+    waitForSuccess.params.task.kubevirt.io/type: boolean
+  labels:
+    task.kubevirt.io/type: create-data-object
+    task.kubevirt.io/category: create-data-object
+  name: create-data-object
+spec:
+  description: >-
+    This task creates a data object (DataVolume or DataSource). It can optionally wait until CDI imports finish.
+  params:
+    - name: manifest
+      description: YAML manifest of a data object to be created.
+      type: string
+    - name: namespace
+      description: Namespace where to create the data object. (defaults to manifest namespace or active namespace)
+      default: ""
+      type: string
+    - name: waitForSuccess
+      description: Set to "true" or "false" if container should wait for Ready condition of the data object.
+      default: 'false'
+      type: string
+    - name: allowReplace
+      description: Allow replacing an already existing data object (same combination name/namespace). Allowed values true/false
+      type: string
+      default: "false"
+  results:
+    - name: name
+      description: The name of the data object that was created.
+    - name: namespace
+      description: The namespace of the data object that was created.
+  steps:
+    - name: create-data-object
+      image: "quay.io/kubevirt/tekton-task-create-data-object:v0.9.2"
+      command:
+        - create-data-object
+      args:
+        - "--output=yaml"
+      env:
+        - name: DATA_OBJECT_MANIFEST
+          value: $(params.manifest)
+        - name: DATA_OBJECT_NAMESPACE
+          value: $(params.namespace)
+        - name: WAIT_FOR_SUCCESS
+          value: $(params.waitForSuccess)
+        - name: ALLOW_REPLACE
+          value: $(params.allowReplace)
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: create-data-object-task
+rules:
+  - verbs:
+      - get
+      - create
+      - delete
+    apiGroups:
+      - cdi.kubevirt.io
+    resources:
+      - datavolumes
+      - datasources
+  - verbs:
+      - create
+    apiGroups:
+      - ""
+    resources:
+      - pods
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: create-data-object-task
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: create-data-object-task
+roleRef:
+  kind: ClusterRole
+  name: create-data-object-task
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: create-data-object-task
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
     task.kubevirt.io/associatedServiceAccount: create-vm-from-manifest-task
     manifest.params.task.kubevirt.io/type: resource-yaml
     manifest.params.task.kubevirt.io/kind: VirtualMachine

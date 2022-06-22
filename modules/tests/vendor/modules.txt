@@ -235,6 +235,7 @@ github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils
 ## explicit; go 1.18
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects
+github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datasource
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template
 # github.com/mailru/easyjson v0.7.7
