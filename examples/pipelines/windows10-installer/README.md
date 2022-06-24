@@ -35,6 +35,23 @@ This version is using templates, which are not available on Kubernetes.
 WIN_URL="https://software.download.prss.microsoft.com/db/Win10_21H2_English_x64.iso..."
 ```
 
+#### Obtaining a download URL in an automated way
+
+The script [`getisourl.py`](getisourl.py) can be used to automatically obtain a Windows 10 ISO download URL.
+
+The prerequisites are:
+
+- python3-selenium
+- chromedriver
+- chromium
+
+Run it as follows to initialize a WIN_URL variable.
+
+```bash
+# Real URL can look differently
+WIN_URL=$(./getisourl.py)
+```
+
 ### Prepare autounattend.xml ConfigMap
 
 1. Supply, generate or use the default autounattend.xml.
