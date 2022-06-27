@@ -5,7 +5,7 @@ metadata:
   name: virt-sysprep-updater
 spec:
   tasks:
-    - name: create-datavolume-from-manifest
+    - name: create-data-object
       params:
         - name: manifest
           value: |
@@ -28,11 +28,11 @@ spec:
           value: 'true'
       taskRef:
         kind: ClusterTask
-        name: create-datavolume-from-manifest
+        name: create-data-object
     - name: disk-virt-sysprep
       params:
         - name: pvc
-          value: "$(tasks.create-datavolume-from-manifest.results.name)"
+          value: "$(tasks.create-data-object.results.name)"
         - name: sysprepCommands
           value: |
             run-command yum update -y
@@ -42,7 +42,7 @@ spec:
         kind: ClusterTask
         name: disk-virt-sysprep
       runAfter:
-        - create-datavolume-from-manifest
+        - create-data-object
     - name: create-vm-from-manifest
       params:
         - name: manifest
@@ -98,7 +98,7 @@ spec:
                           chpasswd: { expire: False }
         - name: ownDataVolumes
           value:
-            - "rootdisk:$(tasks.create-datavolume-from-manifest.results.name)"
+            - "rootdisk:$(tasks.create-data-object.results.name)"
       runAfter:
         - disk-virt-sysprep
       taskRef:

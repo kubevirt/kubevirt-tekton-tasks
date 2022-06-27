@@ -3,7 +3,7 @@
 [Tekton Pipelines](https://github.com/tektoncd/pipeline) are CI/CD-style pipelines for Kubernetes.
 This repository provides KubeVirt-specific Tekton tasks, which focus on:
 
-- Creating and managing resources (VMs, DataVolumes)
+- Creating and managing resources (VMs, DataVolumes, DataSources)
 - Executing commands in VMs
 - Manipulating disk images with libguestfs tools
 
@@ -46,9 +46,9 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 - [copy-template](tasks/copy-template)
 - [modify-vm-template](tasks/modify-vm-template)
 
-#### Create DataVolumes
+#### Create data objects
 
-- [create-datavolume-from-manifest](tasks/create-datavolume-from-manifest)
+- [create-data-object](tasks/create-data-object)
 
 #### Generate SSH Keys
 

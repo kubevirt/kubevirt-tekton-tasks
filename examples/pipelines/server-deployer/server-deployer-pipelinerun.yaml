@@ -7,8 +7,8 @@ spec:
   pipelineRef:
     name: server-deployer
   serviceAccountNames:
-    - taskName: create-datavolume-from-manifest
-      serviceAccountName: create-datavolume-from-manifest-task
+    - taskName: create-data-object
+      serviceAccountName: create-data-object-task
     - taskName: generate-ssh-keys
       serviceAccountName: generate-ssh-keys-task
     - taskName: create-vm-from-manifest

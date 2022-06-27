@@ -5,7 +5,7 @@ metadata:
   name: server-deployer
 spec:
   tasks:
-    - name: create-datavolume-from-manifest
+    - name: create-data-object
       params:
         - name: manifest
           value: |
@@ -28,7 +28,7 @@ spec:
           value: 'true'
       taskRef:
         kind: ClusterTask
-        name: create-datavolume-from-manifest
+        name: create-data-object
     - name: generate-ssh-keys
       params:
         - name: privateKeyConnectionOptions
@@ -41,7 +41,7 @@ spec:
     - name: disk-virt-customize
       params:
         - name: pvc
-          value: "$(tasks.create-datavolume-from-manifest.results.name)"
+          value: "$(tasks.create-data-object.results.name)"
         - name: customizeCommands
           value: |
             install git,vim,pip
@@ -50,7 +50,7 @@ spec:
         kind: ClusterTask
         name: disk-virt-customize
       runAfter:
-        - create-datavolume-from-manifest
+        - create-data-object
     - name: create-vm-from-manifest
       params:
         - name: manifest
@@ -113,7 +113,7 @@ spec:
                           chpasswd: { expire: False }
         - name: ownDataVolumes
           value:
-            - "rootdisk:$(tasks.create-datavolume-from-manifest.results.name)"
+            - "rootdisk:$(tasks.create-data-object.results.name)"
       runAfter:
         - disk-virt-customize
         - generate-ssh-keys

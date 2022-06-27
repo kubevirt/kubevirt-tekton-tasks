@@ -5,6 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1beta12 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -76,6 +77,11 @@ func (d *TestDataVolume) AttachWithDiskName(diskName string) *TestDataVolume {
 	return d
 }
 
+func (d *TestDataVolume) WithNamespace(namespace string) *TestDataVolume {
+	d.Data.Namespace = namespace
+	return d
+}
+
 func (d *TestDataVolume) WithURLSource(url string) *TestDataVolume {
 	d.Data.Spec.Source.Blank = nil
 	d.Data.Spec.Source.HTTP = &v1beta12.DataVolumeSourceHTTP{
@@ -99,4 +105,9 @@ func (d *TestDataVolume) WithSize(size int64, scale resource.Scale) *TestDataVol
 
 func (d *TestDataVolume) Build() *v1beta12.DataVolume {
 	return d.Data
+}
+
+func (t *TestDataVolume) ToString() string {
+	outBytes, _ := yaml.Marshal(t.Data)
+	return string(outBytes)
 }

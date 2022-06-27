@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dv"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dataobject"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kubevirtv1 "kubevirt.io/api/core/v1"
@@ -41,7 +41,7 @@ func WaitForVM(kubevirtClient kubevirtcliv1.KubevirtClient,
 					name = dataVolume.Name
 				}
 
-				if name != "" && !dv.IsDataVolumeImportSuccessful(cdiClientSet, namespace, name) {
+				if name != "" && !dataobject.IsDataVolumeImportSuccessful(cdiClientSet, namespace, name) {
 					return false, nil
 				}
 			}
