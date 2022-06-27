@@ -15,7 +15,8 @@ In order to install the KubeVirt Tekton tasks in the active namespace you need t
 You have to repeat this for every namespace in which you'd like to run the tasks.
 
 ```bash
-VERSION=$(curl -s https://github.com/kubevirt/kubevirt-tekton-tasks/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
+VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt-tekton-tasks/releases | \
+            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
 kubectl apply -f "https://github.com/kubevirt/kubevirt-tekton-tasks/releases/download/${VERSION}/kubevirt-tekton-tasks-kubernetes.yaml"
 ```
 
@@ -27,7 +28,8 @@ In order to install the KubeVirt Tekton tasks with additional OKD-specific tasks
 You have to repeat this for every namespace in which you'd like to run the tasks.
 
 ```bash
-VERSION=$(curl -s https://github.com/kubevirt/kubevirt-tekton-tasks/releases/latest | grep -o "v[0-9]\.[0-9]*\.[0-9]*")
+VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt-tekton-tasks/releases | \
+            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
 kubectl apply -f "https://github.com/kubevirt/kubevirt-tekton-tasks/releases/download/${VERSION}/kubevirt-tekton-tasks-okd.yaml"
 ```
 
