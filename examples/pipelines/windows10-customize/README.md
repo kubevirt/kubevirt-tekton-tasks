@@ -2,7 +2,7 @@
 
 This pipeline clones the DataVolume of a basic and generalized Windows 10 installation and runs arbitrary customization
 commands through an unattend.xml after startup  of the VM. As an example a ConfigMap which installs Microsoft SQL
-Server Express and generalizes the VM after is included (`windows10-sqlserver`). For basic setup after the first start 
+Server Express and generalizes the VM after is included (`windows10-sqlserver`). For basic setup after the first start
 of a customized VM an example unattend.xml is included in the pipeline's ConfigMap `windows10-unattend`.
 
 The provided reference ConfigMap (`windows10-sqlserver`) boots Windows 10 into Audit mode, applies the customizations as
@@ -20,8 +20,9 @@ A new golden template is created after a successful customization through this v
 ## Links
 
 - [Windows 10 Customize Pipeline for Kubernetes](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/kubernetes/windows10-customize.yaml)
+- [Windows 10 Customize PipelineRun for Kubernetes](windows10-customize-pipelinerun-kubernetes.yaml)
 - [Windows 10 Customize Pipeline for OKD](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows10-customize.yaml)
-- For example PipelineRuns see commit message of [6226f6c](https://github.com/kubevirt/tekton-tasks-operator/commit/6226f6cde5c1f16801a5e818d3205bd2952ec18c)
+- [Windows 10 Customize PipelineRun for OKD](windows10-customize-pipelinerun-okd.yaml)
 
 ### Prepare unattend.xml ConfigMap
 
@@ -54,7 +55,7 @@ A new golden template is created after a successful customization through this v
 ```
 
 1. `copy-template-customize` copies the template defined by the pipeline parameters `sourceTemplateName` and `sourceTemplateNamespace`
-    to a new template with the name specified by parameter `customizeTemplateName` in the same namespace. 
+    to a new template with the name specified by parameter `customizeTemplateName` in the same namespace.
     An already existing template can be overwritten when setting `allowReplaceCustomizationTemplate` to `true`.
 2. `modify-vm-template-customize` sets the display name of the new Template and the dataVolumeTemplates, Disks and Volumes needed for the customization.
 3. `create-vm-from-template` task creates a VM from the newly created Template.
@@ -65,8 +66,8 @@ A new golden template is created after a successful customization through this v
 7. `copy-template-golden` copies the template defined by the pipeline parameters `sourceTemplateName` and `sourceTemplateNamespace`
    to a new template with the name specified by parameter `goldenTemplateName` in the same namespace.
    An already existing template can be overwritten when setting `allowReplaceGoldenTemplate` to `true`.
-8. `modify-vm-template-golden` sets the display name of the new Template and the dataVolumeTemplates, Disks and Volumes needed to create customized VMs. 
-9. The output artifact will be the `goldenTemplateName` Template with the customized Windows installation. 
+8. `modify-vm-template-golden` sets the display name of the new Template and the dataVolumeTemplates, Disks and Volumes needed to create customized VMs.
+9. The output artifact will be the `goldenTemplateName` Template with the customized Windows installation.
    From this template the user can create VMs with customizations applied.
    With the windows10-sqlserver ConfigMap VMs will boot into the Windows OOBE and need to be setup further before they can be used.
 
@@ -75,7 +76,7 @@ A new golden template is created after a successful customization through this v
 ```bash
 SOURCE_DV_NAME=example-dvname
 SOURCE_DV_NAMESPACE=example-dvnamespace
-kubectl apply -f windows10-customize-kubernetes.yaml
+kubectl apply -f windows10-customize.yaml
 sed 's!INSERT_NAME_OF_SOURCE_DATAVOLUME!'"$SOURCE_DV_NAME"'!g' windows10-customize-pipelinerun-kubernetes.yaml | \
 sed 's!INSERT_NAMESPACE_OF_SOURCE_DATAVOLUME!'"$SOURCE_DV_NAMESPACE"'!g' | \
 kubectl create -f -
@@ -84,6 +85,6 @@ kubectl create -f -
 ## How to run (OKD)
 
 ```bash
-oc apply -f windows10-customize-okd.yaml
+oc apply -f windows10-customize.yaml
 oc create -f windows10-customize-pipelinerun-okd.yaml
 ```

@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: windows10-customize-run-
+spec:
+  params:
+  - name: sourceDataVolumeName
+    value: INSERT_NAME_OF_SOURCE_DATAVOLUME
+  - name: sourceDataVolumeNamespace
+    value: INSERT_NAMESPACE_OF_SOURCE_DATAVOLUME
+  pipelineRef:
+    name: windows10-customize
+  serviceAccountNames:
+    - taskName: create-base-dv
+      serviceAccountName: create-data-object-task
+    - taskName: create-vm-from-manifest
+      serviceAccountName: create-vm-from-manifest-task
+    - taskName: wait-for-vmi-status
+      serviceAccountName: wait-for-vmi-status-task
+    - taskName: cleanup-vm
+      serviceAccountName: cleanup-vm-task
+status: {}
