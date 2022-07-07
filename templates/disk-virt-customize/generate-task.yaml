@@ -23,11 +23,12 @@
         - "{{ examples_taskruns_output_dir }}"
     - name: Generate example task runs
       template:
-        src: "{{ examples_templates_dir }}/{{ task_name }}-taskrun.yaml"
-        dest: "{{ examples_taskruns_output_dir }}/{{ item.taskrun_with_flavor_name }}.yaml"
+        src: "{{ examples_templates_dir }}/{{ item }}.yaml"
+        dest: "{{ examples_taskruns_output_dir }}/{{ item }}.yaml"
         mode: "{{ default_file_mode }}"
       with_items:
-        - { taskrun_with_flavor_name: "{{ task_name }}-taskrun" }
+        - "{{ task_name }}-taskrun"
+        - "{{ task_name }}-taskrun-workspace"
     - name: Generate README
       template:
         src: "{{ readmes_templates_dir }}/README.md"
