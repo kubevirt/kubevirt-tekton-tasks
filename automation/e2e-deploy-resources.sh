@@ -40,7 +40,14 @@ kubectl apply -f "https://github.com/kubevirt/containerized-data-importer/releas
 kubectl apply -f "https://github.com/kubevirt/containerized-data-importer/releases/download/${CDI_VERSION}/cdi-cr.yaml"
 
 # wait for tekton pipelines
-oc rollout status -n openshift-operators deployment/openshift-pipelines-operator --timeout 10m
+kubectl rollout status -n openshift-operators deployment/openshift-pipelines-operator --timeout 10m
+
+# wait until clustertasks tekton CRD is properly deployed
+timeout 10m bash <<- EOF
+  until kubectl get crd clustertasks.tekton.dev; do
+    sleep 5
+  done
+EOF
 
 # Wait for kubevirt to be available
 kubectl rollout status -n cdi deployment/cdi-operator --timeout 10m
