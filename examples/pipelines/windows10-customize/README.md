@@ -41,7 +41,7 @@ A new golden template is created after a successful customization through this v
 2. `create-vm-from-manifest` task creates a VM called `windows10-installer-*`
    from the base DV and with the customize ConfigMap attached as a CD-ROM. (Pipeline parameter `customizeConfigMapName`)
 3. `wait-for-vmi-status` task waits until the VM shuts down.
-4. `cleanup-vm` deletes the installer VM.
+4. `cleanup-vm` deletes the installer VM. (also in case of failure of the previous tasks)
 5. The output artifact will be the `windows10-base-*` DV with the customized Windows installation.
    It will boot into the Windows OOBE and needs to be setup further before it can be used. (depends on the applied customizations)
 6. The `windows10-unattend` ConfigMap can be used to boot the VM into the Desktop. (depends on the applied customizations)
@@ -49,9 +49,7 @@ A new golden template is created after a successful customization through this v
 ## Pipeline Description (OKD)
 
 ```
-  copy-template-customize --- modify-vm-template-customize --- create-vm-from-template --- wait-for-vmi-status --- create-base-dv --- cleanup-vm
-                                                                                                                                   |
-                                                                                                                                   -- copy-template-golden --- modify-vm-template-golden
+  copy-template-customize --- modify-vm-template-customize --- create-vm-from-template --- wait-for-vmi-status --- create-base-dv --- copy-template-golden --- modify-vm-template-golden --- cleanup-vm
 ```
 
 1. `copy-template-customize` copies the template defined by the pipeline parameters `sourceTemplateName` and `sourceTemplateNamespace`
@@ -62,11 +60,11 @@ A new golden template is created after a successful customization through this v
    A DV with the customize ConfigMap will be attached as CD-ROM. (Pipeline parameter `customizeConfigMapName`)
 4. `wait-for-vmi-status` task waits until the VM shuts down.
 5. `create-base-dv` task creates an DV called `windows10-base-*`, then it clones the DV of the customize VM into the new DV.
-6. `cleanup-vm` deletes the customize VM and all of its DVs.
-7. `copy-template-golden` copies the template defined by the pipeline parameters `sourceTemplateName` and `sourceTemplateNamespace`
+6. `copy-template-golden` copies the template defined by the pipeline parameters `sourceTemplateName` and `sourceTemplateNamespace`
    to a new template with the name specified by parameter `goldenTemplateName` in the same namespace.
    An already existing template can be overwritten when setting `allowReplaceGoldenTemplate` to `true`.
-8. `modify-vm-template-golden` sets the display name of the new Template and the dataVolumeTemplates, Disks and Volumes needed to create customized VMs.
+7. `modify-vm-template-golden` sets the display name of the new Template and the dataVolumeTemplates, Disks and Volumes needed to create customized VMs.
+8. `cleanup-vm` deletes the customize VM and all of its DVs. (also in case of failure of the previous tasks)
 9. The output artifact will be the `goldenTemplateName` Template with the customized Windows installation.
    From this template the user can create VMs with customizations applied.
    With the windows10-sqlserver ConfigMap VMs will boot into the Windows OOBE and need to be setup further before they can be used.

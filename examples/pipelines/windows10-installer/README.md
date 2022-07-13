@@ -75,7 +75,7 @@ WIN_URL=$(./getisourl.py | sed 's/&/\\&/g')
    from the empty DV and with the `windows10-source-*` DV attached as a CD-ROM.
    A second DV with the virtio-win ISO will also be attached. (Pipeline parameter `virtioContainerDiskName`)
 4. `wait-for-vmi-status` task waits until the VM shuts down.
-5. `cleanup-vm` deletes the installer VM and ISO DV.
+5. `cleanup-vm` deletes the installer VM and ISO DV. (also in case of failure of the previous tasks)
 6. The output artifact will be the `windows10-base-*` DV with the basic Windows installation.
    It will boot into the Windows OOBE and needs to be setup further before it can be used.
 
