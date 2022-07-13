@@ -30,6 +30,7 @@ This version is using templates, which are not available on Kubernetes.
 2. Fill in the edition and `English` language (other languages need to be updated in windows10-autounattend ConfigMap) and go to the download page.
 3. Right-click on the 64-bit download button and copy the download link. The link should be valid for 24 hours.
 4. Initialize a WIN_URL variable that will be used to create a DataVolume which will download this ISO into a PVC.
+   Make sure to escape `&` with `\&` for the example commands below to work.
 
 ```bash
 # Real URL can look differently
@@ -50,7 +51,7 @@ Run it as follows to initialize a WIN_URL variable.
 
 ```bash
 # Real URL can look differently
-WIN_URL=$(./getisourl.py)
+WIN_URL=$(./getisourl.py | sed 's/&/\\&/g')
 ```
 
 ### Prepare autounattend.xml ConfigMap
