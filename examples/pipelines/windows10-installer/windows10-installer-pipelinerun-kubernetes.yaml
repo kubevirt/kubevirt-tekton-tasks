@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: windows10-installer-run-
+spec:
+  params:
+  - name: winImageDownloadURL
+    value: INSERT_WINDOWS_ISO_URL
+  pipelineRef:
+    name: windows10-installer
+  serviceAccountNames:
+    - taskName: create-source-dv
+      serviceAccountName: create-data-object-task
+    - taskName: create-base-dv
+      serviceAccountName: create-data-object-task
+    - taskName: create-vm-from-manifest
+      serviceAccountName: create-vm-from-manifest-task
+    - taskName: wait-for-vmi-status
+      serviceAccountName: wait-for-vmi-status-task
+    - taskName: cleanup-vm
+      serviceAccountName: cleanup-vm-task
+status: {}

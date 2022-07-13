@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: windows10-customize-run-
+spec:
+  pipelineRef:
+    name: windows10-customize
+  serviceAccountNames:
+    - taskName: copy-template-customize
+      serviceAccountName: copy-template-task
+    - taskName: modify-vm-template-customize
+      serviceAccountName: modify-vm-template-task
+    - taskName: create-vm-from-template
+      serviceAccountName: create-vm-from-template-task
+    - taskName: wait-for-vmi-status
+      serviceAccountName: wait-for-vmi-status-task
+    - taskName: create-base-dv
+      serviceAccountName: create-data-object-task
+    - taskName: cleanup-vm
+      serviceAccountName: cleanup-vm-task
+    - taskName: copy-template-golden
+      serviceAccountName: copy-template-task
+    - taskName: modify-vm-template-golden
+      serviceAccountName: modify-vm-template-task
+status: {}

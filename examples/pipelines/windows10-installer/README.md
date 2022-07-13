@@ -19,8 +19,9 @@ This version is using templates, which are not available on Kubernetes.
 ## Links
 
 - [Windows 10 Installer Pipeline for Kubernetes](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/kubernetes/windows10-installer.yaml)
+- [Windows 10 Installer PipelineRun for Kubernetes](windows10-installer-pipelinerun-kubernetes.yaml)
 - [Windows 10 Installer Pipeline for OKD](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows10-installer.yaml)
-- For example PipelineRuns see commit message of [2c4daed](https://github.com/kubevirt/tekton-tasks-operator/commit/2c4daed4124654a765f69acdc2b1c7390ee3c2f4)
+- [Windows 10 Installer PipelineRun for OKD](windows10-installer-pipelinerun-okd.yaml)
 
 ### Obtain Windows ISO download URL
 
@@ -84,7 +85,7 @@ WIN_URL=$(./getisourl.py)
 ```
 
 1. `copy-template` copies the template defined by the pipeline parameters `sourceTemplateName` and `sourceTemplateNamespace`
-    to a new template with the name specified by parameter `installerTemplateName` in the same namespace. 
+    to a new template with the name specified by parameter `installerTemplateName` in the same namespace.
     An already existing template can be overwritten when setting `allowReplaceInstallerTemplate` to `true`.
 2. `modify-vm-template` sets the display name of the new Template and the dataVolumeTemplates, Disks and Volumes needed for the installation.
 3. `create-vm-from-template` task creates a VM from the newly created Template.
@@ -94,14 +95,14 @@ WIN_URL=$(./getisourl.py)
 5. `create-base-dv` task creates an DV with the specified name and namespace (Pipeline parameters `baseDvName` and `baseDvNamespace`).
     Then it clones the second DV of the installation VM into the new DV.
 6. `cleanup-vm` deletes the installer VM and all of its DVs.
-7. The output artifact will be the `baseDvName`/`baseDvNamespace` DV with the basic Windows installation. 
+7. The output artifact will be the `baseDvName`/`baseDvNamespace` DV with the basic Windows installation.
    It will boot into the Windows OOBE and needs to be setup further before it can be used.
 
 ## How to run (Kubernetes)
 
 ```bash
 WIN_URL="https://software.download.prss.microsoft.com/db/Win10_21H2_English_x64.iso..."
-kubectl apply -f windows10-installer-kubernetes.yaml
+kubectl apply -f windows10-installer.yaml
 sed 's!INSERT_WINDOWS_ISO_URL!'"$WIN_URL"'!g' windows10-installer-pipelinerun-kubernetes.yaml | kubectl create -f -
 ```
 
@@ -109,7 +110,7 @@ sed 's!INSERT_WINDOWS_ISO_URL!'"$WIN_URL"'!g' windows10-installer-pipelinerun-ku
 
 ```bash
 WIN_URL="https://software.download.prss.microsoft.com/db/Win10_21H2_English_x64.iso..."
-oc apply -f windows10-installer-okd.yaml
+oc apply -f windows10-installer.yaml
 sed 's!INSERT_WINDOWS_ISO_URL!'"$WIN_URL"'!g' windows10-installer-pipelinerun-okd.yaml | oc create -f -
 ```
 
