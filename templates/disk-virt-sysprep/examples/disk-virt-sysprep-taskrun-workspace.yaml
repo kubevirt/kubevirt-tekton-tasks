@@ -1,3 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ item }}
+type: Opaque
+stringData:
+  password: mysecretpassword
 ---
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
@@ -18,3 +25,8 @@ spec:
         update
         install make,ansible
         operations firewall-rules,defaults
+        root-password file:/data/password
+  workspaces:
+    - name: data
+      secret:
+        name: {{ item }}

@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  name: {{ item.taskrun_with_flavor_name }}
+  name: {{ item }}
 spec:
 {% if task_yaml.metadata.annotations['task.kubevirt.io/associatedServiceAccount'] is defined %}
   serviceAccountName: {{ sa_name }}

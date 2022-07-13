@@ -67,3 +67,10 @@ spec:
     - name: targetpvc
       persistentVolumeClaim:
         claimName: $(params.pvc)
+  workspaces:
+    - name: data
+      description: |
+        An optional workspace that may contain files or secrets to be
+        used during the virt-sysprep run.
+      optional: true
+      mountPath: /data
