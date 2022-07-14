@@ -61,6 +61,11 @@ func (d *TestDataSource) WithSourcePVC(name, namespace string) *TestDataSource {
 	return d
 }
 
+func (d *TestDataSource) WithGenerateName(generateName string) *TestDataSource {
+	d.Data.GenerateName = generateName
+	return d
+}
+
 func (d *TestDataSource) Build() *cdiv1beta1.DataSource {
 	return d.Data
 }

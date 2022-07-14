@@ -93,7 +93,10 @@ var _ = Describe("Create data objects", func() {
 					CreateDataObjectResults.Namespace: dv.Namespace,
 				})
 
-			err := dataobject.WaitForSuccessfulDataVolume(f.CdiClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
+			dv, err := f.CdiClient.DataVolumes(dv.Namespace).Get(context.TODO(), dv.Name, metav1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			err = dataobject.WaitForSuccessfulDataVolume(f.CdiClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
 			Expect(err).ShouldNot(HaveOccurred())
 		},
 			Entry("blank no wait", &testconfigs.CreateDataObjectTestConfig{
@@ -128,6 +131,32 @@ var _ = Describe("Create data objects", func() {
 				},
 			}),
 		)
+
+		It("DataVolume and PVC is created successfully with generateName", func() {
+			config := &testconfigs.CreateDataObjectTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateDataObjectServiceAccountName,
+					Timeout:        Timeouts.SmallDVCreation,
+				},
+				TaskData: testconfigs.CreateDataObjectTaskData{
+					DataVolume:     datavolume.NewBlankDataVolume("").WithGenerateName("blank-wait-").Build(),
+					WaitForSuccess: true,
+				},
+			}
+			f.TestSetup(config)
+
+			results := runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				GetResults()
+
+			dv := config.TaskData.DataVolume
+			dv.Name = results[CreateDataObjectResults.Name]
+			f.ManageDataVolumes(dv)
+
+			err := dataobject.WaitForSuccessfulDataVolume(f.CdiClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
+			Expect(err).ShouldNot(HaveOccurred())
+		})
 
 		It("TaskRun fails and DataVolume is created but does not import successfully", func() {
 			config := &testconfigs.CreateDataObjectTestConfig{
@@ -338,7 +367,7 @@ var _ = Describe("Create data objects", func() {
 					Timeout:        Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.CreateDataObjectTaskData{
-					DataSource:     datasource.NewDataSource("blank").Build(),
+					DataSource:     datasource.NewDataSource("blank-wait").Build(),
 					WaitForSuccess: true,
 				},
 			}),
@@ -355,6 +384,43 @@ var _ = Describe("Create data objects", func() {
 				},
 			}),
 		)
+
+		It("DataSource is created successfully with generateName", func() {
+			config := &testconfigs.CreateDataObjectTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateDataObjectServiceAccountName,
+					Timeout:        Timeouts.SmallDVCreation,
+				},
+				TaskData: testconfigs.CreateDataObjectTaskData{
+					DataSource:     datasource.NewDataSource("").WithGenerateName("blank-wait-").Build(),
+					WaitForSuccess: true,
+				},
+			}
+			f.TestSetup(config)
+
+			ds := config.TaskData.DataSource
+			dv := datavolume.NewBlankDataVolume("blank-wait").Build()
+			f.ManageDataVolumes(dv)
+
+			dv, err := f.CdiClient.DataVolumes(ds.Namespace).Create(context.TODO(), dv, metav1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			ds.Spec.Source.PVC = &cdiv1beta1.DataVolumeSourcePVC{
+				Name:      dv.Name,
+				Namespace: dv.Namespace,
+			}
+
+			results := runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				GetResults()
+
+			ds.Name = results[CreateDataObjectResults.Name]
+			f.ManageDataSources(ds)
+
+			err = dataobject.WaitForSuccessfulDataSource(f.CdiClient, ds.Namespace, ds.Name, config.GetWaitForDataObjectTimeout())
+			Expect(err).ShouldNot(HaveOccurred())
+		})
 
 		It("TaskRun fails and DataSource is created but does not get ready", func() {
 			config := &testconfigs.CreateDataObjectTestConfig{
