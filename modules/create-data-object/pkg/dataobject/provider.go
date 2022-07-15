@@ -8,8 +8,10 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/discovery"
@@ -27,7 +29,7 @@ type dataObjectProvider struct {
 type DataObjectProvider interface {
 	GetDv(string, string) (*cdiv1beta1.DataVolume, error)
 	GetDs(string, string) (*cdiv1beta1.DataSource, error)
-	CreateDo(*unstructured.Unstructured, bool) error
+	CreateDo(*unstructured.Unstructured, bool) (*unstructured.Unstructured, error)
 }
 
 func NewDataObjectProvider(client cdiclientv1beta1.CdiV1beta1Interface) DataObjectProvider {
@@ -44,26 +46,41 @@ func (d *dataObjectProvider) GetDs(namespace string, name string) (*cdiv1beta1.D
 	return d.client.DataSources(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 }
 
-func (d *dataObjectProvider) CreateDo(obj *unstructured.Unstructured, allowReplace bool) error {
+func (d *dataObjectProvider) CreateDo(obj *unstructured.Unstructured, allowReplace bool) (*unstructured.Unstructured, error) {
 	dc := discovery.NewDiscoveryClient(d.client.RESTClient())
 	mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
 
 	gvk := obj.GroupVersionKind()
 	mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	helper := resource.NewHelper(d.client.RESTClient(), mapping)
 
-	existing, err := helper.Get(obj.GetNamespace(), obj.GetName())
-	if existing != nil && allowReplace {
-		if _, err := helper.Delete(obj.GetNamespace(), obj.GetName()); err != nil {
-			return err
+	if allowReplace && obj.GetName() != "" {
+		_, err = helper.Get(obj.GetNamespace(), obj.GetName())
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				return nil, err
+			}
+		} else {
+			if _, err := helper.Delete(obj.GetNamespace(), obj.GetName()); err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	_, err = helper.Create(obj.GetNamespace(), false, obj)
-	return err
+	createdObj, err := helper.Create(obj.GetNamespace(), false, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	unstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(createdObj)
+	if err != nil {
+		return nil, err
+	}
+
+	return &unstructured.Unstructured{Object: unstructuredObj}, nil
 }
 
 type DataObjectCreator struct {
@@ -89,7 +106,7 @@ func (d *DataObjectCreator) CreateDataObject() (*unstructured.Unstructured, erro
 	do := d.cliOptions.GetUnstructuredDataObject()
 	do.SetNamespace(d.cliOptions.GetDataObjectNamespace())
 
-	var waitForSuccess func() error
+	var waitForSuccess func(string, string) error
 	switch do.GetKind() {
 	case constants.DataVolumeKind:
 		waitForSuccess = d.waitForSuccessDv
@@ -99,25 +116,24 @@ func (d *DataObjectCreator) CreateDataObject() (*unstructured.Unstructured, erro
 		return nil, zerrors.NewSoftError("unsupported data object kind")
 	}
 
-	err := d.dataObjectProvider.CreateDo(&do, d.cliOptions.GetAllowReplace())
+	createdDo, err := d.dataObjectProvider.CreateDo(&do, d.cliOptions.GetAllowReplace())
 	if err != nil {
 		return nil, zerrors.NewSoftError("could not create data object: %v", err.Error())
 	}
 
 	if d.cliOptions.GetWaitForSuccess() {
-		log.Logger().Debug("waiting for success of data object", zap.Reflect("do", do))
-		if err := waitForSuccess(); err != nil {
+		log.Logger().Debug("waiting for success of data object", zap.Reflect("createdDo", createdDo))
+		if err := waitForSuccess(createdDo.GetNamespace(), createdDo.GetName()); err != nil {
 			return nil, zerrors.NewSoftError("Failed to wait for success of data object: %v", err.Error())
 		}
 	}
 
-	return &do, nil
+	return createdDo, nil
 }
 
-func (d *DataObjectCreator) waitForSuccessDv() error {
+func (d *DataObjectCreator) waitForSuccessDv(namespace, name string) error {
 	return wait.PollImmediate(constants.PollInterval, constants.PollTimeout, func() (bool, error) {
-		do := d.cliOptions.GetUnstructuredDataObject()
-		dv, err := d.dataObjectProvider.GetDv(do.GetNamespace(), do.GetName())
+		dv, err := d.dataObjectProvider.GetDv(namespace, name)
 		if err != nil {
 			return false, err
 		}
@@ -138,10 +154,9 @@ func (d *DataObjectCreator) waitForSuccessDv() error {
 	})
 }
 
-func (d *DataObjectCreator) waitForSuccessDs() error {
+func (d *DataObjectCreator) waitForSuccessDs(namespace, name string) error {
 	return wait.PollImmediate(constants.PollInterval, constants.PollTimeout, func() (bool, error) {
-		do := d.cliOptions.GetUnstructuredDataObject()
-		ds, err := d.dataObjectProvider.GetDs(do.GetNamespace(), do.GetName())
+		ds, err := d.dataObjectProvider.GetDs(namespace, name)
 		if err != nil {
 			return false, err
 		}

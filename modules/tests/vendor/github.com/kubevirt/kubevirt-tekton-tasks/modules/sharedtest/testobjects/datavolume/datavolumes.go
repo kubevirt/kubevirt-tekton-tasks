@@ -103,6 +103,11 @@ func (d *TestDataVolume) WithSize(size int64, scale resource.Scale) *TestDataVol
 	return d
 }
 
+func (d *TestDataVolume) WithGenerateName(generateName string) *TestDataVolume {
+	d.Data.GenerateName = generateName
+	return d
+}
+
 func (d *TestDataVolume) Build() *v1beta12.DataVolume {
 	return d.Data
 }
