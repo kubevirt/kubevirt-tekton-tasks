@@ -1,12 +1,17 @@
 package testconfigs
 
 import (
+	"time"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"time"
 )
 
 type TaskRunExpectedTermination struct {
+	ExitCode int32
+}
+
+type PipelineRunExpectedTermination struct {
 	ExitCode int32
 }
 
