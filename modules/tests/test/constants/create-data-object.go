@@ -10,15 +10,23 @@ const (
 )
 
 type createDataObjectParams struct {
-	Manifest       string
-	WaitForSuccess string
-	AllowReplace   string
+	Manifest            string
+	WaitForSuccess      string
+	AllowReplace        string
+	DeleteObject        string
+	DeleteObjectName    string
+	DeleteObjectKind    string
+	DataObjectNamespace string
 }
 
 var CreateDataObjectParams = createDataObjectParams{
-	Manifest:       "manifest",
-	WaitForSuccess: "waitForSuccess",
-	AllowReplace:   "allowReplace",
+	Manifest:            "manifest",
+	WaitForSuccess:      "waitForSuccess",
+	AllowReplace:        "allowReplace",
+	DeleteObject:        "deleteObject",
+	DeleteObjectName:    "deleteObjectName",
+	DeleteObjectKind:    "deleteObjectKind",
+	DataObjectNamespace: "namespace",
 }
 
 type createDataObjectResults struct {

@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"time"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datasource"
@@ -13,6 +14,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
@@ -568,6 +570,172 @@ var _ = Describe("Create data objects", func() {
 				},
 				TaskData: testconfigs.CreateDataObjectTaskData{
 					RawManifest: testobjects.NewTestAlpineVM("alpine-vm").ToString(),
+				},
+			}),
+		)
+	})
+
+	Describe("Delete DataSource", func() {
+		DescribeTable("TaskRun fails and dataSource is not deleted", func(config *testconfigs.CreateDataObjectTestConfig) {
+			f.TestSetup(config)
+
+			dsNamespace := config.TaskData.DataSource.Namespace
+
+			ds, err := f.CdiClient.DataSources(dsNamespace).Create(context.TODO(), config.TaskData.DataSource, metav1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageDataSources(ds)
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectFailure().
+				ExpectLogs(config.GetAllExpectedLogs()...)
+
+			ds, err = f.CdiClient.DataSources(dsNamespace).Get(context.TODO(), ds.Name, metav1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(ds).ToNot(BeNil(), "dataSource should exists")
+		},
+			Entry("missing kind", &testconfigs.CreateDataObjectTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateDataObjectServiceAccountName,
+					Timeout:        Timeouts.QuickTaskRun,
+					ExpectedLogs:   "object-kind param has to be specified",
+				},
+				TaskData: testconfigs.CreateDataObjectTaskData{
+					DataSource:       datasource.NewDataSource("existing-ds").Build(),
+					DeleteObjectName: datasource.NewDataSource("existing-ds").Build().Name,
+					DeleteObject:     true,
+				},
+			}),
+			Entry("Unsupported kind", &testconfigs.CreateDataObjectTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateDataObjectServiceAccountName,
+					Timeout:        Timeouts.QuickTaskRun,
+					ExpectedLogs:   "name param has to be specified",
+				},
+				TaskData: testconfigs.CreateDataObjectTaskData{
+					DataSource:       datasource.NewDataSource("existing-ds").Build(),
+					DeleteObject:     true,
+					DeleteObjectKind: "DataSource",
+				},
+			}),
+		)
+		It("Existing DataSource is deleted", func() {
+			ds := datasource.NewDataSource("existing-ds").Build()
+
+			config := &testconfigs.CreateDataObjectTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateDataObjectServiceAccountName,
+					Timeout:        Timeouts.QuickTaskRun,
+				},
+				TaskData: testconfigs.CreateDataObjectTaskData{
+					DataSource:       ds,
+					DeleteObjectName: ds.Name,
+					DeleteObject:     true,
+					DeleteObjectKind: "DataSource",
+				},
+			}
+			f.TestSetup(config)
+
+			dsName := config.TaskData.DataSource.Name
+			dsNamespace := config.TaskData.DataSource.Namespace
+
+			ds, err := f.CdiClient.DataSources(dsNamespace).Create(context.TODO(), ds, metav1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageDataSources(ds)
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess()
+
+			Eventually(func(g Gomega) {
+				if _, err := f.CdiClient.DataSources(dsNamespace).Get(context.TODO(), dsName, metav1.GetOptions{}); err != nil {
+					g.Expect(errors.ReasonForError(err)).To(Equal(metav1.StatusReasonNotFound))
+				}
+			}, Timeouts.TaskRunExtraWaitDelay.Duration, time.Second).Should(Succeed(), "DataSource should be deleted")
+
+		})
+	})
+
+	Describe("Delete DataVolume", func() {
+		It("Existing DataVolume is deleted", func() {
+			dv := datavolume.NewBlankDataVolume("existing-ds").Build()
+
+			config := &testconfigs.CreateDataObjectTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateDataObjectServiceAccountName,
+					Timeout:        Timeouts.QuickTaskRun,
+				},
+				TaskData: testconfigs.CreateDataObjectTaskData{
+					DataVolume:       dv,
+					DeleteObjectName: dv.Name,
+					DeleteObject:     true,
+					DeleteObjectKind: "DataVolume",
+				},
+			}
+			f.TestSetup(config)
+
+			dvName := config.TaskData.DataVolume.Name
+			dvNamespace := config.TaskData.DataVolume.Namespace
+
+			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.TODO(), dv, metav1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageDataVolumes(dv)
+
+			err = dataobject.WaitForSuccessfulDataVolume(f.CdiClient, dv.Namespace, dv.Name, 5*time.Minute)
+			Expect(err).ToNot(HaveOccurred())
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess()
+
+			Eventually(func(g Gomega) {
+				if _, err := f.CdiClient.DataVolumes(dvNamespace).Get(context.TODO(), dvName, metav1.GetOptions{}); err != nil {
+					g.Expect(errors.ReasonForError(err)).To(Equal(metav1.StatusReasonNotFound))
+				}
+			}, Timeouts.TaskRunExtraWaitDelay.Duration, time.Second).Should(Succeed(), "DataVolume should be deleted")
+
+		})
+
+		DescribeTable("TaskRun fails and datavolume is not deleted", func(config *testconfigs.CreateDataObjectTestConfig) {
+			f.TestSetup(config)
+
+			dsNamespace := config.TaskData.DataVolume.Namespace
+
+			dv, err := f.CdiClient.DataVolumes(dsNamespace).Create(context.TODO(), config.TaskData.DataVolume, metav1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageDataVolumes(dv)
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectFailure().
+				ExpectLogs(config.GetAllExpectedLogs()...)
+
+			dv, err = f.CdiClient.DataVolumes(dsNamespace).Get(context.TODO(), dv.Name, metav1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(dv).ToNot(BeNil(), "dataSource should exists")
+		},
+			Entry("missing kind", &testconfigs.CreateDataObjectTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateDataObjectServiceAccountName,
+					Timeout:        Timeouts.QuickTaskRun,
+					ExpectedLogs:   "object-kind param has to be specified",
+				},
+				TaskData: testconfigs.CreateDataObjectTaskData{
+					DataVolume:       datavolume.NewBlankDataVolume("existing-ds").Build(),
+					DeleteObjectName: datavolume.NewBlankDataVolume("existing-ds").Build().Name,
+					DeleteObject:     true,
+				},
+			}),
+			Entry("Unsupported kind", &testconfigs.CreateDataObjectTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateDataObjectServiceAccountName,
+					Timeout:        Timeouts.QuickTaskRun,
+					ExpectedLogs:   "name param has to be specified",
+				},
+				TaskData: testconfigs.CreateDataObjectTaskData{
+					DataVolume:       datavolume.NewBlankDataVolume("existing-ds").Build(),
+					DeleteObject:     true,
+					DeleteObjectKind: "DataVolume",
 				},
 			}),
 		)

@@ -130,7 +130,6 @@ func (f *Framework) AfterEach() {
 			defer f.TknClient.PipelineRuns(pipelineRun.Namespace).Delete(context.TODO(), pipelineRun.Name, metav1.DeleteOptions{})
 		}
 	}
-
 	for _, pipeline := range f.managedResources.pipelines {
 		defer f.TknClient.Pipelines(pipeline.Namespace).Delete(context.TODO(), pipeline.Name, metav1.DeleteOptions{})
 	}

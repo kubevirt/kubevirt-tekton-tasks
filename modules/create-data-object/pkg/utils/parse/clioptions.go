@@ -16,12 +16,17 @@ import (
 
 const (
 	dataObjectManifestOptionName = "data-object-manifest"
+	objectKindOptionName         = "delete-object-kind"
+	nameOptionName               = "delete-object-name"
 )
 
 type CLIOptions struct {
 	DataObjectManifest  string            `arg:"--data-object-manifest,env:DATA_OBJECT_MANIFEST" placeholder:"MANIFEST" help:"YAML manifest of a data object to be created (can be set by DATA_OBJECT_MANIFEST env variable)."`
 	DataObjectNamespace string            `arg:"--data-object-namespace,env:DATA_OBJECT_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace where to create the data object (can be set by DATA_OBJECT_NAMESPACE env variable)."`
 	WaitForSuccess      string            `arg:"--wait-for-success,env:WAIT_FOR_SUCCESS" help:"Set to \"true\" or \"false\" if container should wait for Ready condition of a DataVolume (can be set by WAIT_FOR_SUCCESS env variable)."`
+	DeleteObjectName    string            `arg:"--delete-object-name,env:DELETE_OBJECT_NAME" help:"Name of the data object to delete. This parameter is used only for Delete operation."`
+	DeleteObject        string            `arg:"--delete-object,env:DELETE_OBJECT" help:"Delete data object with given name. Parameters name, object-kind have to be defined."`
+	DeleteObjectKind    string            `arg:"--delete-object-kind,env:DELETE_OBJECT_KIND" help:"Kind of the data object to delete. This parameter is used only for Delete operation."`
 	AllowReplace        string            `arg:"--allow-replace,env:ALLOW_REPLACE" placeholder:"false" help:"Allow replacing an already existing data object (same combination name/namespace). Allowed values true/false (can be set by ALLOW_REPLACE env variable)."`
 	Output              output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
 	Debug               bool              `arg:"--debug" help:"Sets DEBUG log level"`
@@ -52,6 +57,18 @@ func (c *CLIOptions) GetAllowReplace() bool {
 	return c.AllowReplace == "true"
 }
 
+func (c *CLIOptions) GetDeleteObject() bool {
+	return c.DeleteObject == "true"
+}
+
+func (c *CLIOptions) GetObjectKind() string {
+	return c.DeleteObjectKind
+}
+
+func (c *CLIOptions) GetName() string {
+	return c.DeleteObjectName
+}
+
 func (c *CLIOptions) GetUnstructuredDataObject() unstructured.Unstructured {
 	return c.unstructuredDataObject
 }
@@ -63,8 +80,10 @@ func (c *CLIOptions) Init() error {
 		return err
 	}
 
-	if err := c.assertValidTypes(); err != nil {
-		return err
+	if !c.GetDeleteObject() {
+		if err := c.assertValidTypes(); err != nil {
+			return err
+		}
 	}
 
 	if err := c.setValues(); err != nil {
@@ -98,6 +117,21 @@ func (c *CLIOptions) trimSpaces() {
 }
 
 func (c *CLIOptions) assertValidParams() error {
+	if c.DeleteObject == "true" {
+		if c.DeleteObjectKind == "" {
+			return zerrors.NewMissingRequiredError("%s param has to be specified", objectKindOptionName)
+		}
+
+		if c.DeleteObjectName == "" {
+			return zerrors.NewMissingRequiredError("%s param has to be specified", nameOptionName)
+		}
+
+		if c.DeleteObjectKind != constants.DataVolumeKind && c.DeleteObjectKind != constants.DataSourceKind {
+			return zerrors.NewMissingRequiredError("%s param has to have values %s or %s", objectKindOptionName, constants.DataVolumeKind, constants.DataSourceKind)
+		}
+		return nil
+	}
+
 	if c.DataObjectManifest == "" {
 		return zerrors.NewMissingRequiredError("%s param has to be specified", dataObjectManifestOptionName)
 	}

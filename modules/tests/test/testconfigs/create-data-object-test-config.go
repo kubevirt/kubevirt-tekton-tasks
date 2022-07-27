@@ -13,12 +13,16 @@ import (
 )
 
 type CreateDataObjectTaskData struct {
-	DataVolume     *cdiv1beta1.DataVolume
-	DataSource     *cdiv1beta1.DataSource
-	RawManifest    string
-	WaitForSuccess bool
-	AllowReplace   bool
-	Namespace      TargetNamespace
+	DataVolume          *cdiv1beta1.DataVolume
+	DataSource          *cdiv1beta1.DataSource
+	RawManifest         string
+	WaitForSuccess      bool
+	AllowReplace        bool
+	DeleteObject        bool
+	DeleteObjectName    string
+	DeleteObjectKind    string
+	Namespace           TargetNamespace
+	dataObjectNamespace string
 }
 
 type CreateDataObjectTestConfig struct {
@@ -55,6 +59,11 @@ func (c *CreateDataObjectTestConfig) Init(options *testoptions.TestOptions) {
 		if options.StorageClass != "" {
 			dv.Spec.PVC.StorageClassName = &options.StorageClass
 		}
+		if c.TaskData.DeleteObjectName != "" {
+			c.TaskData.DeleteObjectName = dv.Name
+		}
+
+		c.TaskData.dataObjectNamespace = dv.Namespace
 	}
 
 	if c.TaskData.DataSource != nil {
@@ -65,6 +74,10 @@ func (c *CreateDataObjectTestConfig) Init(options *testoptions.TestOptions) {
 			ds.Name = E2ETestsRandomName(ds.Name)
 		}
 		ds.Namespace = options.ResolveNamespace(c.TaskData.Namespace, "")
+		if c.TaskData.DeleteObjectName != "" {
+			c.TaskData.DeleteObjectName = ds.Name
+		}
+		c.TaskData.dataObjectNamespace = ds.Namespace
 	}
 
 	if count > 1 {
@@ -125,6 +138,34 @@ func (c *CreateDataObjectTestConfig) GetTaskRun() *v1beta1.TaskRun {
 					Value: v1beta1.ArrayOrString{
 						Type:      v1beta1.ParamTypeString,
 						StringVal: ToStringBoolean(c.TaskData.AllowReplace),
+					},
+				},
+				{
+					Name: CreateDataObjectParams.DeleteObject,
+					Value: v1beta1.ArrayOrString{
+						Type:      v1beta1.ParamTypeString,
+						StringVal: ToStringBoolean(c.TaskData.DeleteObject),
+					},
+				},
+				{
+					Name: CreateDataObjectParams.DeleteObjectName,
+					Value: v1beta1.ArrayOrString{
+						Type:      v1beta1.ParamTypeString,
+						StringVal: c.TaskData.DeleteObjectName,
+					},
+				},
+				{
+					Name: CreateDataObjectParams.DeleteObjectKind,
+					Value: v1beta1.ArrayOrString{
+						Type:      v1beta1.ParamTypeString,
+						StringVal: c.TaskData.DeleteObjectKind,
+					},
+				},
+				{
+					Name: CreateDataObjectParams.DataObjectNamespace,
+					Value: v1beta1.ArrayOrString{
+						Type:      v1beta1.ParamTypeString,
+						StringVal: c.TaskData.dataObjectNamespace,
 					},
 				},
 			},

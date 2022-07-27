@@ -8,6 +8,7 @@ const (
 	DataObjectCreatorErrorCode = 1
 	CreateDataObjectErrorCode  = 2
 	WriteResultsExitCode       = 3
+	DeleteObjectExitCode       = 4
 )
 
 // apiVersion and kinds
