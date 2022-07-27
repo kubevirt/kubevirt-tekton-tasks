@@ -1,0 +1,112 @@
+package tekton
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"sync"
+	"time"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/clients"
+
+	. "github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
+	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	tkntest "github.com/tektoncd/pipeline/test"
+
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"sigs.k8s.io/yaml"
+)
+
+type taskRunsLogs struct {
+	mu   sync.Mutex
+	logs map[string]string
+}
+
+func (l *taskRunsLogs) getLog(podName string) string {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return l.logs[podName]
+}
+
+func (l *taskRunsLogs) setLog(podName, log string) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.logs[podName] = log
+}
+
+func (l *taskRunsLogs) getAllLogs() string {
+	logs := ""
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	for podName, podLog := range l.logs {
+		logs += fmt.Sprintf("\n %s: %s", podName, podLog)
+	}
+	return logs
+}
+
+func WaitForPipelineRunState(clients *clients.Clients, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) (*v1beta1.PipelineRun, string) {
+	pipelinePodsLogs := taskRunsLogs{}
+	pipelinePodsLogs.logs = make(map[string]string)
+	var wg sync.WaitGroup
+	err := wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
+		pipelineRun, err := clients.TknClient.PipelineRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+		if err != nil {
+			return true, err
+		}
+
+		for _, taskRun := range pipelineRun.Status.TaskRuns {
+			podName := taskRun.Status.PodName
+			if pipelinePodsLogs.getLog(podName) == "" && podName != "" {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					req := clients.CoreV1Client.Pods(namespace).GetLogs(podName, &v1.PodLogOptions{
+						Follow: true,
+					})
+					podLogs, err := req.Stream(context.TODO())
+					//when an error occurs, just log the reason and try to get the logs in the next iteration
+					if err != nil {
+						fmt.Printf("error while loading pod %s/%s log: %s", namespace, podName, err.Error())
+						return
+					}
+
+					defer podLogs.Close()
+					defer GinkgoRecover()
+
+					result, err := io.ReadAll(podLogs)
+					pipelinePodsLogs.setLog(podName, string(result))
+
+					gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+				}()
+			}
+		}
+
+		return inState(&pipelineRun.Status)
+	})
+	wg.Wait()
+	logs := pipelinePodsLogs.getAllLogs()
+
+	if err != nil {
+		fmt.Println(logs)
+	}
+
+	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+	pipelineRun, err := clients.TknClient.PipelineRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+	return pipelineRun, logs
+}
+
+func PrintPipelineRunDebugInfo(clients *clients.Clients, pipelineRunNamespace, pipelineRunName string) {
+	// print conditions
+	pipelineRun, err := clients.TknClient.PipelineRuns(pipelineRunNamespace).Get(context.TODO(), pipelineRunName, metav1.GetOptions{})
+	if err == nil {
+		conditions, _ := yaml.Marshal(pipelineRun.Status.Conditions)
+		fmt.Printf("pipelineRun conditions:\n%v\n", string(conditions))
+	}
+}

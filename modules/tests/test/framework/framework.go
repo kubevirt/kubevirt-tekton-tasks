@@ -21,12 +21,14 @@ var TestOptionsInstance = &testoptions.TestOptions{}
 var ClientsInstance = &clients.Clients{}
 
 type ManagedResources struct {
-	taskRuns    []*pipev1beta1.TaskRun
-	dataVolumes []*cdiv1beta1.DataVolume
-	dataSources []*cdiv1beta1.DataSource
-	vms         []*kubevirtv1.VirtualMachine
-	templates   []*templatev1.Template
-	secrets     []*corev1.Secret
+	taskRuns     []*pipev1beta1.TaskRun
+	pipelineRuns []*pipev1beta1.PipelineRun
+	pipelines    []*pipev1beta1.Pipeline
+	dataVolumes  []*cdiv1beta1.DataVolume
+	dataSources  []*cdiv1beta1.DataSource
+	vms          []*kubevirtv1.VirtualMachine
+	templates    []*templatev1.Template
+	secrets      []*corev1.Secret
 }
 type Framework struct {
 	*testoptions.TestOptions
@@ -94,6 +96,7 @@ func (f *Framework) TestSetup(config TestConfig) {
 func (f *Framework) AfterEach() {
 	failed := CurrentSpecReport().Failed()
 	taskRuns := f.managedResources.taskRuns
+	pipelineRuns := f.managedResources.pipelineRuns
 
 	if failed {
 		defer func() {
@@ -101,9 +104,15 @@ func (f *Framework) AfterEach() {
 				for _, taskRun := range taskRuns {
 					defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(context.TODO(), taskRun.Name, metav1.DeleteOptions{})
 				}
+				for _, pipelineRun := range pipelineRuns {
+					defer f.TknClient.PipelineRuns(pipelineRun.Namespace).Delete(context.TODO(), pipelineRun.Name, metav1.DeleteOptions{})
+				}
 			}
 			for _, taskRun := range taskRuns {
 				tekton.PrintTaskRunDebugInfo(f.Clients, taskRun.Namespace, taskRun.Name)
+			}
+			for _, pipelineRun := range pipelineRuns {
+				tekton.PrintPipelineRunDebugInfo(f.Clients, pipelineRun.Namespace, pipelineRun.Name)
 			}
 		}()
 	}
@@ -117,8 +126,14 @@ func (f *Framework) AfterEach() {
 		for _, taskRun := range taskRuns {
 			defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(context.TODO(), taskRun.Name, metav1.DeleteOptions{})
 		}
+		for _, pipelineRun := range pipelineRuns {
+			defer f.TknClient.PipelineRuns(pipelineRun.Namespace).Delete(context.TODO(), pipelineRun.Name, metav1.DeleteOptions{})
+		}
 	}
 
+	for _, pipeline := range f.managedResources.pipelines {
+		defer f.TknClient.Pipelines(pipeline.Namespace).Delete(context.TODO(), pipeline.Name, metav1.DeleteOptions{})
+	}
 	for _, dv := range f.managedResources.dataVolumes {
 		defer f.CdiClient.DataVolumes(dv.Namespace).Delete(context.TODO(), dv.Name, metav1.DeleteOptions{})
 	}
@@ -138,6 +153,16 @@ func (f *Framework) AfterEach() {
 
 func (f *Framework) ManageTaskRuns(taskRuns ...*pipev1beta1.TaskRun) *Framework {
 	f.managedResources.taskRuns = append(f.managedResources.taskRuns, taskRuns...)
+	return f
+}
+
+func (f *Framework) ManagePipelineRuns(pipelineRuns ...*pipev1beta1.PipelineRun) *Framework {
+	f.managedResources.pipelineRuns = append(f.managedResources.pipelineRuns, pipelineRuns...)
+	return f
+}
+
+func (f *Framework) ManagePipelines(pipelines ...*pipev1beta1.Pipeline) *Framework {
+	f.managedResources.pipelines = append(f.managedResources.pipelines, pipelines...)
 	return f
 }
 
