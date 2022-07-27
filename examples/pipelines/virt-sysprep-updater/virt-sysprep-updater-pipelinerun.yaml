@@ -6,8 +6,8 @@ metadata:
 spec:
   pipelineRef:
     name: virt-sysprep-updater
-  serviceAccountNames:
-    - taskName: create-data-object
-      serviceAccountName: create-data-object-task
-    - taskName: create-vm-from-manifest
-      serviceAccountName: create-vm-from-manifest-task
+  taskRunSpecs:
+    - pipelineTaskName: create-data-object
+      taskServiceAccountName: create-data-object-task
+    - pipelineTaskName: create-vm-from-manifest
+      taskServiceAccountName: create-vm-from-manifest-task

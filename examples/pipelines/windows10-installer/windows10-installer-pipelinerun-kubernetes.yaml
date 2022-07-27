@@ -8,15 +8,15 @@ spec:
     value: INSERT_WINDOWS_ISO_URL
   pipelineRef:
     name: windows10-installer
-  serviceAccountNames:
-    - taskName: create-source-dv
-      serviceAccountName: create-data-object-task
-    - taskName: create-base-dv
-      serviceAccountName: create-data-object-task
-    - taskName: create-vm-from-manifest
-      serviceAccountName: create-vm-from-manifest-task
-    - taskName: wait-for-vmi-status
-      serviceAccountName: wait-for-vmi-status-task
-    - taskName: cleanup-vm
-      serviceAccountName: cleanup-vm-task
+  taskRunSpecs:
+    - pipelineTaskName: create-source-dv
+      taskServiceAccountName: create-data-object-task
+    - pipelineTaskName: create-base-dv
+      taskServiceAccountName: create-data-object-task
+    - pipelineTaskName: create-vm-from-manifest
+      taskServiceAccountName: create-vm-from-manifest-task
+    - pipelineTaskName: wait-for-vmi-status
+      taskServiceAccountName: wait-for-vmi-status-task
+    - pipelineTaskName: cleanup-vm
+      taskServiceAccountName: cleanup-vm-task
 status: {}

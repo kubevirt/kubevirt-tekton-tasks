@@ -6,12 +6,12 @@ metadata:
 spec:
   pipelineRef:
     name: server-deployer
-  serviceAccountNames:
-    - taskName: create-data-object
-      serviceAccountName: create-data-object-task
-    - taskName: generate-ssh-keys
-      serviceAccountName: generate-ssh-keys-task
-    - taskName: create-vm-from-manifest
-      serviceAccountName: create-vm-from-manifest-task
-    - taskName: execute-in-vm
-      serviceAccountName: execute-in-vm-task
+  taskRunSpecs:
+    - pipelineTaskName: create-data-object
+      taskServiceAccountName: create-data-object-task
+    - pipelineTaskName: generate-ssh-keys
+      taskServiceAccountName: generate-ssh-keys-task
+    - pipelineTaskName: create-vm-from-manifest
+      taskServiceAccountName: create-vm-from-manifest-task
+    - pipelineTaskName: execute-in-vm
+      taskServiceAccountName: execute-in-vm-task
