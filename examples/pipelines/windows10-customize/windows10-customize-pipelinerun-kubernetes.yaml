@@ -10,13 +10,13 @@ spec:
     value: INSERT_NAMESPACE_OF_SOURCE_DATAVOLUME
   pipelineRef:
     name: windows10-customize
-  serviceAccountNames:
-    - taskName: create-base-dv
-      serviceAccountName: create-data-object-task
-    - taskName: create-vm-from-manifest
-      serviceAccountName: create-vm-from-manifest-task
-    - taskName: wait-for-vmi-status
-      serviceAccountName: wait-for-vmi-status-task
-    - taskName: cleanup-vm
-      serviceAccountName: cleanup-vm-task
+  taskRunSpecs:
+    - pipelineTaskName: create-base-dv
+      taskServiceAccountName: create-data-object-task
+    - pipelineTaskName: create-vm-from-manifest
+      taskServiceAccountName: create-vm-from-manifest-task
+    - pipelineTaskName: wait-for-vmi-status
+      taskServiceAccountName: wait-for-vmi-status-task
+    - pipelineTaskName: cleanup-vm
+      taskServiceAccountName: cleanup-vm-task
 status: {}

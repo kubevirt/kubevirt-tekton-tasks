@@ -7,12 +7,12 @@ metadata:
 spec:
   pipelineRef:
     name: unit-tester
-  serviceAccountNames:
-    - serviceAccountName: generate-ssh-keys-task
-      taskName: generate-ssh-keys
-    - serviceAccountName: create-vm-from-manifest-task
-      taskName: create-vm-from-manifest
-    - serviceAccountName: execute-in-vm-task
-      taskName: execute-in-vm
-    - serviceAccountName: cleanup-vm-task
-      taskName: cleanup-vm
+  taskRunSpecs:
+    - taskServiceAccountName: generate-ssh-keys-task
+      pipelineTaskName: generate-ssh-keys
+    - taskServiceAccountName: create-vm-from-manifest-task
+      pipelineTaskName: create-vm-from-manifest
+    - taskServiceAccountName: execute-in-vm-task
+      pipelineTaskName: execute-in-vm
+    - taskServiceAccountName: cleanup-vm-task
+      pipelineTaskName: cleanup-vm

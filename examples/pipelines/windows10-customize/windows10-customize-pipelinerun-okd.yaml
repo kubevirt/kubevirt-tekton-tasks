@@ -5,21 +5,21 @@ metadata:
 spec:
   pipelineRef:
     name: windows10-customize
-  serviceAccountNames:
-    - taskName: copy-template-customize
-      serviceAccountName: copy-template-task
-    - taskName: modify-vm-template-customize
-      serviceAccountName: modify-vm-template-task
-    - taskName: create-vm-from-template
-      serviceAccountName: create-vm-from-template-task
-    - taskName: wait-for-vmi-status
-      serviceAccountName: wait-for-vmi-status-task
-    - taskName: create-base-dv
-      serviceAccountName: create-data-object-task
-    - taskName: cleanup-vm
-      serviceAccountName: cleanup-vm-task
-    - taskName: copy-template-golden
-      serviceAccountName: copy-template-task
-    - taskName: modify-vm-template-golden
-      serviceAccountName: modify-vm-template-task
+  taskRunSpecs:
+    - pipelineTaskName: copy-template-customize
+      taskServiceAccountName: copy-template-task
+    - pipelineTaskName: modify-vm-template-customize
+      taskServiceAccountName: modify-vm-template-task
+    - pipelineTaskName: create-vm-from-template
+      taskServiceAccountName: create-vm-from-template-task
+    - pipelineTaskName: wait-for-vmi-status
+      taskServiceAccountName: wait-for-vmi-status-task
+    - pipelineTaskName: create-base-dv
+      taskServiceAccountName: create-data-object-task
+    - pipelineTaskName: cleanup-vm
+      taskServiceAccountName: cleanup-vm-task
+    - pipelineTaskName: copy-template-golden
+      taskServiceAccountName: copy-template-task
+    - pipelineTaskName: modify-vm-template-golden
+      taskServiceAccountName: modify-vm-template-task
 status: {}
