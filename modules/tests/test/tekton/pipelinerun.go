@@ -68,9 +68,8 @@ func WaitForPipelineRunState(clients *clients.Clients, namespace, name string, t
 						Follow: true,
 					})
 					podLogs, err := req.Stream(context.TODO())
-					//when an error occurs, just log the reason and try to get the logs in the next iteration
+					//when an error occurs, just end the function and do nothing, in next iteration the command will run again to get logs
 					if err != nil {
-						fmt.Printf("error while loading pod %s/%s log: %s", namespace, podName, err.Error())
 						return
 					}
 

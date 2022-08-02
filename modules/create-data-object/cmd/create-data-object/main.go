@@ -36,6 +36,15 @@ func main() {
 		exit.ExitOrDieFromError(DataObjectCreatorErrorCode, err)
 	}
 
+	if cliOptions.GetDeleteObject() {
+		err := dataObjectCreator.DeleteDataObject()
+		if err != nil {
+			exit.ExitOrDieFromError(DeleteObjectExitCode, err)
+		}
+		log.Logger().Debug("Object was deleted")
+		return
+	}
+
 	newDataObject, err := dataObjectCreator.CreateDataObject()
 	if err != nil {
 		exit.ExitOrDieFromError(CreateDataObjectErrorCode, err,

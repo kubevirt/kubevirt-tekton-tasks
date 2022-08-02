@@ -29,6 +29,8 @@ type dataObjectProvider struct {
 type DataObjectProvider interface {
 	GetDv(string, string) (*cdiv1beta1.DataVolume, error)
 	GetDs(string, string) (*cdiv1beta1.DataSource, error)
+	DeleteDS(string, string) error
+	DeleteDV(string, string) error
 	CreateDo(*unstructured.Unstructured, bool) (*unstructured.Unstructured, error)
 }
 
@@ -44,6 +46,14 @@ func (d *dataObjectProvider) GetDv(namespace string, name string) (*cdiv1beta1.D
 
 func (d *dataObjectProvider) GetDs(namespace string, name string) (*cdiv1beta1.DataSource, error) {
 	return d.client.DataSources(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+}
+
+func (d *dataObjectProvider) DeleteDV(namespace string, name string) error {
+	return d.client.DataVolumes(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
+}
+
+func (d *dataObjectProvider) DeleteDS(namespace string, name string) error {
+	return d.client.DataSources(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 }
 
 func (d *dataObjectProvider) CreateDo(obj *unstructured.Unstructured, allowReplace bool) (*unstructured.Unstructured, error) {
@@ -100,6 +110,17 @@ func NewDataObjectCreator(cliOptions *parse.CLIOptions) (*DataObjectCreator, err
 		cliOptions:         cliOptions,
 		dataObjectProvider: NewDataObjectProvider(cdiclientv1beta1.NewForConfigOrDie(config)),
 	}, nil
+}
+
+func (d *DataObjectCreator) DeleteDataObject() error {
+	if d.cliOptions.DeleteObjectKind == constants.DataVolumeKind {
+		return d.dataObjectProvider.DeleteDV(d.cliOptions.DataObjectNamespace, d.cliOptions.DeleteObjectName)
+	}
+
+	if d.cliOptions.DeleteObjectKind == constants.DataSourceKind {
+		return d.dataObjectProvider.DeleteDS(d.cliOptions.DataObjectNamespace, d.cliOptions.DeleteObjectName)
+	}
+	return errors.NewBadRequest("object-kind not defined")
 }
 
 func (d *DataObjectCreator) CreateDataObject() (*unstructured.Unstructured, error) {
