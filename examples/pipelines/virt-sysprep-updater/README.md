@@ -10,10 +10,10 @@ Then it creates a VM from this PVC.
 ## Pipeline Description
 
 ```
-  create-data-object --- disk-virt-sysprep --- create-vm-from-manifest
+  modify-data-object --- disk-virt-sysprep --- create-vm-from-manifest
 ```
 
-1. `create-data-object` task imports a PVC from Fedora Cloud URL source. The name of the PVC is generated.
+1. `modify-data-object` task imports a PVC from Fedora Cloud URL source. The name of the PVC is generated.
 2. `disk-virt-sysprep` task runs yum update and seals the PVC image with virt-sysprep.
 4. `create-vm-from-manifest` task creates a VM called `virt-sysprep-updated-vm-*` from the prepared PVC.
 

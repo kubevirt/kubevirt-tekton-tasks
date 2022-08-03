@@ -1,15 +1,15 @@
 package constants
 
 const (
-	CreateDataObjectClusterTaskName    = "create-data-object"
-	CreateDataObjectServiceAccountName = "create-data-object-task"
-	CreateDataObjectTaskrunName        = "taskrun-create-data-object"
+	ModifyDataObjectClusterTaskName    = "modify-data-object"
+	ModifyDataObjectServiceAccountName = "modify-data-object-task"
+	ModifyDataObjectTaskrunName        = "taskrun-modify-data-object"
 
 	UnusualRestartCountThreshold = 3
 	ReasonError                  = "Error"
 )
 
-type createDataObjectParams struct {
+type modifyDataObjectParams struct {
 	Manifest            string
 	WaitForSuccess      string
 	AllowReplace        string
@@ -19,7 +19,7 @@ type createDataObjectParams struct {
 	DataObjectNamespace string
 }
 
-var CreateDataObjectParams = createDataObjectParams{
+var ModifyDataObjectParams = modifyDataObjectParams{
 	Manifest:            "manifest",
 	WaitForSuccess:      "waitForSuccess",
 	AllowReplace:        "allowReplace",
@@ -29,12 +29,12 @@ var CreateDataObjectParams = createDataObjectParams{
 	DataObjectNamespace: "namespace",
 }
 
-type createDataObjectResults struct {
+type modifyDataObjectResults struct {
 	Name      string
 	Namespace string
 }
 
-var CreateDataObjectResults = createDataObjectResults{
+var ModifyDataObjectResults = modifyDataObjectResults{
 	Name:      "name",
 	Namespace: "namespace",
 }

@@ -10,9 +10,9 @@ spec:
     name: windows10-installer
   taskRunSpecs:
     - pipelineTaskName: create-source-dv
-      taskServiceAccountName: create-data-object-task
+      taskServiceAccountName: modify-data-object-task
     - pipelineTaskName: create-base-dv
-      taskServiceAccountName: create-data-object-task
+      taskServiceAccountName: modify-data-object-task
     - pipelineTaskName: create-vm-from-manifest
       taskServiceAccountName: create-vm-from-manifest-task
     - pipelineTaskName: wait-for-vmi-status

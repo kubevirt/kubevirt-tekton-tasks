@@ -21,7 +21,7 @@ var _ = Describe("Pipelines tests", func() {
 	It("DV is created, disk-virt-sysprep, create dv, delete dvs", func() {
 		config := &testconfigs.PipelineTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateDataObjectServiceAccountName,
+				ServiceAccount: ModifyDataObjectServiceAccountName,
 				Timeout:        Timeouts.PipelineRunExtraWaitDelay,
 			},
 			Pipeline: &v1beta1.Pipeline{
@@ -34,7 +34,7 @@ var _ = Describe("Pipelines tests", func() {
 							Name: "create-dv",
 							TaskRef: &v1beta1.TaskRef{
 								Kind: v1beta1.ClusterTaskKind,
-								Name: "create-data-object",
+								Name: "modify-data-object",
 							},
 							Params: []v1beta1.Param{
 								{
@@ -94,7 +94,7 @@ spec:
 							Name: "create-updated-dv",
 							TaskRef: &v1beta1.TaskRef{
 								Kind: v1beta1.ClusterTaskKind,
-								Name: "create-data-object",
+								Name: "modify-data-object",
 							},
 							Params: []v1beta1.Param{
 								{
@@ -130,7 +130,7 @@ spec:
 							Name: "delete-updated-dv",
 							TaskRef: &v1beta1.TaskRef{
 								Kind: v1beta1.ClusterTaskKind,
-								Name: "create-data-object",
+								Name: "modify-data-object",
 							},
 							Params: []v1beta1.Param{
 								{
@@ -158,7 +158,7 @@ spec:
 							Name: "delete-original-dv",
 							TaskRef: &v1beta1.TaskRef{
 								Kind: v1beta1.ClusterTaskKind,
-								Name: "create-data-object",
+								Name: "modify-data-object",
 							},
 							Params: []v1beta1.Param{
 								{
@@ -195,16 +195,16 @@ spec:
 				TaskRunSpecs: []v1beta1.PipelineTaskRunSpec{
 					{
 						PipelineTaskName:       "create-dv",
-						TaskServiceAccountName: "create-data-object-task",
+						TaskServiceAccountName: "modify-data-object-task",
 					}, {
 						PipelineTaskName:       "create-updated-dv",
-						TaskServiceAccountName: "create-data-object-task",
+						TaskServiceAccountName: "modify-data-object-task",
 					}, {
 						PipelineTaskName:       "delete-updated-dv",
-						TaskServiceAccountName: "create-data-object-task",
+						TaskServiceAccountName: "modify-data-object-task",
 					}, {
 						PipelineTaskName:       "delete-original-dv",
-						TaskServiceAccountName: "create-data-object-task",
+						TaskServiceAccountName: "modify-data-object-task",
 					},
 				},
 			},

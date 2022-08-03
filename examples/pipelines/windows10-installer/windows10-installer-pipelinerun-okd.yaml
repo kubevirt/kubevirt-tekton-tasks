@@ -18,7 +18,7 @@ spec:
     - pipelineTaskName: wait-for-vmi-status
       taskServiceAccountName: wait-for-vmi-status-task
     - pipelineTaskName: create-base-dv
-      taskServiceAccountName: create-data-object-task
+      taskServiceAccountName: modify-data-object-task
     - pipelineTaskName: cleanup-vm
       taskServiceAccountName: cleanup-vm-task
 status: {}

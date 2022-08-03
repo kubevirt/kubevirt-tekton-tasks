@@ -1,0 +1,29 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: modify-data-object-taskrun
+spec:
+  serviceAccountName: modify-data-object-task
+  taskRef:
+    kind: ClusterTask
+    name: modify-data-object
+  params:
+    - name: waitForSuccess
+      value: 'true'
+    - name: manifest
+      value: |
+        apiVersion: cdi.kubevirt.io/v1beta1
+        kind: DataVolume
+        metadata:
+          generateName: example-dv-
+        spec:
+          pvc:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 100Mi
+            volumeMode: Filesystem
+          source:
+            blank: {}
