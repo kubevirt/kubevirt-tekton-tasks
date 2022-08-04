@@ -48,9 +48,9 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 - [copy-template](tasks/copy-template)
 - [modify-vm-template](tasks/modify-vm-template)
 
-#### Create data objects
+#### Modify data objects
 
-- [create-data-object](tasks/create-data-object)
+- [modify-data-object](tasks/modify-data-object)
 
 #### Generate SSH Keys
 

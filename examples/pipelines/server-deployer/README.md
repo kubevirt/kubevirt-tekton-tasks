@@ -11,12 +11,12 @@ Then it creates a VM from this PVC and deploys a flaskr server application in th
 ## Pipeline Description
 
 ```
-  create-data-object --- disk-virt-customize --- create-vm-from-manifest --- execute-in-vm
+  modify-data-object --- disk-virt-customize --- create-vm-from-manifest --- execute-in-vm
                                                            |
                                          generate-ssh-keys--
 ```
 
-1. `create-data-object` task imports a PVC from Fedora Cloud URL source. The name of the PVC is generated.
+1. `modify-data-object` task imports a PVC from Fedora Cloud URL source. The name of the PVC is generated.
 2. `disk-virt-customize` task runs virt-customize commands on the PVC that install git, vim, pip and flask python framework.
 3. `generate-ssh-keys` task generates two secrets with private and public keys.
    The name of the secrets are generated. The task itself runs in parallel with `1.` and `2.` tasks.

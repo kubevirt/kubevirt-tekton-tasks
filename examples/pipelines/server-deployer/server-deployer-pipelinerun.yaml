@@ -7,8 +7,8 @@ spec:
   pipelineRef:
     name: server-deployer
   taskRunSpecs:
-    - pipelineTaskName: create-data-object
-      taskServiceAccountName: create-data-object-task
+    - pipelineTaskName: modify-data-object
+      taskServiceAccountName: modify-data-object-task
     - pipelineTaskName: generate-ssh-keys
       taskServiceAccountName: generate-ssh-keys-task
     - pipelineTaskName: create-vm-from-manifest

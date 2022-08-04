@@ -7,7 +7,7 @@ spec:
   pipelineRef:
     name: virt-sysprep-updater
   taskRunSpecs:
-    - pipelineTaskName: create-data-object
-      taskServiceAccountName: create-data-object-task
+    - pipelineTaskName: modify-data-object
+      taskServiceAccountName: modify-data-object-task
     - pipelineTaskName: create-vm-from-manifest
       taskServiceAccountName: create-vm-from-manifest-task
