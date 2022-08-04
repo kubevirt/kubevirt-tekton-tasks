@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal AS taskBuilder
+FROM registry.access.redhat.com/ubi9/ubi-minimal AS taskBuilder
 RUN microdnf install -y tar gzip && microdnf clean all
 ENV TASK_NAME=disk-virt-sysprep \
     GOFLAGS="-mod=vendor" \
@@ -9,7 +9,7 @@ ENV PATH=$PATH:/usr/local/go/bin
 COPY . .
 RUN	CGO_ENABLED=0 GOOS=linux go build -o /${TASK_NAME} cmd/${TASK_NAME}/main.go
 
-FROM registry.access.redhat.com/ubi8/ubi:latest AS rhsrvanyBuilder
+FROM registry.access.redhat.com/ubi9/ubi:latest AS rhsrvanyBuilder
 ENV TASK_NAME=disk-virt-sysprep
 COPY build/${TASK_NAME}/repos/CentOS-Stream-rhsrvany.repo /etc/yum.repos.d/CentOS-Stream.repo
 COPY build/${TASK_NAME}/repos/RPM-GPG-KEY-centosofficial /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
