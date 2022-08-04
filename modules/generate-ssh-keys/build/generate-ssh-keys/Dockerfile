@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal AS builder
+FROM registry.access.redhat.com/ubi9/ubi-minimal AS builder
 RUN microdnf install -y tar gzip && microdnf clean all
 ENV TASK_NAME=generate-ssh-keys \
     GOFLAGS="-mod=vendor" \
@@ -9,7 +9,7 @@ ENV PATH=$PATH:/usr/local/go/bin
 COPY . .
 RUN	CGO_ENABLED=0 GOOS=linux go build -o /${TASK_NAME} cmd/${TASK_NAME}/main.go
 
-FROM registry.access.redhat.com/ubi8/ubi:latest
+FROM registry.access.redhat.com/ubi9/ubi:latest
 ENV TASK_NAME=generate-ssh-keys
 ENV ENTRY_CMD=/usr/local/bin/${TASK_NAME} \
     USER_UID=1001 \
