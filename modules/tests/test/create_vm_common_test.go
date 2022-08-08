@@ -295,7 +295,7 @@ var _ = Describe("Create VM", func() {
 			// check all disks are present
 			Expect(vm.Spec.Template.Spec.Volumes).To(ConsistOf(expectedVM.Spec.Template.Spec.Volumes))
 			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks).To(ConsistOf(expectedVM.Spec.Template.Spec.Domain.Devices.Disks))
-			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[2].CDRom.Bus).To(Equal("sata"))
+			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[2].CDRom.Bus).To(Equal(kubevirtv1.DiskBusSATA))
 		})
 	}
 })

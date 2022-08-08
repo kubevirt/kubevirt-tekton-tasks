@@ -119,7 +119,7 @@ func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
 			disk := kubevirtv1.Disk{
 				Name: name,
 				DiskDevice: kubevirtv1.DiskDevice{
-					Disk: &kubevirtv1.DiskTarget{Bus: c.ExpectedAdditionalDiskBus},
+					Disk: &kubevirtv1.DiskTarget{Bus: kubevirtv1.DiskBus(c.ExpectedAdditionalDiskBus)},
 				},
 			}
 			if dataVolume.DiskName != "" {

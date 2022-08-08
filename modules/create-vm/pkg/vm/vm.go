@@ -87,7 +87,7 @@ func AddVolumes(vm *kubevirtv1.VirtualMachine, templateValidations *validations.
 		disk := kubevirtv1.Disk{
 			Name: diskName,
 			DiskDevice: kubevirtv1.DiskDevice{
-				Disk: &kubevirtv1.DiskTarget{Bus: defaultBus},
+				Disk: &kubevirtv1.DiskTarget{Bus: kubevirtv1.DiskBus(defaultBus)},
 			},
 		}
 

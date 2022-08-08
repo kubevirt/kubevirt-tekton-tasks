@@ -50,18 +50,18 @@ var _ = Describe("VM", func() {
 			Expect(cliOptions.Init()).Should(Succeed())
 		})
 
-		DescribeTable("adds all volumes with various validations", func(templateValidations *validations.TemplateValidations, expectedBus string) {
-			addsVolumesCorrectly(vm, templateValidations, cliOptions, []string{expectedBus})
+		DescribeTable("adds all volumes with various validations", func(templateValidations *validations.TemplateValidations, expectedBus kubevirtv1.DiskBus) {
+			addsVolumesCorrectly(vm, templateValidations, cliOptions, []kubevirtv1.DiskBus{expectedBus})
 		},
-			Entry("no validations", nil, Virtio),
-			Entry("empty validations", validations.NewTemplateValidations(nil), Virtio),
-			Entry("empty validations", validations.NewTemplateValidations(testobjects.NewTestCommonTemplateValidations(Scsi)), Scsi),
+			Entry("no validations", nil, kubevirtv1.DiskBusVirtio),
+			Entry("empty validations", validations.NewTemplateValidations(nil), kubevirtv1.DiskBusVirtio),
+			Entry("empty validations", validations.NewTemplateValidations(testobjects.NewTestCommonTemplateValidations(Scsi)), kubevirtv1.DiskBusSCSI),
 		)
 
 		It("adds some volumes", func() {
 			cliOptions.DataVolumes = nil
 			cliOptions.OwnPersistentVolumeClaims = nil
-			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []string{Virtio})
+			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []kubevirtv1.DiskBus{kubevirtv1.DiskBusVirtio})
 		})
 
 		It("adds no volumes", func() {
@@ -69,13 +69,13 @@ var _ = Describe("VM", func() {
 			cliOptions.DataVolumes = nil
 			cliOptions.OwnPersistentVolumeClaims = nil
 			cliOptions.PersistentVolumeClaims = nil
-			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []string{Virtio})
+			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []kubevirtv1.DiskBus{kubevirtv1.DiskBusVirtio})
 		})
 
 		It("adding named disks", func() {
 			cliOptions.OwnDataVolumes = append(cliOptions.OwnDataVolumes, "disk1:dv4")
 			cliOptions.PersistentVolumeClaims = append(cliOptions.PersistentVolumeClaims, "disk2:pvc4")
-			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []string{Virtio})
+			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []kubevirtv1.DiskBus{kubevirtv1.DiskBusVirtio})
 		})
 
 		It("replaces existing disks", func() {
@@ -134,7 +134,7 @@ var _ = Describe("VM", func() {
 
 			cliOptions.OwnDataVolumes = append(cliOptions.OwnDataVolumes, "disk1:dv4")
 			cliOptions.PersistentVolumeClaims = append(cliOptions.PersistentVolumeClaims, "disk2:pvc4", "disk3:pvc5", "disk4:pvc6")
-			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []string{Sata, Virtio, Sata, Virtio})
+			addsVolumesCorrectly(vm, emptyValidations, cliOptions, []kubevirtv1.DiskBus{kubevirtv1.DiskBusSATA, kubevirtv1.DiskBusVirtio, kubevirtv1.DiskBusSATA, kubevirtv1.DiskBusVirtio})
 			// initial disks should not be changed
 			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[0]).Should(Equal(
 				kubevirtv1.Disk{
@@ -235,7 +235,7 @@ var _ = Describe("VM", func() {
 })
 
 // expectedBuses: the disk at index i should have a bus at expectedBuses[i], or the last of expectedBuses
-func addsVolumesCorrectly(vm *kubevirtv1.VirtualMachine, templateValidations *validations.TemplateValidations, cliOpts *parse.CLIOptions, expectedBuses []string) {
+func addsVolumesCorrectly(vm *kubevirtv1.VirtualMachine, templateValidations *validations.TemplateValidations, cliOpts *parse.CLIOptions, expectedBuses []kubevirtv1.DiskBus) {
 	vm2.AddVolumes(vm, templateValidations, cliOpts)
 	disksCount := len(cliOpts.GetPVCDiskNamesMap()) + len(cliOpts.GetDVDiskNamesMap())
 	Expect(vm.Spec.Template.Spec.Volumes).To(HaveLen(disksCount))
@@ -244,7 +244,7 @@ func addsVolumesCorrectly(vm *kubevirtv1.VirtualMachine, templateValidations *va
 	var foundDiskNames []string
 	var foundVolumeNames []string
 	for i, disk := range vm.Spec.Template.Spec.Domain.Devices.Disks {
-		var expectedBus string
+		var expectedBus kubevirtv1.DiskBus
 		if i < len(expectedBuses) {
 			expectedBus = expectedBuses[i]
 		} else {
