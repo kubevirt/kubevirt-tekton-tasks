@@ -404,7 +404,7 @@ type Devices struct {
 	UseVirtioTransitional *bool `json:"useVirtioTransitional,omitempty"`
 	// DisableHotplug disabled the ability to hotplug disks.
 	DisableHotplug bool `json:"disableHotplug,omitempty"`
-	// Disks describes disks, cdroms, floppy and luns which are connected to the vmi.
+	// Disks describes disks, cdroms and luns which are connected to the vmi.
 	Disks []Disk `json:"disks,omitempty"`
 	// Watchdog describes a watchdog device which can be added to the vmi.
 	Watchdog *Watchdog `json:"watchdog,omitempty"`
@@ -453,6 +453,9 @@ type Devices struct {
 	// Whether to emulate a sound device.
 	// +optional
 	Sound *SoundDevice `json:"sound,omitempty"`
+	// Whether to emulate a TPM device.
+	// +optional
+	TPM *TPMDevice `json:"tpm,omitempty"`
 }
 
 // Represent a subset of client devices that can be accessed by VMI. At the
@@ -480,6 +483,8 @@ type SoundDevice struct {
 	// +optional
 	Model string `json:"model,omitempty"`
 }
+
+type TPMDevice struct{}
 
 type Input struct {
 	// Bus indicates the bus of input device to emulate.
@@ -569,6 +574,9 @@ type Disk struct {
 	// If specified, the virtual disk will be presented with the given block sizes.
 	// +optional
 	BlockSize *BlockSize `json:"blockSize,omitempty"`
+	// If specified the disk is made sharable and multiple write from different VMs are permitted
+	// +optional
+	Shareable *bool `json:"shareable,omitempty"`
 }
 
 // CustomBlockSize represents the desired logical and physical block size for a VM disk.
@@ -591,16 +599,22 @@ type DiskDevice struct {
 	Disk *DiskTarget `json:"disk,omitempty"`
 	// Attach a volume as a LUN to the vmi.
 	LUN *LunTarget `json:"lun,omitempty"`
-	// Attach a volume as a floppy to the vmi.
-	Floppy *FloppyTarget `json:"floppy,omitempty"`
 	// Attach a volume as a cdrom to the vmi.
 	CDRom *CDRomTarget `json:"cdrom,omitempty"`
 }
 
+type DiskBus string
+
+const (
+	DiskBusSCSI   DiskBus = "scsi"
+	DiskBusSATA   DiskBus = "sata"
+	DiskBusVirtio DiskBus = "virtio"
+)
+
 type DiskTarget struct {
 	// Bus indicates the type of disk device to emulate.
 	// supported values: virtio, sata, scsi.
-	Bus string `json:"bus,omitempty"`
+	Bus DiskBus `json:"bus,omitempty"`
 	// ReadOnly.
 	// Defaults to false.
 	ReadOnly bool `json:"readonly,omitempty"`
@@ -620,37 +634,26 @@ type SEV struct {
 type LunTarget struct {
 	// Bus indicates the type of disk device to emulate.
 	// supported values: virtio, sata, scsi.
-	Bus string `json:"bus,omitempty"`
+	Bus DiskBus `json:"bus,omitempty"`
 	// ReadOnly.
 	// Defaults to false.
 	ReadOnly bool `json:"readonly,omitempty"`
 }
 
-type FloppyTarget struct {
-	// ReadOnly.
-	// Defaults to false.
-	ReadOnly bool `json:"readonly,omitempty"`
-	// Tray indicates if the tray of the device is open or closed.
-	// Allowed values are "open" and "closed".
-	// Defaults to closed.
-	// +optional
-	Tray TrayState `json:"tray,omitempty"`
-}
-
-// TrayState indicates if a tray of a cdrom or floppy is open or closed.
+// TrayState indicates if a tray of a cdrom is open or closed.
 type TrayState string
 
 const (
-	// TrayStateOpen indicates that the tray of a cdrom or floppy is open.
+	// TrayStateOpen indicates that the tray of a cdrom is open.
 	TrayStateOpen TrayState = "open"
-	// TrayStateClosed indicates that the tray of a cdrom or floppy is closed.
+	// TrayStateClosed indicates that the tray of a cdrom is closed.
 	TrayStateClosed TrayState = "closed"
 )
 
 type CDRomTarget struct {
 	// Bus indicates the type of disk device to emulate.
 	// supported values: virtio, sata, scsi.
-	Bus string `json:"bus,omitempty"`
+	Bus DiskBus `json:"bus,omitempty"`
 	// ReadOnly.
 	// Defaults to true.
 	ReadOnly *bool `json:"readonly,omitempty"`
@@ -730,6 +733,8 @@ type VolumeSource struct {
 	// DownwardMetrics adds a very small disk to VMIs which contains a limited view of host and guest
 	// metrics. The disk content is compatible with vhostmd (https://github.com/vhostmd/vhostmd) and vm-dump-metrics.
 	DownwardMetrics *DownwardMetricsVolumeSource `json:"downwardMetrics,omitempty"`
+	// MemoryDump is attached to the virt launcher and is populated with a memory dump of the vmi
+	MemoryDump *MemoryDumpVolumeSource `json:"memoryDump,omitempty"`
 }
 
 // HotplugVolumeSource Represents the source of a volume to mount which are capable
@@ -763,6 +768,13 @@ type PersistentVolumeClaimVolumeSource struct {
 	// Hotpluggable indicates whether the volume can be hotplugged and hotunplugged.
 	// +optional
 	Hotpluggable bool `json:"hotpluggable,omitempty"`
+}
+
+type MemoryDumpVolumeSource struct {
+	// PersistentVolumeClaimVolumeSource represents a reference to a PersistentVolumeClaim in the same namespace.
+	// Directly attached to the virt launcher
+	// +optional
+	PersistentVolumeClaimVolumeSource `json:",inline"`
 }
 
 type EphemeralVolumeSource struct {
@@ -1195,14 +1207,19 @@ type InterfaceBindingMethod struct {
 	Macvtap    *InterfaceMacvtap    `json:"macvtap,omitempty"`
 }
 
+// InterfaceBridge connects to a given network via a linux bridge.
 type InterfaceBridge struct{}
 
+// InterfaceSlirp connects to a given network using QEMU user networking mode.
 type InterfaceSlirp struct{}
 
+// InterfaceMasquerade connects to a given network using netfilter rules to nat the traffic.
 type InterfaceMasquerade struct{}
 
+// InterfaceSRIOV connects to a given network by passing-through an SR-IOV PCI device via vfio.
 type InterfaceSRIOV struct{}
 
+// InterfaceMacvtap connects to a given network by extending the Kubernetes node's L2 networks via a macvtap interface.
 type InterfaceMacvtap struct{}
 
 // Port represents a port to expose from the virtual machine.
