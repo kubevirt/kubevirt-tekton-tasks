@@ -24,7 +24,11 @@ func NewDataSource(name string) *TestDataSource {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
-		Spec: cdiv1beta1.DataSourceSpec{},
+		Spec: cdiv1beta1.DataSourceSpec{
+			Source: cdiv1beta1.DataSourceSource{
+				PVC: &cdiv1beta1.DataVolumeSourcePVC{},
+			},
+		},
 	}
 
 	return &TestDataSource{

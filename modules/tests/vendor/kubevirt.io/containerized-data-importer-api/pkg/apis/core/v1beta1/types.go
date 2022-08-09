@@ -17,9 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
+	ocpconfigv1 "github.com/openshift/api/config/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	sdkapi "kubevirt.io/controller-lifecycle-operator-sdk/pkg/sdk/api"
+	sdkapi "kubevirt.io/controller-lifecycle-operator-sdk/api"
 )
 
 // DataVolume is an abstraction on top of PersistentVolumeClaims to allow easy population of those PersistentVolumeClaims with relation to VirtualMachines
@@ -228,6 +229,8 @@ type DataVolumeSourceVDDK struct {
 	Thumbprint string `json:"thumbprint,omitempty"`
 	// SecretRef provides a reference to a secret containing the username and password needed to access the vCenter or ESXi host
 	SecretRef string `json:"secretRef,omitempty"`
+	// InitImageURL is an optional URL to an image containing an extracted VDDK library, overrides v2v-vmware config map
+	InitImageURL string `json:"initImageURL,omitempty"`
 }
 
 // DataVolumeSourceRef defines an indirect reference to the source of data for the DataVolume
@@ -248,6 +251,8 @@ const (
 
 // DataVolumeStatus contains the current status of the DataVolume
 type DataVolumeStatus struct {
+	// ClaimName is the name of the underlying PVC used by the DataVolume.
+	ClaimName string `json:"claimName,omitempty"`
 	//Phase is the current phase of the data volume
 	Phase    DataVolumePhase    `json:"phase,omitempty"`
 	Progress DataVolumeProgress `json:"progress,omitempty"`
@@ -415,6 +420,7 @@ type StorageProfileList struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 // +kubebuilder:storageversion
+// +kubebuilder:resource:shortName=das,categories=all
 type DataSource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -437,6 +443,8 @@ type DataSourceSource struct {
 
 // DataSourceStatus provides the most recently observed status of the DataSource
 type DataSourceStatus struct {
+	// Source is the current source of the data referenced by the DataSource
+	Source     DataSourceSource      `json:"source"`
 	Conditions []DataSourceCondition `json:"conditions,omitempty" optional:"true"`
 }
 
@@ -478,6 +486,7 @@ type DataSourceList struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 // +kubebuilder:storageversion
+// +kubebuilder:resource:shortName=dic;dics,categories=all
 type DataImportCron struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -648,13 +657,13 @@ type CDICloneStrategy string
 
 const (
 	// CloneStrategyHostAssisted specifies slower, host-assisted copy
-	CloneStrategyHostAssisted = "copy"
+	CloneStrategyHostAssisted CDICloneStrategy = "copy"
 
 	// CloneStrategySnapshot specifies snapshot-based copying
-	CloneStrategySnapshot = "snapshot"
+	CloneStrategySnapshot CDICloneStrategy = "snapshot"
 
 	// CloneStrategyCsiClone specifies csi volume clone based cloning
-	CloneStrategyCsiClone = "csi-clone"
+	CloneStrategyCsiClone CDICloneStrategy = "csi-clone"
 )
 
 // CDIUninstallStrategy defines the state to leave CDI on uninstall
@@ -736,6 +745,11 @@ type CDIConfigSpec struct {
 	Preallocation *bool `json:"preallocation,omitempty"`
 	// InsecureRegistries is a list of TLS disabled registries
 	InsecureRegistries []string `json:"insecureRegistries,omitempty"`
+	// dataVolumeTTLSeconds is the time in seconds after DataVolume completion it can be garbage collected.
+	// +optional
+	DataVolumeTTLSeconds *int32 `json:"dataVolumeTTLSeconds,omitempty"`
+	// TLSSecurityProfile is used by operators to apply cluster-wide TLS security settings to operands.
+	TLSSecurityProfile *ocpconfigv1.TLSSecurityProfile `json:"tlsSecurityProfile,omitempty"`
 }
 
 //CDIConfigStatus provides the most recently observed status of the CDI Config resource

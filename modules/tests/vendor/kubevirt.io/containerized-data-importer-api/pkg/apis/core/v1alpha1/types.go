@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	sdkapi "kubevirt.io/controller-lifecycle-operator-sdk/pkg/sdk/api"
+	sdkapi "kubevirt.io/controller-lifecycle-operator-sdk/api"
 )
 
 // DataVolume is an abstraction on top of PersistentVolumeClaims to allow easy population of those PersistentVolumeClaims with relation to VirtualMachines
@@ -197,10 +197,14 @@ type DataVolumeSourceVDDK struct {
 	Thumbprint string `json:"thumbprint,omitempty"`
 	// SecretRef provides a reference to a secret containing the username and password needed to access the vCenter or ESXi host
 	SecretRef string `json:"secretRef,omitempty"`
+	// InitImageURL is an optional URL to an image containing an extracted VDDK library, overrides v2v-vmware config map
+	InitImageURL string `json:"initImageURL,omitempty"`
 }
 
 // DataVolumeStatus contains the current status of the DataVolume
 type DataVolumeStatus struct {
+	// ClaimName is the name of the underlying PVC used by the DataVolume.
+	ClaimName string `json:"claimName,omitempty"`
 	//Phase is the current phase of the data volume
 	Phase    DataVolumePhase    `json:"phase,omitempty"`
 	Progress DataVolumeProgress `json:"progress,omitempty"`
