@@ -68,9 +68,63 @@ spec:
       persistentVolumeClaim:
         claimName: $(params.pvc)
   workspaces:
-    - name: data
+    - name: data01
       description: |
         An optional workspace that may contain files or secrets to be
         used during the virt-customize run.
       optional: true
-      mountPath: /data
+      mountPath: /data01
+    - name: data02
+      description: |
+        An optional workspace that may contain files or secrets to be
+        used during the virt-customize run.
+      optional: true
+      mountPath: /data02
+    - name: data03
+      description: |
+        An optional workspace that may contain files or secrets to be
+        used during the virt-customize run.
+      optional: true
+      mountPath: /data03
+    - name: data04
+      description: |
+        An optional workspace that may contain files or secrets to be
+        used during the virt-customize run.
+      optional: true
+      mountPath: /data04
+    - name: data05
+      description: |
+        An optional workspace that may contain files or secrets to be
+        used during the virt-customize run.
+      optional: true
+      mountPath: /data05
+    - name: data06
+      description: |
+        An optional workspace that may contain files or secrets to be
+        used during the virt-customize run.
+      optional: true
+      mountPath: /data06
+    - name: data07
+      description: |
+        An optional workspace that may contain files or secrets to be
+        used during the virt-customize run.
+      optional: true
+      mountPath: /data07
+    - name: data08
+      description: |
+        An optional workspace that may contain files or secrets to be
+        used during the virt-customize run.
+      optional: true
+      mountPath: /data08
+    - name: data09
+      description: |
+        An optional workspace that may contain files or secrets to be
+        used during the virt-customize run.
+      optional: true
+      mountPath: /data09
+    - name: data10
+      description: |
+        An optional workspace that may contain files or secrets to be
+        used during the virt-customize run.
+      optional: true
+      mountPath: /data10
