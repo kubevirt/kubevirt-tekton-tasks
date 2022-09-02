@@ -45,6 +45,7 @@ pushd modules/tests || exit
     --test-namespace="${TEST_NAMESPACE}" \
     --kubeconfig-path="${KUBECONFIG}" \
     --is-okd="${IS_OKD}" \
+    --ginkgo.junit-report="${JUNIT_FOLDER}" \
     --scope="${SCOPE}" \
     --storage-class="${STORAGE_CLASS}" \
     --debug="${DEBUG}" | tee "${TEST_OUT}"
@@ -52,7 +53,7 @@ pushd modules/tests || exit
   RET_CODE="${PIPESTATUS[0]}"
   set -e
 
-  cp dist/junit* "${ARTIFACT_DIR}"
+  cp "${JUNIT_FOLDER}" "${ARTIFACT_DIR}"
 popd
 
 exit "${RET_CODE}"

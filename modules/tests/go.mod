@@ -19,6 +19,7 @@ require (
 	kubevirt.io/client-go v0.55.0
 	kubevirt.io/containerized-data-importer v1.53.0
 	kubevirt.io/containerized-data-importer-api v1.53.0
+	kubevirt.io/qe-tools v0.1.8
 	sigs.k8s.io/yaml v1.3.0
 )
 

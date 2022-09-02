@@ -12,18 +12,37 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/utils"
 	. "github.com/onsi/ginkgo/v2"
+	ginkgo_reporters "github.com/onsi/ginkgo/v2/reporters"
 	v1 "github.com/openshift/api/template/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1reporter "kubevirt.io/client-go/reporter"
+	qe_reporters "kubevirt.io/qe-tools/pkg/ginkgo-reporters"
 
 	. "github.com/onsi/gomega"
 )
 
+var afterSuiteReporters []Reporter
+
+var _ = ReportAfterSuite("Tests", func(report Report) {
+	for _, reporter := range afterSuiteReporters {
+		ginkgo_reporters.ReportViaDeprecatedReporter(reporter, report)
+	}
+})
+
 func TestExit(t *testing.T) {
 	RegisterFailHandler(Fail)
 	BuildTestSuite()
-	suiteConfig, reporterConfig := GinkgoConfiguration()
-	reporterConfig.JUnitReport = fmt.Sprintf("../dist/junit_%d.xml", suiteConfig.ParallelProcess)
-	RunSpecs(t, "E2E Tests Suite", suiteConfig, reporterConfig)
+
+	if qe_reporters.JunitOutput != "" {
+		afterSuiteReporters = append(afterSuiteReporters, v1reporter.NewV1JUnitReporter(qe_reporters.JunitOutput))
+	}
+
+	if qe_reporters.Polarion.Run {
+		afterSuiteReporters = append(afterSuiteReporters, &qe_reporters.Polarion)
+	}
+
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Functional test suite")
 }
 
 func BuildTestSuite() {
