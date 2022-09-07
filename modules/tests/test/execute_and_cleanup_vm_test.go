@@ -35,6 +35,13 @@ exit 5
 
 var _ = Describe("Execute in VM / Cleanup VM", func() {
 	f := framework.NewFramework()
+
+	BeforeEach(func() {
+		if f.TestOptions.SkipExecuteInVMTests {
+			Skip("skipExecuteInVMTests is set to true, skipping tests")
+		}
+	})
+
 	sshConnectionInfo := map[string]string{
 		"type":                             "ssh",
 		"user":                             "fedora",

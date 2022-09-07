@@ -23,7 +23,11 @@ import (
 
 var _ = Describe("Create VM", func() {
 	f := framework.NewFramework()
-
+	BeforeEach(func() {
+		if f.TestOptions.SkipCreateVMFromManifestTests {
+			Skip("skipCreateVMFromManifestTests is set to true, skipping tests")
+		}
+	})
 	for _, c := range []CreateVMMode{CreateVMTemplateMode, CreateVMVMManifestMode} {
 		createMode := c
 		Context(string(createMode), func() {

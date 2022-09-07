@@ -36,6 +36,9 @@ func NewBlankDataVolume(name string) *TestDataVolume {
 			Kind:       dataVolumeKind,
 		},
 		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{
+				"cdi.kubevirt.io/storage.bind.immediate.requested": "true",
+			},
 			Name: name,
 		},
 		Spec: v1beta12.DataVolumeSpec{
