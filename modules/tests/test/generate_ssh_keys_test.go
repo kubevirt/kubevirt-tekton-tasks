@@ -18,6 +18,12 @@ import (
 var _ = Describe("Generate SSH Keys", func() {
 	f := framework.NewFramework()
 
+	BeforeEach(func() {
+		if f.TestOptions.SkipGenerateSSHKeysTests {
+			Skip("skipGenerateSSHKeysTests is set to true, skipping tests")
+		}
+	})
+
 	DescribeTable("taskrun fails and no Secrets are created", func(config *testconfigs.GenerateSshKeysTestConfig) {
 		f.TestSetup(config)
 

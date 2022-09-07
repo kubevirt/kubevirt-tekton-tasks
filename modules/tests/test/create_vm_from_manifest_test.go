@@ -21,6 +21,12 @@ var _ = Describe("Create VM from manifest", func() {
 			}
 		})
 
+	BeforeEach(func() {
+		if f.TestOptions.SkipCreateVMFromManifestTests {
+			Skip("skipCreateVMFromManifestTests is set to true, skipping tests")
+		}
+	})
+
 	DescribeTable("taskrun fails and no VM is created", func(config *testconfigs.CreateVMTestConfig) {
 		f.TestSetup(config)
 

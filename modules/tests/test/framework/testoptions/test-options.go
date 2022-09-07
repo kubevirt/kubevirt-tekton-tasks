@@ -4,11 +4,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"k8s.io/client-go/util/homedir"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"k8s.io/client-go/util/homedir"
 )
 
 var deployNamespace string
@@ -18,15 +19,21 @@ var kubeConfigPath string
 var scope string
 var debug string
 var isOKD string
+var skipCreateVMFromManifestTests string
+var skipExecuteInVMTests string
+var skipGenerateSSHKeysTests string
 
 type TestOptions struct {
-	DeployNamespace string
-	TestNamespace   string
-	StorageClass    string
-	KubeConfigPath  string
-	TestScope       constants.TestScope
-	EnvScope        constants.EnvScope
-	Debug           bool
+	DeployNamespace               string
+	TestNamespace                 string
+	StorageClass                  string
+	KubeConfigPath                string
+	TestScope                     constants.TestScope
+	EnvScope                      constants.EnvScope
+	Debug                         bool
+	SkipCreateVMFromManifestTests bool
+	SkipExecuteInVMTests          bool
+	SkipGenerateSSHKeysTests      bool
 
 	CommonTemplatesVersion string
 
@@ -41,6 +48,9 @@ func init() {
 	flag.StringVar(&isOKD, "is-okd", "", "Set to true if running on OKD. One of: true|false")
 	flag.StringVar(&scope, "scope", "", "Scope of the tests. One of: cluster|namespace")
 	flag.StringVar(&debug, "debug", "", "Debug keeps all the resources alive after the tests complete. One of: true|false")
+	flag.StringVar(&skipCreateVMFromManifestTests, "skip-create-vm-from-manifests-tests", "", "Skip create vm from manifests test suite. One of: true|false")
+	flag.StringVar(&skipExecuteInVMTests, "skip-execute-in-vm-tests", "", "Skip execute in vm test suite. One of: true|false")
+	flag.StringVar(&skipGenerateSSHKeysTests, "skip-generate-ssh-keys-tests", "", "Skip generate ssh keys suite. One of: true|false")
 }
 
 func InitTestOptions(testOptions *TestOptions) error {
@@ -82,6 +92,10 @@ func InitTestOptions(testOptions *TestOptions) error {
 	testOptions.Debug = strings.ToLower(debug) == "true"
 
 	testOptions.targetNamespaces = testOptions.resolveNamespaces()
+
+	testOptions.SkipCreateVMFromManifestTests = strings.ToLower(skipCreateVMFromManifestTests) == "true"
+	testOptions.SkipExecuteInVMTests = strings.ToLower(skipExecuteInVMTests) == "true"
+	testOptions.SkipGenerateSSHKeysTests = strings.ToLower(skipGenerateSSHKeysTests) == "true"
 
 	return nil
 }
