@@ -1,16 +1,17 @@
 package execute
 
 import (
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"strings"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"strings"
 )
 
 type Executor struct {
@@ -33,7 +34,7 @@ func (e *Executor) PrepareGuestFSAppliance() error {
 		"-Jxf",
 		applianceArchivePath,
 		"-C",
-		"/mnt",
+		"/home/disk-virt-sysprep",
 	}
 
 	log.GetLogger().Debug("extracting guestfs appliance with tar " + strings.Join(opts, " "))
@@ -44,7 +45,10 @@ func (e *Executor) PrepareGuestFSAppliance() error {
 	if err := cmd.Run(); err != nil {
 		return err
 	}
-	return os.Remove(applianceArchivePath)
+
+	os.Setenv("LIBGUESTFS_PATH", "/home/disk-virt-sysprep/appliance")
+
+	return nil
 }
 
 func (e *Executor) Execute() error {

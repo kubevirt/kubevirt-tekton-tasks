@@ -25,6 +25,8 @@ ENV ENTRY_CMD=/usr/local/bin/${TASK_NAME} \
     USER_NAME=${TASK_NAME} \
     HOME=/home/${TASK_NAME}
 
+USER root
+
 # install libguestfs rhsrvany.exe win dependency for virt-customize
 COPY --from=rhsrvanyBuilder /rhsrvany/RHSrvAny/rhsrvany.exe /usr/share/virt-tools/rhsrvany.exe
 
@@ -32,7 +34,7 @@ COPY --from=rhsrvanyBuilder /rhsrvany/RHSrvAny/rhsrvany.exe /usr/share/virt-tool
 COPY --from=taskBuilder /${TASK_NAME} ${ENTRY_CMD}
 COPY build/${TASK_NAME}/bin /usr/local/bin
 
-#RUN  /usr/local/bin/user_setup
+RUN  /usr/local/bin/user_setup
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 CMD ["--help"]
 
