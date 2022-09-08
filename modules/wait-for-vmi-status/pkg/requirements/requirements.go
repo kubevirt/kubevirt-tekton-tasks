@@ -1,14 +1,44 @@
 package requirements
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"k8s.io/apimachinery/pkg/labels"
-	"strings"
 )
 
+func ValidateJSONPath(condition string) bool {
+	// jsonpath format must be jsonpath='{.status.phase}' == Success"
+	if strings.HasPrefix(condition, "jsonpath='{.") && strings.Contains(condition, "}'") {
+		return true
+	}
+
+	return false
+}
+
+func ParseJSONPathParameter(condition string) (string, error) {
+	if !ValidateJSONPath(condition) {
+		return "", errors.New("valid jsonpath format is jsonpath='{.status.phase}' == Success")
+	}
+
+	condition = strings.Replace(condition, "jsonpath='{.", "", -1)
+	return strings.Replace(condition, "}'", "", -1), nil
+}
+
 func GetLabelRequirement(condition string) (labels.Requirements, error) {
+	var err error
+
 	if strings.TrimSpace(condition) == "" {
 		return nil, nil
+	}
+
+	if strings.HasPrefix(condition, "jsonpath=") {
+		condition, err = ParseJSONPathParameter(condition)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	selector, err := labels.Parse(condition)

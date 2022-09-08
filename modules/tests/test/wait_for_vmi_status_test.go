@@ -153,5 +153,42 @@ var _ = Describe("Wait for VMI Status", func() {
 				VMTargetNamespace: constants.DeployTargetNS,
 			},
 		}),
+		// JSONPath tests
+		Entry("fulfills success condition - jsonPath", &testconfigs.WaitForVMIStatusTestConfig{
+			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
+				ExpectSuccess:  true,
+			},
+			TaskData: testconfigs.WaitForVMIStatusTaskData{
+				VM:               testobjects.NewTestAlpineVM("fulfills-success-condition").Build(),
+				SuccessCondition: "jsonpath='{.status.phase}' == Running",
+				FailureCondition: "jsonpath='{.status.phase}' == Failed",
+				ShouldStartVM:    true,
+			},
+		}),
+		Entry("invalid success condition - jsonPath", &testconfigs.WaitForVMIStatusTestConfig{
+			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
+				ExpectedLogs:   "success-condition: could not parse condition {.status.phase} == Running: unable to parse requirement: <nil>: Invalid value: \"{.status.phase}\": name part must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]')",
+			},
+			TaskData: testconfigs.WaitForVMIStatusTaskData{
+				VM:               testobjects.NewTestAlpineVM("fulfills-success-condition").Build(),
+				SuccessCondition: "{.status.phase} == Running",
+				FailureCondition: "jsonpath='{.status.phase}' == Failed",
+				ShouldStartVM:    true,
+			},
+		}),
+		Entry("invalid failure condition - jsonPath", &testconfigs.WaitForVMIStatusTestConfig{
+			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
+				ExpectedLogs:   "failure-condition: valid jsonpath format is jsonpath='{.status.phase}' == Success",
+			},
+			TaskData: testconfigs.WaitForVMIStatusTaskData{
+				VM:               testobjects.NewTestAlpineVM("fulfills-success-condition").Build(),
+				SuccessCondition: "jsonpath='{.status.phase}' == Running",
+				FailureCondition: "jsonpath={.status.phase}' == Failed",
+				ShouldStartVM:    true,
+			},
+		}),
 	)
 })
