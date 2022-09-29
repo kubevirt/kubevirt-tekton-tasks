@@ -38,6 +38,7 @@ func NewBlankDataVolume(name string) *TestDataVolume {
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
 				"cdi.kubevirt.io/storage.bind.immediate.requested": "true",
+				"cdi.kubevirt.io/storage.deleteAfterCompletion":    "false",
 			},
 			Name: name,
 		},

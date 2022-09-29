@@ -53,7 +53,8 @@ kind: DataVolume
 metadata:
   name: test-dv
   annotations:
-  cdi.kubevirt.io/storage.bind.immediate.requested: \"true\"
+    cdi.kubevirt.io/storage.bind.immediate.requested: "true"
+    cdi.kubevirt.io/storage.deleteAfterCompletion:    "false"
 spec:
   pvc:
     resources:
@@ -108,7 +109,8 @@ kind: DataVolume
 metadata:
   name: test-dv-updated
   annotations:
-  cdi.kubevirt.io/storage.bind.immediate.requested: \"true\"
+    cdi.kubevirt.io/storage.bind.immediate.requested: "true"
+    cdi.kubevirt.io/storage.deleteAfterCompletion:    "false"
 spec:
   pvc:
     resources:
