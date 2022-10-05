@@ -103,7 +103,7 @@ spec:
       description: The namespace of a template that was updated.
   steps:
     - name: modifyvmtemplate
-      image: "quay.io/kubevirt/tekton-task-modify-vm-template:v0.12.0"
+      image: "quay.io/kubevirt/tekton-task-modify-vm-template:v0.12.1"
       command:
         - modify-vm-template
       args:
