@@ -19,9 +19,21 @@
 
 source $(git rev-parse --show-toplevel)/test/e2e-common.sh
 
+
+# Setting defaults
+PIPELINE_FEATURE_GATE=${PIPELINE_FEATURE_GATE:-stable}
+EMBEDDED_STATUS_GATE=${EMBEDDED_STATUS_GATE:-full}
+SKIP_INITIALIZE=${SKIP_INITIALIZE:="false"}
+RUN_YAML_TESTS=${RUN_YAML_TESTS:="true"}
+SKIP_GO_E2E_TESTS=${SKIP_GO_E2E_TESTS:="false"}
+E2E_GO_TEST_TIMEOUT=${E2E_GO_TEST_TIMEOUT:="20m"}
+failed=0
+
 # Script entry point.
 
-initialize $@
+if [ "${SKIP_INITIALIZE}" != "true" ]; then
+  initialize $@
+fi
 
 header "Setting up environment"
 
@@ -31,12 +43,34 @@ failed=0
 
 function set_feature_gate() {
   local gate="$1"
+  local resolver="false"
   if [ "$gate" != "alpha" ] && [ "$gate" != "stable" ] && [ "$gate" != "beta" ] ; then
     printf "Invalid gate %s\n" ${gate}
     exit 255
   fi
+  if [ "$gate" == "alpha" ]; then
+    resolver="true"
+  fi
   printf "Setting feature gate to %s\n", ${gate}
   jsonpatch=$(printf "{\"data\": {\"enable-api-fields\": \"%s\"}}" $1)
+  echo "feature-flags ConfigMap patch: ${jsonpatch}"
+  kubectl patch configmap feature-flags -n tekton-pipelines -p "$jsonpatch"
+  if [ "$gate" == "alpha" ]; then
+    printf "enabling resolvers\n"
+    jsonpatch=$(printf "{\"data\": {\"enable-git-resolver\": \"true\", \"enable-hub-resolver\": \"true\", \"enable-bundles-resolver\": \"true\", \"enable-cluster-resolver\": \"true\"}}")
+    echo "resolvers-feature-flags ConfigMap patch: ${jsonpatch}"
+    kubectl patch configmap resolvers-feature-flags -n tekton-pipelines-resolvers -p "$jsonpatch"
+  fi
+}
+
+function set_embedded_status() {
+  local status="$1"
+  if [ "$status" != "full" ] && [ "$status" != "minimal" ] && [ "$status" != "both" ] ; then
+    printf "Invalid embedded status %s\n" ${status}
+    exit 255
+  fi
+  printf "Setting embedded status to %s\n", ${status}
+  jsonpatch=$(printf "{\"data\": {\"embedded-status\": \"%s\"}}" $1)
   echo "feature-flags ConfigMap patch: ${jsonpatch}"
   kubectl patch configmap feature-flags -n tekton-pipelines -p "$jsonpatch"
 }
@@ -44,22 +78,22 @@ function set_feature_gate() {
 function run_e2e() {
   # Run the integration tests
   header "Running Go e2e tests"
-  go_test_e2e -timeout=20m ./test/... || failed=1
+  # Skip ./test/*.go tests if SKIP_GO_E2E_TESTS == true
+  if [ "${SKIP_GO_E2E_TESTS}" != "true" ]; then
+    go_test_e2e -timeout=${E2E_GO_TEST_TIMEOUT} ./test/... || failed=1
+  fi
 
   # Run these _after_ the integration tests b/c they don't quite work all the way
   # and they cause a lot of noise in the logs, making it harder to debug integration
   # test failures.
-  go_test_e2e -tags=examples -timeout=20m ./test/ || failed=1
+  if [ "${RUN_YAML_TESTS}" == "true" ]; then
+    go_test_e2e -mod=readonly -tags=examples -timeout=${E2E_GO_TEST_TIMEOUT} ./test/ || failed=1
+  fi
 }
 
-if [ "$PIPELINE_FEATURE_GATE" == "" ]; then
-  set_feature_gate "stable"
-  run_e2e
-else
-  set_feature_gate "$PIPELINE_FEATURE_GATE"
-  run_e2e
-fi
-
+set_feature_gate "$PIPELINE_FEATURE_GATE"
+set_embedded_status "$EMBEDDED_STATUS_GATE"
+run_e2e
 
 (( failed )) && fail_test
 success

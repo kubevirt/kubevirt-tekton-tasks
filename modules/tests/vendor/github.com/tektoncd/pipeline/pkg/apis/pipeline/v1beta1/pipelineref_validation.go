@@ -18,71 +18,76 @@ package v1beta1
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/tektoncd/pipeline/pkg/apis/config"
+	"github.com/tektoncd/pipeline/pkg/apis/version"
 	"knative.dev/pkg/apis"
 )
 
 // Validate ensures that a supplied PipelineRef field is populated
 // correctly. No errors are returned for a nil PipelineRef.
 func (ref *PipelineRef) Validate(ctx context.Context) (errs *apis.FieldError) {
-	cfg := config.FromContextOrDefaults(ctx)
 	if ref == nil {
 		return
 	}
-	if cfg.FeatureFlags.EnableAPIFields == config.AlphaAPIFields {
-		errs = errs.Also(ref.validateAlphaRef(ctx))
-	} else {
-		errs = errs.Also(ref.validateInTreeRef(ctx))
-	}
-	return
-}
 
-// validateInTreeRef returns errors if the given pipelineRef is not
-// valid for Pipelines' built-in resolution machinery.
-func (ref *PipelineRef) validateInTreeRef(ctx context.Context) (errs *apis.FieldError) {
-	cfg := config.FromContextOrDefaults(ctx)
-	if ref.Resolver != "" {
-		errs = errs.Also(apis.ErrDisallowedFields("resolver"))
-	}
-	if ref.Resource != nil {
-		errs = errs.Also(apis.ErrDisallowedFields("resource"))
-	}
-	if ref.Name == "" {
-		errs = errs.Also(apis.ErrMissingField("name"))
-	}
-	if cfg.FeatureFlags.EnableTektonOCIBundles {
-		if ref.Bundle != "" && ref.Name == "" {
+	if ref.Resolver != "" || ref.Params != nil {
+		if ref.Resolver != "" {
+			errs = errs.Also(version.ValidateEnabledAPIFields(ctx, "resolver", config.AlphaAPIFields).ViaField("resolver"))
+			if ref.Name != "" {
+				errs = errs.Also(apis.ErrMultipleOneOf("name", "resolver"))
+			}
+			if ref.Bundle != "" {
+				errs = errs.Also(apis.ErrMultipleOneOf("bundle", "resolver"))
+			}
+		}
+		if ref.Params != nil {
+			errs = errs.Also(version.ValidateEnabledAPIFields(ctx, "params", config.AlphaAPIFields).ViaField("params"))
+			if ref.Name != "" {
+				errs = errs.Also(apis.ErrMultipleOneOf("name", "params"))
+			}
+			if ref.Bundle != "" {
+				errs = errs.Also(apis.ErrMultipleOneOf("bundle", "params"))
+			}
+			if ref.Resolver == "" {
+				errs = errs.Also(apis.ErrMissingField("resolver"))
+			}
+			errs = errs.Also(ValidateParameters(ctx, ref.Params))
+			errs = errs.Also(validateResolutionParamTypes(ref.Params).ViaField("params"))
+		}
+	} else {
+		if ref.Name == "" {
 			errs = errs.Also(apis.ErrMissingField("name"))
 		}
 		if ref.Bundle != "" {
+			errs = errs.Also(validateBundleFeatureFlag(ctx, "bundle", true).ViaField("bundle"))
 			if _, err := name.ParseReference(ref.Bundle); err != nil {
 				errs = errs.Also(apis.ErrInvalidValue("invalid bundle reference", "bundle", err.Error()))
 			}
 		}
-	} else if ref.Bundle != "" {
-		errs = errs.Also(apis.ErrDisallowedFields("bundle"))
 	}
 	return
 }
 
-// validateAlphaRef ensures that the user has passed either a
-// valid remote resource reference or a valid in-tree resource reference,
-// but not both.
-func (ref *PipelineRef) validateAlphaRef(ctx context.Context) (errs *apis.FieldError) {
-	switch {
-	case ref.Resolver == "" && ref.Resource != nil:
-		errs = errs.Also(apis.ErrMissingField("resolver"))
-	case ref.Resolver == "":
-		errs = errs.Also(ref.validateInTreeRef(ctx))
-	default:
-		if ref.Name != "" {
-			errs = errs.Also(apis.ErrMultipleOneOf("name", "resolver"))
-		}
-		if ref.Bundle != "" {
-			errs = errs.Also(apis.ErrMultipleOneOf("bundle", "resolver"))
+func validateBundleFeatureFlag(ctx context.Context, featureName string, wantValue bool) *apis.FieldError {
+	flagValue := config.FromContextOrDefaults(ctx).FeatureFlags.EnableTektonOCIBundles
+	if flagValue != wantValue {
+		var errs *apis.FieldError
+		message := fmt.Sprintf(`%s requires "enable-tekton-oci-bundles" feature gate to be %t but it is %t`, featureName, wantValue, flagValue)
+		return errs.Also(apis.ErrGeneric(message))
+	}
+	return nil
+}
+
+func validateResolutionParamTypes(params []Param) (errs *apis.FieldError) {
+	for i, p := range params {
+		if p.Value.Type == ParamTypeArray || p.Value.Type == ParamTypeObject {
+			errs = errs.Also(apis.ErrGeneric(fmt.Sprintf("remote resolution parameter type must be %s, not %s",
+				string(ParamTypeString), string(p.Value.Type))).ViaIndex(i))
 		}
 	}
-	return
+
+	return errs
 }
