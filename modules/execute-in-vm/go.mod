@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm
 
-go 1.18
+go 1.19
 
 require (
 	github.com/alexflint/go-arg v1.3.0
@@ -11,8 +11,8 @@ require (
 	go.uber.org/zap v1.19.0
 	k8s.io/apimachinery v0.25.2
 	k8s.io/client-go v12.0.0+incompatible
-	kubevirt.io/api v0.57.1
-	kubevirt.io/client-go v0.57.1
+	kubevirt.io/api v0.58.0
+	kubevirt.io/client-go v0.58.0
 )
 
 require (
