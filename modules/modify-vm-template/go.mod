@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/modify-vm-template
 
-go 1.18
+go 1.19
 
 require (
 	github.com/alexflint/go-arg v1.4.2
@@ -13,7 +13,7 @@ require (
 	k8s.io/api v0.25.2
 	k8s.io/apimachinery v0.25.2
 	k8s.io/client-go v0.25.2
-	kubevirt.io/api v0.57.1
+	kubevirt.io/api v0.58.0
 	kubevirt.io/containerized-data-importer-api v1.55.0
 )
 

@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep
 
-go 1.18
+go 1.19
 
 require (
 	github.com/alexflint/go-arg v1.3.0
@@ -33,11 +33,11 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.25.2 // indirect
-	k8s.io/apiextensions-apiserver v0.23.4 // indirect
+	k8s.io/apiextensions-apiserver v0.23.5 // indirect
 	k8s.io/apimachinery v0.25.2 // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
-	kubevirt.io/api v0.55.0 // indirect
+	kubevirt.io/api v0.58.0 // indirect
 	kubevirt.io/containerized-data-importer-api v1.53.0 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.0.0-20220329064328-f3cc58c6ed90 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect

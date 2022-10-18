@@ -218,11 +218,11 @@ github.com/klauspost/compress/zstd/internal/xxhash
 ## explicit; go 1.15
 github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1
 # github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template v0.0.0 => ../copy-template
-## explicit; go 1.18
+## explicit; go 1.19
 github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template/pkg/templates
 github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template/pkg/utils/parse
 # github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ../shared
-## explicit; go 1.18
+## explicit; go 1.19
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output
@@ -230,7 +230,7 @@ github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils
 # github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
-## explicit; go 1.18
+## explicit; go 1.19
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datasource
@@ -1110,7 +1110,7 @@ knative.dev/pkg/tracing/config
 knative.dev/pkg/tracing/propagation
 knative.dev/pkg/tracing/propagation/tracecontextb3
 knative.dev/pkg/tracker
-# kubevirt.io/api v0.57.1
+# kubevirt.io/api v0.58.0
 ## explicit; go 1.17
 kubevirt.io/api/clone
 kubevirt.io/api/clone/v1alpha1
@@ -1120,13 +1120,14 @@ kubevirt.io/api/export
 kubevirt.io/api/export/v1alpha1
 kubevirt.io/api/instancetype
 kubevirt.io/api/instancetype/v1alpha1
+kubevirt.io/api/instancetype/v1alpha2
 kubevirt.io/api/migrations
 kubevirt.io/api/migrations/v1alpha1
 kubevirt.io/api/pool
 kubevirt.io/api/pool/v1alpha1
 kubevirt.io/api/snapshot
 kubevirt.io/api/snapshot/v1alpha1
-# kubevirt.io/client-go v0.57.1
+# kubevirt.io/client-go v0.58.0
 ## explicit; go 1.17
 kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned
 kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/scheme
@@ -1140,6 +1141,7 @@ kubevirt.io/client-go/generated/kubevirt/clientset/versioned/scheme
 kubevirt.io/client-go/generated/kubevirt/clientset/versioned/typed/clone/v1alpha1
 kubevirt.io/client-go/generated/kubevirt/clientset/versioned/typed/export/v1alpha1
 kubevirt.io/client-go/generated/kubevirt/clientset/versioned/typed/instancetype/v1alpha1
+kubevirt.io/client-go/generated/kubevirt/clientset/versioned/typed/instancetype/v1alpha2
 kubevirt.io/client-go/generated/kubevirt/clientset/versioned/typed/migrations/v1alpha1
 kubevirt.io/client-go/generated/kubevirt/clientset/versioned/typed/pool/v1alpha1
 kubevirt.io/client-go/generated/kubevirt/clientset/versioned/typed/snapshot/v1alpha1

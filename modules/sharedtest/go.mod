@@ -1,13 +1,13 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest
 
-go 1.18
+go 1.19
 
 require (
 	github.com/onsi/ginkgo/v2 v2.1.6
 	github.com/openshift/api v0.0.0-20211217221424-8779abfbd571
 	k8s.io/api v0.25.2
 	k8s.io/apimachinery v0.25.2
-	kubevirt.io/api v0.55.0
+	kubevirt.io/api v0.58.0
 	kubevirt.io/containerized-data-importer-api v1.53.0
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -27,7 +27,7 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/apiextensions-apiserver v0.23.4 // indirect
+	k8s.io/apiextensions-apiserver v0.23.5 // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.0.0-20220329064328-f3cc58c6ed90 // indirect
