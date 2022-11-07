@@ -2,9 +2,10 @@ package env
 
 import (
 	"errors"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"io/ioutil"
 	"os"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 )
 
 const (
@@ -30,4 +31,12 @@ func GetActiveNamespace() (string, error) {
 
 func GetTektonResultsDir() string {
 	return tektonResultsDirPath
+}
+
+func EnvOrDefault(envName string, defVal string) string {
+	val, set := os.LookupEnv(envName)
+	if set {
+		return val
+	}
+	return defVal
 }
