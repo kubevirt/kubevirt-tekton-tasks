@@ -32,6 +32,7 @@ github.com/google/uuid
 github.com/json-iterator/go
 # github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ../shared
 ## explicit; go 1.19
+github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
