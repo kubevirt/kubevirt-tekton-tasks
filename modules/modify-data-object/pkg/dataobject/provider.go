@@ -8,6 +8,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -16,6 +17,8 @@ import (
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/discovery/cached/memory"
+	k8sv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
@@ -23,20 +26,23 @@ import (
 )
 
 type dataObjectProvider struct {
-	client cdiclientv1beta1.CdiV1beta1Interface
+	client    cdiclientv1beta1.CdiV1beta1Interface
+	k8sClient *k8sv1.CoreV1Client
 }
 
 type DataObjectProvider interface {
 	GetDv(string, string) (*cdiv1beta1.DataVolume, error)
 	GetDs(string, string) (*cdiv1beta1.DataSource, error)
+	GetPVC(string, string) (*v1.PersistentVolumeClaim, error)
 	DeleteDS(string, string) error
 	DeleteDV(string, string) error
 	CreateDo(*unstructured.Unstructured, bool) (*unstructured.Unstructured, error)
 }
 
-func NewDataObjectProvider(client cdiclientv1beta1.CdiV1beta1Interface) DataObjectProvider {
+func NewDataObjectProvider(client cdiclientv1beta1.CdiV1beta1Interface, k8sClient *k8sv1.CoreV1Client) DataObjectProvider {
 	return &dataObjectProvider{
-		client: client,
+		client:    client,
+		k8sClient: k8sClient,
 	}
 }
 
@@ -46,6 +52,10 @@ func (d *dataObjectProvider) GetDv(namespace string, name string) (*cdiv1beta1.D
 
 func (d *dataObjectProvider) GetDs(namespace string, name string) (*cdiv1beta1.DataSource, error) {
 	return d.client.DataSources(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+}
+
+func (d *dataObjectProvider) GetPVC(namespace string, name string) (*v1.PersistentVolumeClaim, error) {
+	return d.k8sClient.PersistentVolumeClaims(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 }
 
 func (d *dataObjectProvider) DeleteDV(namespace string, name string) error {
@@ -106,9 +116,14 @@ func NewDataObjectCreator(cliOptions *parse.CLIOptions) (*DataObjectCreator, err
 		return nil, err
 	}
 
+	k8sClient, err := k8sv1.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
 	return &DataObjectCreator{
 		cliOptions:         cliOptions,
-		dataObjectProvider: NewDataObjectProvider(cdiclientv1beta1.NewForConfigOrDie(config)),
+		dataObjectProvider: NewDataObjectProvider(cdiclientv1beta1.NewForConfigOrDie(config), k8sClient),
 	}, nil
 }
 
@@ -155,6 +170,20 @@ func (d *DataObjectCreator) CreateDataObject() (*unstructured.Unstructured, erro
 func (d *DataObjectCreator) waitForSuccessDv(namespace, name string) error {
 	return wait.PollImmediate(constants.PollInterval, constants.PollTimeout, func() (bool, error) {
 		dv, err := d.dataObjectProvider.GetDv(namespace, name)
+
+		if errors.ReasonForError(err) == metav1.StatusReasonNotFound {
+			pvc, err := d.dataObjectProvider.GetPVC(namespace, name)
+			if err != nil {
+				return false, err
+			}
+
+			if pvc.Status.Phase == v1.ClaimPending || pvc.Status.Phase == v1.ClaimBound {
+				return true, nil
+			}
+
+			return false, nil
+		}
+
 		if err != nil {
 			return false, err
 		}
