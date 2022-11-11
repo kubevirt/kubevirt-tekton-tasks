@@ -121,9 +121,14 @@ func NewDataObjectCreator(cliOptions *parse.CLIOptions) (*DataObjectCreator, err
 		return nil, err
 	}
 
+	cdiClient, err := cdiclientv1beta1.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
 	return &DataObjectCreator{
 		cliOptions:         cliOptions,
-		dataObjectProvider: NewDataObjectProvider(cdiclientv1beta1.NewForConfigOrDie(config), k8sClient),
+		dataObjectProvider: NewDataObjectProvider(cdiClient, k8sClient),
 	}, nil
 }
 
@@ -171,13 +176,13 @@ func (d *DataObjectCreator) waitForSuccessDv(namespace, name string) error {
 	return wait.PollImmediate(constants.PollInterval, constants.PollTimeout, func() (bool, error) {
 		dv, err := d.dataObjectProvider.GetDv(namespace, name)
 
-		if errors.ReasonForError(err) == metav1.StatusReasonNotFound {
+		if errors.IsNotFound(err) {
 			pvc, err := d.dataObjectProvider.GetPVC(namespace, name)
 			if err != nil {
 				return false, err
 			}
 
-			if pvc.Status.Phase == v1.ClaimPending || pvc.Status.Phase == v1.ClaimBound {
+			if pvc != nil {
 				return true, nil
 			}
 

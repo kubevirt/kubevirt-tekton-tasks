@@ -3,12 +3,13 @@ package test
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/dataobject"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
@@ -18,7 +19,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
-	v1beta1cdi "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
 var _ = Describe("Create VM", func() {
@@ -137,10 +137,8 @@ var _ = Describe("Create VM", func() {
 
 						for _, dv := range config.TaskData.DataVolumesToCreate {
 							// wait for each DV to finish import, otherwise test will fail, because of not finished import of DV
-							Eventually(func() bool {
-								dv, _ := f.CdiClient.DataVolumes(dv.Data.Namespace).Get(context.TODO(), dv.Data.Name, v1.GetOptions{})
-								return dv.Status.Phase == v1beta1cdi.Succeeded
-							}, time.Second*360, time.Second).Should(BeTrue(), dv.Data.Name+" datavolume should be ready")
+							err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Data.Namespace, dv.Data.Name, constants.Timeouts.SmallDVCreation.Duration)
+							Expect(err).ShouldNot(HaveOccurred())
 						}
 
 						expectedVM := config.TaskData.GetExpectedVMStubMeta()
@@ -155,7 +153,7 @@ var _ = Describe("Create VM", func() {
 								CreateVMResults.Namespace: expectedVM.Namespace,
 							})
 
-						vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
+						vm, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
 							"", config.GetTaskRunTimeout(), false)
 						Expect(err).ShouldNot(HaveOccurred())
 						// check all disks are present
@@ -166,10 +164,14 @@ var _ = Describe("Create VM", func() {
 			})
 		})
 		It("VM with attached PVCs/DVs and existing disks/volumes is created successfully", func() {
+			mode := "template-mode"
+			if c == CreateVMVMManifestMode {
+				mode = "manifest-mode"
+			}
 			datavolumes := []*datavolume.TestDataVolume{
-				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-1").AttachWithDiskName("disk1").AttachAs(datavolume.OwnedPVC),
-				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-2").AttachWithDiskName("disk2").AttachAs(datavolume.OwnedDV),
-				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-3").AttachWithDiskName("disk3").AttachAs(datavolume.OwnedDV),
+				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-1-" + mode).AttachWithDiskName("disk1").AttachAs(datavolume.OwnedPVC),
+				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-2-" + mode).AttachWithDiskName("disk2").AttachAs(datavolume.OwnedDV),
+				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-3-" + mode).AttachWithDiskName("disk3").AttachAs(datavolume.OwnedDV),
 			}
 
 			vmDisk1 := kubevirtv1.Disk{
@@ -275,10 +277,8 @@ var _ = Describe("Create VM", func() {
 
 			for _, dv := range config.TaskData.DataVolumesToCreate {
 				// wait for each DV to finish import, otherwise test will fail, because of not finished import of DV
-				Eventually(func() bool {
-					dv, _ := f.CdiClient.DataVolumes(dv.Data.Namespace).Get(context.TODO(), dv.Data.Name, v1.GetOptions{})
-					return dv.Status.Phase == v1beta1cdi.Succeeded
-				}, time.Second*360, time.Second).Should(BeTrue(), dv.Data.Name+" datavolume should be ready")
+				err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Data.Namespace, dv.Data.Name, constants.Timeouts.SmallDVCreation.Duration)
+				Expect(err).ShouldNot(HaveOccurred())
 			}
 
 			expectedVM := config.TaskData.GetExpectedVMStubMeta()
@@ -293,7 +293,7 @@ var _ = Describe("Create VM", func() {
 					CreateVMResults.Namespace: expectedVM.Namespace,
 				})
 
-			vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
+			vm, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
 				"", config.GetTaskRunTimeout(), false)
 			Expect(err).ShouldNot(HaveOccurred())
 			// check all disks are present

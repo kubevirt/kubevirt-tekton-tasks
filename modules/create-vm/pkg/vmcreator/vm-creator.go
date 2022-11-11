@@ -153,7 +153,12 @@ func (v *VMCreator) CheckVolumesExist() error {
 	allPVCs := zutils.ConcatStringSlices(v.cliOptions.GetOwnPVCNames(), v.cliOptions.GetPVCNames())
 
 	log.Logger().Debug("asserting additional volumes exist", zap.Strings("additional-dvs", allDVs), zap.Strings("additional-pvcs", allPVCs))
-	_, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, allDVs...)
+	_, notFoundDVs, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, allDVs...)
+
+	for dv, _ := range notFoundDVs {
+		allPVCs = append(allPVCs, dv)
+	}
+
 	_, pvcsErr := v.pvcProvider.GetByName(v.targetNamespace, allPVCs...)
 
 	return zerrors.NewMultiError().
@@ -177,9 +182,14 @@ func (v *VMCreator) ownDataVolumes(vm *kubevirtv1.VirtualMachine) error {
 	log.Logger().Debug("taking ownership of DataVolumes", zap.Strings("own-dvs", ownDVs))
 	var multiError zerrors.MultiError
 
-	dvs, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, ownDVs...)
+	dvs, notFoundDVs, dvsErr := v.dataVolumeProvider.GetByName(v.targetNamespace, ownDVs...)
 
 	for idx, dvName := range ownDVs {
+		if _, ok := notFoundDVs[dvName]; ok {
+			// DV not found, nothing to do
+			continue
+		}
+
 		if err := zerrors.GetErrorFromMultiError(dvsErr, dvName); err != nil {
 			multiError.Add(dvName, err)
 			continue

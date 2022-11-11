@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"time"
 
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
@@ -170,21 +169,5 @@ spec:
 			}
 		}
 		Expect(succeededConditionFound).To(BeTrue(), "pipelineRun should succeed")
-
-		Eventually(func(g Gomega) bool {
-			dataVolumes, err := f.CdiClient.DataVolumes(config.PipelineRun.Namespace).List(context.TODO(), metav1.ListOptions{})
-
-			if err != nil {
-				g.Expect(err).ToNot(HaveOccurred())
-			}
-			for _, dataVolume := range dataVolumes.Items {
-				//look only for created datavolumes in this pipeline test
-				if dataVolume.Name == "test-dv" || dataVolume.Name == "test-dv-updated" {
-					return false
-				}
-			}
-			return true
-
-		}, Timeouts.TaskRunExtraWaitDelay.Duration, time.Second).Should(BeTrue(), "DataVolumes should be deleted")
 	})
 })

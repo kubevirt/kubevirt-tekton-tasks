@@ -95,7 +95,7 @@ var _ = Describe("Modify data objects", func() {
 					ModifyDataObjectResults.Namespace: dv.Namespace,
 				})
 
-			err := dataobject.WaitForBoundPVC(f.K8sClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
+			err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
 			Expect(err).ShouldNot(HaveOccurred())
 		},
 			Entry("blank no wait", &testconfigs.ModifyDataObjectTestConfig{
@@ -131,7 +131,7 @@ var _ = Describe("Modify data objects", func() {
 			}),
 		)
 
-		It("DataVolume and PVC is ModifyD successfully with generateName", func() {
+		It("DataVolume and PVC is modified successfully with generateName", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyDataObjectServiceAccountName,
@@ -152,7 +152,7 @@ var _ = Describe("Modify data objects", func() {
 			dv := config.TaskData.DataVolume
 			dv.Name = results[ModifyDataObjectResults.Name]
 			f.ManageDataVolumes(dv)
-			err := dataobject.WaitForBoundPVC(f.K8sClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
+			err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
@@ -679,7 +679,7 @@ var _ = Describe("Modify data objects", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dv)
 
-			err = dataobject.WaitForSuccessfulDataVolume(f.CdiClient, dv.Namespace, dv.Name, 5*time.Minute)
+			err = dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Namespace, dv.Name, 5*time.Minute)
 			Expect(err).ToNot(HaveOccurred())
 
 			runner.NewTaskRunRunner(f, config.GetTaskRun()).
