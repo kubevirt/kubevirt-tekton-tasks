@@ -9,7 +9,10 @@ const (
 )
 
 const (
-	DiskImagePath                 = "/mnt/targetpvc/disk.img"
-	GuestFSApplianceArchivePath   = "/usr/local/lib/guestfs/downloaded"
-	VirtCustomizeCommandsFileName = "virt_customize_commands"
+	DiskImagePath                  = "/mnt/targetpvc/disk.img"
+	GuestFSApplianceArchivePath    = "/usr/local/lib/guestfs/downloaded"
+	VirtCustomizeCommandsFileName  = "virt_customize_commands"
+	GuestFSApplianceArchivePathEnv = "LIBGUESTFS_APPLIANCE_ARCHIVE_PATH"
+	TargetApplianceFolderEnv       = "LIBGUESTFS_APPLIANCE_TARGET_PATH"
+	DiskVirtCustomizeHome          = "/home/disk-virt-customize"
 )
