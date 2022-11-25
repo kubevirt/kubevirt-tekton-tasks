@@ -9,7 +9,10 @@ const (
 )
 
 const (
-	DiskImagePath               = "/mnt/targetpvc/disk.img"
-	GuestFSApplianceArchivePath = "/usr/local/lib/guestfs/downloaded"
-	VirtSysprepCommandsFileName = "virt_sysprep_commands"
+	DiskImagePath                  = "/mnt/targetpvc/disk.img"
+	GuestFSApplianceArchivePath    = "/usr/local/lib/guestfs/downloaded"
+	VirtSysprepCommandsFileName    = "virt_sysprep_commands"
+	GuestFSApplianceArchivePathEnv = "LIBGUESTFS_APPLIANCE_ARCHIVE_PATH"
+	TargetApplianceFolderEnv       = "LIBGUESTFS_APPLIANCE_TARGET_PATH"
+	DiskVirtSysprepHome            = "/home/disk-virt-sysprep"
 )

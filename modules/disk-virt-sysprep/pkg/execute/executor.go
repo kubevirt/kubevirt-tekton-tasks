@@ -1,16 +1,19 @@
 package execute
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utils/log"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utils/parse"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utils/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 )
 
 type Executor struct {
@@ -23,17 +26,18 @@ func NewExecutor(clioptions *parse.CLIOptions, diskImagePath string) *Executor {
 }
 
 func (e *Executor) PrepareGuestFSAppliance() error {
-	applianceArchivePath := constants.GuestFSApplianceArchivePath
+	applianceArchivePath := env.EnvOrDefault(constants.GuestFSApplianceArchivePathEnv, constants.GuestFSApplianceArchivePath)
 
 	if _, err := os.Stat(applianceArchivePath); os.IsNotExist(err) {
 		return zerrors.NewMissingRequiredError("guestfs appliance is missing at %v", applianceArchivePath)
 	}
 
+	targetFolder := env.EnvOrDefault(constants.TargetApplianceFolderEnv, constants.DiskVirtSysprepHome)
 	opts := []string{
 		"-Jxf",
 		applianceArchivePath,
 		"-C",
-		"/mnt",
+		targetFolder,
 	}
 
 	log.GetLogger().Debug("extracting guestfs appliance with tar " + strings.Join(opts, " "))
@@ -44,7 +48,10 @@ func (e *Executor) PrepareGuestFSAppliance() error {
 	if err := cmd.Run(); err != nil {
 		return err
 	}
-	return os.Remove(applianceArchivePath)
+
+	os.Setenv("LIBGUESTFS_PATH", path.Join(targetFolder, "appliance"))
+
+	return nil
 }
 
 func (e *Executor) Execute() error {
