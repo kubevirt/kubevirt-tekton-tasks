@@ -715,8 +715,6 @@ spec:
           value: direct
         - name: LIBGUESTFS_PATH
           value: /mnt/appliance
-      securityContext:
-        runAsUser: 0
       resources:
         limits:
           devices.kubevirt.io/kvm: '1'
@@ -784,8 +782,6 @@ spec:
           value: direct
         - name: LIBGUESTFS_PATH
           value: /mnt/appliance
-      securityContext:
-        runAsUser: 0
       resources:
         limits:
           devices.kubevirt.io/kvm: '1'
