@@ -330,7 +330,8 @@ var _ = Describe("Create VM from template", func() {
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-common-template")),
 				},
-				IsCommonTemplate: true,
+				IsCommonTemplate:  true,
+				VMTargetNamespace: DeployTargetNS,
 				DataVolumesToCreate: []*datavolume.TestDataVolume{
 					datavolume.NewBlankDataVolume("common-templates-src-dv"),
 				},
