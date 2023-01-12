@@ -1309,6 +1309,120 @@ apiVersion: tekton.dev/v1beta1
 kind: ClusterTask
 metadata:
   annotations:
+    task.kubevirt.io/associatedServiceAccount: modify-windows-iso-file-task
+  labels:
+    task.kubevirt.io/type: modify-windows-iso-file
+    task.kubevirt.io/category: modify-windows-iso-file
+  name: modify-windows-iso-file
+spec:
+  params:
+    - name: pvcName
+      description: PersistentVolumeClaim which contains windows iso.
+      type: string
+      default: ""
+  steps:
+    - name: modify-iso-file
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
+      image: "quay.io/kubevirt/tekton-task-disk-virt-customize:v0.12.1"
+      script: |
+        #!/bin/bash
+        set -x
+
+        export LIBGUESTFS_PATH=/usr/local/lib/guestfs/appliance
+        export ISO_FILES_PATH="/tmp/extracted-iso-files"
+        export EFI_BOOT="${ISO_FILES_PATH}/efi/microsoft/boot"
+        export TARGET_IMG_FILE_PATH="tmp/target-pvc/disk.img"
+
+        guestfish -a ${TARGET_IMG_FILE_PATH} -m /dev/sda tar-out / - | tar xvf - -C ${ISO_FILES_PATH} -m --no-overwrite-dir --owner=$(id -u) --group=$(id -g) --no-same-permissions
+ 
+        chmod u+w "${ISO_FILES_PATH}/efi" "${ISO_FILES_PATH}/efi/microsoft" "${ISO_FILES_PATH}/efi/microsoft/boot"
+        chmod u+w "${EFI_BOOT}/efisys.bin" "${EFI_BOOT}/cdboot.efi" "${EFI_BOOT}/efisys_noprompt.bin" "${EFI_BOOT}/cdboot_noprompt.efi"
+
+        rm "${EFI_BOOT}/efisys.bin" "${EFI_BOOT}/cdboot.efi"
+
+        mv "${EFI_BOOT}/efisys_noprompt.bin" "${EFI_BOOT}/efisys.bin"
+        mv "${EFI_BOOT}/cdboot_noprompt.efi" "${EFI_BOOT}/cdboot.efi"
+      env:
+        - name: "LIBGUESTFS_BACKEND"
+          value: "direct"
+        - name: "HOME"
+          value: "/usr/local/lib/guestfs/appliance"
+      resources:
+        limits:
+          devices.kubevirt.io/kvm: '1'
+        requests:
+          devices.kubevirt.io/kvm: '1'
+      volumeMounts:
+        - mountPath: /tmp/target-pvc/
+          name: target-pvc
+        - mountPath: /tmp/extracted-iso-files/
+          name: extracted-iso-files
+    - name: create-iso-file
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
+      image: "quay.io/kubevirt/tekton-task-modify-data-object:v0.12.1"
+      script: |
+        #!/bin/bash
+        set -ex
+        export ISO_FILES_PATH="/tmp/extracted-iso-files"
+        export ISO_FILE_PATH="/tmp/iso-file/disk.iso"
+
+        xorriso -as mkisofs -no-emul-boot \
+            -e "efi/microsoft/boot/efisys.bin" \
+            -boot-load-size 1 \
+            -iso-level 4 \
+            -J -l -D -N \
+            -joliet-long \
+            -relaxed-filenames \
+            -V "WINDOWS" \
+            -o ${ISO_FILE_PATH} ${ISO_FILES_PATH}
+      volumeMounts:
+        - mountPath: /tmp/extracted-iso-files/
+          name: extracted-iso-files
+        - mountPath: /tmp/iso-file/
+          name: iso-file
+    - name: convert-iso-file
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
+      image: "quay.io/kubevirt/tekton-task-disk-virt-customize:v0.12.1"
+      script: |
+        #!/bin/bash
+        set -x
+        export ISO_FILE_PATH="/tmp/iso-file/disk.iso"
+        export TARGET_IMG_FILE_PATH="/tmp/target-pvc/disk.img"
+
+        rm ${TARGET_IMG_FILE_PATH}
+        qemu-img convert -t writeback -p -O raw ${ISO_FILE_PATH} ${TARGET_IMG_FILE_PATH}
+      volumeMounts:
+        - mountPath: /tmp/target-pvc/
+          name: target-pvc
+        - mountPath: /tmp/iso-file/
+          name: iso-file
+  volumes:
+    - name: target-pvc
+      persistentVolumeClaim:
+        claimName: "$(params.pvcName)"
+    - name: extracted-iso-files
+      emptyDir:
+        sizeLimit: 7Gi
+    - name: iso-file
+      emptyDir:
+        sizeLimit: 7Gi
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
     task.kubevirt.io/associatedServiceAccount: wait-for-vmi-status-task
     vmiNamespace.params.task.kubevirt.io/type: namespace
   labels:
