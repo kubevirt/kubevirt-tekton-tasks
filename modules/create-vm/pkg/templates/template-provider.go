@@ -2,6 +2,7 @@ package templates
 
 import (
 	"context"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	templatev1 "github.com/openshift/api/template/v1"
 	tempclient "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
@@ -33,6 +34,7 @@ func (t *templateProvider) Get(namespace string, name string) (*templatev1.Templ
 
 func (t *templateProvider) Process(namespace string, template *templatev1.Template, paramValues map[string]string) (*templatev1.Template, error) {
 	temp := template.DeepCopy()
+	temp.Namespace = ""
 	params := temp.Parameters
 
 	var paramsError zerrors.MultiError
@@ -58,5 +60,7 @@ func (t *templateProvider) Process(namespace string, template *templatev1.Templa
 	if err != nil {
 		return nil, err
 	}
+	//setting namespace back for usage in VM labels
+	processedTemplate.Namespace = template.Namespace
 	return processedTemplate, nil
 }
