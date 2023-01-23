@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-customize/pkg/constants"
@@ -32,24 +31,7 @@ func (e *Executor) PrepareGuestFSAppliance() error {
 		return zerrors.NewMissingRequiredError("guestfs appliance is missing at %v", applianceArchivePath)
 	}
 
-	targetFolder := env.EnvOrDefault(constants.TargetApplianceFolderEnv, constants.DiskVirtCustomizeHome)
-	opts := []string{
-		"-Jxf",
-		applianceArchivePath,
-		"-C",
-		targetFolder,
-	}
-
-	log.GetLogger().Debug("extracting guestfs appliance with tar " + strings.Join(opts, " "))
-	cmd := exec.Command("tar", opts...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	os.Setenv("LIBGUESTFS_PATH", path.Join(targetFolder, "appliance"))
+	os.Setenv("LIBGUESTFS_PATH", applianceArchivePath)
 
 	return nil
 }

@@ -18,14 +18,14 @@ RUN git clone https://github.com/rwmjones/rhsrvany.git
 WORKDIR /rhsrvany
 RUN autoreconf --install && autoconf && mingw32-configure --disable-dependency-tracking && make
 
-FROM quay.io/kubevirt/libguestfs-tools:v0.55.0
+FROM quay.io/kubevirt/libguestfs-tools:v0.59.0-alpha.2
 ENV TASK_NAME=disk-virt-customize
 ENV ENTRY_CMD=/usr/local/bin/${TASK_NAME} \
     USER_UID=1001 \
     USER_NAME=${TASK_NAME} \
     HOME=/home/${TASK_NAME}
 
-USER root
+USER 0
 
 # install libguestfs rhsrvany.exe win dependency for virt-customize
 COPY --from=rhsrvanyBuilder /rhsrvany/RHSrvAny/rhsrvany.exe /usr/share/virt-tools/rhsrvany.exe
