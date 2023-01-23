@@ -1,10 +1,17 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: windows10-customize-run-
+  generateName: windows11-customize-run-
 spec:
+  params:
+    - name: sourceTemplateName
+      value: windows11-desktop-large
+    - name: customizeTemplateName
+      value: windows11-desktop-large-customize-sqlserver
+    - name: goldenTemplateName
+      value: windows11-desktop-large-golden-sqlserver
   pipelineRef:
-    name: windows10-customize
+    name: windows-customize
   taskRunSpecs:
     - pipelineTaskName: copy-template-customize
       taskServiceAccountName: copy-template-task

@@ -1,0 +1,163 @@
+# Windows efi Installer Pipeline
+
+This pipeline installs Windows 11/2k22 into a new DataVolume. This DataVolume is suitable to be used as a default boot source
+or golden image for Windows 11/2k22 VMs.
+
+This example pipeline is suitable only for windows 11/2k22 (or other windows versions which require efi - not tested!). When using 
+this example pipeline always adjust pipeline parameters for windows version you are currently using (e.g. different template name, 
+different autoattend config map, different base image name, ...). Each windows version requires change in autounattendConfigMapName 
+parameter (e.g. using `windows2k22-autounattend` config map will not work with Windows 11 and vice versa - e.g. due to different storage 
+drivers path).
+
+The pipeline implements this by modifying the windows iso - extracts iso files from iso, replaces prompt bootloader with no-prompt bootloader. 
+This helps with automated installation of Windows in EFI boot mode. By default Windows in EFI boot mode uses a prompt bootloader, which will not 
+continue with the boot process until a key is pressed. By replacing it with the non-prompt bootloader no key press is required to boot into the 
+Windows installer. Then task packs updated packages to new iso, converts it with qemu-img and replaces original iso file in PVC.
+
+After the iso is modified it creates a new VM which boots from the modified Windows installation image (ISO file). The installation of Windows is 
+automatically executed and controlled by a Windows answer file. Then the pipeline will wait for the installation to complete and will delete the 
+created VM while keeping the resulting DataVolume with the installed operating system. The pipeline can be customized to support different 
+installation requirements.
+
+There is a specific version of this pipeline for OKD.
+This version is using templates, which are not available on Kubernetes.
+
+## Prerequisites
+
+- KubeVirt `v0.59.1`
+- Tekton Pipelines `v0.44.0`
+
+## Links
+
+- [Windows efi Pipeline for okd](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows-efi-installer.yaml)
+- [Windows 11 efi Installer PipelineRun for okd](windows11-installer-pipelinerun-okd.yaml)
+- [Windows 2k22 efi Installer PipelineRun for okd](windows2k22-installer-pipelinerun-okd.yaml)
+
+
+### Obtain Windows ISO 11 download URL
+
+1. Go to https://www.microsoft.com/en-us/software-download/windows11.
+2. Fill in the edition and `English` language (other languages need to be updated in `windows11-autounattend` ConfigMap) and go to the download page.
+3. Right-click on the 64-bit download button and copy the download link. The link should be valid for 24 hours.
+4. Initialize a WIN_URL variable that will be used to create a DataVolume which will download this ISO into a PVC.
+   Make sure to escape `&` with `\&` for the example commands below to work.
+
+### Obtain Windows ISO server 2022 download URL
+
+1. Go to https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022.
+2. Right-click Download the ISO button.
+3. Fill in all required informations and click on Download now button
+4. Select English (United States) (other languages need to be updated in `windows2k22-autounattend` ConfigMap) - 64-bit edition iso download
+5. Replace the `<INSERT_WINDOWS_ISO_URL>` tag with the new link in [windows2k22-installer-pipelinerun-okd](windows2k22-installer-pipelinerun-okd.yaml) file
+
+```bash
+# Real URL can look differently
+WIN_URL="https://software.download.prss.microsoft.com/dbazure/Win11_22H2_English_x64v1.iso..."
+```
+
+#### Obtaining a download URL in an automated way
+
+The script [`getisourl.py`](getisourl.py) can be used to automatically obtain a Windows 11 ISO download URL.
+
+The prerequisites are:
+
+- python3-selenium
+- chromedriver
+- chromium
+
+Run it as follows to initialize a WIN_URL variable.
+
+```bash
+# Real URL can look differently
+WIN_URL=$(./getisourl.py | sed 's/&/\\&/g')
+```
+
+### Prepare autounattend.xml ConfigMap
+
+1. Supply, generate or use the default autounattend.xml.
+   For information on answer files see [Startup Scripts - KubeVirt User Guide](https://kubevirt.io/user-guide/virtual_machines/startup_scripts/#sysprep).
+2. Replace the default example autounattend.xml with your own in the definition of the `windows11-autounattend` ConfigMap in the pipeline YAML.
+   Different autounattend.xml can be also passed in a separate ConfigMap with the Pipeline parameter `autounattendConfigMapName` when creating a PipelineRun.
+
+## Pipeline Description (Kubernetes)
+
+```
+  create-source-dv --- create-vm-from-manifest --- wait-for-vmi-status --- cleanup-vm
+                   |
+  create-base-dv --- modify-windows-iso-file
+```
+
+1. `create-source-dv` task downloads a Windows source ISO into a DV called `windows-source-*`.
+2. `modify-windows-iso-file` extracts imported iso, replaces prompt bootloader (which is used as a default one when efi is used) 
+   with no-prompt bootloader, pack the updated files back to new iso, convert the iso and replaces original iso with updated one.
+3. `create-base-dv` task creates an empty DV for new windows installation called `windows-base-*`.
+4. `create-vm-from-manifest` task creates a VM called `windows-installer-*`
+   from the empty DV and with the `windows-source-*` DV attached as a CD-ROM.
+   A second DV with the virtio-win ISO will also be attached. (Pipeline parameter `virtioContainerDiskName`)
+5. `wait-for-vmi-status` task waits until the VM shuts down.
+6. `cleanup-vm` deletes the installer VM and ISO DV. (also in case of failure of the previous tasks)
+7. The output artifact will be the `windows-base-*` DV with the basic Windows installation.
+   It will boot into the Windows OOBE and needs to be setup further before it can be used.
+
+## Pipeline Description (OKD)
+
+```
+  copy-template --- modify-vm-template --- create-vm-from-template --- wait-for-vmi-status --- create-base-dv --- cleanup-vm
+                 |
+  import-win-iso --- modify-windows-iso-file
+```
+
+1. `copy-template` copies the template defined by the pipeline parameters `sourceTemplateName` and `sourceTemplateNamespace`
+   to a new template with the name specified by parameter `installerTemplateName` in the same namespace. 
+   An already existing template can be overwritten when setting `allowReplaceInstallerTemplate` to `true`.
+2. `import-win-iso` creates new datavolume with windows iso file with name defined in `isoDVName` parameter.
+3. `modify-windows-iso-file` extracts imported iso, replaces prompt bootloader (which is used as a default one when efi is used) 
+   with no-prompt bootloader, pack the updated files back to new iso, convert the iso and replaces original iso with updated one.
+   Replacement of bootloader is needed to be able to automate installation of windows versions which require efi.
+4. `modify-vm-template` sets the display name of the new Template and the dataVolumeTemplates, Disks and Volumes needed for the 
+   installation.
+5. `create-vm-from-template` task creates a VM from the newly created Template.
+   A DV with the Windows source ISO will be attached as CD-ROM and a second empty DV will be used as installation destination.
+   A third DV with the virtio-win ISO will also be attached. (Pipeline parameter `virtioContainerDiskName`)
+6. `wait-for-vmi-status` task waits until the VM shuts down.
+7. `create-base-dv` task creates an DV with the specified name and namespace (Pipeline parameters `baseDvName` and 
+   `baseDvNamespace`).
+   Then it clones the second DV of the installation VM into the new DV.
+8. `cleanup-vm` deletes the installer VM and all of its DVs.
+9. The output artifact will be the `baseDvName`/`baseDvNamespace` DV with the basic Windows installation.
+   It will boot into the Windows OOBE and needs to be setup further before it can be used.
+
+## How to run (OKD)
+
+```bash
+WIN_URL="https://software.download.prss.microsoft.com/dbazure/Win11_22H2_English_x64v1.iso..."
+oc apply -f windows11-installer-pipelinerun-okd.yaml
+sed 's!INSERT_WINDOWS_ISO_URL!'"$WIN_URL"'!g' windows11-installer-pipelinerun-okd.yaml | oc create -f -
+```
+
+## Possible Optimizations
+
+### Windows Source ISO Caching
+
+Windows source ISO can be downloaded and cached/stored in a DV.
+So the subsequent PipelineRuns don't have to download the same ISO multiple times.
+
+You can for example create the following DV first and remove import-win-iso and modify-windows-iso-file steps from the windows-efi-installer pipeline:
+
+```yaml
+ apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: windows11-source
+spec:
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 7Gi
+    volumeMode: Filesystem
+  source:
+    http:
+      url: WIN_IMAGE_DOWNLOAD_URL
+```

@@ -1,0 +1,37 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: windows11-installer-run-
+spec:
+  params:
+    - name: winImageDownloadURL
+      value: >-
+       <INSERT_WINDOWS_ISO_URL>
+    - name: autounattendConfigMapName
+      value: windows11-autounattend
+    - name: sourceTemplateName
+      value: windows11-desktop-large
+    - name: sourceTemplateNamespace
+      value: openshift
+    - name: installerTemplateName
+      value: windows11-desktop-large-installer
+    - name: allowReplaceInstallerTemplate
+      value: 'true'
+    - name: baseDvName
+      value: win11
+    - name: baseDvNamespace
+      value: kubevirt-os-images
+    - name: isoDVName
+      value: win11
+    - name: allowReplaceISODV
+      value: 'false'
+  pipelineRef:
+    name: windows-efi-installer
+  timeout: 1h0m0s
+  taskRunSpecs:
+    - pipelineTaskName: "modify-windows-iso-file"
+      taskPodTemplate:
+        securityContext:
+          runAsUser: 1001
+          runAsGroup: 1001
+          fsGroup: 1001          

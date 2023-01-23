@@ -9,7 +9,7 @@ spec:
   - name: sourceDataVolumeNamespace
     value: INSERT_NAMESPACE_OF_SOURCE_DATAVOLUME
   pipelineRef:
-    name: windows10-customize
+    name: windows-customize
   taskRunSpecs:
     - pipelineTaskName: create-base-dv
       taskServiceAccountName: modify-data-object-task
