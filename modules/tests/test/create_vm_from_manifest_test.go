@@ -39,7 +39,7 @@ var _ = Describe("Create VM from manifest", func() {
 			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(nil)
 
-		_, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
+		_, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
 			"", config.GetTaskRunTimeout(), false)
 		Expect(err).Should(HaveOccurred())
 	},
@@ -61,7 +61,7 @@ var _ = Describe("Create VM from manifest", func() {
 		Entry("non existent dv", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "datavolumes.cdi.kubevirt.io \"non-existent-dv\" not found",
+				ExpectedLogs:   "persistentvolumeclaims \"non-existent-dv\" not found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				VM:          testobjects.NewTestAlpineVM("vm-with-non-existent-dv").Build(),
@@ -71,7 +71,7 @@ var _ = Describe("Create VM from manifest", func() {
 		Entry("non existent owned dv", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "datavolumes.cdi.kubevirt.io \"non-existent-own-dv\" not found",
+				ExpectedLogs:   "persistentvolumeclaims \"non-existent-own-dv\" not found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				VM:             testobjects.NewTestAlpineVM("vm-with-non-existent-owned-dv").Build(),
@@ -146,7 +146,7 @@ var _ = Describe("Create VM from manifest", func() {
 				CreateVMResults.Namespace: expectedVM.Namespace,
 			})
 
-		_, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
+		_, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
 			"", config.GetTaskRunTimeout(), false)
 		Expect(err).ShouldNot(HaveOccurred())
 	},
@@ -222,7 +222,7 @@ var _ = Describe("Create VM from manifest", func() {
 				CreateVMResults.Namespace: expectedVMStub.Namespace,
 			})
 
-		vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
+		vm, err := vm.WaitForVM(f.KubevirtClient, expectedVMStub.Namespace, expectedVMStub.Name,
 			"", config.GetTaskRunTimeout(), false)
 		Expect(err).ShouldNot(HaveOccurred())
 
@@ -258,7 +258,7 @@ var _ = Describe("Create VM from manifest", func() {
 					CreateVMResults.Namespace: expectedVMStub.Namespace,
 				})
 
-			vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
+			vm, err := vm.WaitForVM(f.KubevirtClient, expectedVMStub.Namespace, expectedVMStub.Name,
 				phase, config.GetTaskRunTimeout(), false)
 			Expect(err).ShouldNot(HaveOccurred())
 

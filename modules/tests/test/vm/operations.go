@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
@@ -9,11 +10,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 	kubevirtcliv1 "kubevirt.io/client-go/kubecli"
-	cdicliv1beta1 "kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/core/v1beta1"
 )
 
 func WaitForVM(kubevirtClient kubevirtcliv1.KubevirtClient,
-	cdiClientSet cdicliv1beta1.CdiV1beta1Interface,
 	namespace, name string,
 	vmiPhase kubevirtv1.VirtualMachineInstancePhase,
 	timeout time.Duration,
@@ -41,7 +40,12 @@ func WaitForVM(kubevirtClient kubevirtcliv1.KubevirtClient,
 					name = dataVolume.Name
 				}
 
-				if name != "" && !dataobject.IsDataVolumeImportSuccessful(cdiClientSet, namespace, name) {
+				result, err := dataobject.IsDataVolumeImportSuccessful(kubevirtClient, namespace, name)
+				if err != nil {
+					fmt.Println("error while waiting for datavolume import: ", err.Error())
+				}
+
+				if name != "" && !result {
 					return false, nil
 				}
 			}

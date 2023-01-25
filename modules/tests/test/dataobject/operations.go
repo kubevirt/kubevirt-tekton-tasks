@@ -5,20 +5,18 @@ import (
 	"time"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	kubevirtcliv1 "kubevirt.io/client-go/kubecli"
 	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 	cdicliv1beta1 "kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/core/v1beta1"
 )
 
-func WaitForSuccessfulDataVolume(cdiClientSet cdicliv1beta1.CdiV1beta1Interface, namespace, name string, timeout time.Duration) error {
+func WaitForSuccessfulDataVolume(kubevirtClient kubevirtcliv1.KubevirtClient, namespace, name string, timeout time.Duration) error {
 	return wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
-		dataVolume, err := cdiClientSet.DataVolumes(namespace).Get(context.TODO(), name, metav1.GetOptions{})
-		if err != nil {
-			return true, err
-		}
-		return isDataVolumeImportStatusSuccessful(dataVolume), nil
+		return IsDataVolumeImportSuccessful(kubevirtClient, namespace, name)
 	})
 }
 
@@ -32,14 +30,24 @@ func WaitForSuccessfulDataSource(cdiClientSet cdicliv1beta1.CdiV1beta1Interface,
 	})
 }
 
-func IsDataVolumeImportSuccessful(cdiClientSet cdicliv1beta1.CdiV1beta1Interface, namespace string, name string) bool {
-	dataVolume, err := cdiClientSet.DataVolumes(namespace).Get(context.TODO(), name, metav1.GetOptions{})
-	if err != nil {
-		return false
-	}
-	return isDataVolumeImportStatusSuccessful(dataVolume)
-}
+func IsDataVolumeImportSuccessful(kubevirtClient kubevirtcliv1.KubevirtClient, namespace, name string) (bool, error) {
+	dataVolume, err := kubevirtClient.CdiClient().CdiV1beta1().DataVolumes(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	if errors.IsNotFound(err) {
+		pvc, err := kubevirtClient.CoreV1().PersistentVolumeClaims(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
 
+		if pvc != nil {
+			return true, nil
+		}
+		return true, err
+	} else if err != nil {
+		return false, err
+	}
+	return isDataVolumeImportStatusSuccessful(dataVolume), nil
+
+}
 func IsDataSourceReady(dataSource *cdiv1beta1.DataSource) bool {
 	return getConditionMapDs(dataSource)[cdiv1beta1.DataSourceReady].Status == v1.ConditionTrue
 }

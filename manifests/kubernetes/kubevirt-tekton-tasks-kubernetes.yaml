@@ -830,6 +830,12 @@ rules:
       - ""
     resources:
       - pods
+  - verbs:
+      - get
+    apiGroups:
+      - ""
+    resources:
+      - persistentvolumeclaims
 
 ---
 apiVersion: v1

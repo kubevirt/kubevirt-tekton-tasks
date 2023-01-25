@@ -80,7 +80,7 @@ var _ = Describe("Modify data objects", func() {
 			}),
 		)
 
-		DescribeTable("DataVolume and PVC is ModifyD successfully", func(config *testconfigs.ModifyDataObjectTestConfig) {
+		DescribeTable("DataVolume and PVC is modified successfully", func(config *testconfigs.ModifyDataObjectTestConfig) {
 			f.TestSetup(config)
 
 			dv := config.TaskData.DataVolume
@@ -95,10 +95,7 @@ var _ = Describe("Modify data objects", func() {
 					ModifyDataObjectResults.Namespace: dv.Namespace,
 				})
 
-			dv, err := f.CdiClient.DataVolumes(dv.Namespace).Get(context.TODO(), dv.Name, metav1.GetOptions{})
-			Expect(err).ShouldNot(HaveOccurred())
-
-			err = dataobject.WaitForSuccessfulDataVolume(f.CdiClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
+			err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
 			Expect(err).ShouldNot(HaveOccurred())
 		},
 			Entry("blank no wait", &testconfigs.ModifyDataObjectTestConfig{
@@ -134,7 +131,7 @@ var _ = Describe("Modify data objects", func() {
 			}),
 		)
 
-		It("DataVolume and PVC is ModifyD successfully with generateName", func() {
+		It("DataVolume and PVC is modified successfully with generateName", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyDataObjectServiceAccountName,
@@ -155,12 +152,11 @@ var _ = Describe("Modify data objects", func() {
 			dv := config.TaskData.DataVolume
 			dv.Name = results[ModifyDataObjectResults.Name]
 			f.ManageDataVolumes(dv)
-
-			err := dataobject.WaitForSuccessfulDataVolume(f.CdiClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
+			err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
-		It("TaskRun fails and DataVolume is ModifyD but does not import successfully", func() {
+		It("TaskRun fails and DataVolume is modified but does not import successfully", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyDataObjectServiceAccountName,
@@ -204,6 +200,8 @@ var _ = Describe("Modify data objects", func() {
 			dvNamespace := config.TaskData.DataVolume.Namespace
 
 			dv := datavolume.NewBlankDataVolume(dvName).WithNamespace(dvNamespace).Build()
+			dv.Annotations["cdi.kubevirt.io/storage.deleteAfterCompletion"] = "false"
+
 			f.ManageDataVolumes(dv)
 
 			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.TODO(), dv, metav1.CreateOptions{})
@@ -265,7 +263,7 @@ var _ = Describe("Modify data objects", func() {
 	})
 
 	Describe("Create DataSource", func() {
-		DescribeTable("TaskRun fails and no DataSource is Modified", func(config *testconfigs.ModifyDataObjectTestConfig) {
+		DescribeTable("TaskRun fails and no DataSource is modified", func(config *testconfigs.ModifyDataObjectTestConfig) {
 			f.TestSetup(config)
 
 			ds := config.TaskData.DataSource
@@ -322,7 +320,7 @@ var _ = Describe("Modify data objects", func() {
 			}),
 		)
 
-		DescribeTable("DataSource is ModifyD successfully", func(config *testconfigs.ModifyDataObjectTestConfig) {
+		DescribeTable("DataSource is modified successfully", func(config *testconfigs.ModifyDataObjectTestConfig) {
 			f.TestSetup(config)
 
 			ds := config.TaskData.DataSource
@@ -387,7 +385,7 @@ var _ = Describe("Modify data objects", func() {
 			}),
 		)
 
-		It("DataSource is ModifyD successfully with generateName", func() {
+		It("DataSource is modified successfully with generateName", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyDataObjectServiceAccountName,
@@ -424,7 +422,7 @@ var _ = Describe("Modify data objects", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
-		It("TaskRun fails and DataSource is ModifyD but does not get ready", func() {
+		It("TaskRun fails and DataSource is modified but does not get ready", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyDataObjectServiceAccountName,
@@ -659,7 +657,7 @@ var _ = Describe("Modify data objects", func() {
 	Describe("Delete DataVolume", func() {
 		It("Existing DataVolume is deleted", func() {
 			dv := datavolume.NewBlankDataVolume("existing-ds").Build()
-
+			dv.Annotations["cdi.kubevirt.io/storage.deleteAfterCompletion"] = "false"
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyDataObjectServiceAccountName,
@@ -681,7 +679,7 @@ var _ = Describe("Modify data objects", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dv)
 
-			err = dataobject.WaitForSuccessfulDataVolume(f.CdiClient, dv.Namespace, dv.Name, 5*time.Minute)
+			err = dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Namespace, dv.Name, 5*time.Minute)
 			Expect(err).ToNot(HaveOccurred())
 
 			runner.NewTaskRunRunner(f, config.GetTaskRun()).
@@ -698,10 +696,10 @@ var _ = Describe("Modify data objects", func() {
 
 		DescribeTable("TaskRun fails and datavolume is not deleted", func(config *testconfigs.ModifyDataObjectTestConfig) {
 			f.TestSetup(config)
+			config.TaskData.DataVolume.Annotations["cdi.kubevirt.io/storage.deleteAfterCompletion"] = "false"
+			dvNamespace := config.TaskData.DataVolume.Namespace
 
-			dsNamespace := config.TaskData.DataVolume.Namespace
-
-			dv, err := f.CdiClient.DataVolumes(dsNamespace).Create(context.TODO(), config.TaskData.DataVolume, metav1.CreateOptions{})
+			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.TODO(), config.TaskData.DataVolume, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dv)
 
@@ -710,9 +708,9 @@ var _ = Describe("Modify data objects", func() {
 				ExpectFailure().
 				ExpectLogs(config.GetAllExpectedLogs()...)
 
-			dv, err = f.CdiClient.DataVolumes(dsNamespace).Get(context.TODO(), dv.Name, metav1.GetOptions{})
+			dv, err = f.CdiClient.DataVolumes(dvNamespace).Get(context.TODO(), dv.Name, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(dv).ToNot(BeNil(), "dataSource should exists")
+			Expect(dv).ToNot(BeNil(), "dataVolume should exists")
 		},
 			Entry("missing kind", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{

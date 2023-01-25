@@ -44,7 +44,7 @@ var _ = Describe("Create VM from template", func() {
 			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(nil)
 
-		_, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
+		_, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
 			"", config.GetTaskRunTimeout(), false)
 		Expect(err).Should(HaveOccurred())
 	},
@@ -115,7 +115,7 @@ var _ = Describe("Create VM from template", func() {
 		Entry("non existent dv", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "datavolumes.cdi.kubevirt.io \"non-existent-dv\" not found",
+				ExpectedLogs:   "persistentvolumeclaims \"non-existent-dv\" not found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -128,7 +128,7 @@ var _ = Describe("Create VM from template", func() {
 		Entry("non existent owned dv", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "datavolumes.cdi.kubevirt.io \"non-existent-own-dv\" not found",
+				ExpectedLogs:   "persistentvolumeclaims \"non-existent-own-dv\" not found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -226,7 +226,7 @@ var _ = Describe("Create VM from template", func() {
 				CreateVMResults.Namespace: expectedVM.Namespace,
 			})
 
-		_, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
+		_, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
 			"", config.GetTaskRunTimeout(), false)
 		Expect(err).ShouldNot(HaveOccurred())
 	},
@@ -379,7 +379,7 @@ var _ = Describe("Create VM from template", func() {
 			})
 
 		// don't wait for the DV (just VM creation), because it could take a long time and the size is pretty big
-		_, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVM.Namespace, expectedVM.Name,
+		_, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
 			"", config.GetTaskRunTimeout(), true)
 		Expect(err).ShouldNot(HaveOccurred())
 	})
@@ -415,7 +415,7 @@ var _ = Describe("Create VM from template", func() {
 				CreateVMResults.Namespace: expectedVMStub.Namespace,
 			})
 
-		vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
+		vm, err := vm.WaitForVM(f.KubevirtClient, expectedVMStub.Namespace, expectedVMStub.Name,
 			"", config.GetTaskRunTimeout(), false)
 		Expect(err).ShouldNot(HaveOccurred())
 
@@ -469,7 +469,7 @@ var _ = Describe("Create VM from template", func() {
 					CreateVMResults.Namespace: expectedVMStub.Namespace,
 				})
 
-			vm, err := vm.WaitForVM(f.KubevirtClient, f.CdiClient, expectedVMStub.Namespace, expectedVMStub.Name,
+			vm, err := vm.WaitForVM(f.KubevirtClient, expectedVMStub.Namespace, expectedVMStub.Name,
 				phase, config.GetTaskRunTimeout(), false)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(*vm.Spec.Running).To(Equal(running), "vm should be in correct running phase")
