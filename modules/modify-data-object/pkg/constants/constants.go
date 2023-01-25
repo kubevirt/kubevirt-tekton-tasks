@@ -26,7 +26,7 @@ const (
 // WaitForSuccess
 const (
 	PollInterval                 = 15 * time.Second
-	PollTimeout                  = 600 * time.Second
+	PollTimeout                  = 3600 * time.Second
 	UnusualRestartCountThreshold = 3
 	ReasonError                  = "Error"
 )

@@ -1,0 +1,17 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: {{ item.taskrun_with_flavor_name }}
+spec:
+  podTemplate:
+    securityContext:
+      runAsUser: 1001
+      runAsGroup: 1001
+      fsGroup: 1001
+  taskRef:
+    kind: ClusterTask
+    name: {{ task_name }}
+  params:
+  - name: pvcName
+    value: w11
