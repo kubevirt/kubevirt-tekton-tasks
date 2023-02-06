@@ -27,6 +27,7 @@ visit "${REPO_DIR}"
                 echo "Pushing ${IMAGE}"
                 
                 podman push "${IMAGE}"
+                podman manifest push --all "${IMAGE}" "${IMAGE}"
             leave
         fi
     done

@@ -73,6 +73,8 @@ vendor:
 	cluster-test \
 	cluster-clean \
 	cluster-clean-and-skip-images \
+	build-release-images \
+	push-release-images \
 	release \
 	e2e-tests \
 	onboard-new-task-with-ci-stub \

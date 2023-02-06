@@ -24,7 +24,7 @@ visit "${REPO_DIR}"
         visit "${TASK_NAME}"
           IMAGE_NAME_AND_TAG="tekton-task-${TASK_NAME}:${RELEASE_VERSION}"
           IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
-          podman build -f "build/${TASK_NAME}/Dockerfile" -t "${IMAGE}" .
+          podman build -f "build/${TASK_NAME}/Dockerfile" --platform=linux/amd64,linux/arm64 --manifest "${IMAGE}" .
         leave
       fi
     done

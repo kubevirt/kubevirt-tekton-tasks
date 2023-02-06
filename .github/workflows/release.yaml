@@ -25,6 +25,7 @@ jobs:
 
       - name: Publish tekton images and generate release manifests
         run: |
+          sudo apt-get update -y && sudo apt-get install -y qemu-user-static
           echo ${{ secrets.QUAY_PASSWORD }} | podman login -u="${{ secrets.QUAY_BOT }}" --password-stdin quay.io
           export RELEASE_VERSION="${{ steps.get_release.outputs.tag_name }}"
           make release
