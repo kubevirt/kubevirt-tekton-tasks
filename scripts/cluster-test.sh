@@ -33,11 +33,13 @@ kubectl get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || kub
 
 kubectl config set-context --current --namespace="$DEPLOY_NAMESPACE"
 
+mkdir $JUNIT_FOLDER
+
 pushd modules/tests || exit
   rm -rf dist
   mkdir dist
   
-  set +e
+  set +ex
   set -o pipefail
 
   ginkgo -r -p --randomize-all --randomize-suites --fail-on-pending --trace --race --nodes="${NUM_NODES}" -- \
@@ -45,7 +47,7 @@ pushd modules/tests || exit
     --test-namespace="${TEST_NAMESPACE}" \
     --kubeconfig-path="${KUBECONFIG}" \
     --is-okd="${IS_OKD}" \
-    --ginkgo.junit-report="${JUNIT_FOLDER}" \
+    --ginkgo.junit-report="${JUNIT_FOLDER}/xunit_results.xml" \
     --scope="${SCOPE}" \
     --storage-class="${STORAGE_CLASS}" \
     --debug="${DEBUG}" | tee "${TEST_OUT}"
@@ -53,7 +55,7 @@ pushd modules/tests || exit
   RET_CODE="${PIPESTATUS[0]}"
   set -e
 
-  cp "${JUNIT_FOLDER}" "${ARTIFACT_DIR}"
+  cp "${JUNIT_FOLDER}/xunit_results.xml" "${ARTIFACT_DIR}"
 popd
 
 exit "${RET_CODE}"
