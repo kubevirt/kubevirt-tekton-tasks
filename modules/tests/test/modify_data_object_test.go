@@ -14,7 +14,9 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	k8sv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
@@ -216,6 +218,66 @@ var _ = Describe("Modify data objects", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(dv2.CreationTimestamp).To(Equal(dv.CreationTimestamp))
 			Expect(dv2.Spec).To(Equal(dv.Spec))
+		})
+
+		It("Existing pvc is deleted and replaced", func() {
+			const (
+				replacedURL = "https://invalid.url.replaced"
+			)
+
+			config := &testconfigs.ModifyDataObjectTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: ModifyDataObjectServiceAccountName,
+					Timeout:        Timeouts.QuickTaskRun,
+				},
+				TaskData: testconfigs.ModifyDataObjectTaskData{
+					DataVolume: datavolume.NewBlankDataVolume("replace-me").
+						WithURLSource(replacedURL).Build(),
+					AllowReplace: true,
+				},
+			}
+			f.TestSetup(config)
+
+			pvcName := config.TaskData.DataVolume.Name
+			pvcNamespace := config.TaskData.DataVolume.Namespace
+
+			pvc := &k8sv1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      pvcName,
+					Namespace: pvcNamespace,
+				},
+				Spec: k8sv1.PersistentVolumeClaimSpec{
+					AccessModes: []k8sv1.PersistentVolumeAccessMode{k8sv1.ReadWriteOnce},
+					Resources: k8sv1.ResourceRequirements{
+						Requests: k8sv1.ResourceList{
+							k8sv1.ResourceStorage: *resource.NewScaledQuantity(100, resource.Mega),
+						},
+					},
+				},
+			}
+
+			pvc, err := f.K8sClient.CoreV1().PersistentVolumeClaims(pvcNamespace).Create(context.TODO(), pvc, metav1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectResults(map[string]string{
+					ModifyDataObjectResults.Name:      pvcName,
+					ModifyDataObjectResults.Namespace: pvcNamespace,
+				})
+
+			var dv *cdiv1beta1.DataVolume
+			dv, err = f.CdiClient.DataVolumes(pvcNamespace).Get(context.TODO(), pvcName, metav1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageDataVolumes(dv)
+
+			Expect(dv.Spec.Source.HTTP.URL).To(Equal(replacedURL))
+
+			pvc2, err := f.K8sClient.CoreV1().PersistentVolumeClaims(pvcNamespace).Get(context.TODO(), pvcName, metav1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(pvc2.CreationTimestamp).ToNot(Equal(pvc.CreationTimestamp))
+
 		})
 
 		It("Existing DataVolume is replaced", func() {

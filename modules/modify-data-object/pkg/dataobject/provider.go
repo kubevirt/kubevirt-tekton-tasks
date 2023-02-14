@@ -36,6 +36,7 @@ type DataObjectProvider interface {
 	GetPVC(string, string) (*v1.PersistentVolumeClaim, error)
 	DeleteDS(string, string) error
 	DeleteDV(string, string) error
+	DeletePVC(string, string) error
 	CreateDo(*unstructured.Unstructured, bool) (*unstructured.Unstructured, error)
 }
 
@@ -66,6 +67,32 @@ func (d *dataObjectProvider) DeleteDS(namespace string, name string) error {
 	return d.client.DataSources(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 }
 
+func (d *dataObjectProvider) DeletePVC(namespace string, name string) error {
+	return d.k8sClient.PersistentVolumeClaims(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
+}
+
+func (d *dataObjectProvider) deleteOldObject(helper *resource.Helper, obj *unstructured.Unstructured) error {
+	name := obj.GetName()
+	namespace := obj.GetNamespace()
+	_, err := helper.Get(namespace, name)
+
+	if errors.IsNotFound(err) && obj.GroupVersionKind().Kind == constants.DataVolumeKind {
+		_, err = d.GetPVC(namespace, name)
+		if errors.IsNotFound(err) {
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		return d.DeletePVC(namespace, name)
+	}
+
+	_, err = helper.Delete(namespace, name)
+	return err
+}
+
 func (d *dataObjectProvider) CreateDo(obj *unstructured.Unstructured, allowReplace bool) (*unstructured.Unstructured, error) {
 	dc := discovery.NewDiscoveryClient(d.client.RESTClient())
 	mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
@@ -78,15 +105,9 @@ func (d *dataObjectProvider) CreateDo(obj *unstructured.Unstructured, allowRepla
 	helper := resource.NewHelper(d.client.RESTClient(), mapping)
 
 	if allowReplace && obj.GetName() != "" {
-		_, err = helper.Get(obj.GetNamespace(), obj.GetName())
+		err = d.deleteOldObject(helper, obj)
 		if err != nil {
-			if !errors.IsNotFound(err) {
-				return nil, err
-			}
-		} else {
-			if _, err := helper.Delete(obj.GetNamespace(), obj.GetName()); err != nil {
-				return nil, err
-			}
+			return nil, err
 		}
 	}
 
