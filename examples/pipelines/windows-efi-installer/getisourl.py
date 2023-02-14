@@ -12,7 +12,7 @@ driver = webdriver.Chrome(options=options)
 driver.implicitly_wait(10)
 
 try:
-    driver.get("https://www.microsoft.com/en-us/software-download/windows10")
+    driver.get("https://www.microsoft.com/en-us/software-download/windows11")
 
     select_object = Select(driver.find_element(By.ID, "product-edition"))
     select_object.select_by_index(1)

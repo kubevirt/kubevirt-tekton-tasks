@@ -1,6 +1,8 @@
 # Modify Windows ISO file
 
-This tasks is modifying windows iso file. It replaces prompt bootloader with non prompt one. This helps with automation of win 11 installation.
+This tasks is modifying windows iso file. It replaces prompt bootloader with non prompt one. This helps with automation of 
+windows which requires EFI - the prompt bootloader will not continue with installation until some key is pressed. The non prompt 
+bootloader will not require any key pres.
 
 ### Parameters
 

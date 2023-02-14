@@ -70,6 +70,10 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 
 - [wait-for-vmi-status](tasks/wait-for-vmi-status)
 
+#### Modify Windows iso
+- [modify-windows-iso-file](tasks/modify-windows-iso-file) - modifies windows iso (replaces prompt bootloader with no-promt 
+   bootloader) and replaces original iso in PVC with updated one.
+
 ## Examples
 
 #### [Unit Tester Pipeline](examples/pipelines/unit-tester) 
@@ -100,9 +104,13 @@ Then, a VM is created from such image.
 
 Downloads a Windows Source ISO into a PVC and automatically installs Windows by using a custom Answer file into a new base DV.
 
-#### [Windows 10 Customize Pipeline](examples/pipelines/windows10-customize)
+#### [Windows efi Installer Pipeline](examples/pipelines/windows-efi-installer)
 
-Applies customizations to an existing Windows 10 installation by using a custom Answer file and creates a new base DV.
+Downloads a Windows Source ISO into a PVC and automatically installs Windows 11, or 2k22 with efi enabled by using a custom Answer file into a new base DV.
+
+#### [Windows Customize Pipeline](examples/pipelines/windows10-customize)
+
+Applies customizations to an existing Windows 10, 11, 2k22 installation by using a custom Answer file and creates a new base DV.
 
 ## Development Guide
 
