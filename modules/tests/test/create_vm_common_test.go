@@ -28,278 +28,269 @@ var _ = Describe("Create VM", func() {
 			Skip("skipCreateVMFromManifestTests is set to true, skipping tests")
 		}
 	})
-	for _, c := range []CreateVMMode{CreateVMTemplateMode, CreateVMVMManifestMode} {
-		createMode := c
-		Context(string(createMode), func() {
-			Describe("VM with attached PVCs/DV is created successfully", func() {
-				runConfigurations := []map[datavolume.TestDataVolumeAttachmentType]int{
-					{
-						datavolume.OwnedDV: 1,
-					},
-					{
-						datavolume.PVC: 1,
-					},
-					{
-						datavolume.OwnedPVC: 2,
-					},
-					{
-						datavolume.DV: 2,
-					},
-					{
-						// try all at once
-						datavolume.OwnedDV:  2,
-						datavolume.OwnedPVC: 1,
-						datavolume.PVC:      1,
-						datavolume.DV:       1,
-					},
-				}
 
-				for i, r := range runConfigurations {
-					idx, runConf := i, r
-					name := ""
-					for attachmentType, count := range runConf {
-						name += fmt.Sprintf("%v=%v ", attachmentType, count)
-					}
-					It(name, func() {
-						var datavolumes []*datavolume.TestDataVolume
-						for attachmentType, count := range runConf {
-							name += fmt.Sprintf("%v=%v ", attachmentType, count)
-							for id := 0; id < count; id++ {
-								datavolumes = append(datavolumes,
-									datavolume.NewBlankDataVolume(fmt.Sprintf("attach-to-vm-%v-%v", attachmentType, id)).AttachAs(attachmentType),
-								)
-							}
-						}
+	ownedDVTestCase := map[datavolume.TestDataVolumeAttachmentType]int{datavolume.OwnedDV: 1}
+	pvcTestCase := map[datavolume.TestDataVolumeAttachmentType]int{datavolume.PVC: 1}
+	ownedPVCTestCase := map[datavolume.TestDataVolumeAttachmentType]int{datavolume.OwnedPVC: 2}
+	dvTestCase := map[datavolume.TestDataVolumeAttachmentType]int{datavolume.DV: 2}
+	allTestCase := map[datavolume.TestDataVolumeAttachmentType]int{datavolume.OwnedDV: 2, datavolume.OwnedPVC: 1, datavolume.PVC: 1, datavolume.DV: 1}
 
-						var config *testconfigs.CreateVMTestConfig
+	DescribeTable("VM with attached PVCs/DV is created successfully", func(createMode CreateVMMode, idx int, runConf map[datavolume.TestDataVolumeAttachmentType]int) {
+		mode := "template-mode"
 
-						switch createMode {
-						case CreateVMVMManifestMode:
-							config = &testconfigs.CreateVMTestConfig{
-								TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-									ServiceAccount: CreateVMFromManifestServiceAccountName,
-									ExpectedLogs:   ExpectedSuccessfulVMCreation,
-									Timeout:        Timeouts.SmallDVCreation,
-								},
-								TaskData: testconfigs.CreateVMTaskData{
-									CreateMode:                createMode,
-									VM:                        testobjects.NewTestAlpineVM("create-vm-from-manifest-with-disk").Build(),
-									DataVolumesToCreate:       datavolumes,
-									ExpectedAdditionalDiskBus: "virtio",
-								},
-							}
-						case CreateVMTemplateMode:
-							expectedDiskBus := "virtio"
-							testTemplate := template.NewCirrosServerTinyTemplate()
-							switch idx % 4 { // try different disk buses for each test
-							case 0:
-								testTemplate.WithSataDiskValidations()
-								expectedDiskBus = "sata"
-							case 1:
-								testTemplate.WithSCSIDiskValidations()
-								expectedDiskBus = "scsi"
-							case 2:
-								testTemplate.WithVirtioDiskValidations()
-							}
-							config = &testconfigs.CreateVMTestConfig{
-								TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-									ServiceAccount: CreateVMFromTemplateServiceAccountName,
-									ExpectedLogs:   ExpectedSuccessfulVMCreation,
-									Timeout:        Timeouts.SmallDVCreation,
-									LimitEnvScope:  OKDEnvScope,
-								},
-								TaskData: testconfigs.CreateVMTaskData{
-									CreateMode: createMode,
-									Template:   testTemplate.Build(),
-									TemplateParams: []string{
-										template.TemplateParam(template.NameParam, E2ETestsRandomName("create-vm-from-template-with-disk")),
-									},
-									DataVolumesToCreate:       datavolumes,
-									ExpectedAdditionalDiskBus: expectedDiskBus,
-								},
-							}
-						default:
-							panic("invalid create mode")
-						}
-
-						f.TestSetup(config)
-						if template := config.TaskData.Template; template != nil {
-							template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
-							Expect(err).ShouldNot(HaveOccurred())
-							f.ManageTemplates(template)
-						}
-						for _, dvWrapper := range config.TaskData.DataVolumesToCreate {
-							dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
-							Expect(err).ShouldNot(HaveOccurred())
-							f.ManageDataVolumes(dataVolume)
-							config.TaskData.SetDVorPVC(dataVolume.Name, dvWrapper.AttachmentType)
-						}
-
-						for _, dv := range config.TaskData.DataVolumesToCreate {
-							// wait for each DV to finish import, otherwise test will fail, because of not finished import of DV
-							err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Data.Namespace, dv.Data.Name, constants.Timeouts.SmallDVCreation.Duration)
-							Expect(err).ShouldNot(HaveOccurred())
-						}
-
-						expectedVM := config.TaskData.GetExpectedVMStubMeta()
-						f.ManageVMs(expectedVM)
-
-						runner.NewTaskRunRunner(f, config.GetTaskRun()).
-							CreateTaskRun().
-							ExpectSuccess().
-							ExpectLogs(config.GetAllExpectedLogs()...).
-							ExpectResults(map[string]string{
-								CreateVMResults.Name:      expectedVM.Name,
-								CreateVMResults.Namespace: expectedVM.Namespace,
-							})
-
-						vm, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
-							"", config.GetTaskRunTimeout(), false)
-						Expect(err).ShouldNot(HaveOccurred())
-						// check all disks are present
-						Expect(vm.Spec.Template.Spec.Volumes).To(ConsistOf(expectedVM.Spec.Template.Spec.Volumes))
-						Expect(vm.Spec.Template.Spec.Domain.Devices.Disks).To(ConsistOf(expectedVM.Spec.Template.Spec.Domain.Devices.Disks))
-					})
-				}
-			})
-		})
-		It("VM with attached PVCs/DVs and existing disks/volumes is created successfully", func() {
-			mode := "template-mode"
-			if c == CreateVMVMManifestMode {
-				mode = "manifest-mode"
+		if createMode == CreateVMVMManifestMode {
+			mode = "manifest-mode"
+		}
+		var datavolumes []*datavolume.TestDataVolume
+		for attachmentType, count := range runConf {
+			for id := 0; id < count; id++ {
+				datavolumes = append(datavolumes,
+					datavolume.NewBlankDataVolume(fmt.Sprintf("attach-to-vm-%s-%v-%v", mode, attachmentType, id)).AttachAs(attachmentType),
+				)
 			}
-			datavolumes := []*datavolume.TestDataVolume{
-				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-1-" + mode).AttachWithDiskName("disk1").AttachAs(datavolume.OwnedPVC),
-				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-2-" + mode).AttachWithDiskName("disk2").AttachAs(datavolume.OwnedDV),
-				datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-3-" + mode).AttachWithDiskName("disk3").AttachAs(datavolume.OwnedDV),
-			}
+		}
 
-			vmDisk1 := kubevirtv1.Disk{
-				Name: datavolumes[0].DiskName,
-				DiskDevice: kubevirtv1.DiskDevice{
-					CDRom: &kubevirtv1.CDRomTarget{Bus: "sata"},
+		var config *testconfigs.CreateVMTestConfig
+
+		switch createMode {
+		case CreateVMVMManifestMode:
+			config = &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					Timeout:        Timeouts.SmallDVCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					CreateMode:                createMode,
+					VM:                        testobjects.NewTestAlpineVM("create-vm-from-manifest-with-disk").Build(),
+					DataVolumesToCreate:       datavolumes,
+					ExpectedAdditionalDiskBus: "virtio",
 				},
 			}
-			vmDisk2 := kubevirtv1.Disk{
-				Name: datavolumes[1].DiskName,
-				DiskDevice: kubevirtv1.DiskDevice{
-					Disk: &kubevirtv1.DiskTarget{Bus: "virtio"},
+		case CreateVMTemplateMode:
+			expectedDiskBus := "virtio"
+			testTemplate := template.NewCirrosServerTinyTemplate()
+			switch idx % 4 { // try different disk buses for each test
+			case 0:
+				testTemplate.WithSataDiskValidations()
+				expectedDiskBus = "sata"
+			case 1:
+				testTemplate.WithSCSIDiskValidations()
+				expectedDiskBus = "scsi"
+			case 2:
+				testTemplate.WithVirtioDiskValidations()
+			}
+			config = &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromTemplateServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					Timeout:        Timeouts.SmallDVCreation,
+					LimitEnvScope:  OKDEnvScope,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					CreateMode: createMode,
+					Template:   testTemplate.Build(),
+					TemplateParams: []string{
+						template.TemplateParam(template.NameParam, E2ETestsRandomName("create-vm-from-template-with-disk")),
+					},
+					DataVolumesToCreate:       datavolumes,
+					ExpectedAdditionalDiskBus: expectedDiskBus,
 				},
 			}
+		default:
+			panic("invalid create mode")
+		}
 
-			// disk disk3 should be created by the task
-
-			// volume disk1 should be created by the task
-
-			vmVolume2 := kubevirtv1.Volume{
-				Name: datavolumes[1].DiskName,
-				// wrong source - should overwrite
-				VolumeSource: kubevirtv1.VolumeSource{
-					PersistentVolumeClaim: &kubevirtv1.PersistentVolumeClaimVolumeSource{
-						PersistentVolumeClaimVolumeSource: corev1.PersistentVolumeClaimVolumeSource{
-							ClaimName: "other",
-						},
-					},
-				},
-			}
-			vmVolume3 := kubevirtv1.Volume{
-				Name: datavolumes[2].DiskName,
-				// no source - should complete
-			}
-
-			var config *testconfigs.CreateVMTestConfig
-
-			switch createMode {
-			case CreateVMVMManifestMode:
-				config = &testconfigs.CreateVMTestConfig{
-					TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-						ServiceAccount: CreateVMFromManifestServiceAccountName,
-						ExpectedLogs:   ExpectedSuccessfulVMCreation,
-						Timeout:        Timeouts.SmallDVCreation,
-					},
-					TaskData: testconfigs.CreateVMTaskData{
-						CreateMode: createMode,
-						VM: testobjects.NewTestAlpineVM("create-vm-from-manifest-with-existing-disk").
-							// to be compatible with the template flow
-							WithCloudConfig(
-								testobjects.CloudConfig{
-									Password: "alpine",
-								},
-							).
-							WithDisk(vmDisk1).
-							WithDisk(vmDisk2).
-							WithVolume(vmVolume2).
-							WithVolume(vmVolume3).
-							Build(),
-						DataVolumesToCreate:       datavolumes,
-						ExpectedAdditionalDiskBus: "virtio",
-					},
-				}
-			case CreateVMTemplateMode:
-				config = &testconfigs.CreateVMTestConfig{
-					TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-						ServiceAccount: CreateVMFromTemplateServiceAccountName,
-						ExpectedLogs:   ExpectedSuccessfulVMCreation,
-						Timeout:        Timeouts.SmallDVCreation,
-						LimitEnvScope:  OKDEnvScope,
-					},
-					TaskData: testconfigs.CreateVMTaskData{
-						CreateMode: createMode,
-						Template: template.NewCirrosServerTinyTemplate().
-							WithDisk(vmDisk1).
-							WithDisk(vmDisk2).
-							WithVolume(vmVolume2).
-							WithVolume(vmVolume3).
-							Build(),
-						TemplateParams: []string{
-							template.TemplateParam(template.NameParam, E2ETestsRandomName("create-vm-from-template-with-existing-disk")),
-						},
-						DataVolumesToCreate:       datavolumes,
-						ExpectedAdditionalDiskBus: "virtio",
-					},
-				}
-			default:
-				panic("invalid create mode")
-			}
-
-			f.TestSetup(config)
-			if template := config.TaskData.Template; template != nil {
-				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
-				Expect(err).ShouldNot(HaveOccurred())
-				f.ManageTemplates(template)
-			}
-			for _, dvWrapper := range config.TaskData.DataVolumesToCreate {
-				dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
-				Expect(err).ShouldNot(HaveOccurred())
-				f.ManageDataVolumes(dataVolume)
-				config.TaskData.SetDVorPVC(fmt.Sprintf("%v:%v", dvWrapper.DiskName, dataVolume.Name), dvWrapper.AttachmentType)
-			}
-
-			for _, dv := range config.TaskData.DataVolumesToCreate {
-				// wait for each DV to finish import, otherwise test will fail, because of not finished import of DV
-				err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Data.Namespace, dv.Data.Name, constants.Timeouts.SmallDVCreation.Duration)
-				Expect(err).ShouldNot(HaveOccurred())
-			}
-
-			expectedVM := config.TaskData.GetExpectedVMStubMeta()
-			f.ManageVMs(expectedVM)
-
-			runner.NewTaskRunRunner(f, config.GetTaskRun()).
-				CreateTaskRun().
-				ExpectSuccess().
-				ExpectLogs(config.GetAllExpectedLogs()...).
-				ExpectResults(map[string]string{
-					CreateVMResults.Name:      expectedVM.Name,
-					CreateVMResults.Namespace: expectedVM.Namespace,
-				})
-
-			vm, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
-				"", config.GetTaskRunTimeout(), false)
+		f.TestSetup(config)
+		if template := config.TaskData.Template; template != nil {
+			template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
-			// check all disks are present
-			Expect(vm.Spec.Template.Spec.Volumes).To(ConsistOf(expectedVM.Spec.Template.Spec.Volumes))
-			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks).To(ConsistOf(expectedVM.Spec.Template.Spec.Domain.Devices.Disks))
-			Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[2].CDRom.Bus).To(Equal(kubevirtv1.DiskBusSATA))
-		})
-	}
+			f.ManageTemplates(template)
+		}
+		for _, dvWrapper := range config.TaskData.DataVolumesToCreate {
+			dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageDataVolumes(dataVolume)
+			config.TaskData.SetDVorPVC(dataVolume.Name, dvWrapper.AttachmentType)
+		}
+
+		for _, dv := range config.TaskData.DataVolumesToCreate {
+			// wait for each DV to finish import, otherwise test will fail, because of not finished import of DV
+			err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Data.Namespace, dv.Data.Name, constants.Timeouts.SmallDVCreation.Duration)
+			Expect(err).ShouldNot(HaveOccurred())
+		}
+
+		expectedVM := config.TaskData.GetExpectedVMStubMeta()
+		f.ManageVMs(expectedVM)
+
+		runner.NewTaskRunRunner(f, config.GetTaskRun()).
+			CreateTaskRun().
+			ExpectSuccess().
+			ExpectLogs(config.GetAllExpectedLogs()...).
+			ExpectResults(map[string]string{
+				CreateVMResults.Name:      expectedVM.Name,
+				CreateVMResults.Namespace: expectedVM.Namespace,
+			})
+
+		vm, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
+			"", config.GetTaskRunTimeout(), false)
+		Expect(err).ShouldNot(HaveOccurred())
+		// check all disks are present
+		Expect(vm.Spec.Template.Spec.Volumes).To(ConsistOf(expectedVM.Spec.Template.Spec.Volumes))
+		Expect(vm.Spec.Template.Spec.Domain.Devices.Disks).To(ConsistOf(expectedVM.Spec.Template.Spec.Domain.Devices.Disks))
+	},
+		Entry("owned-dv=1", CreateVMTemplateMode, 0, ownedDVTestCase),
+		Entry("pvc=1", CreateVMTemplateMode, 1, pvcTestCase),
+		Entry("owned-pvc=2", CreateVMTemplateMode, 2, ownedPVCTestCase),
+		Entry("dv=2", CreateVMTemplateMode, 3, dvTestCase),
+		Entry("owned-dv=2,owned-pvc=1,pvc=1,dv=1", CreateVMTemplateMode, 4, allTestCase),
+		Entry("owned-dv=1", CreateVMVMManifestMode, 0, ownedDVTestCase),
+		Entry("pvc=1", CreateVMVMManifestMode, 1, pvcTestCase),
+		Entry("owned-pvc=2", CreateVMVMManifestMode, 2, ownedPVCTestCase),
+		Entry("dv=2", CreateVMVMManifestMode, 3, dvTestCase),
+		Entry("owned-dv=2,owned-pvc=1,pvc=1,dv=1", CreateVMVMManifestMode, 4, allTestCase),
+	)
+	DescribeTable("VM with attached PVCs/DVs and existing disks/volumes is created successfully", func(createMode CreateVMMode) {
+		mode := "template-mode"
+
+		if createMode == CreateVMVMManifestMode {
+			mode = "manifest-mode"
+		}
+
+		datavolumes := []*datavolume.TestDataVolume{
+			datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-1-" + mode).AttachWithDiskName("disk1").AttachAs(datavolume.OwnedPVC),
+			datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-2-" + mode).AttachWithDiskName("disk2").AttachAs(datavolume.OwnedDV),
+			datavolume.NewBlankDataVolume("attach-to-vm-with-disk-name-3-" + mode).AttachWithDiskName("disk3").AttachAs(datavolume.OwnedDV),
+		}
+
+		vmDisk1 := kubevirtv1.Disk{
+			Name: datavolumes[0].DiskName,
+			DiskDevice: kubevirtv1.DiskDevice{
+				CDRom: &kubevirtv1.CDRomTarget{Bus: "sata"},
+			},
+		}
+		vmDisk2 := kubevirtv1.Disk{
+			Name: datavolumes[1].DiskName,
+			DiskDevice: kubevirtv1.DiskDevice{
+				Disk: &kubevirtv1.DiskTarget{Bus: "virtio"},
+			},
+		}
+
+		// disk disk3 should be created by the task
+
+		// volume disk1 should be created by the task
+
+		vmVolume2 := kubevirtv1.Volume{
+			Name: datavolumes[1].DiskName,
+			// wrong source - should overwrite
+			VolumeSource: kubevirtv1.VolumeSource{
+				PersistentVolumeClaim: &kubevirtv1.PersistentVolumeClaimVolumeSource{
+					PersistentVolumeClaimVolumeSource: corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: "other",
+					},
+				},
+			},
+		}
+		vmVolume3 := kubevirtv1.Volume{
+			Name: datavolumes[2].DiskName,
+			// no source - should complete
+		}
+
+		var config *testconfigs.CreateVMTestConfig
+
+		switch createMode {
+		case CreateVMVMManifestMode:
+			config = &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					Timeout:        Timeouts.SmallDVCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					CreateMode: createMode,
+					VM: testobjects.NewTestAlpineVM("create-vm-from-manifest-with-existing-disk").
+						// to be compatible with the template flow
+						WithCloudConfig(
+							testobjects.CloudConfig{
+								Password: "alpine",
+							},
+						).
+						WithDisk(vmDisk1).
+						WithDisk(vmDisk2).
+						WithVolume(vmVolume2).
+						WithVolume(vmVolume3).
+						Build(),
+					DataVolumesToCreate:       datavolumes,
+					ExpectedAdditionalDiskBus: "virtio",
+				},
+			}
+		case CreateVMTemplateMode:
+			config = &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromTemplateServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					Timeout:        Timeouts.SmallDVCreation,
+					LimitEnvScope:  OKDEnvScope,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					CreateMode: createMode,
+					Template: template.NewCirrosServerTinyTemplate().
+						WithDisk(vmDisk1).
+						WithDisk(vmDisk2).
+						WithVolume(vmVolume2).
+						WithVolume(vmVolume3).
+						Build(),
+					TemplateParams: []string{
+						template.TemplateParam(template.NameParam, E2ETestsRandomName("create-vm-from-template-with-existing-disk")),
+					},
+					DataVolumesToCreate:       datavolumes,
+					ExpectedAdditionalDiskBus: "virtio",
+				},
+			}
+		default:
+			panic("invalid create mode")
+		}
+		f.TestSetup(config)
+		for _, dvWrapper := range config.TaskData.DataVolumesToCreate {
+			dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageDataVolumes(dataVolume)
+			config.TaskData.SetDVorPVC(fmt.Sprintf("%v:%v", dvWrapper.DiskName, dataVolume.Name), dvWrapper.AttachmentType)
+		}
+
+		if template := config.TaskData.Template; template != nil {
+			template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+			f.ManageTemplates(template)
+		}
+
+		for _, dv := range config.TaskData.DataVolumesToCreate {
+			// wait for each DV to finish import, otherwise test will fail, because of not finished import of DV
+			err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Data.Namespace, dv.Data.Name, constants.Timeouts.SmallDVCreation.Duration)
+			Expect(err).ShouldNot(HaveOccurred())
+		}
+
+		expectedVM := config.TaskData.GetExpectedVMStubMeta()
+		f.ManageVMs(expectedVM)
+
+		runner.NewTaskRunRunner(f, config.GetTaskRun()).
+			CreateTaskRun().
+			ExpectSuccess().
+			ExpectLogs(config.GetAllExpectedLogs()...).
+			ExpectResults(map[string]string{
+				CreateVMResults.Name:      expectedVM.Name,
+				CreateVMResults.Namespace: expectedVM.Namespace,
+			})
+
+		vm, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
+			"", config.GetTaskRunTimeout(), false)
+		Expect(err).ShouldNot(HaveOccurred())
+		// check all disks are present
+		Expect(vm.Spec.Template.Spec.Volumes).To(ConsistOf(expectedVM.Spec.Template.Spec.Volumes))
+		Expect(vm.Spec.Template.Spec.Domain.Devices.Disks).To(ConsistOf(expectedVM.Spec.Template.Spec.Domain.Devices.Disks))
+		Expect(vm.Spec.Template.Spec.Domain.Devices.Disks[2].CDRom.Bus).To(Equal(kubevirtv1.DiskBusSATA))
+	},
+		Entry(string(CreateVMTemplateMode), CreateVMTemplateMode),
+		Entry(string(CreateVMVMManifestMode), CreateVMVMManifestMode),
+	)
 })
