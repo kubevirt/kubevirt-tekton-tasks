@@ -32,7 +32,7 @@ spec:
       type: string
       default: "false"
     - name: deleteObject
-      description: Set to `true` or `false` if task should delete the specified datavolume or datasource. If set to 'true' the ds/dv will be deleted and all other parameters are ignored.
+      description: Set to `true` or `false` if task should delete the specified DataVolume, DataSource or PersistentVolumeClaim. If set to 'true' the ds/dv/pvc will be deleted and all other parameters are ignored.
       default: 'false'
       type: string
     - name: deleteObjectKind
