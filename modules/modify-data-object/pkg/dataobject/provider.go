@@ -154,13 +154,15 @@ func NewDataObjectCreator(cliOptions *parse.CLIOptions) (*DataObjectCreator, err
 }
 
 func (d *DataObjectCreator) DeleteDataObject() error {
-	if d.cliOptions.DeleteObjectKind == constants.DataVolumeKind {
+	switch d.cliOptions.DeleteObjectKind {
+	case constants.DataVolumeKind:
 		return d.dataObjectProvider.DeleteDV(d.cliOptions.DataObjectNamespace, d.cliOptions.DeleteObjectName)
+	case constants.DataSourceKind:
+		return d.dataObjectProvider.DeleteDS(d.cliOptions.DataObjectNamespace, d.cliOptions.DeleteObjectName)
+	case constants.PVCKind:
+		return d.dataObjectProvider.DeletePVC(d.cliOptions.DataObjectNamespace, d.cliOptions.DeleteObjectName)
 	}
 
-	if d.cliOptions.DeleteObjectKind == constants.DataSourceKind {
-		return d.dataObjectProvider.DeleteDS(d.cliOptions.DataObjectNamespace, d.cliOptions.DeleteObjectName)
-	}
 	return errors.NewBadRequest("object-kind not defined")
 }
 

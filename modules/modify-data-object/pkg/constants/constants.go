@@ -15,6 +15,7 @@ const (
 const (
 	DataVolumeKind = "DataVolume"
 	DataSourceKind = "DataSource"
+	PVCKind        = "PersistentVolumeClaim"
 )
 
 // Result names

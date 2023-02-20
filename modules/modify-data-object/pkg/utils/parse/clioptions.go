@@ -126,7 +126,7 @@ func (c *CLIOptions) assertValidParams() error {
 			return zerrors.NewMissingRequiredError("%s param has to be specified", nameOptionName)
 		}
 
-		if c.DeleteObjectKind != constants.DataVolumeKind && c.DeleteObjectKind != constants.DataSourceKind {
+		if c.DeleteObjectKind != constants.DataVolumeKind && c.DeleteObjectKind != constants.DataSourceKind && c.DeleteObjectKind != constants.PVCKind {
 			return zerrors.NewMissingRequiredError("%s param has to have values %s or %s", objectKindOptionName, constants.DataVolumeKind, constants.DataSourceKind)
 		}
 		return nil
