@@ -21,7 +21,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-task-disk-virt-customize:v0.13.0"
+      image: "quay.io/kubevirt/tekton-task-disk-virt-customize:v0.13.1"
       script: |
         #!/bin/bash
         set -x
@@ -61,7 +61,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-task-modify-data-object:v0.13.0"
+      image: "quay.io/kubevirt/tekton-task-modify-data-object:v0.13.1"
       script: |
         #!/bin/bash
         set -ex
@@ -88,7 +88,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-task-disk-virt-customize:v0.13.0"
+      image: "quay.io/kubevirt/tekton-task-disk-virt-customize:v0.13.1"
       script: |
         #!/bin/bash
         set -x
