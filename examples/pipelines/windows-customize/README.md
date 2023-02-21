@@ -93,3 +93,10 @@ kubectl create -f -
 oc apply -f windows10-customize.yaml
 oc create -f windows10-customize-pipelinerun-okd.yaml
 ```
+## Cancelling/Deleteting pipelineRuns
+
+When running the example pipelines, they create temporary objects (DataVolumes, VMs, templates, ...). Each pipeline has its own clean up system which 
+should keep the cluster clean from leftovers. In case user hard deletes or cancels running pipelineRun, the pipelineRun will not clean temporary 
+objects and objects will stay in the cluster and then they have to be deleted manually. To prevent this behaviour, cancel the 
+[pipelineRun gracefully](https://tekton.dev/docs/pipelines/pipelineruns/#gracefully-cancelling-a-pipelinerun). It triggers special tasks, 
+which remove temporary objects and keep only result DataVolume/PVC.
