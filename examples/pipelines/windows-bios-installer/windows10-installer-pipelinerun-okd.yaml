@@ -7,7 +7,7 @@ spec:
   - name: winImageDownloadURL
     value: INSERT_WINDOWS_ISO_URL
   pipelineRef:
-    name: windows10-installer
+    name: windows-bios-installer
   taskRunSpecs:
     - pipelineTaskName: copy-template
       taskServiceAccountName: copy-template-task

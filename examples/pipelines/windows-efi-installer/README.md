@@ -29,7 +29,7 @@ This version is using templates, which are not available on Kubernetes.
 
 ## Links
 
-- [Windows efi Pipeline for okd](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows-efi-installer.yaml)
+- [Windows efi Pipeline for okd](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows-efi-installer-pipeline.yaml)
 - [Windows 11 efi Installer PipelineRun for okd](windows11-installer-pipelinerun-okd.yaml)
 - [Windows 2k22 efi Installer PipelineRun for okd](windows2k22-installer-pipelinerun-okd.yaml)
 
