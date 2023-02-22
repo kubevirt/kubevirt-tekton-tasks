@@ -18,15 +18,15 @@ This version is using templates, which are not available on Kubernetes.
 
 ## Links
 
-- [Windows 10 Installer Pipeline for Kubernetes](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/kubernetes/windows10-installer.yaml)
+- [Windows 10 Installer Pipeline for Kubernetes](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/kubernetes/windows-bios-installer-pipeline.yaml)
 - [Windows 10 Installer PipelineRun for Kubernetes](windows10-installer-pipelinerun-kubernetes.yaml)
-- [Windows 10 Installer Pipeline for OKD](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows10-installer.yaml)
+- [Windows 10 Installer Pipeline for OKD](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows-bios-installer-pipeline.yaml)
 - [Windows 10 Installer PipelineRun for OKD](windows10-installer-pipelinerun-okd.yaml)
 
 ### Obtain Windows ISO download URL
 
 1. Go to https://www.microsoft.com/en-us/software-download/windows10ISO.
-   You can also obtain a server edition for evaluation at https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019. (needs a different answer file!)
+   You can also obtain a server edition for evaluation at https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019 (needs a different answer file!).
 2. Fill in the edition and `English` language (other languages need to be updated in windows10-autounattend ConfigMap) and go to the download page.
 3. Right-click on the 64-bit download button and copy the download link. The link should be valid for 24 hours.
 4. Initialize a WIN_URL variable that will be used to create a DataVolume which will download this ISO into a PVC.

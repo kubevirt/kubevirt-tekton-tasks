@@ -24,9 +24,9 @@ A new golden template is created after a successful customization through this v
 
 ## Links
 
-- [Windows Customize Pipeline for Kubernetes](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/kubernetes/windows-customize.yaml)
+- [Windows Customize Pipeline for Kubernetes](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/kubernetes/windows-customize-pipeline.yaml)
 - [Windows 10 Customize PipelineRun for Kubernetes](windows10-customize-pipelinerun-kubernetes.yaml)
-- [Windows Customize Pipeline for OKD](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows-customize.yaml)
+- [Windows Customize Pipeline for OKD](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows-customize-pipeline.yaml)
 - [Windows 10 Customize PipelineRun for OKD](windows10-customize-pipelinerun-okd.yaml)
 - [Windows 11 Customize PipelineRun for OKD](windows11-customize-pipelinerun-okd.yaml)
 - [Windows 2k22 Customize PipelineRun for OKD](windows2k22-customize-pipelinerun-okd.yaml)
