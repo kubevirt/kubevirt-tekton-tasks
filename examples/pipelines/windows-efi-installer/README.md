@@ -161,3 +161,16 @@ spec:
     http:
       url: WIN_IMAGE_DOWNLOAD_URL
 ```
+
+## Cancelling/Deleteting pipelineRuns
+
+When running the example pipelines, they create temporary objects (DataVolumes, VMs, templates, ...). Each pipeline has its own clean up system which 
+should keep the cluster clean from leftovers. In case user hard deletes or cancels running pipelineRun, the pipelineRun will not clean temporary 
+objects and objects will stay in the cluster and then they have to be deleted manually. To prevent this behaviour, cancel the 
+[pipelineRun gracefully](https://tekton.dev/docs/pipelines/pipelineruns/#gracefully-cancelling-a-pipelinerun). It triggers special tasks, 
+which remove temporary objects and keep only result DataVolume/PVC.
+
+windows-efi-installer pipeline generates for each pipelineRun new source datavolume which contains imported iso. This DV has generated name and is 
+deleted after pipeline succeeds. However, the created PVC will stay in cluster, but it will have terminating state. It will wait, until pipelinRun is 
+deleted. This behaviour is caused by a fact, that PVC is mounted into modify-windows-iso taskRun pod and pvc can be deleted only when the pod does not 
+exist.
