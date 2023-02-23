@@ -1,12 +1,7 @@
-reviewers:
-  - atiratree
-  - davidvossel
-  - jelkosz
-  - ksimon1
-  - 0xFelix 
 approvers:
-  - atiratree
-  - davidvossel
-  - jelkosz
+  - 0xFelix
+  - ksimon1
+reviewers:
+  - akrejcir
   - ksimon1
   - 0xFelix
