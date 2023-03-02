@@ -13,7 +13,7 @@ require (
 	k8s.io/api v0.25.2
 	k8s.io/apimachinery v0.25.2
 	k8s.io/client-go v0.25.2
-	kubevirt.io/api v0.58.0
+	kubevirt.io/api v0.59.0
 	kubevirt.io/containerized-data-importer-api v1.55.0
 )
 
