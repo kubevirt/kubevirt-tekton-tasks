@@ -15,8 +15,8 @@ require (
 	k8s.io/apimachinery v0.25.2
 	k8s.io/client-go v12.0.0+incompatible
 	knative.dev/pkg v0.0.0-20221003153827-158538cc46ec
-	kubevirt.io/api v0.58.0
-	kubevirt.io/client-go v0.58.0
+	kubevirt.io/api v0.59.0
+	kubevirt.io/client-go v0.59.0
 	kubevirt.io/containerized-data-importer v1.55.0
 	kubevirt.io/containerized-data-importer-api v1.55.0
 	kubevirt.io/qe-tools v0.1.8
