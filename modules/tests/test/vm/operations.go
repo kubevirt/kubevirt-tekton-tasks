@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -52,7 +53,7 @@ func WaitForVM(kubevirtClient kubevirtcliv1.KubevirtClient,
 		}
 
 		if vmiPhase != "" {
-			vmi, err := kubevirtClient.VirtualMachineInstance(namespace).Get(name, &metav1.GetOptions{})
+			vmi, err := kubevirtClient.VirtualMachineInstance(namespace).Get(context.TODO(), name, &metav1.GetOptions{})
 			if err != nil {
 				return false, nil
 			}
