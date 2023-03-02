@@ -1,6 +1,7 @@
 package execute
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -69,7 +70,7 @@ func (e *Executor) EnsureVMRunning(timeout time.Duration) error {
 	logFields := []zap.Field{zap.String("name", vmName), zap.String("namespace", vmNamespace)}
 
 	conditionFn := func() (done bool, err error) {
-		vmInstance, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(vmName, &v1.GetOptions{})
+		vmInstance, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(context.TODO(), vmName, &v1.GetOptions{})
 
 		if err != nil {
 			log.Logger().Debug("could not obtain a vm instance", logFields[0], logFields[1], zap.Error(err))
@@ -132,7 +133,7 @@ func (e *Executor) EnsureVMStopped() error {
 	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
 
 	return wait.PollImmediateInfinite(constants.PollVMItoStopInterval, func() (bool, error) {
-		vmi, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(vmName, &v1.GetOptions{})
+		vmi, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(context.TODO(), vmName, &v1.GetOptions{})
 
 		if err == nil {
 			switch vmi.Status.Phase {
