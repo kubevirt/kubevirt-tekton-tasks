@@ -7,8 +7,8 @@ require (
 	github.com/openshift/api v0.0.0-20211217221424-8779abfbd571
 	k8s.io/api v0.25.2
 	k8s.io/apimachinery v0.25.2
-	kubevirt.io/api v0.58.0
-	kubevirt.io/containerized-data-importer-api v1.53.0
+	kubevirt.io/api v0.59.0
+	kubevirt.io/containerized-data-importer-api v1.55.0
 	sigs.k8s.io/yaml v1.3.0
 )
 
