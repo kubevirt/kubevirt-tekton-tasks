@@ -107,22 +107,20 @@ var _ = Describe("Create VM from manifest", func() {
 				VM: testobjects.NewTestAlpineVM("vm-with-non-existent-pvc").WithNonMatchingDisk().Build(),
 			},
 		}),
-		Entry("[NAMESPACE SCOPED] cannot create a VM in different namespace", &testconfigs.CreateVMTestConfig{
+		Entry("cannot create a VM in different namespace", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
+				ServiceAccount: CreateVMFromManifestServiceAccountNameNamespaced,
 				ExpectedLogs:   "cannot create resource \"virtualmachines\" in API group \"kubevirt.io\"",
-				LimitTestScope: NamespaceTestScope,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				VM:                testobjects.NewTestAlpineVM("different-ns-namespace-scope").Build(),
 				VMTargetNamespace: SystemTargetNS,
 			},
 		}),
-		Entry("[NAMESPACE SCOPED] cannot create a VM in different namespace in manifest", &testconfigs.CreateVMTestConfig{
+		Entry("cannot create a VM in different namespace in manifest", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
+				ServiceAccount: CreateVMFromManifestServiceAccountNameNamespaced,
 				ExpectedLogs:   "cannot create resource \"virtualmachines\" in API group \"kubevirt.io\"",
-				LimitTestScope: NamespaceTestScope,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				VM:                        testobjects.NewTestAlpineVM("different-ns-namespace-scope-in-manifest").Build(),

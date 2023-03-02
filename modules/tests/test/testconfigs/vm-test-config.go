@@ -353,7 +353,7 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 
 	switch c.TaskData.CreateMode {
 	case CreateVMVMManifestMode:
-		taskName = CreateVMFromManifestClusterTaskName
+		taskName = CreateVMFromManifestTaskName
 		taskRunName = "taskrun-vm-create-from-manifest"
 
 		params = append(params,
@@ -373,7 +373,7 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 			},
 		)
 	case CreateVMTemplateMode:
-		taskName = CreateVMFromTemplateClusterTaskName
+		taskName = CreateVMFromTemplateTaskName
 		taskRunName = "taskrun-vm-create-from-template"
 
 		var templateNamespace string
@@ -426,7 +426,7 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		Spec: v1beta1.TaskRunSpec{
 			TaskRef: &v1beta1.TaskRef{
 				Name: taskName,
-				Kind: v1beta1.ClusterTaskKind,
+				Kind: v1beta1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: c.ServiceAccount,

@@ -35,12 +35,6 @@ make cluster-sync
 ./scripts/cluster-sync.sh execute-in-vm
 ```
 
-You can also change the scope of the tasks to be single namespace only:
-
-```bash
-SCOPE=namespace make cluster-sync
-```
-
 ## Testing
 
 ### Running Unit Tests
@@ -55,8 +49,6 @@ make test
 ### Running E2E Tests
 ```bash
 NUM_NODES=4 make cluster-test
-# for namespace scope use
-SCOPE=namespace NUM_NODES=4 make cluster-test
 
 # clean all used resources, namespaces and images
 make cluster-clean

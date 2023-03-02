@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: {{ sa_name }}
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: {{ task_name }}
 {% if item.type == "advanced" %}
   params:

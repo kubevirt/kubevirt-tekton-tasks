@@ -115,8 +115,8 @@ func (c *GenerateSshKeysTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		},
 		Spec: v1beta1.TaskRunSpec{
 			TaskRef: &v1beta1.TaskRef{
-				Name: GenerateSshKeysClusterTaskName,
-				Kind: v1beta1.ClusterTaskKind,
+				Name: GenerateSshKeysTaskName,
+				Kind: v1beta1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: c.ServiceAccount,

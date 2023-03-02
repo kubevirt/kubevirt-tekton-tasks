@@ -25,7 +25,7 @@ spec:
             - 'user:fedora'
             - 'disable-strict-host-key-checking:true'
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: generate-ssh-keys
     - name: create-vm-from-manifest
       params:
@@ -87,7 +87,7 @@ spec:
       runAfter:
         - generate-ssh-keys
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: create-vm-from-manifest
     - name: execute-in-vm
       params:
@@ -110,7 +110,7 @@ spec:
       runAfter:
         - create-vm-from-manifest
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: execute-in-vm
   finally:
     - name: cleanup-vm
@@ -135,5 +135,5 @@ spec:
               cat ${RESULT_FILES}
             fi
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: cleanup-vm

@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: create-vm-from-manifest-task
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: create-vm-from-manifest
   params:
   - name: manifest

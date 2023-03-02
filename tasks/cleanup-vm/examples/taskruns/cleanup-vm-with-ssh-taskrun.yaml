@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: cleanup-vm-task
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: cleanup-vm
   params:
     - name: vmName

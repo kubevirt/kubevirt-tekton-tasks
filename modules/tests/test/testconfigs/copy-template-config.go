@@ -91,8 +91,8 @@ func (c *CopyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		},
 		Spec: v1beta1.TaskRunSpec{
 			TaskRef: &v1beta1.TaskRef{
-				Name: CopyTemplateClusterTaskName,
-				Kind: v1beta1.ClusterTaskKind,
+				Name: CopyTemplateTaskName,
+				Kind: v1beta1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: c.ServiceAccount,

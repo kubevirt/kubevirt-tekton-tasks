@@ -176,11 +176,10 @@ var _ = Describe("Create VM from template", func() {
 				},
 			},
 		}),
-		Entry("[NAMESPACE SCOPED] cannot create a VM in different namespace", &testconfigs.CreateVMTestConfig{
+		Entry("cannot create a VM in different namespace", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "processedtemplates.template.openshift.io is forbidden",
-				LimitTestScope: NamespaceTestScope,
+				ServiceAccount: CreateVMFromTemplateServiceAccountNameNamespaced,
+				ExpectedLogs:   "cannot get resource \"templates\"",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -190,11 +189,10 @@ var _ = Describe("Create VM from template", func() {
 				VMTargetNamespace: SystemTargetNS,
 			},
 		}),
-		Entry("[NAMESPACE SCOPED] cannot use template from a different namespace", &testconfigs.CreateVMTestConfig{
+		Entry("cannot use template from a different namespace", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
+				ServiceAccount: CreateVMFromTemplateServiceAccountNameNamespaced,
 				ExpectedLogs:   "templates.template.openshift.io \"unreachable-template\" is forbidden",
-				LimitTestScope: NamespaceTestScope,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				TemplateTargetNamespace: SystemTargetNS,
@@ -301,10 +299,9 @@ var _ = Describe("Create VM from template", func() {
 				},
 			},
 		}),
-		Entry("[CLUSTER SCOPED] works also in the same namespace as deploy", &testconfigs.CreateVMTestConfig{
+		Entry("works also in the same namespace as deploy", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				LimitTestScope: ClusterTestScope,
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
@@ -312,7 +309,7 @@ var _ = Describe("Create VM from template", func() {
 				TemplateTargetNamespace: DeployTargetNS,
 				VMTargetNamespace:       DeployTargetNS,
 				TemplateParams: []string{
-					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("same-ns-cluster-scope")),
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("same-ns")),
 				},
 			},
 		}),

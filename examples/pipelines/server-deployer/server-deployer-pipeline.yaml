@@ -27,7 +27,7 @@ spec:
         - name: waitForSuccess
           value: 'true'
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: modify-data-object
     - name: generate-ssh-keys
       params:
@@ -36,7 +36,7 @@ spec:
             - 'user:fedora'
             - 'disable-strict-host-key-checking:true'
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: generate-ssh-keys
     - name: disk-virt-customize
       params:
@@ -47,7 +47,7 @@ spec:
             install git,vim,pip
             run-command pip install flask
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: disk-virt-customize
       runAfter:
         - modify-data-object
@@ -118,7 +118,7 @@ spec:
         - disk-virt-customize
         - generate-ssh-keys
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: create-vm-from-manifest
     - name: execute-in-vm
       params:
@@ -138,5 +138,5 @@ spec:
       runAfter:
         - create-vm-from-manifest
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: execute-in-vm

@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: copy-template-task
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: copy-template
   params:
   - name: sourceTemplateName

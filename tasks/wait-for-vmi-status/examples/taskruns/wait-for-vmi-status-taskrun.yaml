@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: wait-for-vmi-status-task
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: wait-for-vmi-status
   params:
     - name: vmiName

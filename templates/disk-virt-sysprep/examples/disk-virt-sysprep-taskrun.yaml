@@ -8,7 +8,7 @@ spec:
   serviceAccountName: {{ sa_name }}
 {% endif %}
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: {{ task_name }}
   params:
     - name: pvc

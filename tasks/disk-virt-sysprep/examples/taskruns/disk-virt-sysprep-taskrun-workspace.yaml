@@ -12,7 +12,7 @@ metadata:
   name: disk-virt-sysprep-taskrun-workspace
 spec:
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: disk-virt-sysprep
   params:
     - name: pvc

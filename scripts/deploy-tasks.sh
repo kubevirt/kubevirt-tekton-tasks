@@ -15,7 +15,6 @@ fi
 # run only for specified tasks in script arguments
 # or default to all if no arguments specified
 
-SCOPE="${SCOPE:-cluster}"
 DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --output 'jsonpath={..namespace}')}"
 
 kubectl config set-context --current --namespace="${DEPLOY_NAMESPACE}" || true
@@ -45,9 +44,14 @@ visit "${REPO_DIR}/tasks"
       else
         sed "s!${MAIN_IMAGE}!${CUSTOM_IMAGE}!g" "manifests/${TASK_NAME}.yaml" | kubectl apply -f -
       fi
-
-      # add cluster privileges if needed
-      if [[ "${SCOPE}" == "cluster" ]] && grep -q ClusterRole "manifests/${TASK_NAME}.yaml"; then
+    kubectl apply -f - << EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ${TASK_NAME}-test
+  namespace: ${DEPLOY_NAMESPACE}
+EOF
+      if grep -q ClusterRole "manifests/${TASK_NAME}.yaml"; then
         kubectl apply -f - << EOF
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

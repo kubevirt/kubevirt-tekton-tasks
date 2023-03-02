@@ -82,20 +82,18 @@ var _ = Describe("Generate SSH Keys", func() {
 				AdditionalSSHKeygenOptions: "-3 unknown-param test",
 			},
 		}),
-		Entry("[NAMESPACE SCOPED] cannot create public secret in different namespace", &testconfigs.GenerateSshKeysTestConfig{
+		Entry("cannot create public secret in different namespace", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				LimitTestScope: NamespaceTestScope,
+				ServiceAccount: GenerateSshKeysServiceAccountNameNamespaced,
 				ExpectedLogs:   "secrets is forbidden",
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PublicKeySecretTargetNamespace: SystemTargetNS,
 			},
 		}),
-		Entry("[NAMESPACE SCOPED] cannot create private secret in different namespace", &testconfigs.GenerateSshKeysTestConfig{
+		Entry("cannot create private secret in different namespace", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				LimitTestScope: NamespaceTestScope,
+				ServiceAccount: GenerateSshKeysServiceAccountNameNamespaced,
 				ExpectedLogs:   "secrets is forbidden",
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
@@ -209,11 +207,10 @@ var _ = Describe("Generate SSH Keys", func() {
 				},
 			},
 		}),
-		Entry("[CLUSTER SCOPED] works also in the same namespace as deploy", &testconfigs.GenerateSshKeysTestConfig{
+		Entry("works also in the same namespace as deploy", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: GenerateSshKeysServiceAccountName,
 				ExpectedLogs:   ExpectedGenerateSshKeysMessage,
-				LimitTestScope: ClusterTestScope,
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PrivateKeySecretTargetNamespace: DeployTargetNS,

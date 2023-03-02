@@ -1,9 +1,10 @@
 package constants
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants"
 	"strings"
 	"time"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants"
 )
 
 const e2eNamespacePrefix = "e2e-tests"
@@ -20,13 +21,6 @@ const (
 	TestTargetNS   TargetNamespace = "test"
 	SystemTargetNS TargetNamespace = "system"
 	EmptyTargetNS  TargetNamespace = "empty"
-)
-
-type TestScope string
-
-const (
-	ClusterTestScope   TestScope = "cluster"
-	NamespaceTestScope TestScope = "namespace"
 )
 
 type EnvScope string

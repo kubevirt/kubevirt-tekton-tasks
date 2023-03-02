@@ -1,9 +1,10 @@
 package constants
 
 const (
-	ModifyDataObjectClusterTaskName    = "modify-data-object"
-	ModifyDataObjectServiceAccountName = "modify-data-object-task"
-	ModifyDataObjectTaskrunName        = "taskrun-modify-data-object"
+	ModifyDataObjectTaskName                     = "modify-data-object"
+	ModifyDataObjectServiceAccountName           = "modify-data-object-task"
+	ModifyDataObjectServiceAccountNameNamespaced = "modify-data-object-test"
+	ModifyDataObjectTaskrunName                  = "taskrun-modify-data-object"
 
 	UnusualRestartCountThreshold = 3
 	ReasonError                  = "Error"

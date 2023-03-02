@@ -129,7 +129,7 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 	}
 
 	if c.TaskData.ExecInVMMode == CleanupVMMode {
-		taskName = CleanupVMClusterTaskName
+		taskName = CleanupVMTaskName
 		if c.ServiceAccount != "" {
 			serviceAccountName = CleanupVMServiceAccountName
 		}
@@ -160,7 +160,7 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 				})
 		}
 	} else {
-		taskName = ExecuteInVMClusterTaskName
+		taskName = ExecuteInVMTaskName
 		if c.ServiceAccount != "" {
 			serviceAccountName = ExecuteInVMServiceAccountName
 		}
@@ -174,7 +174,7 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		Spec: v1beta1.TaskRunSpec{
 			TaskRef: &v1beta1.TaskRef{
 				Name: taskName,
-				Kind: v1beta1.ClusterTaskKind,
+				Kind: v1beta1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: serviceAccountName,

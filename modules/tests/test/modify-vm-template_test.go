@@ -113,11 +113,10 @@ var _ = Describe("Modify template task", func() {
 					TemplateName: testtemplate.CirrosTemplateName,
 				},
 			}),
-			Entry("[NAMESPACE SCOPED] cannot updated template in different namespace", &testconfigs.ModifyTemplateTestConfig{
+			Entry("cannot updated template in different namespace", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
+					ServiceAccount: ModifyTemplateServiceAccountNameNamespaced,
 					ExpectedLogs:   "cannot get resource \"templates\" in API group \"template.openshift.io\"",
-					LimitTestScope: NamespaceTestScope,
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName:            testtemplate.CirrosTemplateName,
@@ -331,7 +330,6 @@ var _ = Describe("Modify template task", func() {
 			Entry("should update template across namespaces", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -368,7 +366,6 @@ var _ = Describe("Modify template task", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                 testtemplate.NewRhelDesktopTinyTemplate().Build(),
@@ -415,7 +412,6 @@ var _ = Describe("Modify template task", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                 testtemplate.NewRhelDesktopTinyTemplate().Build(),
@@ -457,7 +453,6 @@ var _ = Describe("Modify template task", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
@@ -514,7 +509,6 @@ var _ = Describe("Modify template task", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
@@ -558,7 +552,6 @@ var _ = Describe("Modify template task", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
@@ -602,7 +595,6 @@ var _ = Describe("Modify template task", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                 testtemplate.NewRhelDesktopTinyTemplate().Build(),
@@ -643,7 +635,6 @@ var _ = Describe("Modify template task", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
