@@ -108,7 +108,7 @@ spec:
         claimName: "$(params.pvcName)"
     - name: extracted-iso-files
       emptyDir:
-        sizeLimit: 7Gi
+        sizeLimit: 12Gi
     - name: iso-file
       emptyDir:
-        sizeLimit: 7Gi
+        sizeLimit: 12Gi
