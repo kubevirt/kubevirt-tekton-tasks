@@ -10,6 +10,7 @@ metadata:
     manifest.params.task.kubevirt.io/apiVersion: {{ task_param_types.vm_version }}
     namespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
 {% elif task_name == "create-vm-from-template" %}
+    tekton.dev/deprecated: "true"
     templateName.params.task.kubevirt.io/type: {{ task_param_types.vm_template_name }}
     templateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
     templateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}

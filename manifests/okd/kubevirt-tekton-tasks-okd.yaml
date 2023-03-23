@@ -133,6 +133,7 @@ apiVersion: tekton.dev/v1beta1
 kind: ClusterTask
 metadata:
   annotations:
+    tekton.dev/deprecated: "true"
     task.kubevirt.io/associatedServiceAccount: copy-template-task
     sourceTemplateName.params.task.kubevirt.io/kind: Template
     sourceTemplateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
@@ -377,6 +378,7 @@ kind: ClusterTask
 metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: create-vm-from-template-task
+    tekton.dev/deprecated: "true"
     templateName.params.task.kubevirt.io/type: vm-template-name
     templateName.params.task.kubevirt.io/kind: Template
     templateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
@@ -1132,6 +1134,7 @@ apiVersion: tekton.dev/v1beta1
 kind: ClusterTask
 metadata:
   annotations:
+    tekton.dev/deprecated: "true"
     task.kubevirt.io/associatedServiceAccount: modify-vm-template-task
     templateName.params.task.kubevirt.io/kind: Template
     templateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
