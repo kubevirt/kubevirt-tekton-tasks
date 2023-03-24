@@ -5,7 +5,7 @@ ENV TASK_NAME=copy-template \
     GO111MODULE=on
 WORKDIR /src/${TASK_NAME}
 
-RUN curl -L https://go.dev/dl/go1.19.2.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+RUN curl -L https://go.dev/dl/go1.20.2.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 
 ENV PATH=$PATH:/usr/local/go/bin
 

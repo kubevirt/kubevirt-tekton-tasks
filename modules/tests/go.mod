@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/tests
 
-go 1.19
+go 1.20
 
 require (
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template v0.0.0
