@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/wait-for-vmi-status
 
-go 1.19
+go 1.20
 
 require (
 	github.com/alexflint/go-arg v1.3.0

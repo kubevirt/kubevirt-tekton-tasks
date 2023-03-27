@@ -218,11 +218,11 @@ github.com/klauspost/compress/zstd/internal/xxhash
 ## explicit; go 1.15
 github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1
 # github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template v0.0.0 => ../copy-template
-## explicit; go 1.19
+## explicit; go 1.20
 github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template/pkg/templates
 github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template/pkg/utils/parse
 # github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0 => ../shared
-## explicit; go 1.19
+## explicit; go 1.20
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output
@@ -230,7 +230,7 @@ github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors
 github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils
 # github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0 => ../sharedtest
-## explicit; go 1.19
+## explicit; go 1.20
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects
 github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datasource
