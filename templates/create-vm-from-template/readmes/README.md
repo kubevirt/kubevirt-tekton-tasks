@@ -1,5 +1,7 @@
 # Create VirtualMachine from OKD Template Task
 
+#### Task is deprecated and will be removed in future versions.
+
 This task creates a VirtualMachine from OKD Template.
 Virtual machines can be described and parametrized in a generic form with these templates.
 A bundle of predefined templates to use can be found in [Common Templates](https://github.com/kubevirt/common-templates) project.

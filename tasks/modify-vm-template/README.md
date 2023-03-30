@@ -1,5 +1,7 @@
 # Modify OpenShift template Task
 
+#### Task is deprecated and will be removed in future versions.
+
 This task modifies template.
 A bundle of predefined templates to use can be found in [Common Templates](https://github.com/kubevirt/common-templates) project.
 

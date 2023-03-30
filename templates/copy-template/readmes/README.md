@@ -1,5 +1,7 @@
 # Copy okd template Task
 
+#### Task is deprecated and will be removed in future versions.
+
 This task copies a template.
 A bundle of predefined templates to use can be found in [Common Templates](https://github.com/kubevirt/common-templates) project.
 

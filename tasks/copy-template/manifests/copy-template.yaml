@@ -3,6 +3,7 @@ apiVersion: tekton.dev/v1beta1
 kind: ClusterTask
 metadata:
   annotations:
+    tekton.dev/deprecated: "true"
     task.kubevirt.io/associatedServiceAccount: copy-template-task
     sourceTemplateName.params.task.kubevirt.io/kind: Template
     sourceTemplateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
