@@ -38,7 +38,7 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: "quay.io/kubevirt/tekton-task-execute-in-vm:v0.13.3"
+      image: "quay.io/kubevirt/tekton-task-execute-in-vm:v0.14.0"
       command:
         - entrypoint
       args:
