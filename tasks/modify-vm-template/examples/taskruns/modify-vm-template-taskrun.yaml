@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: modify-vm-template-task
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: modify-vm-template
   params:
   - name: templateName

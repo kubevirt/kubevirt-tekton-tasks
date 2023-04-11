@@ -1,6 +1,6 @@
 ---
 apiVersion: tekton.dev/v1beta1
-kind: ClusterTask
+kind: Task
 metadata:
   annotations:
     task.kubevirt.io/associatedServiceAccount: cleanup-vm-task

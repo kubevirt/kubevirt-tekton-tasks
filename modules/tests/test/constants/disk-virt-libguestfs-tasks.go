@@ -1,7 +1,7 @@
 package constants
 
-const DiskVirtCustomizeClusterTaskName = "disk-virt-customize"
-const DiskVirtSysprepClusterTaskName = "disk-virt-sysprep"
+const DiskVirtCustomizeTaskName = "disk-virt-customize"
+const DiskVirtSysprepTaskName = "disk-virt-sysprep"
 
 type diskVirtLibguestfsTasksParams struct {
 	PVCName           string

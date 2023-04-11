@@ -2,7 +2,6 @@
 
 set -ex
 
-export SCOPE="${SCOPE:-cluster}"
 export DEV_MODE="${DEV_MODE:-false}"
 export STORAGE_CLASS="${STORAGE_CLASS:-}"
 export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-e2e-tests-$(shuf -i10000-99999 -n1)}"

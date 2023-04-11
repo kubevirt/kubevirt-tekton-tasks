@@ -87,7 +87,7 @@ func (c *DiskVirtLibguestfsTestConfig) GetTaskRunWithName(nameSuffix string) *v1
 				StringVal: c.TaskData.Commands,
 			},
 		})
-		taskName = DiskVirtSysprepClusterTaskName
+		taskName = DiskVirtSysprepTaskName
 	} else {
 		params = append(params, v1beta1.Param{
 			Name: DiskVirtLibguestfsTasksParams.CustomizeCommands,
@@ -96,7 +96,7 @@ func (c *DiskVirtLibguestfsTestConfig) GetTaskRunWithName(nameSuffix string) *v1
 				StringVal: c.TaskData.Commands,
 			},
 		})
-		taskName = DiskVirtCustomizeClusterTaskName
+		taskName = DiskVirtCustomizeTaskName
 	}
 
 	return &v1beta1.TaskRun{
@@ -107,7 +107,7 @@ func (c *DiskVirtLibguestfsTestConfig) GetTaskRunWithName(nameSuffix string) *v1
 		Spec: v1beta1.TaskRunSpec{
 			TaskRef: &v1beta1.TaskRef{
 				Name: taskName,
-				Kind: v1beta1.ClusterTaskKind,
+				Kind: v1beta1.NamespacedTaskKind,
 			},
 			Timeout: &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			Params:  params,

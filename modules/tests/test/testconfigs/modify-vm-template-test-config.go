@@ -212,8 +212,8 @@ func (m *ModifyTemplateTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		},
 		Spec: v1beta1.TaskRunSpec{
 			TaskRef: &v1beta1.TaskRef{
-				Name: ModifyTemplateClusterTaskName,
-				Kind: v1beta1.ClusterTaskKind,
+				Name: ModifyTemplateTaskName,
+				Kind: v1beta1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: m.GetTaskRunTimeout()},
 			ServiceAccountName: m.ServiceAccount,

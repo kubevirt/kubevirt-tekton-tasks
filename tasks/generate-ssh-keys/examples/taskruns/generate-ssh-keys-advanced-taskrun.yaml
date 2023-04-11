@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: generate-ssh-keys-task
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: generate-ssh-keys
   params:
     - name: publicKeySecretName

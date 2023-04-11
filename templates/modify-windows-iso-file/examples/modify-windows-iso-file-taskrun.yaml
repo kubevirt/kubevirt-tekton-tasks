@@ -10,7 +10,7 @@ spec:
       runAsGroup: 1001
       fsGroup: 1001
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: {{ task_name }}
   params:
   - name: pvcName

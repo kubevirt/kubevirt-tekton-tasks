@@ -79,10 +79,9 @@ var _ = Describe("Wait for VMI Status", func() {
 				FailureCondition: "invalid#$%^$&",
 			},
 		}),
-		Entry("[NAMESPACE SCOPED] cannot check status for VMI in different namespace", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("cannot check status for VMI in different namespace", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
-				LimitTestScope: constants.NamespaceTestScope,
+				ServiceAccount: constants.WaitForVMIStatusServiceAccountNameNamespaced,
 				ExpectedLogs:   "cannot list resource \"virtualmachineinstances\" in API group \"kubevirt.io\"",
 				Timeout:        &metav1.Duration{1 * time.Minute},
 			},
@@ -140,11 +139,10 @@ var _ = Describe("Wait for VMI Status", func() {
 				ShouldStartVM:    true,
 			},
 		}),
-		Entry("[CLUSTER SCOPED] fulfills success condition in the same namespace as deploy", &testconfigs.WaitForVMIStatusTestConfig{
+		Entry("fulfills success condition in the same namespace as deploy", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
 				ExpectSuccess:  true,
-				LimitTestScope: constants.ClusterTestScope,
 			},
 			TaskData: testconfigs.WaitForVMIStatusTaskData{
 				VM:                testobjects.NewTestAlpineVM("fulfills-success-condition-in-same-ns").Build(),

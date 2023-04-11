@@ -113,8 +113,8 @@ func (c *ModifyDataObjectTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		},
 		Spec: v1beta1.TaskRunSpec{
 			TaskRef: &v1beta1.TaskRef{
-				Name: ModifyDataObjectClusterTaskName,
-				Kind: v1beta1.ClusterTaskKind,
+				Name: ModifyDataObjectTaskName,
+				Kind: v1beta1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: c.ServiceAccount,

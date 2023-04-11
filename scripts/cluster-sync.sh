@@ -7,7 +7,6 @@ REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 
 source "${SCRIPT_DIR}/common.sh"
 
-export SCOPE="${SCOPE:-cluster}"
 export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --output 'jsonpath={..namespace}')}"
 IMAGE_REGISTRY=""
 IN_CLUSTER_IMAGE_REGISTRY=""

@@ -49,13 +49,13 @@ func (c *WaitForVMIStatusTestConfig) Init(options *testoptions.TestOptions) {
 func (c *WaitForVMIStatusTestConfig) GetTaskRun() *v1beta1.TaskRun {
 	return &v1beta1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      E2ETestsRandomName("taskrun-" + WaitForVMIStatusClusterTaskName),
+			Name:      E2ETestsRandomName("taskrun-" + WaitForVMIStatusTaskName),
 			Namespace: c.deploymentNamespace,
 		},
 		Spec: v1beta1.TaskRunSpec{
 			TaskRef: &v1beta1.TaskRef{
-				Name: WaitForVMIStatusClusterTaskName,
-				Kind: v1beta1.ClusterTaskKind,
+				Name: WaitForVMIStatusTaskName,
+				Kind: v1beta1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: c.ServiceAccount,

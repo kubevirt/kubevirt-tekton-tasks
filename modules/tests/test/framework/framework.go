@@ -40,7 +40,6 @@ type Framework struct {
 }
 
 type TestConfig interface {
-	GetLimitTestScope() constants.TestScope
 	GetLimitEnvScope() constants.EnvScope
 	Init(options *testoptions.TestOptions)
 }
@@ -70,7 +69,6 @@ func (f *Framework) OnBeforeTestSetup(callback func(config TestConfig)) *Framewo
 }
 
 func (f *Framework) TestSetup(config TestConfig) {
-	limitScope := config.GetLimitTestScope()
 	limitEnvScope := config.GetLimitEnvScope()
 
 	// check global env limit first
@@ -83,10 +81,6 @@ func (f *Framework) TestSetup(config TestConfig) {
 		Skip(fmt.Sprintf("runs only in %v", limitEnvScope))
 	}
 
-	// check test case test scope limit
-	if limitScope != "" && limitScope != f.TestScope {
-		Skip(fmt.Sprintf("runs only in %v scope", limitScope))
-	}
 	if f.onBeforeTestSetup != nil {
 		f.onBeforeTestSetup(config)
 	}

@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: create-vm-from-template-task
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: create-vm-from-template
   params:
   - name: templateName

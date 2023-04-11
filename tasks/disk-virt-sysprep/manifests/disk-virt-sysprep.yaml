@@ -1,6 +1,6 @@
 ---
 apiVersion: tekton.dev/v1beta1
-kind: ClusterTask
+kind: Task
 metadata:
   annotations:
     pvc.params.task.kubevirt.io/kind: PersistentVolumeClaim

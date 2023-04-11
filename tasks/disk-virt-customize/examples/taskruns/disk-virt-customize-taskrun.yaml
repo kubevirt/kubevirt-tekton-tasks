@@ -5,7 +5,7 @@ metadata:
   name: disk-virt-customize-taskrun
 spec:
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: disk-virt-customize
   params:
     - name: pvc

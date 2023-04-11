@@ -27,7 +27,7 @@ spec:
         - name: waitForSuccess
           value: 'true'
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: modify-data-object
     - name: disk-virt-sysprep
       params:
@@ -39,7 +39,7 @@ spec:
         - name: additionalOptions
           value: "--network"
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: disk-virt-sysprep
       runAfter:
         - modify-data-object
@@ -102,5 +102,5 @@ spec:
       runAfter:
         - disk-virt-sysprep
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: create-vm-from-manifest

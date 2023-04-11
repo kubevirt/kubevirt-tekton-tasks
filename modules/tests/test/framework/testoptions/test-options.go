@@ -3,7 +3,6 @@ package testoptions
 import (
 	"errors"
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,7 +15,6 @@ var deployNamespace string
 var testNamespace string
 var storageClass string
 var kubeConfigPath string
-var scope string
 var debug string
 var isOKD string
 var skipCreateVMFromManifestTests string
@@ -28,7 +26,6 @@ type TestOptions struct {
 	TestNamespace                 string
 	StorageClass                  string
 	KubeConfigPath                string
-	TestScope                     constants.TestScope
 	EnvScope                      constants.EnvScope
 	Debug                         bool
 	SkipCreateVMFromManifestTests bool
@@ -46,7 +43,6 @@ func init() {
 	flag.StringVar(&storageClass, "storage-class", "", "Storage class to be used for creating test DVs/PVCs")
 	flag.StringVar(&kubeConfigPath, "kubeconfig-path", "", "Path to the kubeconfig")
 	flag.StringVar(&isOKD, "is-okd", "", "Set to true if running on OKD. One of: true|false")
-	flag.StringVar(&scope, "scope", "", "Scope of the tests. One of: cluster|namespace")
 	flag.StringVar(&debug, "debug", "", "Debug keeps all the resources alive after the tests complete. One of: true|false")
 	flag.StringVar(&skipCreateVMFromManifestTests, "skip-create-vm-from-manifests-tests", "", "Skip create vm from manifests test suite. One of: true|false")
 	flag.StringVar(&skipExecuteInVMTests, "skip-execute-in-vm-tests", "", "Skip execute in vm test suite. One of: true|false")
@@ -62,14 +58,6 @@ func InitTestOptions(testOptions *TestOptions) error {
 
 	if testNamespace == "" {
 		return errors.New("--test-namespace must be specified")
-	}
-
-	if scope == "" {
-		testOptions.TestScope = constants.NamespaceTestScope
-	} else if constants.TestScope(scope) == constants.NamespaceTestScope || constants.TestScope(scope) == constants.ClusterTestScope {
-		testOptions.TestScope = constants.TestScope(scope)
-	} else {
-		return fmt.Errorf("invalid scope, only %v or %v is allowed", constants.ClusterTestScope, constants.NamespaceTestScope)
 	}
 
 	if kubeConfigPath != "" {

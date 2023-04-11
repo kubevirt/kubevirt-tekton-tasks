@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: {{ sa_name }}
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: {{ task_name }}
   params:
   - name: manifest

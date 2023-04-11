@@ -42,9 +42,9 @@ kubectl apply -f "https://github.com/kubevirt/containerized-data-importer/releas
 # wait for tekton pipelines
 kubectl rollout status -n openshift-operators deployment/openshift-pipelines-operator --timeout 10m
 
-# wait until clustertasks tekton CRD is properly deployed
+# wait until tasks tekton CRD is properly deployed
 timeout 10m bash <<- EOF
-  until kubectl get crd clustertasks.tekton.dev; do
+  until kubectl get crd tasks.tekton.dev; do
     sleep 5
   done
 EOF

@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: execute-in-vm-task
   taskRef:
-    kind: ClusterTask
+    kind: Task
     name: execute-in-vm
   params:
     - name: vmName

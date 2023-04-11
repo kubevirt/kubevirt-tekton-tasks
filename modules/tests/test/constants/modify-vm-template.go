@@ -8,9 +8,10 @@ import (
 )
 
 const (
-	ModifyTemplateClusterTaskName    = "modify-vm-template"
-	ModifyTemplateServiceAccountName = "modify-vm-template-task"
-	ModifyTemplateTaskRunName        = "taskrun-modify-vm-template"
+	ModifyTemplateTaskName                     = "modify-vm-template"
+	ModifyTemplateServiceAccountName           = "modify-vm-template-task"
+	ModifyTemplateServiceAccountNameNamespaced = "modify-vm-template-test"
+	ModifyTemplateTaskRunName                  = "taskrun-modify-vm-template"
 
 	TemplateNameOptionName             = "templateName"
 	TemplateNamespaceOptionName        = "templateNamespace"

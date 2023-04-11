@@ -69,11 +69,9 @@ var _ = Describe("Modify data objects", func() {
 					DataVolume: datavolume.NewBlankDataVolume("").Build(),
 				},
 			}),
-			Entry("[NAMESPACE SCOPED] cannot create a DataVolume in different namespace", &testconfigs.ModifyDataObjectTestConfig{
+			Entry("cannot create a DataVolume in different namespace", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					LimitTestScope: NamespaceTestScope,
-					ExpectedLogs:   "datavolumes.cdi.kubevirt.io is forbidden",
+					ExpectedLogs: "datavolumes.cdi.kubevirt.io is forbidden",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume: datavolume.NewBlankDataVolume("different-ns-namespace-scope").Build(),
@@ -119,14 +117,13 @@ var _ = Describe("Modify data objects", func() {
 					WaitForSuccess: true,
 				},
 			}),
-			Entry("[CLUSTER SCOPED] works also in the same namespace as deploy", &testconfigs.ModifyDataObjectTestConfig{
+			Entry("works also in the same namespace as deploy", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyDataObjectServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 					Timeout:        Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
-					DataVolume:     datavolume.NewBlankDataVolume("same-ns-cluster-scope").Build(),
+					DataVolume:     datavolume.NewBlankDataVolume("same-ns").Build(),
 					WaitForSuccess: true,
 					Namespace:      DeployTargetNS,
 				},
@@ -369,10 +366,9 @@ var _ = Describe("Modify data objects", func() {
 					DataSource: datasource.NewDataSource("").Build(),
 				},
 			}),
-			Entry("[NAMESPACE SCOPED] cannot create a DataSource in different namespace", &testconfigs.ModifyDataObjectTestConfig{
+			Entry("cannot create a DataSource in different namespace", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					LimitTestScope: NamespaceTestScope,
+					ServiceAccount: ModifyDataObjectServiceAccountNameNamespaced,
 					ExpectedLogs:   "datasources.cdi.kubevirt.io is forbidden",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
@@ -433,14 +429,13 @@ var _ = Describe("Modify data objects", func() {
 					WaitForSuccess: true,
 				},
 			}),
-			Entry("[CLUSTER SCOPED] works also in the same namespace as deploy", &testconfigs.ModifyDataObjectTestConfig{
+			Entry("works also in the same namespace as deploy", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: ModifyDataObjectServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 					Timeout:        Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
-					DataSource:     datasource.NewDataSource("same-ns-cluster-scope").Build(),
+					DataSource:     datasource.NewDataSource("same-ns").Build(),
 					WaitForSuccess: true,
 					Namespace:      DeployTargetNS,
 				},

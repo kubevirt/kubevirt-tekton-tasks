@@ -55,11 +55,10 @@ var _ = Describe("Copy template task", func() {
 					SourceTemplateName: testtemplate.CirrosTemplateName,
 				},
 			}),
-			Entry("[NAMESPACE SCOPED] cannot copy template in different namespace", &testconfigs.CopyTemplateTestConfig{
+			Entry("cannot copy template in different namespace", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-					ExpectedLogs:   "templates.template.openshift.io is forbidden",
-					LimitTestScope: NamespaceTestScope,
+					ServiceAccount: CopyTemplateServiceAccountNameNamespaced,
+					ExpectedLogs:   "cannot get resource \"templates\"",
 				},
 				TaskData: testconfigs.CopyTemplateTaskData{
 					SourceTemplateName:      testtemplate.CirrosTemplateName,
@@ -107,7 +106,6 @@ var _ = Describe("Copy template task", func() {
 			Entry("should create template in different namespace", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.CopyTemplateTaskData{
 					SourceTemplateName:      testtemplate.CirrosTemplateName,
@@ -166,7 +164,6 @@ var _ = Describe("Copy template task", func() {
 			config := &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.CopyTemplateTaskData{
 					SourceTemplateName:      testtemplate.RhelTemplateName,
@@ -214,7 +211,6 @@ var _ = Describe("Copy template task", func() {
 			config := &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 					ExpectedLogs:   "templates.template.openshift.io \"test-template\" already exists",
 				},
 				TaskData: testconfigs.CopyTemplateTaskData{
@@ -247,7 +243,6 @@ var _ = Describe("Copy template task", func() {
 			config := &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ServiceAccount: CopyTemplateServiceAccountName,
-					LimitTestScope: ClusterTestScope,
 				},
 				TaskData: testconfigs.CopyTemplateTaskData{
 					SourceTemplateName:      testtemplate.CirrosTemplateName,
