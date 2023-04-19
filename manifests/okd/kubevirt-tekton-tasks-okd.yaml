@@ -1348,7 +1348,12 @@ spec:
         export TARGET_IMG_FILE_PATH="tmp/target-pvc/disk.img"
 
         guestfish -a ${TARGET_IMG_FILE_PATH} -m /dev/sda tar-out / - | tar xvf - -C ${ISO_FILES_PATH} -m --no-overwrite-dir --owner=$(id -u) --group=$(id -g) --no-same-permissions
- 
+
+        if [ ! -f ${EFI_BOOT}/efisys_noprompt.bin ] || [ ! -f ${EFI_BOOT}/cdboot_noprompt.efi ]; then
+          echo "${EFI_BOOT}/efisys_noprompt.bin or ${EFI_BOOT}/cdboot_noprompt.efi not found in the iso file! Exiting"
+          exit 1
+        fi
+
         chmod u+w "${ISO_FILES_PATH}/efi" "${ISO_FILES_PATH}/efi/microsoft" "${ISO_FILES_PATH}/efi/microsoft/boot"
         chmod u+w "${EFI_BOOT}/efisys.bin" "${EFI_BOOT}/cdboot.efi" "${EFI_BOOT}/efisys_noprompt.bin" "${EFI_BOOT}/cdboot_noprompt.efi"
 
