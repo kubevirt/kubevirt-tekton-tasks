@@ -31,7 +31,11 @@ visit "${REPO_DIR}/tasks"
     fi
     CONFIG_FILE="${REPO_DIR}/configs/${TASK_NAME}.yaml"
     MAIN_IMAGE="$(sed -n  's/^main_image *: *//p' "${CONFIG_FILE}"):${RELEASE_VERSION}"
-    CUSTOM_IMAGE="${TASK_NAME_TO_IMAGE[${TASK_NAME}]}"
+    CUSTOM_IMAGE="${TEKTON_TASKS_IMAGE}"
+
+    if [[ "${TASK_NAME}" =~ "disk-virt" ]]; then
+      CUSTOM_IMAGE="${TEKTON_TASKS_DISK_VIRT_IMAGE}"
+    fi
 
     # cleanup first
     kubectl delete -f manifests 2> /dev/null || true

@@ -73,6 +73,8 @@ spec:
         - $(params.command)
         - $(params.args)
       env:
+        - name: COMMAND
+          value: execute-in-vm
         - name: VM_NAME
           value: $(params.vmName)
         - name: VM_NAMESPACE

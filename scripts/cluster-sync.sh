@@ -31,32 +31,24 @@ else
   exit 3
 fi
 
+IMAGE_NAME_AND_TAG="tekton-tasks:latest"
+export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
+podman build -f "build/Containerfile" -t "${IMAGE}" .
+podman push "${IMAGE}" --tls-verify=false
 
-visit "${REPO_DIR}"
-  visit modules
-    if [[ $# -eq 0 ]]; then
-      TASK_NAMES=(*)
-    else
-      TASK_NAMES=("$@")
-    fi
-    for TASK_NAME in ${TASK_NAMES[*]}; do
-      if echo "${TASK_NAME}" | grep -vqE "^(${EXCLUDED_NON_IMAGE_MODULES})$"; then
-        if [ ! -d  "${TASK_NAME}" ]; then
-          continue
-        fi
-        visit "${TASK_NAME}"
-          IMAGE_NAME_AND_TAG="tekton-task-${TASK_NAME}:latest"
-          export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
-          podman build -f "build/${TASK_NAME}/Dockerfile" -t "${IMAGE}" .
-          podman push "${IMAGE}" --tls-verify=false
+# set inside-cluster registry
+export IMAGE="image-registry.openshift-image-registry.svc:5000/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
 
-          # set inside-cluster registry
-          export IMAGE="${IN_CLUSTER_IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
-          export ${IMAGE_MODULE_NAME_TO_ENV_NAME[${TASK_NAME}]}="${IMAGE}"
-        leave
-      fi
-    done
-  leave
-leave
+export IMAGE="${IN_CLUSTER_IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
+export TEKTON_TASKS_IMAGE="${IMAGE}"
+
+IMAGE_NAME_AND_TAG="tekton-tasks-disk-virt:latest"
+export IMAGE="${IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
+podman build -f "build/Containerfile.DiskVirt" -t "${IMAGE}" .
+podman push "${IMAGE}" --tls-verify=false
+
+# set inside-cluster registry
+export IMAGE="image-registry.openshift-image-registry.svc:5000/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
+export TEKTON_TASKS_DISK_VIRT_IMAGE="${IMAGE}"
 
 "${REPO_DIR}/scripts/deploy-tasks.sh" "$@"

@@ -37,6 +37,8 @@ spec:
         - '--verbose'
         - $(params.verbose)
       env:
+        - name: COMMAND
+          value: disk-virt-sysprep
         - name: SYSPREP_COMMANDS
           value: $(params.sysprepCommands)
         - name: ADDITIONAL_VIRT_SYSPREP_OPTIONS

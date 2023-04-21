@@ -37,6 +37,8 @@ spec:
         - '--verbose'
         - $(params.verbose)
       env:
+        - name: COMMAND
+          value: disk-virt-customize
         - name: CUSTOMIZE_COMMANDS
           value: $(params.customizeCommands)
         - name: ADDITIONAL_VIRT_CUSTOMIZE_OPTIONS

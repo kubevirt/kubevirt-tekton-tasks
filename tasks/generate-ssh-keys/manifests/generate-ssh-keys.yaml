@@ -52,12 +52,15 @@ spec:
       description: The namespace of a private key secret.
   steps:
     - name: generate-ssh-keys
-      image: "quay.io/kubevirt/tekton-task-generate-ssh-keys:v0.14.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.14.0"
       command:
         - entrypoint
+      args:
         - '--'
         - $(params.privateKeyConnectionOptions)
       env:
+        - name: COMMAND
+          value: generate-ssh-keys
         - name: PUBLIC_KEY_SECRET_NAME
           value: $(params.publicKeySecretName)
         - name: PUBLIC_KEY_SECRET_NAMESPACE
