@@ -1,7 +1,11 @@
 package test
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
+	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
@@ -9,8 +13,11 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/vm"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
+	instancetypev1alpha2 "kubevirt.io/api/instancetype/v1alpha2"
 )
 
 var _ = Describe("Create VM from manifest", func() {
@@ -45,7 +52,7 @@ var _ = Describe("Create VM from manifest", func() {
 	},
 		Entry("no vm manifest", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ExpectedLogs: "one of vm-manifest, template-name should be specified",
+				ExpectedLogs: "only one of vm-manifest, template-name or virtctl should be specified",
 			},
 			TaskData: testconfigs.CreateVMTaskData{},
 		}),
@@ -127,6 +134,43 @@ var _ = Describe("Create VM from manifest", func() {
 			TaskData: testconfigs.CreateVMTaskData{
 				VM:                        testobjects.NewTestAlpineVM("different-ns-namespace-scope-in-manifest").Build(),
 				VMManifestTargetNamespace: SystemTargetNS,
+			},
+		}),
+		Entry("manifest and virtctl are specified", &testconfigs.CreateVMTestConfig{
+			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+				ServiceAccount: CreateVMFromManifestServiceAccountName,
+				ExpectedLogs:   "only one of vm-manifest, template-name or virtctl should be specified",
+			},
+			TaskData: testconfigs.CreateVMTaskData{
+				Virtctl:                            "--volume-containerdisk src:my.registry/my-image:my-tag",
+				VM:                                 testobjects.NewTestAlpineVM("vm-with-manifest-namespace").Build(),
+				VMManifestTargetNamespace:          DeployTargetNS,
+				UseDefaultVMNamespacesInTaskParams: true,
+			},
+		}),
+		Entry("manifest, template and virtctl are specified", &testconfigs.CreateVMTestConfig{
+			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+				ServiceAccount: CreateVMFromManifestServiceAccountName,
+				ExpectedLogs:   "only one of vm-manifest, template-name or virtctl should be specified",
+			},
+			TaskData: testconfigs.CreateVMTaskData{
+				Virtctl:                            "--volume-containerdisk src:my.registry/my-image:my-tag",
+				VM:                                 testobjects.NewTestAlpineVM("vm-with-manifest-namespace").Build(),
+				VMManifestTargetNamespace:          DeployTargetNS,
+				UseDefaultVMNamespacesInTaskParams: true,
+				Template:                           testtemplate.NewCirrosServerTinyTemplate().Build(),
+				TemplateParams: []string{
+					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("simple-vm")),
+				},
+			},
+		}),
+		Entry("should fail with invalid params", &testconfigs.CreateVMTestConfig{
+			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+				ServiceAccount: CreateVMFromManifestServiceAccountName,
+				ExpectedLogs:   "unknown flag: --invalid",
+			},
+			TaskData: testconfigs.CreateVMTaskData{
+				Virtctl: "--invalid params",
 			},
 		}),
 	)
@@ -240,6 +284,139 @@ var _ = Describe("Create VM from manifest", func() {
 			"ra":                  "rara",
 			"vm.kubevirt.io/name": vmName,
 		}))
+	})
+
+	Context("virtctl create vm", func() {
+		It("should succeed with specified namespace and name", func() {
+			vmName := "my-vm-0"
+			config := &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Virtctl:     fmt.Sprintf("--name %s --memory 256Mi", vmName),
+					VMNamespace: f.TestOptions.DeployNamespace,
+				},
+			}
+			f.TestSetup(config)
+
+			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
+			f.ManageVMs(expectedVMStub)
+
+			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...)
+
+			vm, err := vm.WaitForVM(f.KubevirtClient, f.TestOptions.DeployNamespace, vmName,
+				"", config.GetTaskRunTimeout(), false)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			Expect(vm.Name).To(Equal(vmName))
+			Expect(*vm.Spec.RunStrategy).To(Equal(kubevirtv1.RunStrategyAlways))
+		})
+
+		It("should succeed without specified namespace", func() {
+			config := &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Virtctl: "--run-strategy Halted --memory 256Mi",
+				},
+			}
+			f.TestSetup(config)
+
+			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
+			f.ManageVMs(expectedVMStub)
+
+			taskrun := runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...)
+
+			vmName := taskrun.GetResults()["name"]
+
+			vm, err := vm.WaitForVM(f.KubevirtClient, f.TestOptions.DeployNamespace, vmName,
+				"", config.GetTaskRunTimeout(), false)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			Expect(vm.Name).To(Equal(vmName))
+			Expect(*vm.Spec.RunStrategy).To(Equal(kubevirtv1.RunStrategyHalted))
+		})
+
+		It("should succeed with instancetype specified", func() {
+			instancetypeName := "instancetype-2"
+			config := &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Virtctl: fmt.Sprintf("--instancetype %s", instancetypeName),
+				},
+			}
+			f.TestSetup(config)
+
+			instancetype := createInstancetype(f, instancetypeName)
+			f.ManageClusterInstancetypes(instancetype)
+
+			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
+			f.ManageVMs(expectedVMStub)
+
+			taskrun := runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...)
+
+			vmName := taskrun.GetResults()["name"]
+
+			vm, err := vm.WaitForVM(f.KubevirtClient, f.TestOptions.DeployNamespace, vmName,
+				"", config.GetTaskRunTimeout(), false)
+
+			Expect(err).ShouldNot(HaveOccurred())
+
+			Expect(vm.Name).To(Equal(vmName))
+			Expect(*vm.Spec.RunStrategy).To(Equal(kubevirtv1.RunStrategyAlways))
+		})
+
+		It("should start with startVM set to true", func() {
+			instancetypeName := "instancetype-3"
+			config := &testconfigs.CreateVMTestConfig{
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
+					ServiceAccount: CreateVMFromManifestServiceAccountName,
+					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				},
+				TaskData: testconfigs.CreateVMTaskData{
+					Virtctl: fmt.Sprintf("--run-strategy Halted --instancetype %s", instancetypeName),
+					StartVM: "true",
+				},
+			}
+			f.TestSetup(config)
+
+			instancetype := createInstancetype(f, instancetypeName)
+			f.ManageClusterInstancetypes(instancetype)
+
+			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
+			f.ManageVMs(expectedVMStub)
+
+			taskrun := runner.NewTaskRunRunner(f, config.GetTaskRun()).
+				CreateTaskRun().
+				ExpectSuccess().
+				ExpectLogs(config.GetAllExpectedLogs()...)
+
+			vmName := taskrun.GetResults()["name"]
+
+			vm, err := vm.WaitForVM(f.KubevirtClient, f.TestOptions.DeployNamespace, vmName,
+				"", config.GetTaskRunTimeout(), false)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			Expect(vm.Name).To(Equal(vmName))
+			// startVM should set RunStrategy to Always
+			Expect(*vm.Spec.RunStrategy).To(Equal(kubevirtv1.RunStrategyAlways))
+		})
 	})
 
 	Context("with StartVM", func() {
@@ -407,3 +584,24 @@ var _ = Describe("Create VM from manifest", func() {
 		)
 	})
 })
+
+func createInstancetype(f *framework.Framework, instancetypeName string) *instancetypev1alpha2.VirtualMachineClusterInstancetype {
+	instancetype := &instancetypev1alpha2.VirtualMachineClusterInstancetype{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      instancetypeName,
+			Namespace: f.TestOptions.DeployNamespace,
+		},
+		Spec: instancetypev1alpha2.VirtualMachineInstancetypeSpec{
+			CPU: instancetypev1alpha2.CPUInstancetype{
+				Guest: uint32(1),
+			},
+			Memory: instancetypev1alpha2.MemoryInstancetype{
+				Guest: resource.MustParse("128Mi"),
+			},
+		},
+	}
+	createdInstancetype, err := f.Clients.KubevirtClient.VirtualMachineClusterInstancetype().Create(context.Background(), instancetype, metav1.CreateOptions{})
+	Expect(err).ToNot(HaveOccurred())
+
+	return createdInstancetype
+}

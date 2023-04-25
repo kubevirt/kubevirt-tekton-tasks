@@ -1,7 +1,9 @@
 package vmcreator
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/datavolume"
@@ -10,6 +12,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
 	virtualMachine "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
@@ -20,6 +23,7 @@ import (
 	kubevirtv1 "kubevirt.io/api/core/v1"
 	kubevirtcliv1 "kubevirt.io/client-go/kubecli"
 	datavolumeclientv1beta1 "kubevirt.io/containerized-data-importer/pkg/client/clientset/versioned/typed/core/v1beta1"
+	virtctl "kubevirt.io/kubevirt/pkg/virtctl/create"
 	"sigs.k8s.io/yaml"
 )
 
@@ -80,8 +84,43 @@ func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
 		return v.createVMFromTemplate()
 	case constants.VMManifestCreationMode:
 		return v.createVMFromManifest()
+	case constants.VirtctlCreatingMode:
+		return v.createVMVirtctl()
 	}
 	return nil, zerrors.NewMissingRequiredError("unknown creation mode: %v", v.cliOptions.GetCreationMode())
+}
+
+func (v *VMCreator) createVMVirtctl() (*kubevirtv1.VirtualMachine, error) {
+	var vm kubevirtv1.VirtualMachine
+
+	output, err := runCommand(v.cliOptions.Virtctl)
+	if err != nil {
+		return nil, zerrors.NewSoftError("failed to execute command: %v", err.Error())
+	}
+
+	if err := yaml.Unmarshal(output, &vm); err != nil {
+		return nil, zerrors.NewSoftError("could not read from virtctl output: %v", err.Error())
+	}
+
+	namespace := v.targetNamespace
+	if namespace == "" {
+		if namespace, err = env.GetActiveNamespace(); err != nil {
+			return nil, zerrors.NewMissingRequiredError("can't get active namespace: %v", err.Error())
+		}
+	}
+
+	return v.virtualMachineProvider.Create(namespace, &vm)
+}
+
+func runCommand(params string) ([]byte, error) {
+	args := strings.Split(params, " ")
+	output := &bytes.Buffer{}
+	cmd := virtctl.NewCommand()
+	cmd.SetArgs(append([]string{"vm"}, args...))
+	cmd.SetOut(output)
+	err := cmd.Execute()
+
+	return output.Bytes(), err
 }
 
 func (v *VMCreator) createVMFromManifest() (*kubevirtv1.VirtualMachine, error) {

@@ -51,6 +51,7 @@ type CreateVMTaskData struct {
 	OwnDataVolumes            []string
 	PersistentVolumeClaims    []string
 	OwnPersistentVolumeClaims []string
+	Virtctl                   string
 }
 
 func (c *CreateVMTaskData) GetTemplateParam(key string) string {
@@ -369,6 +370,13 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 				Value: v1beta1.ArrayOrString{
 					Type:      v1beta1.ParamTypeString,
 					StringVal: vmNamespace,
+				},
+			},
+			v1beta1.Param{
+				Name: CreateVMFromManifestParams.Virtctl,
+				Value: v1beta1.ArrayOrString{
+					Type:      v1beta1.ParamTypeString,
+					StringVal: c.TaskData.Virtctl,
 				},
 			},
 		)

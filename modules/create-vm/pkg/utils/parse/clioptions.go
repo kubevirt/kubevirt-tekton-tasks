@@ -16,6 +16,7 @@ const (
 	templateNameOptionName      = "template-name"
 	templateNamespaceOptionName = "template-namespace"
 	templateParamsOptionName    = "template-params"
+	virtctlOptionName           = "virtctl"
 )
 
 const templateParamSep = ":"
@@ -35,6 +36,7 @@ type CLIOptions struct {
 	RunStrategy               string            `arg:"--run-strategy,env:RUN_STRATEGY" help:"Set run strategy to vm"`
 	Output                    output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
 	Debug                     bool              `arg:"--debug" help:"Sets DEBUG log level"`
+	Virtctl                   string            `arg:"--virtctl,env:VIRTCTL" placeholder:"VIRTCTL" help:"Specifies the parameters for virtctl create vm command that will be used to create VirtualMachine."`
 }
 
 func (c *CLIOptions) GetPVCNames() []string {
@@ -59,6 +61,10 @@ func (c *CLIOptions) GetStartVMFlag() bool {
 
 func (c *CLIOptions) GetRunStrategy() string {
 	return c.RunStrategy
+}
+
+func (c *CLIOptions) GetVirtctl() string {
+	return c.Virtctl
 }
 
 func (c *CLIOptions) GetPVCDiskNamesMap() map[string]string {
@@ -86,15 +92,17 @@ func (c *CLIOptions) GetDebugLevel() zapcore.Level {
 }
 
 func (c *CLIOptions) GetCreationMode() constants.CreationMode {
-	if c.VirtualMachineManifest != "" && c.TemplateName != "" {
-		return ""
-	}
+	// Input validation is done in Init
 	if c.VirtualMachineManifest != "" {
 		return constants.VMManifestCreationMode
 	}
 
 	if c.TemplateName != "" {
 		return constants.TemplateCreationMode
+	}
+
+	if c.Virtctl != "" {
+		return constants.VirtctlCreatingMode
 	}
 
 	return ""

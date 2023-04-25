@@ -51,7 +51,7 @@ var _ = Describe("Create VM from template", func() {
 		Entry("no template specified", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "one of vm-manifest, template-name should be specified",
+				ExpectedLogs:   "only one of vm-manifest, template-name or virtctl should be specified",
 			},
 			TaskData: testconfigs.CreateVMTaskData{},
 		}),

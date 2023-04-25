@@ -16,6 +16,7 @@ type createVMParams struct {
 type createVMFromManifestParams struct {
 	Namespace string
 	Manifest  string
+	Virtctl   string
 }
 
 type createVMFromTemplateParams struct {
@@ -37,6 +38,7 @@ var CreateVMParams = createVMParams{
 var CreateVMFromManifestParams = createVMFromManifestParams{
 	Namespace: "namespace",
 	Manifest:  "manifest",
+	Virtctl:   "virtctl",
 }
 
 var CreateVMFromTemplateParams = createVMFromTemplateParams{
@@ -63,6 +65,7 @@ type CreateVMMode string
 const (
 	CreateVMTemplateMode   CreateVMMode = "CreateVMTemplateMode"
 	CreateVMVMManifestMode CreateVMMode = "CreateVMVMManifestMode"
+	CreateVMVirtctlMode    CreateVMMode = "CreateVMVirtctlMode"
 )
 
 const ExpectedSuccessfulVMCreation = "apiVersion: kubevirt.io/v1\nkind: VirtualMachine\n"
