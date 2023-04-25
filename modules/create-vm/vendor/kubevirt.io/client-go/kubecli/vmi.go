@@ -23,7 +23,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -387,7 +387,7 @@ func enrichError(httpErr error, resp *http.Response) error {
 		return httpErr
 	}
 	// decode, but if the result is Status return that as an error instead.
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -505,4 +505,15 @@ func (v *vmis) VSOCK(name string, options *v1.VSOCKOptions) (StreamInterface, er
 	}
 	queryParams.Add("tls", strconv.FormatBool(useTLS))
 	return asyncSubresourceHelper(v.config, v.resource, v.namespace, name, "vsock", queryParams)
+}
+
+func (v *vmis) AddInterface(ctx context.Context, name string, addInterfaceOptions *v1.AddInterfaceOptions) error {
+	uri := fmt.Sprintf(vmiSubresourceURL, v1.ApiStorageVersion, v.namespace, name, "addinterface")
+
+	JSON, err := json.Marshal(addInterfaceOptions)
+	if err != nil {
+		return err
+	}
+
+	return v.restClient.Put().RequestURI(uri).Body(JSON).Do(ctx).Error()
 }
