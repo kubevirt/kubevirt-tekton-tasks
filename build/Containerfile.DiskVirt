@@ -1,0 +1,34 @@
+FROM quay.io/centos/centos:stream9 AS taskBuilder
+
+RUN dnf install -y tar gzip && dnf clean all
+
+ENV GO_VERSION="1.20.2"
+
+RUN curl -L https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+ENV PATH=$PATH:/usr/local/go/bin
+
+COPY . /src
+RUN mkdir /out
+
+RUN task_names=("disk-virt-customize" "disk-virt-sysprep"); \
+    for TASK_NAME in ${task_names[@]}; do \
+        cd /src/modules/$TASK_NAME/; \
+        CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o /out/${TASK_NAME} cmd/${TASK_NAME}/main.go; \
+    done
+
+FROM quay.io/kubevirt/libguestfs-tools:v0.59.0
+ENV USER_UID=1001 \
+    USER_NAME=tekton-tasks-disk-virt \
+    HOME=/home/${USER_NAME}
+
+# install task binaries
+COPY --from=taskBuilder /out/. /usr/local/bin/
+COPY build/bin /usr/local/bin
+
+USER 0
+RUN  /usr/local/bin/user_setup
+
+ENTRYPOINT ["/usr/local/bin/entrypoint"]
+CMD ["--help"]
+
+USER ${USER_UID}

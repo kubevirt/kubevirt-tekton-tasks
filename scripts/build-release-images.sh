@@ -14,19 +14,10 @@ source "${SCRIPT_DIR}/release-var.sh"
 source "${SCRIPT_DIR}/common.sh"
 
 
-visit "${REPO_DIR}"
-  visit modules
-    for TASK_NAME in *; do
-      if echo "${TASK_NAME}" | grep -vqE "^(${EXCLUDED_NON_IMAGE_MODULES})$"; then
-        if [ ! -d  "${TASK_NAME}" ]; then
-          continue
-        fi
-        visit "${TASK_NAME}"
-          IMAGE_NAME_AND_TAG="tekton-task-${TASK_NAME}:${RELEASE_VERSION}"
-          IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
-          podman build -f "build/${TASK_NAME}/Dockerfile" -t "${IMAGE}" .
-        leave
-      fi
-    done
-  leave
-leave
+IMAGE_NAME_AND_TAG="tekton-tasks:${RELEASE_VERSION}"
+IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
+podman build -f "build/Containerfile" -t "${IMAGE}" .
+
+IMAGE_NAME_AND_TAG="tekton-tasks-disk-virt:${RELEASE_VERSION}"
+IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
+podman build -f "build/Containerfile.DiskVirt" -t "${IMAGE}" .

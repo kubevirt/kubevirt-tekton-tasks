@@ -30,6 +30,8 @@ spec:
       command:
         - entrypoint
       env:
+        - name: COMMAND
+          value: wait-for-vmi-status
         - name: VMI_NAME
           value: $(params.vmiName)
         - name: VMI_NAMESPACE

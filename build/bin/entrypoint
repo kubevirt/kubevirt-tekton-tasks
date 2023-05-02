@@ -9,4 +9,12 @@ if ! whoami &>/dev/null; then
   fi
 fi
 
-exec ${ENTRY_CMD} $@
+#this variable is needed for tasks which work with ssh keys
+export USER="tekton-tasks"
+
+if [[ -z "${COMMAND}" ]]; then
+  echo "command not defined"
+  exit 1
+fi
+
+exec ${COMMAND} $@

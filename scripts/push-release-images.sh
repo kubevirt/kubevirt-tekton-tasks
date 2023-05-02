@@ -13,23 +13,18 @@ REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 source "${SCRIPT_DIR}/release-var.sh"
 source "${SCRIPT_DIR}/common.sh"
 
-visit "${REPO_DIR}"
-  visit modules
-    for TASK_NAME in *; do
-        if echo "${TASK_NAME}" | grep -vqE "^(${EXCLUDED_NON_IMAGE_MODULES})$"; then
-            if [ ! -d  "${TASK_NAME}" ]; then
-                continue
-            fi
-            visit "${TASK_NAME}"
-                IMAGE_NAME_AND_TAG="tekton-task-${TASK_NAME}:${RELEASE_VERSION}"
-                export IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
 
-                echo "Pushing ${IMAGE}"
-                
-                podman push "${IMAGE}"
-            leave
-        fi
-    done
-  leave
-leave
+IMAGE_NAME_AND_TAG="tekton-tasks:${RELEASE_VERSION}"
+export IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
 
+echo "Pushing ${IMAGE}"
+
+podman push "${IMAGE}"
+
+IMAGE_NAME_AND_TAG="tekton-tasks-disk-virt:${RELEASE_VERSION}"
+export IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
+
+echo "Pushing ${IMAGE}"
+
+podman push "${IMAGE}"
+          
