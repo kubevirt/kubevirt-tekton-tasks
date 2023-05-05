@@ -31,7 +31,6 @@ func main() {
 	log.Logger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
 
 	vmCreator, err := vmcreator.NewVMCreator(cliOptions)
-
 	if err != nil {
 		exit.ExitOrDieFromError(GenericExitCode, err)
 	}
@@ -41,7 +40,6 @@ func main() {
 	}
 
 	vm, err := vmCreator.CreateVM()
-
 	if err != nil {
 		exit.ExitOrDieFromError(CreateVMErrorExitCode, err,
 			zerrors.IsStatusError(err, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity),
@@ -51,10 +49,11 @@ func main() {
 	if err := vmCreator.OwnVolumes(vm); err != nil {
 		exit.ExitFromError(OwnVolumesErrorExitCode, err)
 	}
-	runStrategy := cliOptions.GetRunStrategy()
-	if cliOptions.GetStartVMFlag() && kubevirtv1.RunStrategyAlways != kubevirtv1.VirtualMachineRunStrategy(runStrategy) {
-		err := vmCreator.StartVM(vm.Namespace, vm.Name)
-		if err != nil {
+
+	if cliOptions.GetStartVMFlag() &&
+		(vm.Spec.RunStrategy == nil || *vm.Spec.RunStrategy != kubevirtv1.RunStrategyAlways) &&
+		(vm.Spec.Running == nil || !*vm.Spec.Running) {
+		if err := vmCreator.StartVM(vm.Namespace, vm.Name); err != nil {
 			exit.ExitFromError(StartVMErrorExitCode, err)
 		}
 	}

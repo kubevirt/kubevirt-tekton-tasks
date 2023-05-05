@@ -10,6 +10,7 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 ### Parameters
 
 - **manifest**: YAML manifest of a VirtualMachine resource to be created.
+- **virtctl**: Parameters for virtctl create vm command that will be used to create VirtualMachine.
 - **namespace**: Namespace where to create the VM. (defaults to manifest namespace or active namespace)
 - **startVM**: Set to true or false to start / not start vm after creation. In case of runStrategy is set to Always, startVM flag is ignored.
 - **runStrategy**: Set runStrategy to VM. If runStrategy is set, vm.spec.running attribute is set to nil.

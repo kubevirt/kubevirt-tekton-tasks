@@ -36,6 +36,11 @@ spec:
 {% if task_name == "create-vm-from-manifest" %}
     - name: manifest
       description: YAML manifest of a VirtualMachine resource to be created.
+      default: ""
+      type: string
+    - name: virtctl
+      description: "Parameters for virtctl create vm command that will be used to create VirtualMachine."
+      default: ""
       type: string
     - name: namespace
       description: Namespace where to create the VM. (defaults to manifest namespace or active namespace)
@@ -118,6 +123,8 @@ spec:
           value: $(params.manifest)
         - name: VM_NAMESPACE
           value: $(params.namespace)
+        - name: VIRTCTL
+          value: $(params.virtctl)
 {% endif %}
         - name: START_VM
           value: $(params.startVM)

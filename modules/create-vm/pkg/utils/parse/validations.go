@@ -12,23 +12,19 @@ import (
 )
 
 func (c *CLIOptions) assertValidMode() error {
-	if c.VirtualMachineManifest != "" {
-		if c.TemplateName != "" {
-			return zerrors.NewSoftError("only one of %v, %v should be specified", vmManifestOptionName, templateNameOptionName)
-		}
-
+	if c.VirtualMachineManifest != "" && c.TemplateName == "" && c.Virtctl == "" {
 		if len(c.GetTemplateParams()) > 0 || c.GetTemplateNamespace() != "" {
 			return zerrors.NewSoftError("%v, %v options are not applicable for %v", templateNamespaceOptionName, templateParamsOptionName, vmManifestOptionName)
 		}
-
-	} else if c.TemplateName == "" {
-		return zerrors.NewSoftError("one of %v, %v should be specified", vmManifestOptionName, templateNameOptionName)
+		return nil
 	}
 
-	if c.GetCreationMode() == "" {
-		return zerrors.NewSoftError("could not detect correct creation mode from these options: %v, %v", vmManifestOptionName, templateNameOptionName)
+	if (c.VirtualMachineManifest == "" && c.TemplateName != "" && c.Virtctl == "") ||
+		(c.VirtualMachineManifest == "" && c.TemplateName == "" && c.Virtctl != "") {
+		return nil
 	}
-	return nil
+
+	return zerrors.NewSoftError("only one of %v, %v or %v should be specified", vmManifestOptionName, templateNameOptionName, virtctlOptionName)
 }
 
 func (c *CLIOptions) assertValidTypes() error {

@@ -23,8 +23,8 @@ var _ = Describe("CLIOptions", func() {
 		Expect(err).Should(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring(expectedErrMessage))
 	},
-		Entry("no mode", "one of vm-manifest, template-name should be specified", &parse.CLIOptions{}),
-		Entry("both modes", "only one of vm-manifest, template-name should be specified", &parse.CLIOptions{
+		Entry("no mode", "only one of vm-manifest, template-name or virtctl should be specified", &parse.CLIOptions{}),
+		Entry("multiple modes", "only one of vm-manifest, template-name or virtctl should be specified", &parse.CLIOptions{
 			TemplateName:           "test",
 			VirtualMachineManifest: testVMManifest,
 		}),

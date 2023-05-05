@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
+	instancetypev1alpha2 "kubevirt.io/api/instancetype/v1alpha2"
 	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
@@ -21,15 +22,17 @@ var TestOptionsInstance = &testoptions.TestOptions{}
 var ClientsInstance = &clients.Clients{}
 
 type ManagedResources struct {
-	taskRuns     []*pipev1beta1.TaskRun
-	pipelineRuns []*pipev1beta1.PipelineRun
-	pipelines    []*pipev1beta1.Pipeline
-	dataVolumes  []*cdiv1beta1.DataVolume
-	dataSources  []*cdiv1beta1.DataSource
-	vms          []*kubevirtv1.VirtualMachine
-	templates    []*templatev1.Template
-	secrets      []*corev1.Secret
+	taskRuns             []*pipev1beta1.TaskRun
+	pipelineRuns         []*pipev1beta1.PipelineRun
+	pipelines            []*pipev1beta1.Pipeline
+	dataVolumes          []*cdiv1beta1.DataVolume
+	dataSources          []*cdiv1beta1.DataSource
+	vms                  []*kubevirtv1.VirtualMachine
+	templates            []*templatev1.Template
+	secrets              []*corev1.Secret
+	clusterInstancetypes []*instancetypev1alpha2.VirtualMachineClusterInstancetype
 }
+
 type Framework struct {
 	*testoptions.TestOptions
 	*clients.Clients
@@ -142,6 +145,9 @@ func (f *Framework) AfterEach() {
 	for _, s := range f.managedResources.secrets {
 		defer f.KubevirtClient.CoreV1().Secrets(s.Namespace).Delete(context.TODO(), s.Name, metav1.DeleteOptions{})
 	}
+	for _, clusterInstancetype := range f.managedResources.clusterInstancetypes {
+		defer f.KubevirtClient.VirtualMachineClusterInstancetype().Delete(context.Background(), clusterInstancetype.Name, metav1.DeleteOptions{})
+	}
 }
 
 func (f *Framework) ManageTaskRuns(taskRuns ...*pipev1beta1.TaskRun) *Framework {
@@ -199,6 +205,15 @@ func (f *Framework) ManageSecrets(secrets ...*corev1.Secret) *Framework {
 	for _, s := range secrets {
 		if s != nil && s.Name != "" && s.Namespace != "" {
 			f.managedResources.secrets = append(f.managedResources.secrets, s)
+		}
+	}
+	return f
+}
+
+func (f *Framework) ManageClusterInstancetypes(clusterInstancetypes ...*instancetypev1alpha2.VirtualMachineClusterInstancetype) *Framework {
+	for _, clusterInstancetype := range clusterInstancetypes {
+		if clusterInstancetype != nil && clusterInstancetype.Name != "" {
+			f.managedResources.clusterInstancetypes = append(f.managedResources.clusterInstancetypes, clusterInstancetype)
 		}
 	}
 	return f
