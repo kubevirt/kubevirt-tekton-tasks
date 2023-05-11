@@ -35,19 +35,11 @@ func main() {
 		exit.ExitOrDieFromError(GenericExitCode, err)
 	}
 
-	if err := vmCreator.CheckVolumesExist(); err != nil {
-		exit.ExitFromError(VolumesNotPresentExitCode, err)
-	}
-
 	vm, err := vmCreator.CreateVM()
 	if err != nil {
 		exit.ExitOrDieFromError(CreateVMErrorExitCode, err,
 			zerrors.IsStatusError(err, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity),
 		)
-	}
-
-	if err := vmCreator.OwnVolumes(vm); err != nil {
-		exit.ExitFromError(OwnVolumesErrorExitCode, err)
 	}
 
 	if cliOptions.GetStartVMFlag() &&

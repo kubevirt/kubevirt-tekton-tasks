@@ -14,10 +14,6 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 - **namespace**: Namespace where to create the VM. (defaults to manifest namespace or active namespace)
 - **startVM**: Set to true or false to start / not start vm after creation. In case of runStrategy is set to Always, startVM flag is ignored.
 - **runStrategy**: Set runStrategy to VM. If runStrategy is set, vm.spec.running attribute is set to nil.
-- **dataVolumes**: Add DVs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. `["rootdisk:my-dv", "my-dv2"]`
-- **ownDataVolumes**: Add DVs to VM Volumes and add VM to DV ownerReferences. These DataVolumes will be deleted once the created VM gets deleted. Replaces a particular volume if in VOLUME_NAME:DV_NAME format. Eg. `["rootdisk:my-dv", "my-dv2"]`
-- **persistentVolumeClaims**: Add PVCs to VM Volumes. Replaces a particular volume if in VOLUME_NAME:PVC_NAME format. Eg. `["rootdisk:my-pvc", "my-pvc2"]`
-- **ownPersistentVolumeClaims**: Add PVCs to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted. Replaces a particular volume if in VOLUME_NAME:PVC_NAME format. Eg. `["rootdisk:my-pvc", "my-pvc2"]`
 
 ### Results
 

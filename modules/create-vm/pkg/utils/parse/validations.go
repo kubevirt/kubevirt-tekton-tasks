@@ -38,12 +38,6 @@ func (c *CLIOptions) trimSpaces() {
 	for _, strVariablePtr := range []*string{&c.TemplateName, &c.TemplateNamespace, &c.VirtualMachineNamespace} {
 		*strVariablePtr = strings.TrimSpace(*strVariablePtr)
 	}
-
-	for _, sliceVariablePtr := range []*[]string{&c.DataVolumes, &c.OwnDataVolumes, &c.PersistentVolumeClaims, &c.OwnPersistentVolumeClaims} {
-		for i, v := range *sliceVariablePtr {
-			(*sliceVariablePtr)[i] = strings.TrimSpace(v)
-		}
-	}
 }
 
 func (c *CLIOptions) resolveDefaultNamespacesAndManifests() error {

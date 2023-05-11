@@ -8,13 +8,6 @@ const CreateVMFromManifestTaskName = "create-vm-from-manifest"
 const CreateVMFromManifestServiceAccountName = "create-vm-from-manifest-task"
 const CreateVMFromManifestServiceAccountNameNamespaced = "create-vm-from-manifest-test"
 
-type createVMParams struct {
-	DataVolumes               string
-	OwnDataVolumes            string
-	PersistentVolumeClaims    string
-	OwnPersistentVolumeClaims string
-}
-
 type createVMFromManifestParams struct {
 	Namespace string
 	Manifest  string
@@ -28,13 +21,6 @@ type createVMFromTemplateParams struct {
 	VmNamespace       string
 	StartVM           string
 	RunStrategy       string
-}
-
-var CreateVMParams = createVMParams{
-	DataVolumes:               "dataVolumes",
-	OwnDataVolumes:            "ownDataVolumes",
-	PersistentVolumeClaims:    "persistentVolumeClaims",
-	OwnPersistentVolumeClaims: "ownPersistentVolumeClaims",
 }
 
 var CreateVMFromManifestParams = createVMFromManifestParams{

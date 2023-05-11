@@ -1,12 +1,10 @@
 package templates
 
 import (
-	"encoding/json"
 	"sort"
 	"strings"
 
 	lab "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants/labels"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates/validations"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
 	templatev1 "github.com/openshift/api/template/v1"
 )
@@ -27,19 +25,6 @@ func GetFlagLabelByPrefix(template *templatev1.Template, labelPrefix string) (st
 		}
 	}
 	return "", ""
-}
-
-func GetTemplateValidations(template *templatev1.Template) (*validations.TemplateValidations, error) {
-	marshalledValidations := template.Annotations[validationsAnnotation]
-	var commonTemplateValidations []validations.CommonTemplateValidation
-
-	// empty validations have defaults
-	if marshalledValidations != "" {
-		if err := json.Unmarshal([]byte(marshalledValidations), &commonTemplateValidations); err != nil {
-			return nil, err
-		}
-	}
-	return validations.NewTemplateValidations(commonTemplateValidations), nil
 }
 
 // returns osID, osName
