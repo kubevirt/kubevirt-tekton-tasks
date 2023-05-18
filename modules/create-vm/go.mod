@@ -6,7 +6,6 @@ require (
 	github.com/alexflint/go-arg v1.3.0
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/shared v0.0.0
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest v0.0.0
-	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
 	github.com/onsi/ginkgo/v2 v2.2.0
 	github.com/onsi/gomega v1.20.2
 	github.com/openshift/api v0.0.0
@@ -17,8 +16,6 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	kubevirt.io/api v1.0.0-alpha.0
 	kubevirt.io/client-go v1.0.0-alpha.0
-	kubevirt.io/containerized-data-importer v1.55.0
-	kubevirt.io/containerized-data-importer-api v1.55.0
 	kubevirt.io/kubevirt v1.0.0-alpha.0
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -79,6 +76,7 @@ require (
 	k8s.io/kube-aggregator v0.23.5 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
+	kubevirt.io/containerized-data-importer-api v1.55.0 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.0.0-20220329064328-f3cc58c6ed90 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect

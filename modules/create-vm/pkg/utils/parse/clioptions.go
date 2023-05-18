@@ -23,36 +23,16 @@ const templateParamSep = ":"
 const volumesSep = ":"
 
 type CLIOptions struct {
-	TemplateName              string            `arg:"--template-name,env:TEMPLATE_NAME" placeholder:"NAME" help:"Name of a template to create VM from"`
-	TemplateNamespace         string            `arg:"--template-namespace,env:TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a template to create VM from"`
-	TemplateParams            []string          `arg:"--template-params" placeholder:"KEY1:VAL1 KEY2:VAL2" help:"Template params to pass when processing the template manifest"`
-	VirtualMachineManifest    string            `arg:"--vm-manifest,env:VM_MANIFEST" placeholder:"MANIFEST" help:"YAML manifest of a VirtualMachine resource to be created (can be set by VM_MANIFEST env variable)."`
-	VirtualMachineNamespace   string            `arg:"--vm-namespace,env:VM_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace where to create the VM"`
-	DataVolumes               []string          `arg:"--dvs" placeholder:"DV1 VOLUME_NAME:DV2 DV3" help:"Add DataVolumes to VM Volumes. Replaces a particular volume if in VOLUME_NAME:DV_NAME format."`
-	OwnDataVolumes            []string          `arg:"--own-dvs" placeholder:"DV1 VOLUME_NAME:DV2 DV3" help:"Add DataVolumes to VM Volumes and add VM to DV ownerReferences. These DVs will be deleted once the created VM gets deleted. Replaces a particular volume if in VOLUME_NAME:DV_NAME format."`
-	PersistentVolumeClaims    []string          `arg:"--pvcs" placeholder:"PVC1 VOLUME_NAME:PVC2 PVC3" help:"Add PersistentVolumeClaims to VM Volumes. Replaces a particular volume if in PVC_NAME:DV_NAME format."`
-	OwnPersistentVolumeClaims []string          `arg:"--own-pvcs" placeholder:"PVC1  VOLUME_NAME:PVC2 PVC3" help:"Add PersistentVolumeClaims to VM Volumes and add VM to PVC ownerReferences. These PVCs will be deleted once the created VM gets deleted. Replaces a particular volume if in PVC_NAME:DV_NAME format."`
-	StartVM                   string            `arg:"--start-vm,env:START_VM" help:"Start vm after creation"`
-	RunStrategy               string            `arg:"--run-strategy,env:RUN_STRATEGY" help:"Set run strategy to vm"`
-	Output                    output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
-	Debug                     bool              `arg:"--debug" help:"Sets DEBUG log level"`
-	Virtctl                   string            `arg:"--virtctl,env:VIRTCTL" placeholder:"VIRTCTL" help:"Specifies the parameters for virtctl create vm command that will be used to create VirtualMachine."`
-}
-
-func (c *CLIOptions) GetPVCNames() []string {
-	return removeVolumePrefixes(c.PersistentVolumeClaims)
-}
-
-func (c *CLIOptions) GetOwnPVCNames() []string {
-	return removeVolumePrefixes(c.OwnPersistentVolumeClaims)
-}
-
-func (c *CLIOptions) GetDVNames() []string {
-	return removeVolumePrefixes(c.DataVolumes)
-}
-
-func (c *CLIOptions) GetOwnDVNames() []string {
-	return removeVolumePrefixes(c.OwnDataVolumes)
+	TemplateName            string            `arg:"--template-name,env:TEMPLATE_NAME" placeholder:"NAME" help:"Name of a template to create VM from"`
+	TemplateNamespace       string            `arg:"--template-namespace,env:TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a template to create VM from"`
+	TemplateParams          []string          `arg:"--template-params" placeholder:"KEY1:VAL1 KEY2:VAL2" help:"Template params to pass when processing the template manifest"`
+	VirtualMachineManifest  string            `arg:"--vm-manifest,env:VM_MANIFEST" placeholder:"MANIFEST" help:"YAML manifest of a VirtualMachine resource to be created (can be set by VM_MANIFEST env variable)."`
+	VirtualMachineNamespace string            `arg:"--vm-namespace,env:VM_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace where to create the VM"`
+	StartVM                 string            `arg:"--start-vm,env:START_VM" help:"Start vm after creation"`
+	RunStrategy             string            `arg:"--run-strategy,env:RUN_STRATEGY" help:"Set run strategy to vm"`
+	Output                  output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
+	Debug                   bool              `arg:"--debug" help:"Sets DEBUG log level"`
+	Virtctl                 string            `arg:"--virtctl,env:VIRTCTL" placeholder:"VIRTCTL" help:"Specifies the parameters for virtctl create vm command that will be used to create VirtualMachine."`
 }
 
 func (c *CLIOptions) GetStartVMFlag() bool {
@@ -65,14 +45,6 @@ func (c *CLIOptions) GetRunStrategy() string {
 
 func (c *CLIOptions) GetVirtctl() string {
 	return c.Virtctl
-}
-
-func (c *CLIOptions) GetPVCDiskNamesMap() map[string]string {
-	return getDiskNameMap(zutils.ConcatStringSlices(c.OwnPersistentVolumeClaims, c.PersistentVolumeClaims))
-}
-
-func (c *CLIOptions) GetDVDiskNamesMap() map[string]string {
-	return getDiskNameMap(zutils.ConcatStringSlices(c.OwnDataVolumes, c.DataVolumes))
 }
 
 func (c *CLIOptions) GetTemplateParams() map[string]string {

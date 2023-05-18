@@ -65,46 +65,6 @@ var _ = Describe("Create VM from manifest", func() {
 				VMManifest: "invalid manifest",
 			},
 		}),
-		Entry("non existent dv", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "persistentvolumeclaims \"non-existent-dv\" not found",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				VM:          testobjects.NewTestAlpineVM("vm-with-non-existent-dv").Build(),
-				DataVolumes: []string{"non-existent-dv"},
-			},
-		}),
-		Entry("non existent owned dv", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "persistentvolumeclaims \"non-existent-own-dv\" not found",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				VM:             testobjects.NewTestAlpineVM("vm-with-non-existent-owned-dv").Build(),
-				OwnDataVolumes: []string{"non-existent-own-dv"},
-			},
-		}),
-		Entry("non existent pvc", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "persistentvolumeclaims \"non-existent-pvc\" not found",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				VM:                     testobjects.NewTestAlpineVM("vm-with-non-existent-pvc").Build(),
-				PersistentVolumeClaims: []string{"non-existent-pvc"},
-			},
-		}),
-		Entry("non existent owned pvcs", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "persistentvolumeclaims \"non-existent-own-pvc\" not found\npersistentvolumeclaims \"non-existent-own-pvc-2\" not found",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				VM:                        testobjects.NewTestAlpineVM("vm-with-non-existent-owned-pvcs").Build(),
-				OwnPersistentVolumeClaims: []string{"non-existent-own-pvc", "non-existent-own-pvc-2"},
-			},
-		}),
 		Entry("create vm with non matching disk fails", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ServiceAccount: CreateVMFromManifestServiceAccountName,

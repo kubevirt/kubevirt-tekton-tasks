@@ -6,7 +6,6 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testconstants"
 )
 
 var _ = Describe("Template", func() {
@@ -15,13 +14,6 @@ var _ = Describe("Template", func() {
 		key, value := templates.GetFlagLabelByPrefix(template.NewFedoraServerTinyTemplate().Build(), "workload.template.kubevirt.io")
 		Expect(key).To(Equal("workload.template.kubevirt.io/server"))
 		Expect(value).To(Equal("true"))
-	})
-
-	It("GetTemplateValidations", func() {
-		validations, err := templates.GetTemplateValidations(template.NewFedoraServerTinyTemplate().Build())
-		Expect(err).Should(Succeed())
-		Expect(validations.IsEmpty()).To(BeFalse())
-		Expect(validations.GetDefaultDiskBus()).To(Equal(testconstants.Virtio))
 	})
 
 	It("GetOs", func() {

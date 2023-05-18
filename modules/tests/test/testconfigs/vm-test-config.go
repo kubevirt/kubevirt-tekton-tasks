@@ -4,14 +4,12 @@ import (
 	"strings"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	template2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/onsi/ginkgo/v2"
 	v1 "github.com/openshift/api/template/v1"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 	"sigs.k8s.io/yaml"
@@ -27,8 +25,6 @@ type CreateVMTaskData struct {
 	VMTargetNamespace         TargetNamespace
 	VMManifestTargetNamespace TargetNamespace
 
-	DataVolumesToCreate                      []*datavolume.TestDataVolume
-	DataSourcesToCreate                      []*datavolume.TestDataVolume
 	IsCommonTemplate                         bool
 	UseDefaultTemplateNamespacesInTaskParams bool
 	UseDefaultVMNamespacesInTaskParams       bool
@@ -44,14 +40,9 @@ type CreateVMTaskData struct {
 	// this is set if VM is not nil
 	VMManifest string
 
-	TemplateParams            []string
-	VMNamespace               string
-	DataVolumes               []string
-	DataSources               []string
-	OwnDataVolumes            []string
-	PersistentVolumeClaims    []string
-	OwnPersistentVolumeClaims []string
-	Virtctl                   string
+	TemplateParams []string
+	VMNamespace    string
+	Virtctl        string
 }
 
 func (c *CreateVMTaskData) GetTemplateParam(key string) string {
@@ -65,8 +56,6 @@ func (c *CreateVMTaskData) GetTemplateParam(key string) string {
 }
 
 func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
-	var finalDisks []kubevirtv1.Disk
-	var finalVolumes []kubevirtv1.Volume
 	var vmName, vmNamespace string
 
 	var vm *kubevirtv1.VirtualMachine
@@ -90,117 +79,12 @@ func (c *CreateVMTaskData) GetExpectedVMStubMeta() *kubevirtv1.VirtualMachine {
 		vmName = c.GetTemplateParam(template2.NameParam)
 		vmNamespace = c.VMNamespace
 	}
-	if vm != nil {
-		finalDisks = append(finalDisks, vm.Spec.Template.Spec.Domain.Devices.Disks...)
-		finalVolumes = append(finalVolumes, vm.Spec.Template.Spec.Volumes...)
-	}
-
-	findDisk := func(name string) *kubevirtv1.Disk {
-		for i := 0; i < len(finalDisks); i++ {
-			if finalDisks[i].Name == name {
-				return &finalDisks[i]
-			}
-		}
-		return nil
-	}
-
-	findVolume := func(name string) *kubevirtv1.Volume {
-		for i := 0; i < len(finalVolumes); i++ {
-			if finalVolumes[i].Name == name {
-				return &finalVolumes[i]
-			}
-		}
-		return nil
-	}
-
-	for _, dataVolume := range c.DataVolumesToCreate {
-		name := dataVolume.Data.Name
-
-		if dataVolume.DiskName == "" || findDisk(dataVolume.DiskName) == nil {
-			disk := kubevirtv1.Disk{
-				Name: name,
-				DiskDevice: kubevirtv1.DiskDevice{
-					Disk: &kubevirtv1.DiskTarget{Bus: kubevirtv1.DiskBus(c.ExpectedAdditionalDiskBus)},
-				},
-			}
-			if dataVolume.DiskName != "" {
-				disk.Name = dataVolume.DiskName
-			}
-
-			finalDisks = append(finalDisks, disk)
-		}
-
-		if originalVolume := findVolume(dataVolume.DiskName); dataVolume.DiskName != "" && originalVolume != nil {
-			switch dataVolume.AttachmentType {
-			case datavolume.DV, datavolume.OwnedDV:
-				originalVolume.VolumeSource = kubevirtv1.VolumeSource{
-					DataVolume: &kubevirtv1.DataVolumeSource{Name: name},
-				}
-			case datavolume.PVC, datavolume.OwnedPVC:
-				originalVolume.VolumeSource = kubevirtv1.VolumeSource{
-					PersistentVolumeClaim: &kubevirtv1.PersistentVolumeClaimVolumeSource{
-						PersistentVolumeClaimVolumeSource: corev1.PersistentVolumeClaimVolumeSource{
-							ClaimName: name,
-						},
-					},
-				}
-			}
-		} else {
-			volume := kubevirtv1.Volume{
-				Name: name,
-			}
-
-			if dataVolume.DiskName != "" {
-				volume.Name = dataVolume.DiskName
-			}
-
-			switch dataVolume.AttachmentType {
-			case datavolume.DV, datavolume.OwnedDV:
-				volume.DataVolume = &kubevirtv1.DataVolumeSource{
-					Name: name,
-				}
-			case datavolume.PVC, datavolume.OwnedPVC:
-				volume.PersistentVolumeClaim = &kubevirtv1.PersistentVolumeClaimVolumeSource{
-					PersistentVolumeClaimVolumeSource: corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: name,
-					},
-				}
-			}
-
-			finalVolumes = append(finalVolumes, volume)
-		}
-	}
 
 	return &kubevirtv1.VirtualMachine{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      vmName,
 			Namespace: vmNamespace,
 		},
-		Spec: kubevirtv1.VirtualMachineSpec{
-			Template: &kubevirtv1.VirtualMachineInstanceTemplateSpec{
-				Spec: kubevirtv1.VirtualMachineInstanceSpec{
-					Volumes: finalVolumes,
-					Domain: kubevirtv1.DomainSpec{
-						Devices: kubevirtv1.Devices{
-							Disks: finalDisks,
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func (c *CreateVMTaskData) SetDVorPVC(name string, attachmentType datavolume.TestDataVolumeAttachmentType) {
-	switch attachmentType {
-	case datavolume.DV:
-		c.DataVolumes = append(c.DataVolumes, name)
-	case datavolume.OwnedDV:
-		c.OwnDataVolumes = append(c.OwnDataVolumes, name)
-	case datavolume.PVC:
-		c.PersistentVolumeClaims = append(c.PersistentVolumeClaims, name)
-	case datavolume.OwnedPVC:
-		c.OwnPersistentVolumeClaims = append(c.OwnPersistentVolumeClaims, name)
 	}
 }
 
@@ -221,18 +105,6 @@ func (c *CreateVMTestConfig) Init(options *testoptions.TestOptions) {
 		c.initCreateVMTemplate(options)
 	default:
 		panic("unknown VM create mode")
-	}
-
-	for _, dataVolume := range c.TaskData.DataVolumesToCreate {
-		dataVolume.Data.Name = E2ETestsRandomName(dataVolume.Data.Name)
-		dataVolume.Data.Namespace = c.TaskData.VMNamespace
-		if options.StorageClass != "" {
-			dataVolume.Data.Spec.PVC.StorageClassName = &options.StorageClass
-		}
-	}
-
-	if c.TaskData.ExpectedAdditionalDiskBus == "" {
-		c.TaskData.ExpectedAdditionalDiskBus = "virtio"
 	}
 }
 
@@ -305,46 +177,6 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 				StringVal: c.TaskData.RunStrategy,
 			},
 		},
-	}
-
-	if len(c.TaskData.DataVolumes) > 0 {
-		params = append(params, v1beta1.Param{
-			Name: CreateVMParams.DataVolumes,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: c.TaskData.DataVolumes,
-			},
-		})
-	}
-
-	if len(c.TaskData.OwnDataVolumes) > 0 {
-		params = append(params, v1beta1.Param{
-			Name: CreateVMParams.OwnDataVolumes,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: c.TaskData.OwnDataVolumes,
-			},
-		})
-	}
-
-	if len(c.TaskData.PersistentVolumeClaims) > 0 {
-		params = append(params, v1beta1.Param{
-			Name: CreateVMParams.PersistentVolumeClaims,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: c.TaskData.PersistentVolumeClaims,
-			},
-		})
-	}
-
-	if len(c.TaskData.OwnPersistentVolumeClaims) > 0 {
-		params = append(params, v1beta1.Param{
-			Name: CreateVMParams.OwnPersistentVolumeClaims,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
-				ArrayVal: c.TaskData.OwnPersistentVolumeClaims,
-			},
-		})
 	}
 
 	var vmNamespace string

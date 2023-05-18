@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/datavolume"
 	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
@@ -14,7 +13,6 @@ import (
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
-	cdiv1beta12 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
 var _ = Describe("Create VM from template", func() {
@@ -110,58 +108,6 @@ var _ = Describe("Create VM from template", func() {
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("missing-one-template-param")),
 				},
-			},
-		}),
-		Entry("non existent dv", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "persistentvolumeclaims \"non-existent-dv\" not found",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
-				TemplateParams: []string{
-					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-non-existent-dv")),
-				},
-				DataVolumes: []string{"non-existent-dv"},
-			},
-		}),
-		Entry("non existent owned dv", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "persistentvolumeclaims \"non-existent-own-dv\" not found",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
-				TemplateParams: []string{
-					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-non-existent-owned-dv")),
-				},
-				OwnDataVolumes: []string{"non-existent-own-dv"},
-			},
-		}),
-		Entry("non existent pvc", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "persistentvolumeclaims \"non-existent-pvc\" not found",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
-				TemplateParams: []string{
-					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-non-existent-pvc")),
-				},
-				PersistentVolumeClaims: []string{"non-existent-pvc"},
-			},
-		}),
-		Entry("non existent owned pvcs", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "persistentvolumeclaims \"non-existent-own-pvc\" not found\npersistentvolumeclaims \"non-existent-own-pvc-2\" not found",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
-				TemplateParams: []string{
-					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-non-existent-owned-pvcs")),
-				},
-				OwnPersistentVolumeClaims: []string{"non-existent-own-pvc", "non-existent-own-pvc-2"},
 			},
 		}),
 		Entry("create vm with non matching disk fails", &testconfigs.CreateVMTestConfig{
@@ -329,43 +275,11 @@ var _ = Describe("Create VM from template", func() {
 				},
 				IsCommonTemplate:  true,
 				VMTargetNamespace: DeployTargetNS,
-				DataVolumesToCreate: []*datavolume.TestDataVolume{
-					datavolume.NewBlankDataVolume("common-templates-src-dv"),
-				},
 			},
 		}
 		f.TestSetup(config)
 
 		expectedVM := config.TaskData.GetExpectedVMStubMeta()
-		f.ManageVMs(expectedVM)
-
-		for _, dvWrapper := range config.TaskData.DataVolumesToCreate {
-			dataVolume, err := f.CdiClient.DataVolumes(dvWrapper.Data.Namespace).Create(context.TODO(), dvWrapper.Data, v1.CreateOptions{})
-			Expect(err).ShouldNot(HaveOccurred())
-			f.ManageDataVolumes(dataVolume)
-
-			datasource := cdiv1beta12.DataSource{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      dvWrapper.Data.Name,
-					Namespace: dvWrapper.Data.Namespace,
-				},
-				Spec: cdiv1beta12.DataSourceSpec{
-					Source: cdiv1beta12.DataSourceSource{
-						PVC: &cdiv1beta12.DataVolumeSourcePVC{
-							Name:      dvWrapper.Data.Name,
-							Namespace: dvWrapper.Data.Namespace,
-						},
-					},
-				},
-			}
-			ds, err := f.CdiClient.DataSources(dvWrapper.Data.Namespace).Create(context.TODO(), &datasource, v1.CreateOptions{})
-			Expect(err).ShouldNot(HaveOccurred())
-			f.ManageDataSources(ds)
-
-			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, testtemplate.TemplateParam(SpacesSmall+testtemplate.DataVolumeNameParam, dataVolume.Name))
-			config.TaskData.TemplateParams = append(config.TaskData.TemplateParams, testtemplate.TemplateParam(SpacesSmall+testtemplate.DataVolumeNamespaceParam, dataVolume.Namespace))
-		}
-
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectSuccess().
@@ -425,25 +339,15 @@ var _ = Describe("Create VM from template", func() {
 		Expect(vm.Spec.Template.Spec).Should(Equal(expectedVM.Spec.Template.Spec))
 		// check VM labels
 		Expect(vm.Labels).Should(Equal(map[string]string{
-			"app":                                  vmName,
-			"flavor.template.kubevirt.io/tiny":     "true",
-			"os.template.kubevirt.io/centos7.0":    "true",
-			"workload.template.kubevirt.io/server": "true",
-			"vm.kubevirt.io/template":              template.Name,
-			"vm.kubevirt.io/template.namespace":    template.Namespace,
-			"vm.kubevirt.io/template.revision":     "147",
-			"vm.kubevirt.io/template.version":      "0.3.2",
+			"app":                              vmName,
+			"vm.kubevirt.io/template":          "centos-server-tiny",
+			"vm.kubevirt.io/template.revision": "147",
+			"vm.kubevirt.io/template.version":  "0.3.2",
 		}))
-		// check os annotation
-		Expect(vm.Annotations["name.os.template.kubevirt.io/centos7.0"]).Should(Equal("CentOS 7.0 or higher"))
 		// check VMI labels
 		Expect(vm.Spec.Template.ObjectMeta.Labels).Should(Equal(map[string]string{
-			"flavor.template.kubevirt.io/tiny":     "true",
-			"os.template.kubevirt.io/centos7.0":    "true",
-			"workload.template.kubevirt.io/server": "true",
-			"kubevirt.io/domain":                   vmName,
-			"kubevirt.io/size":                     "tiny",
-			"vm.kubevirt.io/name":                  vmName,
+			"kubevirt.io/domain": vmName,
+			"kubevirt.io/size":   "tiny",
 		}))
 	})
 
