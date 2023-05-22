@@ -51,49 +51,14 @@ jobs:
           asset_name: kubevirt-tekton-tasks-okd.yaml
           asset_content_type: text/plain
 
-      - name: Upload tekton tasks manifests to tekton tasks operator
-        run: |
-          # Define vars
-          export RELEASE_VERSION=${{ steps.get_release.outputs.tag_name }}
-          # If GITHUB_FORK_USER is changed, a new access token should be set as a repo secret (ACTIONS_TOKEN)
-          export GITHUB_FORK_USER=ksimon1
-          # Set git configs to sign the commit
-          git config --global user.email "ksimon@redhat.com"
-          git config --global user.name "Kubevirt-Tekton-tasks Release Automation"
-          make generate-yaml-tasks
-          # Clone the operator repo with a token to allow pushing before creating a PR
-          git clone https://${GITHUB_FORK_USER}:${{ secrets.ACTIONS_TOKEN }}@github.com/${GITHUB_FORK_USER}/tekton-tasks-operator
-          # Authenticate with gh cli
-          echo ${{ secrets.ACTIONS_TOKEN }} > token.txt
-          gh auth login --with-token < token.txt
-          rm token.txt
-          cd tekton-tasks-operator
-          git remote add upstream https://github.com/kubevirt/tekton-tasks-operator
-          git fetch upstream
-          git checkout main
-          git rebase upstream/main
-          git checkout -b update-tekton-tasks-manifests-${RELEASE_VERSION}
-          cp ../manifests/okd/kubevirt-tekton-tasks-okd.yaml data/tekton-tasks/okd/kubevirt-tekton-tasks-okd-${RELEASE_VERSION}.yaml
-          cp ../manifests/kubernetes/kubevirt-tekton-tasks-kubernetes.yaml data/tekton-tasks/kubernetes/kubevirt-tekton-tasks-kubernetes-${RELEASE_VERSION}.yaml
-          sed -i "s/\bTektonTasksVersion\s*=.*/TektonTasksVersion = \"${RELEASE_VERSION}\"/g" pkg/operands/version.go
-        
-          git add .
-          git commit -sm "Update tekton tasks manifests to version ${RELEASE_VERSION}"
-          git push --set-upstream origin update-tekton-tasks-manifests-${RELEASE_VERSION}
-          # Create a new PR in the tekton-tasks-operator repo
-          gh pr create --repo kubevirt/tekton-tasks-operator \
-            --base main \
-            --head ${GITHUB_FORK_USER}:update-tekton-tasks-manifests-${RELEASE_VERSION} \
-            --title "Update tekton tasks manifests to version ${RELEASE_VERSION}" \
-            --body "$(cat << EOF
-          Update tekton tasks manifests to version ${RELEASE_VERSION}
-          **Release note**:
-          \`\`\`release-note
-          Update tekton tasks bundle to ${RELEASE_VERSION}
-          \`\`\`
-          EOF
-          )
-          "
+      # triggers https://github.com/kubevirt/ssp-operator/blob/master/.github/workflows/release-tekton-tasks.yaml
+      - name: Trigger ssp-operator
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.ACTIONS_TOKEN }}
+          repository: kubevirt/ssp-operator
+          event-type: release-tekton-tasks
+          client-payload: '{"release_version": "${{ steps.get_release.outputs.tag_name }}"}'
 
       - name: Update tekton tasks manifests
         run: |
