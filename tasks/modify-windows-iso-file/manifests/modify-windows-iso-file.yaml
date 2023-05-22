@@ -21,7 +21,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-task-disk-virt:v0.14.0"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.14.0"
       script: |
         #!/bin/bash
         set -x
@@ -93,7 +93,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-task-disk-virt:v0.14.0"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.14.0"
       script: |
         #!/bin/bash
         set -x

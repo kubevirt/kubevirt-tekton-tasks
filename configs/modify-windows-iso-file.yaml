@@ -1,5 +1,5 @@
 task_name: modify-windows-iso-file
 task_category: modify-windows-iso-file
-extract_iso_image: quay.io/kubevirt/tekton-task-disk-virt
+extract_iso_image: quay.io/kubevirt/tekton-tasks-disk-virt
 modify_iso_image: quay.io/kubevirt/tekton-tasks
 create_iso_image: quay.io/kubevirt/tekton-tasks
