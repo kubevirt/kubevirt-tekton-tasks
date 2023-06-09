@@ -51,7 +51,7 @@ jobs:
           asset_name: kubevirt-tekton-tasks-okd.yaml
           asset_content_type: text/plain
 
-      # triggers https://github.com/kubevirt/ssp-operator/blob/main/.github/workflows/release-tekton-tasks.yaml
+      # triggers https://github.com/kubevirt/ssp-operator/blob/master/.github/workflows/release-tekton-tasks.yaml
       - name: Trigger ssp-operator
         uses: peter-evans/repository-dispatch@v2
         with:
