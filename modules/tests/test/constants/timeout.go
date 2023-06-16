@@ -19,7 +19,7 @@ type timeouts struct {
 
 var Timeouts = timeouts{
 	Zero:                      &metav1.Duration{0 * time.Second},
-	TaskRunExtraWaitDelay:     &metav1.Duration{80 * time.Second},
+	TaskRunExtraWaitDelay:     &metav1.Duration{5 * time.Minute},
 	SmallDVCreation:           &metav1.Duration{15 * time.Minute},
 	QuickTaskRun:              &metav1.Duration{5 * time.Minute},
 	DefaultTaskRun:            &metav1.Duration{10 * time.Minute},

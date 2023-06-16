@@ -23,9 +23,10 @@ import (
 func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) (*v1beta1.TaskRun, string) {
 	isCapturing := false
 	logs := make(chan string, 1)
-
+	var taskRun *v1beta1.TaskRun
 	err := wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
-		taskRun, err := clients.TknClient.TaskRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+		var err error
+		taskRun, err = clients.TknClient.TaskRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
 			return true, err
 		}
@@ -50,9 +51,9 @@ func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeo
 		}
 		return inState(&taskRun.Status)
 	})
-	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-	taskRun, err := clients.TknClient.TaskRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	if err != nil {
+		fmt.Printf("%#v \n", taskRun)
+	}
 	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 	if isCapturing {
