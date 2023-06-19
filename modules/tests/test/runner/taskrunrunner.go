@@ -2,6 +2,9 @@ package runner
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	framework2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
@@ -9,6 +12,8 @@ import (
 	. "github.com/onsi/gomega"
 	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	tkntest "github.com/tektoncd/pipeline/test"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 )
@@ -17,6 +22,8 @@ type TaskRunRunner struct {
 	framework *framework2.Framework
 	taskRun   *pipev1beta1.TaskRun
 	logs      string
+	pod       *corev1.Pod
+	err       error
 }
 
 func NewTaskRunRunner(framework *framework2.Framework, taskRun *pipev1beta1.TaskRun) *TaskRunRunner {
@@ -27,8 +34,69 @@ func NewTaskRunRunner(framework *framework2.Framework, taskRun *pipev1beta1.Task
 	}
 }
 
+func (r *TaskRunRunner) PrintVMInfo(namespace, name string) {
+	vm, err := r.framework.KubevirtClient.VirtualMachine(namespace).Get(name, &metav1.GetOptions{})
+	Expect(err).ShouldNot(HaveOccurred())
+
+	vmBytes, err := json.Marshal(vm)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	fmt.Println("VM definition")
+	fmt.Println(string(vmBytes))
+	fmt.Println("----------------------------------------------")
+}
+
+func (r *TaskRunRunner) PrintDatavolumeInfo(namespace, name string) {
+	dv, err := r.framework.CdiClient.DataVolumes(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	Expect(err).ShouldNot(HaveOccurred())
+
+	dvBytes, err := json.Marshal(dv)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	fmt.Println("Datavolume definition")
+	fmt.Println(string(dvBytes))
+	fmt.Println("----------------------------------------------")
+	pvc, err := r.framework.CoreV1Client.PersistentVolumeClaims(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	Expect(err).ShouldNot(HaveOccurred())
+
+	pvcBytes, err := json.Marshal(pvc)
+	Expect(err).ShouldNot(HaveOccurred())
+	fmt.Println("PVC definition")
+	fmt.Println(string(pvcBytes))
+	fmt.Println("----------------------------------------------")
+}
+
+func (r *TaskRunRunner) PrintTektonInfo() {
+	taskBytes, err := json.Marshal(r.GetTaskRun())
+	Expect(err).ShouldNot(HaveOccurred())
+
+	podBytes, err := json.Marshal(r.GetTaskRunPod())
+	Expect(err).ShouldNot(HaveOccurred())
+
+	fmt.Println("Task definition")
+	fmt.Println(string(taskBytes))
+	fmt.Println("----------------------------------------------")
+	fmt.Println("Pod definition")
+	fmt.Println(string(podBytes))
+	fmt.Println("----------------------------------------------")
+
+	if r.logs != "" {
+		fmt.Println("Pod logs")
+		fmt.Println(r.logs)
+		fmt.Println("----------------------------------------------")
+	}
+}
+
 func (r *TaskRunRunner) GetTaskRun() *pipev1beta1.TaskRun {
 	return r.taskRun
+}
+
+func (r *TaskRunRunner) GetTaskRunPod() *corev1.Pod {
+	return r.pod
+}
+
+func (r *TaskRunRunner) GetError() error {
+	return r.err
 }
 
 func (r *TaskRunRunner) CreateTaskRun() *TaskRunRunner {
@@ -40,14 +108,14 @@ func (r *TaskRunRunner) CreateTaskRun() *TaskRunRunner {
 }
 
 func (r *TaskRunRunner) ExpectFailure() *TaskRunRunner {
-	r.taskRun, r.logs = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
+	r.taskRun, r.logs, r.pod, r.err = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
 		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		tkntest.TaskRunFailed(r.taskRun.Name))
 	return r
 }
 
 func (r *TaskRunRunner) WaitForTaskRunFinish() *TaskRunRunner {
-	r.taskRun, r.logs = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
+	r.taskRun, r.logs, r.pod, r.err = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
 		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		func(accessor apis.ConditionAccessor) (bool, error) {
 			succeeded, _ := tkntest.TaskRunSucceed(r.taskRun.Name)(accessor)
@@ -57,7 +125,7 @@ func (r *TaskRunRunner) WaitForTaskRunFinish() *TaskRunRunner {
 }
 
 func (r *TaskRunRunner) ExpectSuccess() *TaskRunRunner {
-	r.taskRun, r.logs = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
+	r.taskRun, r.logs, r.pod, r.err = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
 		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		tkntest.TaskRunSucceed(r.taskRun.Name))
 	return r
