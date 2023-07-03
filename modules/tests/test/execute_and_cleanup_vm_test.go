@@ -10,6 +10,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
+	vmhelper "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/vm"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -93,14 +94,30 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				if config.TaskData.ShouldStartVM {
 					err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(vm.Name, &kubevirtv1.StartOptions{})
 					Expect(err).ShouldNot(HaveOccurred())
-					time.Sleep(Timeouts.WaitBeforeExecutingVM.Duration)
+
+					vm, err := vmhelper.WaitForVM(f.KubevirtClient, vm.Namespace, vm.Name,
+						kubevirtv1.Running, config.GetTaskRunTimeout(), false)
+					Expect(err).ShouldNot(HaveOccurred())
+
+					Expect(*vm.Spec.Running).To(BeTrue(), "vm should be running")
 				}
 			}
 
-			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+			r := runner.NewTaskRunRunner(f, config.GetTaskRun()).
 				CreateTaskRun().
-				ExpectSuccessOrFailure(config.ExpectSuccess).
-				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectSuccessOrFailure(config.ExpectSuccess)
+
+			// debug lines, which should help to debug flaky tests
+			err := r.GetError()
+			if err != nil {
+				r.PrintTektonInfo()
+				if vm := config.TaskData.VM; vm != nil {
+					r.PrintVMInfo(vm.Namespace, vm.Name)
+				}
+				Fail("error should not have occured")
+			}
+
+			r.ExpectLogs(config.GetAllExpectedLogs()...).
 				ExpectTermination(config.ExpectedTermination).
 				ExpectResults(nil)
 		},
@@ -447,10 +464,21 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}
 		}
 
-		runner.NewTaskRunRunner(f, config.GetTaskRun()).
+		r := runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
-			ExpectSuccessOrFailure(config.ExpectSuccess).
-			ExpectLogs(config.GetAllExpectedLogs()...).
+			ExpectSuccessOrFailure(config.ExpectSuccess)
+
+		// debug lines, which should help to debug flaky tests
+		err := r.GetError()
+		if err != nil {
+			r.PrintTektonInfo()
+			if vm := config.TaskData.VM; vm != nil {
+				r.PrintVMInfo(vm.Namespace, vm.Name)
+			}
+			Fail("error should not have occured")
+		}
+
+		r.ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectTermination(config.ExpectedTermination).
 			ExpectResults(nil)
 

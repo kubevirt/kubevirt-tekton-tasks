@@ -20,7 +20,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) (*v1beta1.TaskRun, string) {
+func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) (*v1beta1.TaskRun, string, *v1.Pod, error) {
 	isCapturing := false
 	logs := make(chan string, 1)
 	var taskRun *v1beta1.TaskRun
@@ -52,15 +52,17 @@ func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeo
 		return inState(&taskRun.Status)
 	})
 	if err != nil {
-		fmt.Printf("%#v \n", taskRun)
+		pod, podErr := clients.CoreV1Client.Pods(taskRun.Namespace).Get(context.Background(), taskRun.Status.PodName, metav1.GetOptions{})
+		gomega.Expect(podErr).ShouldNot(gomega.HaveOccurred())
+
+		return taskRun, <-logs, pod, err
 	}
-	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 	if isCapturing {
-		return taskRun, <-logs
+		return taskRun, <-logs, nil, nil
 	}
 
-	return taskRun, ""
+	return taskRun, "", nil, nil
 }
 
 func PrintTaskRunDebugInfo(clients *clients.Clients, taskRunNamespace, taskRunName string) {
