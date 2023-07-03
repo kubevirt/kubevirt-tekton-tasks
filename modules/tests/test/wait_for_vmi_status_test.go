@@ -30,10 +30,21 @@ var _ = Describe("Wait for VMI Status", func() {
 			}
 		}
 
-		runner.NewTaskRunRunner(f, config.GetTaskRun()).
+		r := runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
-			ExpectSuccessOrFailure(config.ExpectSuccess).
-			ExpectLogs(config.GetAllExpectedLogs()...).
+			ExpectSuccessOrFailure(config.ExpectSuccess)
+
+		// debug lines, which should help to debug flaky tests
+		err := r.GetError()
+		if err != nil {
+			r.PrintTektonInfo()
+			if vm := config.TaskData.VM; vm != nil {
+				r.PrintVMInfo(vm.Namespace, vm.Name)
+			}
+			Expect(err).ShouldNot(HaveOccurred())
+		}
+
+		r.ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectTermination(config.ExpectedTermination).
 			ExpectResults(nil)
 	},

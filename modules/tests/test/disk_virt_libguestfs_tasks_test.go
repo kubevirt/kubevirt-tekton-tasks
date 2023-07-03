@@ -42,10 +42,19 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 			}
 
-			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+			r := runner.NewTaskRunRunner(f, config.GetTaskRun()).
 				CreateTaskRun().
-				ExpectFailure().
-				ExpectLogs(config.GetAllExpectedLogs()...).
+				ExpectFailure()
+			// debug lines, which should help to debug flaky tests
+			err := r.GetError()
+			if err != nil {
+				r.PrintTektonInfo()
+				if dv := config.TaskData.Datavolume; dv != nil {
+					r.PrintDatavolumeInfo(config.TaskData.Datavolume.Namespace, config.TaskData.Datavolume.Name)
+				}
+				Expect(err).ShouldNot(HaveOccurred())
+			}
+			r.ExpectLogs(config.GetAllExpectedLogs()...).
 				ExpectResults(nil)
 		},
 			Entry("no pvc", &testconfigs.DiskVirtLibguestfsTestConfig{
