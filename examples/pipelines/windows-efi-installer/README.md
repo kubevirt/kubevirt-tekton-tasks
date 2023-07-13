@@ -1,9 +1,9 @@
-# Windows efi Installer Pipeline
+# Windows EFI Installer Pipeline
 
 This pipeline installs Windows 11/2k22 into a new DataVolume. This DataVolume is suitable to be used as a default boot source
 or golden image for Windows 11/2k22 VMs.
 
-This example pipeline is suitable only for windows 11/2k22 (or other windows versions which require efi - not tested!). When using 
+This example pipeline is suitable only for windows 11/2k22 (or other windows versions which require EFI - not tested!). When using 
 this example pipeline always adjust pipeline parameters for windows version you are currently using (e.g. different template name, 
 different autoattend config map, different base image name, ...). Each windows version requires change in autounattendConfigMapName 
 parameter (e.g. using `windows2k22-autounattend` config map will not work with Windows 11 and vice versa - e.g. due to different storage 
@@ -19,19 +19,16 @@ automatically executed and controlled by a Windows answer file. Then the pipelin
 created VM while keeping the resulting DataVolume with the installed operating system. The pipeline can be customized to support different 
 installation requirements.
 
-There is a specific version of this pipeline for OKD.
-This version is using templates, which are not available on Kubernetes.
-
 ## Prerequisites
 
-- KubeVirt `v0.59.1`
+- KubeVirt `v1.0.0`
 - Tekton Pipelines `v0.44.0`
 
 ## Links
 
-- [Windows efi Pipeline for okd](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows-efi-installer-pipeline.yaml)
-- [Windows 11 efi Installer PipelineRun for okd](windows11-installer-pipelinerun-okd.yaml)
-- [Windows 2k22 efi Installer PipelineRun for okd](windows2k22-installer-pipelinerun-okd.yaml)
+- [Windows EFI Pipeline](https://github.com/kubevirt/ssp-operator/blob/main/data/tekton-pipelines/windows-efi-installer-pipeline.yaml)
+- [Windows 11 EFI Installer PipelineRun](windows11-installer-pipelinerun.yaml)
+- [Windows 2k22 EFI Installer PipelineRun](windows2k22-installer-pipelinerun.yaml)
 
 
 ### Obtain Windows ISO 11 download URL
@@ -79,60 +76,36 @@ WIN_URL=$(./getisourl.py | sed 's/&/\\&/g')
 2. Replace the default example autounattend.xml with your own in the definition of the `windows11-autounattend` ConfigMap in the pipeline YAML.
    Different autounattend.xml can be also passed in a separate ConfigMap with the Pipeline parameter `autounattendConfigMapName` when creating a PipelineRun.
 
-## Pipeline Description (Kubernetes)
+## Pipeline Description
 
 ```
-  create-source-dv --- create-vm-from-manifest --- wait-for-vmi-status --- cleanup-vm
-                   |
-  create-base-dv --- modify-windows-iso-file
+  import-win-iso --- modify-windows-iso-file --- create-vm --- wait-for-vmi-status --- create-base-dv --- cleanup-vm
+                                              |
+                       create-vm-root-disk --- 
 ```
 
-1. `create-source-dv` task downloads a Windows source ISO into a DV called `windows-source-*`.
-2. `modify-windows-iso-file` extracts imported iso, replaces prompt bootloader (which is used as a default one when efi is used) 
-   with no-prompt bootloader, pack the updated files back to new iso, convert the iso and replaces original iso with updated one.
-3. `create-base-dv` task creates an empty DV for new windows installation called `windows-base-*`.
-4. `create-vm-from-manifest` task creates a VM called `windows-installer-*`
-   from the empty DV and with the `windows-source-*` DV attached as a CD-ROM.
-   A second DV with the virtio-win ISO will also be attached. (Pipeline parameter `virtioContainerDiskName`)
-5. `wait-for-vmi-status` task waits until the VM shuts down.
-6. `cleanup-vm` deletes the installer VM and ISO DV. (also in case of failure of the previous tasks)
-7. The output artifact will be the `windows-base-*` DV with the basic Windows installation.
-   It will boot into the Windows OOBE and needs to be setup further before it can be used.
-
-## Pipeline Description (OKD)
-
-```
-  copy-template --- modify-vm-template --- create-vm-from-template --- wait-for-vmi-status --- create-base-dv --- cleanup-vm
-                 |
-  import-win-iso --- modify-windows-iso-file
-```
-
-1. `copy-template` copies the template defined by the pipeline parameters `sourceTemplateName` and `sourceTemplateNamespace`
-   to a new template with the name specified by parameter `installerTemplateName` in the same namespace. 
-   An already existing template can be overwritten when setting `allowReplaceInstallerTemplate` to `true`.
+1. `create-vm-root-disk` creates empty DV which is used for windows installation.
 2. `import-win-iso` creates new datavolume with windows iso file with name defined in `isoDVName` parameter.
-3. `modify-windows-iso-file` extracts imported iso, replaces prompt bootloader (which is used as a default one when efi is used) 
+3. `modify-windows-iso-file` extracts imported iso, replaces prompt bootloader (which is used as a default one when EFI is used) 
    with no-prompt bootloader, pack the updated files back to new iso, convert the iso and replaces original iso with updated one.
-   Replacement of bootloader is needed to be able to automate installation of windows versions which require efi.
-4. `modify-vm-template` sets the display name of the new Template and the dataVolumeTemplates, Disks and Volumes needed for the 
-   installation.
-5. `create-vm-from-template` task creates a VM from the newly created Template.
+   Replacement of bootloader is needed to be able to automate installation of windows versions which require EFI.
+4. `create-vm` task creates a VM.
    A DV with the Windows source ISO will be attached as CD-ROM and a second empty DV will be used as installation destination.
    A third DV with the virtio-win ISO will also be attached. (Pipeline parameter `virtioContainerDiskName`)
-6. `wait-for-vmi-status` task waits until the VM shuts down.
-7. `create-base-dv` task creates an DV with the specified name and namespace (Pipeline parameters `baseDvName` and 
+5. `wait-for-vmi-status` task waits until the VM shuts down.
+6. `create-base-dv` task creates an DV with the specified name and namespace (Pipeline parameters `baseDvName` and 
    `baseDvNamespace`).
    Then it clones the second DV of the installation VM into the new DV.
-8. `cleanup-vm` deletes the installer VM and all of its DVs.
-9. The output artifact will be the `baseDvName`/`baseDvNamespace` DV with the basic Windows installation.
+7. `cleanup-vm` deletes the installer VM and all of its DVs.
+8. The output artifact will be the `baseDvName`/`baseDvNamespace` DV with the basic Windows installation.
    It will boot into the Windows OOBE and needs to be setup further before it can be used.
 
-## How to run (OKD)
+## How to run
 
 ```bash
 WIN_URL="https://software.download.prss.microsoft.com/dbazure/Win11_22H2_English_x64v1.iso..."
-oc apply -f windows11-installer-pipelinerun-okd.yaml
-sed 's!INSERT_WINDOWS_ISO_URL!'"$WIN_URL"'!g' windows11-installer-pipelinerun-okd.yaml | oc create -f -
+oc apply -f windows11-installer-pipelinerun.yaml
+sed 's!INSERT_WINDOWS_ISO_URL!'"$WIN_URL"'!g' windows11-installer-pipelinerun.yaml | oc create -f -
 ```
 
 ## Possible Optimizations
@@ -155,7 +128,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 7Gi
+        storage: 9Gi
     volumeMode: Filesystem
   source:
     http:

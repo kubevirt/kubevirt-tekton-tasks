@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: windows11-installer-run-
+spec:
+  params:
+    - name: winImageDownloadURL
+      value: INSERT_WINDOWS_ISO_URL
+  pipelineRef:
+    name: windows-efi-installer
+  serviceAccountName: pipeline

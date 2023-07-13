@@ -102,7 +102,7 @@ Virt-sysprep can be used for preparing VM images which can be then used as base 
 This example shows how you can update an operating system and seal VM's image by using virt-customize.
 Then, a VM is created from such image.
 
-#### [Windows 10 Installer Pipeline](examples/pipelines/windows10-installer)
+#### [Windows bios Installer Pipeline](examples/pipelines/windows-bios-installer)
 
 Downloads a Windows Source ISO into a PVC and automatically installs Windows by using a custom Answer file into a new base DV.
 

@@ -1,4 +1,4 @@
-# Windows 10 Installer Pipeline
+# Windows BIOS Installer Pipeline
 
 This pipeline installs Windows 10 into a new DataVolume. This DataVolume is suitable to be used as a default boot source
 or golden image for Windows 10 VMs.
@@ -8,20 +8,15 @@ installation of Windows is automatically executed and controlled by a Windows an
 for the installation to complete and will delete the created VM while keeping the resulting DataVolume with the
 installed operating system. The pipeline can be customized to support different installation requirements.
 
-There is a specific version of this pipeline for OKD.
-This version is using templates, which are not available on Kubernetes.
-
 ## Prerequisites
 
-- KubeVirt `v0.53.1`
-- Tekton Pipelines `v0.35.0`
+- KubeVirt `v1.0.0`
+- Tekton Pipelines `v0.44.0`
 
 ## Links
 
-- [Windows 10 Installer Pipeline for Kubernetes](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/kubernetes/windows-bios-installer-pipeline.yaml)
-- [Windows 10 Installer PipelineRun for Kubernetes](windows10-installer-pipelinerun-kubernetes.yaml)
-- [Windows 10 Installer Pipeline for OKD](https://github.com/kubevirt/tekton-tasks-operator/blob/main/data/tekton-pipelines/okd/windows-bios-installer-pipeline.yaml)
-- [Windows 10 Installer PipelineRun for OKD](windows10-installer-pipelinerun-okd.yaml)
+- [Windows BIOS Installer Pipeline](https://github.com/kubevirt/ssp-operator/blob/main/data/tekton-pipelines/windows-bios-installer-pipeline.yaml)
+- [Windows BIOS Installer PipelineRun](windows10-installer-pipelinerun.yaml)
 
 ### Obtain Windows ISO download URL
 
@@ -61,58 +56,27 @@ WIN_URL=$(./getisourl.py | sed 's/&/\\&/g')
 2. Replace the default example autounattend.xml with your own in the definition of the `windows10-autounattend` ConfigMap in the pipeline YAML.
    Different autounattend.xml can be also passed in a separate ConfigMap with the Pipeline parameter `autounattendConfigMapName` when creating a PipelineRun.
 
-## Pipeline Description (Kubernetes)
+## Pipeline Description
 
 ```
-  create-source-dv --- create-vm-from-manifest --- wait-for-vmi-status --- cleanup-vm
-                    |
-    create-base-dv --
+  create-vm-root-disk --- create-vm --- wait-for-vmi-status --- cleanup-vm
 ```
 
-1. `create-source-dv` task downloads a Windows source ISO into a DV called `windows10-source-*`.
-2. `create-base-dv` task creates an empty DV for new windows installation called `windows10-base-*`.
-3. `create-vm-from-manifest` task creates a VM called `windows10-installer-*`
-   from the empty DV and with the `windows10-source-*` DV attached as a CD-ROM.
+1. `create-vm-root-disk` task creates an empty DV.
+2. `create-vm` task creates a VM called `windows-bios-installer-*`
+   from the empty DV and with the `windows-bios-installer-cd-rom` DV attached as a CD-ROM.
    A second DV with the virtio-win ISO will also be attached. (Pipeline parameter `virtioContainerDiskName`)
-4. `wait-for-vmi-status` task waits until the VM shuts down.
-5. `cleanup-vm` deletes the installer VM and ISO DV. (also in case of failure of the previous tasks)
-6. The output artifact will be the `windows10-base-*` DV with the basic Windows installation.
+3. `wait-for-vmi-status` task waits until the VM shuts down.
+4. `cleanup-vm` deletes the installer VM and ISO DV. (also in case of failure of the previous tasks)
+5. The output artifact will be the `win10` DV with the basic Windows installation.
    It will boot into the Windows OOBE and needs to be setup further before it can be used.
 
-## Pipeline Description (OKD)
-
-```
-  copy-template --- modify-vm-template --- create-vm-from-template --- wait-for-vmi-status --- create-base-dv --- cleanup-vm
-```
-
-1. `copy-template` copies the template defined by the pipeline parameters `sourceTemplateName` and `sourceTemplateNamespace`
-    to a new template with the name specified by parameter `installerTemplateName` in the same namespace.
-    An already existing template can be overwritten when setting `allowReplaceInstallerTemplate` to `true`.
-2. `modify-vm-template` sets the display name of the new Template and the dataVolumeTemplates, Disks and Volumes needed for the installation.
-3. `create-vm-from-template` task creates a VM from the newly created Template.
-   A DV with the Windows source ISO will be attached as CD-ROM and a second empty DV will be used as installation destination.
-   A third DV with the virtio-win ISO will also be attached. (Pipeline parameter `virtioContainerDiskName`)
-4. `wait-for-vmi-status` task waits until the VM shuts down.
-5. `create-base-dv` task creates an DV with the specified name and namespace (Pipeline parameters `baseDvName` and `baseDvNamespace`).
-    Then it clones the second DV of the installation VM into the new DV.
-6. `cleanup-vm` deletes the installer VM and all of its DVs.
-7. The output artifact will be the `baseDvName`/`baseDvNamespace` DV with the basic Windows installation.
-   It will boot into the Windows OOBE and needs to be setup further before it can be used.
-
-## How to run (Kubernetes)
+## How to run
 
 ```bash
 WIN_URL="https://software.download.prss.microsoft.com/db/Win10_21H2_English_x64.iso..."
 kubectl apply -f windows10-installer.yaml
-sed 's!INSERT_WINDOWS_ISO_URL!'"$WIN_URL"'!g' windows10-installer-pipelinerun-kubernetes.yaml | kubectl create -f -
-```
-
-## How to run (OKD)
-
-```bash
-WIN_URL="https://software.download.prss.microsoft.com/db/Win10_21H2_English_x64.iso..."
-oc apply -f windows10-installer.yaml
-sed 's!INSERT_WINDOWS_ISO_URL!'"$WIN_URL"'!g' windows10-installer-pipelinerun-okd.yaml | oc create -f -
+sed 's!INSERT_WINDOWS_ISO_URL!'"$WIN_URL"'!g' windows10-installer-pipelinerun.yaml | kubectl create -f -
 ```
 
 ## Possible Optimizations

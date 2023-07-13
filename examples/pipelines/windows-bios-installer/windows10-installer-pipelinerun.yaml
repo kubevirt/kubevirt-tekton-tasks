@@ -1,0 +1,12 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: windows10-installer-run-
+spec:
+  params:
+  - name: winImageDownloadURL
+    value: INSERT_WINDOWS_ISO_URL
+  pipelineRef:
+    name: windows-bios-installer
+  serviceAccountName: pipeline
+status: {}
