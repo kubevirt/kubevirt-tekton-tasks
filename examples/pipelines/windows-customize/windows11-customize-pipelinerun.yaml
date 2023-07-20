@@ -1,0 +1,8 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: windows11-customize-run-
+spec:
+  pipelineRef:
+    name: windows-customize
+  serviceAccountName: pipeline

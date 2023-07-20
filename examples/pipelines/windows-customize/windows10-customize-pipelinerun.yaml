@@ -1,0 +1,15 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: windows10-customize-run-
+spec:
+  params:
+    - name: sourceDiskImageName
+      value: win10
+    - name: baseDvName
+      value: win10-customized
+    - name: preferenceName
+      value: "windows.10"
+  pipelineRef:
+    name: windows-customize
+  serviceAccountName: pipeline
