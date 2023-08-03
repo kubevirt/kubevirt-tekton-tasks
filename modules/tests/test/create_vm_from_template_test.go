@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"fmt"
 
 	testtemplate "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
@@ -295,7 +296,7 @@ var _ = Describe("Create VM from template", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
-	It("VM is created from template properly", func() {
+	FIt("VM is created from template properly", func() {
 		template := testtemplate.NewCirrosServerTinyTemplate().Build()
 		config := &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
@@ -336,6 +337,9 @@ var _ = Describe("Create VM from template", func() {
 		expectedVM.Spec.Template.Spec.Hostname = vmName
 		expectedVM.Spec.Template.Spec.Domain.Machine = vm.Spec.Template.Spec.Domain.Machine // ignore Machine
 
+		fmt.Printf("#%v \n", vm.Spec.Template.Spec)
+		fmt.Println("------------------------------------------")
+		fmt.Printf("#%v \n", expectedVM.Spec.Template.Spec)
 		Expect(vm.Spec.Template.Spec).Should(Equal(expectedVM.Spec.Template.Spec))
 		// check VM labels
 		Expect(vm.Labels).Should(Equal(map[string]string{

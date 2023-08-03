@@ -232,7 +232,9 @@ var _ = Describe("Create VM from manifest", func() {
 		expectedVM := config.TaskData.VM
 		// fill VM accordingly
 		expectedVM.Spec.Template.Spec.Domain.Machine = vm.Spec.Template.Spec.Domain.Machine // ignore Machine
-
+		fmt.Printf("#%v \n", vm.Spec.Template.Spec)
+		fmt.Println("------------------------------------------")
+		fmt.Printf("#%v \n", expectedVM.Spec.Template.Spec)
 		Expect(vm.Spec.Template.Spec).Should(Equal(expectedVM.Spec.Template.Spec))
 		// check VM labels
 		Expect(vm.Labels).Should(Equal(expectedVM.Labels))
