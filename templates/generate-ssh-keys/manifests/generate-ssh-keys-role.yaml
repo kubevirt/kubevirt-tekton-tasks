@@ -5,7 +5,10 @@ metadata:
   name: {{ role_name }}
 rules:
   - verbs:
-      - '*'
+      - get
+      - list
+      - create
+      - patch
     apiGroups:
       - ''
     resources:
