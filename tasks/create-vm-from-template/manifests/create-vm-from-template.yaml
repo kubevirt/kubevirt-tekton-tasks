@@ -93,7 +93,7 @@ rules:
       - virtualmachines
       - virtualmachineinstances
   - verbs:
-      - '*'
+      - get
     apiGroups:
       - kubevirt.io
     resources:
@@ -113,13 +113,8 @@ rules:
     resources:
       - processedtemplates
   - verbs:
-      - '*'
-    apiGroups:
-      - ''
-    resources:
-      - persistentvolumeclaims
-  - verbs:
-      - '*'
+      - create
+
     apiGroups:
       - cdi.kubevirt.io
     resources:

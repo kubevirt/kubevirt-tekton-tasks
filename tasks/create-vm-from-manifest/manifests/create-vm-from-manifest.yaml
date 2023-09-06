@@ -91,23 +91,13 @@ rules:
     resources:
       - virtualmachines/start
   - verbs:
-      - '*'
-    apiGroups:
-      - kubevirt.io
-    resources:
-      - virtualmachines/finalizers
-  - verbs:
-      - '*'
+      - update
+
     apiGroups:
       - ''
     resources:
       - persistentvolumeclaims
-  - verbs:
-      - '*'
-    apiGroups:
-      - cdi.kubevirt.io
-    resources:
-      - datavolumes
+
 
 ---
 apiVersion: v1
