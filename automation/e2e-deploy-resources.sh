@@ -28,7 +28,11 @@ if kubectl get templates > /dev/null 2>&1; then
 fi
 
 # Deploy Tekton Pipelines
-oc apply -f "https://github.com/tektoncd/operator/releases/download/${TEKTON_VERSION}/openshift-release.yaml"
+if [[ "$IS_OKD" == "true" ]]; then
+  openshift_prefix="openshift-"
+fi
+
+kubectl apply -f "https://github.com/tektoncd/operator/releases/download/${TEKTON_VERSION}/${openshift_prefix}release.yaml"
 
 # Deploy Kubevirt
 kubectl apply -f "https://github.com/kubevirt/kubevirt/releases/download/${KUBEVIRT_VERSION}/kubevirt-operator.yaml"
@@ -45,9 +49,6 @@ kubectl apply -f "https://github.com/kubevirt/containerized-data-importer/releas
 # Deploy SSP
 kubectl apply -f "https://github.com/kubevirt/ssp-operator/releases/download/${SSP_OPERATOR_VERSION}/ssp-operator.yaml"
 
-# wait for tekton pipelines
-kubectl rollout status -n openshift-operators deployment/openshift-pipelines-operator --timeout 10m
-
 # wait until tasks tekton CRD is properly deployed
 timeout 10m bash <<- EOF
   until kubectl get crd tasks.tekton.dev; do
@@ -55,15 +56,19 @@ timeout 10m bash <<- EOF
   done
 EOF
 
+tekton_namespace="tekton-pipelines"
+if [[ "$IS_OKD" == "true" ]]; then
+  tekton_namespace="openshift-pipelines"
+fi
 # wait until tekton pipelines webhook is created
 timeout 10m bash <<- EOF
-  until kubectl get deployment tekton-pipelines-webhook -n openshift-pipelines; do
+  until kubectl get deployment tekton-pipelines-webhook -n ${tekton_namespace}; do
     sleep 5
   done
 EOF
 
 # wait until tekton pipelines webhook is online
-kubectl wait -n openshift-pipelines deployment tekton-pipelines-webhook --for condition=Available --timeout 10m
+kubectl wait -n ${tekton_namespace} deployment tekton-pipelines-webhook --for condition=Available --timeout 10m
 
 # Wait for kubevirt to be available
 kubectl rollout status -n cdi deployment/cdi-operator --timeout 10m
