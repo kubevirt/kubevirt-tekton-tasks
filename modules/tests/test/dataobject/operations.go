@@ -56,7 +56,6 @@ func HasDataVolumeFailedToImport(dataVolume *cdiv1beta1.DataVolume) bool {
 	conditions := getConditionMapDv(dataVolume)
 	return dataVolume.Status.Phase == cdiv1beta1.ImportInProgress &&
 		dataVolume.Status.RestartCount > constants.UnusualRestartCountThreshold &&
-		conditions[cdiv1beta1.DataVolumeBound].Status == v1.ConditionTrue &&
 		conditions[cdiv1beta1.DataVolumeRunning].Status == v1.ConditionFalse &&
 		conditions[cdiv1beta1.DataVolumeRunning].Reason == constants.ReasonError
 }
