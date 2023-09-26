@@ -24,7 +24,7 @@ func WaitForVM(kubevirtClient kubevirtcliv1.KubevirtClient,
 
 	err := wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
 		var err error
-		vm, err = kubevirtClient.VirtualMachine(namespace).Get(name, &metav1.GetOptions{})
+		vm, err = kubevirtClient.VirtualMachine(namespace).Get(context.TODO(), name, &metav1.GetOptions{})
 		if err != nil {
 			if numOfVMPollsBeforeError == 0 {
 				return true, err

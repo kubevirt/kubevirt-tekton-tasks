@@ -17,7 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
-	instancetypev1alpha2 "kubevirt.io/api/instancetype/v1alpha2"
+	instancetype "kubevirt.io/api/instancetype/v1beta1"
 )
 
 var _ = Describe("Create VM from manifest", func() {
@@ -462,7 +462,7 @@ var _ = Describe("Create VM from manifest", func() {
 					CreateVMResults.Namespace: expectedVMStub.Namespace,
 				})
 
-			vm, err := f.KubevirtClient.VirtualMachine(expectedVMStub.Namespace).Get(expectedVMStub.Name, &v1.GetOptions{})
+			vm, err := f.KubevirtClient.VirtualMachine(expectedVMStub.Namespace).Get(context.TODO(), expectedVMStub.Name, &v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			Expect(*vm.Spec.RunStrategy).To(Equal(expectedRunStrategy), "vm should have correct run strategy")
@@ -545,17 +545,17 @@ var _ = Describe("Create VM from manifest", func() {
 	})
 })
 
-func createInstancetype(f *framework.Framework, instancetypeName string) *instancetypev1alpha2.VirtualMachineClusterInstancetype {
-	instancetype := &instancetypev1alpha2.VirtualMachineClusterInstancetype{
+func createInstancetype(f *framework.Framework, instancetypeName string) *instancetype.VirtualMachineClusterInstancetype {
+	instancetype := &instancetype.VirtualMachineClusterInstancetype{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instancetypeName,
 			Namespace: f.TestOptions.DeployNamespace,
 		},
-		Spec: instancetypev1alpha2.VirtualMachineInstancetypeSpec{
-			CPU: instancetypev1alpha2.CPUInstancetype{
+		Spec: instancetype.VirtualMachineInstancetypeSpec{
+			CPU: instancetype.CPUInstancetype{
 				Guest: uint32(1),
 			},
-			Memory: instancetypev1alpha2.MemoryInstancetype{
+			Memory: instancetype.MemoryInstancetype{
 				Guest: resource.MustParse("128Mi"),
 			},
 		},

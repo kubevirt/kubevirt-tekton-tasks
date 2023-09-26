@@ -14,7 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
-	instancetypev1alpha2 "kubevirt.io/api/instancetype/v1alpha2"
+	instancetype "kubevirt.io/api/instancetype/v1beta1"
 	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
@@ -30,7 +30,7 @@ type ManagedResources struct {
 	vms                  []*kubevirtv1.VirtualMachine
 	templates            []*templatev1.Template
 	secrets              []*corev1.Secret
-	clusterInstancetypes []*instancetypev1alpha2.VirtualMachineClusterInstancetype
+	clusterInstancetypes []*instancetype.VirtualMachineClusterInstancetype
 }
 
 type Framework struct {
@@ -137,7 +137,7 @@ func (f *Framework) AfterEach() {
 		defer f.CdiClient.DataSources(ds.Namespace).Delete(context.TODO(), ds.Name, metav1.DeleteOptions{})
 	}
 	for _, vm := range f.managedResources.vms {
-		defer f.KubevirtClient.VirtualMachine(vm.Namespace).Delete(vm.Name, &metav1.DeleteOptions{})
+		defer f.KubevirtClient.VirtualMachine(vm.Namespace).Delete(context.TODO(), vm.Name, &metav1.DeleteOptions{})
 	}
 	for _, t := range f.managedResources.templates {
 		defer f.TemplateClient.Templates(t.Namespace).Delete(context.TODO(), t.Name, metav1.DeleteOptions{})
@@ -210,7 +210,7 @@ func (f *Framework) ManageSecrets(secrets ...*corev1.Secret) *Framework {
 	return f
 }
 
-func (f *Framework) ManageClusterInstancetypes(clusterInstancetypes ...*instancetypev1alpha2.VirtualMachineClusterInstancetype) *Framework {
+func (f *Framework) ManageClusterInstancetypes(clusterInstancetypes ...*instancetype.VirtualMachineClusterInstancetype) *Framework {
 	for _, clusterInstancetype := range clusterInstancetypes {
 		if clusterInstancetype != nil && clusterInstancetype.Name != "" {
 			f.managedResources.clusterInstancetypes = append(f.managedResources.clusterInstancetypes, clusterInstancetype)
