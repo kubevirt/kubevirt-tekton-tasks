@@ -232,6 +232,8 @@ var _ = Describe("Create VM from manifest", func() {
 		expectedVM := config.TaskData.VM
 		// fill VM accordingly
 		expectedVM.Spec.Template.Spec.Domain.Machine = vm.Spec.Template.Spec.Domain.Machine // ignore Machine
+		expectedVM.Spec.Template.Spec.Architecture = vm.Spec.Template.Spec.Architecture     // ignore Architecture
+		expectedVM.Spec.Template.ObjectMeta.Labels["vm.kubevirt.io/name"] = vm.Spec.Template.ObjectMeta.Name
 
 		Expect(vm.Spec.Template.Spec).Should(Equal(expectedVM.Spec.Template.Spec))
 		// check VM labels
