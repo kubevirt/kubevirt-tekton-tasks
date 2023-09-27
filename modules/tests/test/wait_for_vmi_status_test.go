@@ -22,11 +22,11 @@ var _ = Describe("Wait for VMI Status", func() {
 		f.TestSetup(config)
 
 		if vm := config.TaskData.VM; vm != nil {
-			vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(context.TODO(), vm)
+			vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm)
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageVMs(vm)
 			if config.TaskData.ShouldStartVM {
-				err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(context.TODO(), vm.Name, &v1.StartOptions{})
+				err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(context.Background(), vm.Name, &v1.StartOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 			}
 		}

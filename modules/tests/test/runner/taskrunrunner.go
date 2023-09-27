@@ -2,6 +2,7 @@ package runner
 
 import (
 	"context"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	framework2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
@@ -32,7 +33,7 @@ func (r *TaskRunRunner) GetTaskRun() *pipev1beta1.TaskRun {
 }
 
 func (r *TaskRunRunner) CreateTaskRun() *TaskRunRunner {
-	taskRun, err := r.framework.TknClient.TaskRuns(r.taskRun.Namespace).Create(context.TODO(), r.taskRun, v1.CreateOptions{})
+	taskRun, err := r.framework.TknClient.TaskRuns(r.taskRun.Namespace).Create(context.Background(), r.taskRun, v1.CreateOptions{})
 	Expect(err).ShouldNot(HaveOccurred())
 	r.taskRun = taskRun
 	r.framework.ManageTaskRuns(r.taskRun)
@@ -41,14 +42,14 @@ func (r *TaskRunRunner) CreateTaskRun() *TaskRunRunner {
 
 func (r *TaskRunRunner) ExpectFailure() *TaskRunRunner {
 	r.taskRun, r.logs = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
-		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
+		r.taskRun.GetTimeout(context.Background())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		tkntest.TaskRunFailed(r.taskRun.Name))
 	return r
 }
 
 func (r *TaskRunRunner) WaitForTaskRunFinish() *TaskRunRunner {
 	r.taskRun, r.logs = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
-		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
+		r.taskRun.GetTimeout(context.Background())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		func(accessor apis.ConditionAccessor) (bool, error) {
 			succeeded, _ := tkntest.TaskRunSucceed(r.taskRun.Name)(accessor)
 			return succeeded, nil
@@ -58,7 +59,7 @@ func (r *TaskRunRunner) WaitForTaskRunFinish() *TaskRunRunner {
 
 func (r *TaskRunRunner) ExpectSuccess() *TaskRunRunner {
 	r.taskRun, r.logs = tekton.WaitForTaskRunState(r.framework.Clients, r.taskRun.Namespace, r.taskRun.Name,
-		r.taskRun.GetTimeout(context.TODO())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
+		r.taskRun.GetTimeout(context.Background())+constants.Timeouts.TaskRunExtraWaitDelay.Duration,
 		tkntest.TaskRunSucceed(r.taskRun.Name))
 	return r
 }

@@ -35,7 +35,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 			f.TestSetup(config)
 
 			if dataVolume := config.TaskData.Datavolume; dataVolume != nil {
-				dataVolume, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Create(context.TODO(), dataVolume, metav1.CreateOptions{})
+				dataVolume, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Create(context.Background(), dataVolume, metav1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageDataVolumes(dataVolume)
 				err = dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dataVolume.Namespace, dataVolume.Name, constants.Timeouts.SmallDVCreation.Duration)
@@ -125,7 +125,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 
 			dataVolume := testConfig.TaskData.Datavolume
 			// prepare DataVolume
-			dataVolume, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Create(context.TODO(), dataVolume, metav1.CreateOptions{})
+			dataVolume, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Create(context.Background(), dataVolume, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dataVolume)
 			err = dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dataVolume.Namespace, dataVolume.Name, constants.Timeouts.SmallDVCreation.Duration)

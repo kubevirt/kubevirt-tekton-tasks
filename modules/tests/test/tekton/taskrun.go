@@ -26,7 +26,7 @@ func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeo
 	var taskRun *v1beta1.TaskRun
 	err := wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
 		var err error
-		taskRun, err = clients.TknClient.TaskRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+		taskRun, err = clients.TknClient.TaskRuns(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
 			return true, err
 		}
@@ -36,7 +36,7 @@ func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeo
 				Follow: true,
 			})
 
-			podLogs, err := req.Stream(context.TODO())
+			podLogs, err := req.Stream(context.Background())
 			if err == nil {
 				isCapturing = true
 				go func() {
@@ -65,7 +65,7 @@ func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeo
 
 func PrintTaskRunDebugInfo(clients *clients.Clients, taskRunNamespace, taskRunName string) {
 	// print conditions
-	taskRun, err := clients.TknClient.TaskRuns(taskRunNamespace).Get(context.TODO(), taskRunName, metav1.GetOptions{})
+	taskRun, err := clients.TknClient.TaskRuns(taskRunNamespace).Get(context.Background(), taskRunName, metav1.GetOptions{})
 	if err == nil {
 		conditions, _ := yaml.Marshal(taskRun.Status.Conditions)
 		fmt.Printf("taskrun conditions:\n%v\n", string(conditions))
@@ -85,7 +85,7 @@ func getTaskRunLogs(coreClient clientv1.CoreV1Interface, taskRun *v1beta1.TaskRu
 	// print logs
 	req := coreClient.Pods(taskRun.Namespace).GetLogs(taskRun.Status.PodName, &v1.PodLogOptions{})
 
-	podLogs, err := req.Stream(context.TODO())
+	podLogs, err := req.Stream(context.Background())
 	if err != nil {
 		return ""
 	}

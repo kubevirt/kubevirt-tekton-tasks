@@ -22,7 +22,7 @@ func WaitForSuccessfulDataVolume(kubevirtClient kubevirtcliv1.KubevirtClient, na
 
 func WaitForSuccessfulDataSource(cdiClientSet cdicliv1beta1.CdiV1beta1Interface, namespace, name string, timeout time.Duration) error {
 	return wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
-		dataSource, err := cdiClientSet.DataSources(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+		dataSource, err := cdiClientSet.DataSources(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
 			return true, err
 		}
@@ -31,9 +31,9 @@ func WaitForSuccessfulDataSource(cdiClientSet cdicliv1beta1.CdiV1beta1Interface,
 }
 
 func IsDataVolumeImportSuccessful(kubevirtClient kubevirtcliv1.KubevirtClient, namespace, name string) (bool, error) {
-	dataVolume, err := kubevirtClient.CdiClient().CdiV1beta1().DataVolumes(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	dataVolume, err := kubevirtClient.CdiClient().CdiV1beta1().DataVolumes(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
-		pvc, err := kubevirtClient.CoreV1().PersistentVolumeClaims(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+		pvc, err := kubevirtClient.CoreV1().PersistentVolumeClaims(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}

@@ -149,7 +149,7 @@ spec:
 
 		f.TestSetup(config)
 		pipelineRun := config.GetPipelineRun()
-		_, err := f.TknClient.Pipelines(config.PipelineRun.Namespace).Create(context.TODO(), config.Pipeline, metav1.CreateOptions{})
+		_, err := f.TknClient.Pipelines(config.PipelineRun.Namespace).Create(context.Background(), config.Pipeline, metav1.CreateOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 
 		f.ManagePipelines(config.Pipeline)
@@ -159,7 +159,7 @@ spec:
 			CreatePipelineRun().
 			ExpectSuccess()
 
-		pr, err := f.TknClient.PipelineRuns(config.PipelineRun.Namespace).Get(context.TODO(), config.PipelineRun.Name, metav1.GetOptions{})
+		pr, err := f.TknClient.PipelineRuns(config.PipelineRun.Namespace).Get(context.Background(), config.PipelineRun.Name, metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 
 		succeededConditionFound := false

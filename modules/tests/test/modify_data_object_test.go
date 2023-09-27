@@ -38,7 +38,7 @@ var _ = Describe("Modify data objects", func() {
 				ExpectResults(nil)
 
 			if dataVolume != nil && dataVolume.Name != "" && dataVolume.Namespace != "" {
-				_, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Get(context.TODO(), dataVolume.Name, metav1.GetOptions{})
+				_, err := f.CdiClient.DataVolumes(dataVolume.Namespace).Get(context.Background(), dataVolume.Name, metav1.GetOptions{})
 				Expect(err).Should(HaveOccurred())
 			}
 		},
@@ -176,7 +176,7 @@ var _ = Describe("Modify data objects", func() {
 				CreateTaskRun().
 				ExpectFailure()
 
-			dv, err := f.CdiClient.DataVolumes(dv.Namespace).Get(context.TODO(), dv.Name, metav1.GetOptions{})
+			dv, err := f.CdiClient.DataVolumes(dv.Namespace).Get(context.Background(), dv.Name, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(dv.Spec.Source.HTTP.URL).To(Equal(dv.Spec.Source.HTTP.URL))
 			Expect(dataobject.HasDataVolumeFailedToImport(dv)).To(BeTrue())
@@ -203,7 +203,7 @@ var _ = Describe("Modify data objects", func() {
 
 			f.ManageDataVolumes(dv)
 
-			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.TODO(), dv, metav1.CreateOptions{})
+			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.Background(), dv, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			runner.NewTaskRunRunner(f, config.GetTaskRun()).
@@ -211,7 +211,7 @@ var _ = Describe("Modify data objects", func() {
 				ExpectFailure().
 				ExpectLogs("already exists")
 
-			dv2, err := f.CdiClient.DataVolumes(dvNamespace).Get(context.TODO(), dvName, metav1.GetOptions{})
+			dv2, err := f.CdiClient.DataVolumes(dvNamespace).Get(context.Background(), dvName, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(dv2.CreationTimestamp).To(Equal(dv.CreationTimestamp))
 			Expect(dv2.Spec).To(Equal(dv.Spec))
@@ -253,7 +253,7 @@ var _ = Describe("Modify data objects", func() {
 				},
 			}
 
-			pvc, err := f.K8sClient.CoreV1().PersistentVolumeClaims(pvcNamespace).Create(context.TODO(), pvc, metav1.CreateOptions{})
+			pvc, err := f.K8sClient.CoreV1().PersistentVolumeClaims(pvcNamespace).Create(context.Background(), pvc, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			runner.NewTaskRunRunner(f, config.GetTaskRun()).
@@ -265,13 +265,13 @@ var _ = Describe("Modify data objects", func() {
 				})
 
 			var dv *cdiv1beta1.DataVolume
-			dv, err = f.CdiClient.DataVolumes(pvcNamespace).Get(context.TODO(), pvcName, metav1.GetOptions{})
+			dv, err = f.CdiClient.DataVolumes(pvcNamespace).Get(context.Background(), pvcName, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dv)
 
 			Expect(dv.Spec.Source.HTTP.URL).To(Equal(replacedURL))
 
-			pvc2, err := f.K8sClient.CoreV1().PersistentVolumeClaims(pvcNamespace).Get(context.TODO(), pvcName, metav1.GetOptions{})
+			pvc2, err := f.K8sClient.CoreV1().PersistentVolumeClaims(pvcNamespace).Get(context.Background(), pvcName, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(pvc2.CreationTimestamp).ToNot(Equal(pvc.CreationTimestamp))
 
@@ -302,7 +302,7 @@ var _ = Describe("Modify data objects", func() {
 			dv := datavolume.NewBlankDataVolume(dvName).WithURLSource(initialURL).WithNamespace(dvNamespace).Build()
 			f.ManageDataVolumes(dv)
 
-			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.TODO(), dv, metav1.CreateOptions{})
+			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.Background(), dv, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(dv.Spec.Source.HTTP.URL).To(Equal(initialURL))
 
@@ -314,7 +314,7 @@ var _ = Describe("Modify data objects", func() {
 					ModifyDataObjectResults.Namespace: dvNamespace,
 				})
 
-			dv2, err := f.CdiClient.DataVolumes(dvNamespace).Get(context.TODO(), dvName, metav1.GetOptions{})
+			dv2, err := f.CdiClient.DataVolumes(dvNamespace).Get(context.Background(), dvName, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(dv2.CreationTimestamp).ToNot(Equal(dv.CreationTimestamp))
 			Expect(dv2.Spec.Source.HTTP.URL).To(Equal(replacedURL))
@@ -335,7 +335,7 @@ var _ = Describe("Modify data objects", func() {
 				ExpectResults(nil)
 
 			if ds != nil && ds.Name != "" && ds.Namespace != "" {
-				_, err := f.CdiClient.DataSources(ds.Namespace).Get(context.TODO(), ds.Name, metav1.GetOptions{})
+				_, err := f.CdiClient.DataSources(ds.Namespace).Get(context.Background(), ds.Name, metav1.GetOptions{})
 				Expect(err).Should(HaveOccurred())
 			}
 		},
@@ -387,7 +387,7 @@ var _ = Describe("Modify data objects", func() {
 			dv := datavolume.NewBlankDataVolume(ds.Name).Build()
 			f.ManageDataVolumes(dv)
 
-			dv, err := f.CdiClient.DataVolumes(ds.Namespace).Create(context.TODO(), dv, metav1.CreateOptions{})
+			dv, err := f.CdiClient.DataVolumes(ds.Namespace).Create(context.Background(), dv, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			ds.Spec.Source.PVC = &cdiv1beta1.DataVolumeSourcePVC{
@@ -404,7 +404,7 @@ var _ = Describe("Modify data objects", func() {
 					ModifyDataObjectResults.Namespace: ds.Namespace,
 				})
 
-			ds, err = f.CdiClient.DataSources(ds.Namespace).Get(context.TODO(), ds.Name, metav1.GetOptions{})
+			ds, err = f.CdiClient.DataSources(ds.Namespace).Get(context.Background(), ds.Name, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			err = dataobject.WaitForSuccessfulDataSource(f.CdiClient, ds.Namespace, ds.Name, config.GetWaitForDataObjectTimeout())
@@ -459,7 +459,7 @@ var _ = Describe("Modify data objects", func() {
 			dv := datavolume.NewBlankDataVolume("blank-wait").Build()
 			f.ManageDataVolumes(dv)
 
-			dv, err := f.CdiClient.DataVolumes(ds.Namespace).Create(context.TODO(), dv, metav1.CreateOptions{})
+			dv, err := f.CdiClient.DataVolumes(ds.Namespace).Create(context.Background(), dv, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			ds.Spec.Source.PVC = &cdiv1beta1.DataVolumeSourcePVC{
@@ -497,7 +497,7 @@ var _ = Describe("Modify data objects", func() {
 			dataVolume := datavolume.NewBlankDataVolume(ds.Name).WithURLSource("https://invalid.source.my.domain.fail").Build()
 			f.ManageDataVolumes(dataVolume)
 
-			dataVolume, err := f.CdiClient.DataVolumes(ds.Namespace).Create(context.TODO(), dataVolume, metav1.CreateOptions{})
+			dataVolume, err := f.CdiClient.DataVolumes(ds.Namespace).Create(context.Background(), dataVolume, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			ds.Spec.Source.PVC = &cdiv1beta1.DataVolumeSourcePVC{
@@ -509,7 +509,7 @@ var _ = Describe("Modify data objects", func() {
 				CreateTaskRun().
 				ExpectFailure()
 
-			ds, err = f.CdiClient.DataSources(ds.Namespace).Get(context.TODO(), ds.Name, metav1.GetOptions{})
+			ds, err = f.CdiClient.DataSources(ds.Namespace).Get(context.Background(), ds.Name, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(dataobject.IsDataSourceReady(ds)).To(BeFalse())
 		})
@@ -533,7 +533,7 @@ var _ = Describe("Modify data objects", func() {
 			ds := datasource.NewDataSource(dsName).WithNamespace(dsNamespace).Build()
 			f.ManageDataSources(ds)
 
-			ds, err := f.CdiClient.DataSources(dsNamespace).Create(context.TODO(), ds, metav1.CreateOptions{})
+			ds, err := f.CdiClient.DataSources(dsNamespace).Create(context.Background(), ds, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			runner.NewTaskRunRunner(f, config.GetTaskRun()).
@@ -541,7 +541,7 @@ var _ = Describe("Modify data objects", func() {
 				ExpectFailure().
 				ExpectLogs("already exists")
 
-			ds2, err := f.CdiClient.DataSources(dsNamespace).Get(context.TODO(), dsName, metav1.GetOptions{})
+			ds2, err := f.CdiClient.DataSources(dsNamespace).Get(context.Background(), dsName, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(ds2.CreationTimestamp).To(Equal(ds.CreationTimestamp))
 			Expect(ds2.Spec).To(Equal(ds.Spec))
@@ -573,7 +573,7 @@ var _ = Describe("Modify data objects", func() {
 			ds := datasource.NewDataSource(dsName).WithSourcePVC(initialPVC, initialNS).WithNamespace(dsNamespace).Build()
 			f.ManageDataSources(ds)
 
-			ds, err := f.CdiClient.DataSources(dsNamespace).Create(context.TODO(), ds, metav1.CreateOptions{})
+			ds, err := f.CdiClient.DataSources(dsNamespace).Create(context.Background(), ds, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(ds.Spec.Source.PVC.Name).To(Equal(initialPVC))
 			Expect(ds.Spec.Source.PVC.Namespace).To(Equal(initialNS))
@@ -586,7 +586,7 @@ var _ = Describe("Modify data objects", func() {
 					ModifyDataObjectResults.Namespace: dsNamespace,
 				})
 
-			ds2, err := f.CdiClient.DataSources(dsNamespace).Get(context.TODO(), dsName, metav1.GetOptions{})
+			ds2, err := f.CdiClient.DataSources(dsNamespace).Get(context.Background(), dsName, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(ds2.CreationTimestamp).ToNot(Equal(ds.CreationTimestamp))
 			Expect(ds2.Spec.Source.PVC.Name).To(Equal(replacedPVC))
@@ -636,7 +636,7 @@ var _ = Describe("Modify data objects", func() {
 
 			dsNamespace := config.TaskData.DataSource.Namespace
 
-			ds, err := f.CdiClient.DataSources(dsNamespace).Create(context.TODO(), config.TaskData.DataSource, metav1.CreateOptions{})
+			ds, err := f.CdiClient.DataSources(dsNamespace).Create(context.Background(), config.TaskData.DataSource, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataSources(ds)
 
@@ -645,7 +645,7 @@ var _ = Describe("Modify data objects", func() {
 				ExpectFailure().
 				ExpectLogs(config.GetAllExpectedLogs()...)
 
-			ds, err = f.CdiClient.DataSources(dsNamespace).Get(context.TODO(), ds.Name, metav1.GetOptions{})
+			ds, err = f.CdiClient.DataSources(dsNamespace).Get(context.Background(), ds.Name, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(ds).ToNot(BeNil(), "dataSource should exists")
 		},
@@ -694,7 +694,7 @@ var _ = Describe("Modify data objects", func() {
 			dsName := config.TaskData.DataSource.Name
 			dsNamespace := config.TaskData.DataSource.Namespace
 
-			ds, err := f.CdiClient.DataSources(dsNamespace).Create(context.TODO(), ds, metav1.CreateOptions{})
+			ds, err := f.CdiClient.DataSources(dsNamespace).Create(context.Background(), ds, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataSources(ds)
 
@@ -703,7 +703,7 @@ var _ = Describe("Modify data objects", func() {
 				ExpectSuccess()
 
 			Eventually(func(g Gomega) {
-				if _, err := f.CdiClient.DataSources(dsNamespace).Get(context.TODO(), dsName, metav1.GetOptions{}); err != nil {
+				if _, err := f.CdiClient.DataSources(dsNamespace).Get(context.Background(), dsName, metav1.GetOptions{}); err != nil {
 					g.Expect(errors.ReasonForError(err)).To(Equal(metav1.StatusReasonNotFound))
 				}
 			}, Timeouts.TaskRunExtraWaitDelay.Duration, time.Second).Should(Succeed(), "DataSource should be deleted")
@@ -732,7 +732,7 @@ var _ = Describe("Modify data objects", func() {
 			dvName := config.TaskData.DataVolume.Name
 			dvNamespace := config.TaskData.DataVolume.Namespace
 
-			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.TODO(), dv, metav1.CreateOptions{})
+			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.Background(), dv, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dv)
 
@@ -744,7 +744,7 @@ var _ = Describe("Modify data objects", func() {
 				ExpectSuccess()
 
 			Eventually(func(g Gomega) {
-				if _, err := f.CdiClient.DataVolumes(dvNamespace).Get(context.TODO(), dvName, metav1.GetOptions{}); err != nil {
+				if _, err := f.CdiClient.DataVolumes(dvNamespace).Get(context.Background(), dvName, metav1.GetOptions{}); err != nil {
 					g.Expect(errors.ReasonForError(err)).To(Equal(metav1.StatusReasonNotFound))
 				}
 			}, Timeouts.TaskRunExtraWaitDelay.Duration, time.Second).Should(Succeed(), "DataVolume should be deleted")
@@ -756,7 +756,7 @@ var _ = Describe("Modify data objects", func() {
 			config.TaskData.DataVolume.Annotations["cdi.kubevirt.io/storage.deleteAfterCompletion"] = "false"
 			dvNamespace := config.TaskData.DataVolume.Namespace
 
-			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.TODO(), config.TaskData.DataVolume, metav1.CreateOptions{})
+			dv, err := f.CdiClient.DataVolumes(dvNamespace).Create(context.Background(), config.TaskData.DataVolume, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageDataVolumes(dv)
 
@@ -765,7 +765,7 @@ var _ = Describe("Modify data objects", func() {
 				ExpectFailure().
 				ExpectLogs(config.GetAllExpectedLogs()...)
 
-			dv, err = f.CdiClient.DataVolumes(dvNamespace).Get(context.TODO(), dv.Name, metav1.GetOptions{})
+			dv, err = f.CdiClient.DataVolumes(dvNamespace).Get(context.Background(), dv.Name, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(dv).ToNot(BeNil(), "dataVolume should exists")
 		},

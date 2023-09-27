@@ -99,10 +99,10 @@ func (f *Framework) AfterEach() {
 		defer func() {
 			if !f.Debug {
 				for _, taskRun := range taskRuns {
-					defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(context.TODO(), taskRun.Name, metav1.DeleteOptions{})
+					defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(context.Background(), taskRun.Name, metav1.DeleteOptions{})
 				}
 				for _, pipelineRun := range pipelineRuns {
-					defer f.TknClient.PipelineRuns(pipelineRun.Namespace).Delete(context.TODO(), pipelineRun.Name, metav1.DeleteOptions{})
+					defer f.TknClient.PipelineRuns(pipelineRun.Namespace).Delete(context.Background(), pipelineRun.Name, metav1.DeleteOptions{})
 				}
 			}
 			for _, taskRun := range taskRuns {
@@ -121,29 +121,29 @@ func (f *Framework) AfterEach() {
 
 	if !failed { // failed has its own cleanup
 		for _, taskRun := range taskRuns {
-			defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(context.TODO(), taskRun.Name, metav1.DeleteOptions{})
+			defer f.TknClient.TaskRuns(taskRun.Namespace).Delete(context.Background(), taskRun.Name, metav1.DeleteOptions{})
 		}
 		for _, pipelineRun := range pipelineRuns {
-			defer f.TknClient.PipelineRuns(pipelineRun.Namespace).Delete(context.TODO(), pipelineRun.Name, metav1.DeleteOptions{})
+			defer f.TknClient.PipelineRuns(pipelineRun.Namespace).Delete(context.Background(), pipelineRun.Name, metav1.DeleteOptions{})
 		}
 	}
 	for _, pipeline := range f.managedResources.pipelines {
-		defer f.TknClient.Pipelines(pipeline.Namespace).Delete(context.TODO(), pipeline.Name, metav1.DeleteOptions{})
+		defer f.TknClient.Pipelines(pipeline.Namespace).Delete(context.Background(), pipeline.Name, metav1.DeleteOptions{})
 	}
 	for _, dv := range f.managedResources.dataVolumes {
-		defer f.CdiClient.DataVolumes(dv.Namespace).Delete(context.TODO(), dv.Name, metav1.DeleteOptions{})
+		defer f.CdiClient.DataVolumes(dv.Namespace).Delete(context.Background(), dv.Name, metav1.DeleteOptions{})
 	}
 	for _, ds := range f.managedResources.dataSources {
-		defer f.CdiClient.DataSources(ds.Namespace).Delete(context.TODO(), ds.Name, metav1.DeleteOptions{})
+		defer f.CdiClient.DataSources(ds.Namespace).Delete(context.Background(), ds.Name, metav1.DeleteOptions{})
 	}
 	for _, vm := range f.managedResources.vms {
-		defer f.KubevirtClient.VirtualMachine(vm.Namespace).Delete(context.TODO(), vm.Name, &metav1.DeleteOptions{})
+		defer f.KubevirtClient.VirtualMachine(vm.Namespace).Delete(context.Background(), vm.Name, &metav1.DeleteOptions{})
 	}
 	for _, t := range f.managedResources.templates {
-		defer f.TemplateClient.Templates(t.Namespace).Delete(context.TODO(), t.Name, metav1.DeleteOptions{})
+		defer f.TemplateClient.Templates(t.Namespace).Delete(context.Background(), t.Name, metav1.DeleteOptions{})
 	}
 	for _, s := range f.managedResources.secrets {
-		defer f.KubevirtClient.CoreV1().Secrets(s.Namespace).Delete(context.TODO(), s.Name, metav1.DeleteOptions{})
+		defer f.KubevirtClient.CoreV1().Secrets(s.Namespace).Delete(context.Background(), s.Name, metav1.DeleteOptions{})
 	}
 	for _, clusterInstancetype := range f.managedResources.clusterInstancetypes {
 		defer f.KubevirtClient.VirtualMachineClusterInstancetype().Delete(context.Background(), clusterInstancetype.Name, metav1.DeleteOptions{})

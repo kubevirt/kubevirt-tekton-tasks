@@ -53,7 +53,7 @@ func BuildTestSuite() {
 		noErr(err)
 
 		if framework.TestOptionsInstance.EnvScope == constants.OKDEnvScope {
-			templateList, err := framework.ClientsInstance.TemplateClient.Templates("openshift").List(context.TODO(), metav1.ListOptions{
+			templateList, err := framework.ClientsInstance.TemplateClient.Templates("openshift").List(context.Background(), metav1.ListOptions{
 				LabelSelector: "template.kubevirt.io/type=base",
 			})
 			noErr(err)
