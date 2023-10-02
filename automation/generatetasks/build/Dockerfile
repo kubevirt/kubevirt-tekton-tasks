@@ -5,7 +5,7 @@ ENV HOME=/go/src/github.com/kubevirt/kubevirt-tekton-tasks/ \
     USER_NAME=generatetasks
 
 
-RUN curl -L https://go.dev/dl/go1.18.1.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+RUN curl -L https://go.dev/dl/go1.20.8.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 ENV PATH=$PATH:/usr/local/go/bin
 
 WORKDIR ${HOME}

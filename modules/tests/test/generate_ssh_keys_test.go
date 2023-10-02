@@ -116,7 +116,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResultsWithLen(config.GetExpectedResults(), 4)
 
-		publicSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PublicKeySecretNamespace]).Get(context.TODO(), results[GenerateSshKeysResults.PublicKeySecretName], metav1.GetOptions{})
+		publicSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PublicKeySecretNamespace]).Get(context.Background(), results[GenerateSshKeysResults.PublicKeySecretName], metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(publicSecret.Data).To(HaveLen(1))
 
@@ -129,7 +129,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			}
 		}
 
-		privateSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PrivateKeySecretNamespace]).Get(context.TODO(), results[GenerateSshKeysResults.PrivateKeySecretName], metav1.GetOptions{})
+		privateSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PrivateKeySecretNamespace]).Get(context.Background(), results[GenerateSshKeysResults.PrivateKeySecretName], metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(privateSecret.Type).Should(Equal(corev1.SecretTypeSSHAuth))
 		Expect(string(privateSecret.Data[PrivateKeyConnectionOptions.PrivateKey])).Should(ContainSubstring("PRIVATE KEY-----"))
@@ -245,7 +245,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			},
 		}
 
-		publicSecret, err := f.CoreV1Client.Secrets(f.TestNamespace).Create(context.TODO(), publicSecret, metav1.CreateOptions{})
+		publicSecret, err := f.CoreV1Client.Secrets(f.TestNamespace).Create(context.Background(), publicSecret, metav1.CreateOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		f.ManageSecrets(publicSecret)
 
@@ -260,7 +260,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResultsWithLen(config.GetExpectedResults(), 4)
 
-		publicSecret, err = f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PublicKeySecretNamespace]).Get(context.TODO(), results[GenerateSshKeysResults.PublicKeySecretName], metav1.GetOptions{})
+		publicSecret, err = f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PublicKeySecretNamespace]).Get(context.Background(), results[GenerateSshKeysResults.PublicKeySecretName], metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(publicSecret.Data).To(HaveLen(2))
 
@@ -273,7 +273,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			Expect(string(value)).To(ContainSubstring("@"))
 		}
 
-		privateSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PrivateKeySecretNamespace]).Get(context.TODO(), results[GenerateSshKeysResults.PrivateKeySecretName], metav1.GetOptions{})
+		privateSecret, err := f.CoreV1Client.Secrets(results[GenerateSshKeysResults.PrivateKeySecretNamespace]).Get(context.Background(), results[GenerateSshKeysResults.PrivateKeySecretName], metav1.GetOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(string(privateSecret.Data[PrivateKeyConnectionOptions.PrivateKey])).Should(ContainSubstring("PRIVATE KEY-----"))
 	})

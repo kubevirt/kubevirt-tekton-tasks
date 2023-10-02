@@ -61,7 +61,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			f.TestSetup(config)
 
 			if secret := config.TaskData.Secret; secret != nil {
-				secret, err := f.K8sClient.CoreV1().Secrets(secret.Namespace).Create(context.TODO(), secret, v1.CreateOptions{})
+				secret, err := f.K8sClient.CoreV1().Secrets(secret.Namespace).Create(context.Background(), secret, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageSecrets(secret)
 			}
@@ -78,7 +78,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 								"userdata": volume.CloudInitNoCloud.UserData,
 							},
 						}
-						cloudInitSecret, err := f.K8sClient.CoreV1().Secrets(vm.Namespace).Create(context.TODO(), cloudInitSecret, v1.CreateOptions{})
+						cloudInitSecret, err := f.K8sClient.CoreV1().Secrets(vm.Namespace).Create(context.Background(), cloudInitSecret, v1.CreateOptions{})
 						Expect(err).ShouldNot(HaveOccurred())
 						f.ManageSecrets(cloudInitSecret)
 						volume.CloudInitNoCloud.UserData = ""
@@ -87,11 +87,11 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 						}
 					}
 				}
-				vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(vm)
+				vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm)
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageVMs(vm)
 				if config.TaskData.ShouldStartVM {
-					err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(vm.Name, &kubevirtv1.StartOptions{})
+					err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(context.Background(), vm.Name, &kubevirtv1.StartOptions{})
 					Expect(err).ShouldNot(HaveOccurred())
 					time.Sleep(Timeouts.WaitBeforeExecutingVM.Duration)
 				}
@@ -431,17 +431,17 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		f.TestSetup(config)
 
 		if secret := config.TaskData.Secret; secret != nil {
-			secret, err := f.K8sClient.CoreV1().Secrets(secret.Namespace).Create(context.TODO(), secret, v1.CreateOptions{})
+			secret, err := f.K8sClient.CoreV1().Secrets(secret.Namespace).Create(context.Background(), secret, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageSecrets(secret)
 		}
 
 		if vm := config.TaskData.VM; vm != nil {
-			vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(vm)
+			vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm)
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageVMs(vm)
 			if config.TaskData.ShouldStartVM {
-				err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(vm.Name, &kubevirtv1.StartOptions{})
+				err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(context.Background(), vm.Name, &kubevirtv1.StartOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				time.Sleep(Timeouts.WaitBeforeExecutingVM.Duration)
 			}
@@ -454,7 +454,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			ExpectTermination(config.ExpectedTermination).
 			ExpectResults(nil)
 
-		vm, err := f.KubevirtClient.VirtualMachine(config.TaskData.VMNamespace).Get(config.TaskData.VMName, &metav1.GetOptions{})
+		vm, err := f.KubevirtClient.VirtualMachine(config.TaskData.VMNamespace).Get(context.Background(), config.TaskData.VMName, &metav1.GetOptions{})
 
 		if config.TaskData.Delete {
 			Expect(err).Should(HaveOccurred())

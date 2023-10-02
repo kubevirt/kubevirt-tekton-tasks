@@ -32,7 +32,7 @@ func (r *PipelineRunRunner) GetPipelineRun() *pipev1beta1.PipelineRun {
 }
 
 func (r *PipelineRunRunner) CreatePipelineRun() *PipelineRunRunner {
-	pipelineRun, err := r.framework.TknClient.PipelineRuns(r.pipelineRun.Namespace).Create(context.TODO(), r.pipelineRun, v1.CreateOptions{})
+	pipelineRun, err := r.framework.TknClient.PipelineRuns(r.pipelineRun.Namespace).Create(context.Background(), r.pipelineRun, v1.CreateOptions{})
 	Expect(err).ShouldNot(HaveOccurred())
 	r.pipelineRun = pipelineRun
 	r.framework.ManagePipelineRuns(r.pipelineRun)
@@ -41,14 +41,14 @@ func (r *PipelineRunRunner) CreatePipelineRun() *PipelineRunRunner {
 
 func (r *PipelineRunRunner) ExpectFailure() *PipelineRunRunner {
 	r.pipelineRun, r.logs = tekton.WaitForPipelineRunState(r.framework.Clients, r.pipelineRun.Namespace, r.pipelineRun.Name,
-		r.pipelineRun.PipelineTimeout(context.TODO())+constants.Timeouts.PipelineRunExtraWaitDelay.Duration,
+		r.pipelineRun.PipelineTimeout(context.Background())+constants.Timeouts.PipelineRunExtraWaitDelay.Duration,
 		tkntest.PipelineRunFailed(r.pipelineRun.Name))
 	return r
 }
 
 func (r *PipelineRunRunner) WaitForPipelineRunFinish() *PipelineRunRunner {
 	r.pipelineRun, r.logs = tekton.WaitForPipelineRunState(r.framework.Clients, r.pipelineRun.Namespace, r.pipelineRun.Name,
-		r.pipelineRun.PipelineTimeout(context.TODO())+constants.Timeouts.PipelineRunExtraWaitDelay.Duration,
+		r.pipelineRun.PipelineTimeout(context.Background())+constants.Timeouts.PipelineRunExtraWaitDelay.Duration,
 		func(accessor apis.ConditionAccessor) (bool, error) {
 			succeeded, _ := tkntest.PipelineRunSucceed(r.pipelineRun.Name)(accessor)
 			return succeeded, nil
@@ -58,7 +58,7 @@ func (r *PipelineRunRunner) WaitForPipelineRunFinish() *PipelineRunRunner {
 
 func (r *PipelineRunRunner) ExpectSuccess() *PipelineRunRunner {
 	r.pipelineRun, r.logs = tekton.WaitForPipelineRunState(r.framework.Clients, r.pipelineRun.Namespace, r.pipelineRun.Name,
-		r.pipelineRun.PipelineTimeout(context.TODO())+constants.Timeouts.PipelineRunExtraWaitDelay.Duration,
+		r.pipelineRun.PipelineTimeout(context.Background())+constants.Timeouts.PipelineRunExtraWaitDelay.Duration,
 		tkntest.PipelineRunSucceed(r.pipelineRun.Name))
 	return r
 }

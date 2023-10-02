@@ -53,7 +53,7 @@ func WaitForPipelineRunState(clients *clients.Clients, namespace, name string, t
 	pipelinePodsLogs.logs = make(map[string]string)
 	var wg sync.WaitGroup
 	err := wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
-		pipelineRun, err := clients.TknClient.PipelineRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+		pipelineRun, err := clients.TknClient.PipelineRuns(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
 			return true, err
 		}
@@ -67,7 +67,7 @@ func WaitForPipelineRunState(clients *clients.Clients, namespace, name string, t
 					req := clients.CoreV1Client.Pods(namespace).GetLogs(podName, &v1.PodLogOptions{
 						Follow: true,
 					})
-					podLogs, err := req.Stream(context.TODO())
+					podLogs, err := req.Stream(context.Background())
 					//when an error occurs, just end the function and do nothing, in next iteration the command will run again to get logs
 					if err != nil {
 						return
@@ -95,7 +95,7 @@ func WaitForPipelineRunState(clients *clients.Clients, namespace, name string, t
 
 	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
-	pipelineRun, err := clients.TknClient.PipelineRuns(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	pipelineRun, err := clients.TknClient.PipelineRuns(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 	return pipelineRun, logs
@@ -103,7 +103,7 @@ func WaitForPipelineRunState(clients *clients.Clients, namespace, name string, t
 
 func PrintPipelineRunDebugInfo(clients *clients.Clients, pipelineRunNamespace, pipelineRunName string) {
 	// print conditions
-	pipelineRun, err := clients.TknClient.PipelineRuns(pipelineRunNamespace).Get(context.TODO(), pipelineRunName, metav1.GetOptions{})
+	pipelineRun, err := clients.TknClient.PipelineRuns(pipelineRunNamespace).Get(context.Background(), pipelineRunName, metav1.GetOptions{})
 	if err == nil {
 		conditions, _ := yaml.Marshal(pipelineRun.Status.Conditions)
 		fmt.Printf("pipelineRun conditions:\n%v\n", string(conditions))

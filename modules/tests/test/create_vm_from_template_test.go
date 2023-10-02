@@ -28,7 +28,7 @@ var _ = Describe("Create VM from template", func() {
 		f.TestSetup(config)
 
 		if template := config.TaskData.Template; template != nil {
-			template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+			template, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(template)
 		}
@@ -153,7 +153,7 @@ var _ = Describe("Create VM from template", func() {
 	DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig) {
 		f.TestSetup(config)
 		if template := config.TaskData.Template; template != nil {
-			template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+			template, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(template)
 		}
@@ -310,7 +310,7 @@ var _ = Describe("Create VM from template", func() {
 			},
 		}
 		f.TestSetup(config)
-		template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+		template, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		f.ManageTemplates(template)
 
@@ -335,6 +335,8 @@ var _ = Describe("Create VM from template", func() {
 		// fill template VM accordingly
 		expectedVM.Spec.Template.Spec.Hostname = vmName
 		expectedVM.Spec.Template.Spec.Domain.Machine = vm.Spec.Template.Spec.Domain.Machine // ignore Machine
+		expectedVM.Spec.Template.Spec.Architecture = vm.Spec.Template.Spec.Architecture     // ignore Architecture
+		expectedVM.Spec.Template.ObjectMeta.Labels["vm.kubevirt.io/name"] = vm.Spec.Template.ObjectMeta.Name
 
 		Expect(vm.Spec.Template.Spec).Should(Equal(expectedVM.Spec.Template.Spec))
 		// check VM labels
@@ -354,7 +356,7 @@ var _ = Describe("Create VM from template", func() {
 	Context("with StartVM", func() {
 		DescribeTable("VM is created from template with StartVM attribute", func(config *testconfigs.CreateVMTestConfig, phase kubevirtv1.VirtualMachineInstancePhase, running bool) {
 			f.TestSetup(config)
-			template, err := f.TemplateClient.Templates(config.TaskData.Template.Namespace).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
+			template, err := f.TemplateClient.Templates(config.TaskData.Template.Namespace).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(template)
 
@@ -421,7 +423,7 @@ var _ = Describe("Create VM from template", func() {
 		DescribeTable("VM is created from template with runStrategy attribute", func(config *testconfigs.CreateVMTestConfig, expectedRunStrategy kubevirtv1.VirtualMachineRunStrategy) {
 			f.TestSetup(config)
 
-			template, err := f.TemplateClient.Templates(config.TaskData.Template.Namespace).Create(context.TODO(), config.TaskData.Template, v1.CreateOptions{})
+			template, err := f.TemplateClient.Templates(config.TaskData.Template.Namespace).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(template)
 
@@ -437,7 +439,7 @@ var _ = Describe("Create VM from template", func() {
 					CreateVMResults.Namespace: expectedVMStub.Namespace,
 				})
 
-			vm, err := f.KubevirtClient.VirtualMachine(expectedVMStub.Namespace).Get(expectedVMStub.Name, &v1.GetOptions{})
+			vm, err := f.KubevirtClient.VirtualMachine(expectedVMStub.Namespace).Get(context.Background(), expectedVMStub.Name, &v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			Expect(*vm.Spec.RunStrategy).To(Equal(expectedRunStrategy), "vm should have correct run strategy")

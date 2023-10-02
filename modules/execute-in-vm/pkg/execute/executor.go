@@ -175,7 +175,7 @@ func (e *Executor) EnsureVMDeleted() error {
 	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
 
 	return wait.PollImmediateInfinite(constants.PollVMtoDeleteInterval, func() (bool, error) {
-		_, err := e.kubevirtClient.VirtualMachine(vmNamespace).Get(vmName, &v1.GetOptions{})
+		_, err := e.kubevirtClient.VirtualMachine(vmNamespace).Get(context.TODO(), vmName, &v1.GetOptions{})
 
 		if err == nil {
 			if err := e.ensureVMDelete(); err != nil {
@@ -234,7 +234,7 @@ func (e *Executor) ensureVMStarted() error {
 	if !e.attemptedStart {
 		e.attemptedStart = true
 		log.Logger().Debug("starting a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
-		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Start(vmName, &kubevirtv1.StartOptions{}); err != nil {
+		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Start(context.TODO(), vmName, &kubevirtv1.StartOptions{}); err != nil {
 			return err
 		}
 	}
@@ -248,7 +248,7 @@ func (e *Executor) ensureVMStop() error {
 		e.attemptedStop = true
 
 		log.Logger().Debug("stopping a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
-		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Stop(vmName, &kubevirtv1.StopOptions{}); err != nil {
+		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Stop(context.TODO(), vmName, &kubevirtv1.StopOptions{}); err != nil {
 			return err
 		}
 	}
@@ -263,7 +263,7 @@ func (e *Executor) ensureVMDelete() error {
 		e.attemptedDelete = true
 
 		log.Logger().Debug("deleting a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
-		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Delete(vmName, &v1.DeleteOptions{}); err != nil {
+		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Delete(context.TODO(), vmName, &v1.DeleteOptions{}); err != nil {
 			return err
 		}
 	}

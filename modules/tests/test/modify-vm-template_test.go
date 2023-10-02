@@ -85,7 +85,7 @@ var _ = Describe("Modify template task", func() {
 			f.TestSetup(config)
 
 			if template := config.TaskData.Template; template != nil {
-				t, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				t, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageTemplates(t)
 			}
@@ -262,7 +262,7 @@ var _ = Describe("Modify template task", func() {
 			f.TestSetup(config)
 
 			if template := config.TaskData.Template; template != nil {
-				t, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				t, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageTemplates(t)
 			}
@@ -276,7 +276,7 @@ var _ = Describe("Modify template task", func() {
 					"namespace": config.TaskData.TemplateNamespace,
 				})
 
-			template, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			template, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.Background(), config.TaskData.TemplateName, v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(template).ToNot(BeNil(), "new template should exists")
 			f.ManageTemplates(template)
@@ -377,7 +377,7 @@ var _ = Describe("Modify template task", func() {
 			f.TestSetup(config)
 
 			if template := config.TaskData.Template; template != nil {
-				t, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				t, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageTemplates(t)
 			}
@@ -391,7 +391,7 @@ var _ = Describe("Modify template task", func() {
 					"namespace": config.TaskData.TemplateNamespace,
 				})
 
-			template, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			template, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.Background(), config.TaskData.TemplateName, v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(template).ToNot(BeNil(), "new template should exists")
 			f.ManageTemplates(template)
@@ -424,7 +424,7 @@ var _ = Describe("Modify template task", func() {
 			f.TestSetup(config)
 
 			if template := config.TaskData.Template; template != nil {
-				t, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				t, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageTemplates(t)
 			}
@@ -438,7 +438,7 @@ var _ = Describe("Modify template task", func() {
 					"namespace": config.TaskData.TemplateNamespace,
 				})
 
-			template, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			template, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.Background(), config.TaskData.TemplateName, v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(template).ToNot(BeNil(), "new template should exists")
 			f.ManageTemplates(template)
@@ -464,7 +464,7 @@ var _ = Describe("Modify template task", func() {
 
 			template := config.TaskData.Template
 			if template != nil {
-				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageTemplates(template)
 			}
@@ -478,7 +478,7 @@ var _ = Describe("Modify template task", func() {
 					"namespace": config.TaskData.TemplateNamespace,
 				})
 
-			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.Background(), config.TaskData.TemplateName, v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(updatedTemplate).ToNot(BeNil(), "new template should exists")
 			f.ManageTemplates(updatedTemplate)
@@ -522,7 +522,7 @@ var _ = Describe("Modify template task", func() {
 
 			template := config.TaskData.Template
 			if template != nil {
-				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageTemplates(template)
 			}
@@ -536,7 +536,7 @@ var _ = Describe("Modify template task", func() {
 					"namespace": config.TaskData.TemplateNamespace,
 				})
 
-			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.Background(), config.TaskData.TemplateName, v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(updatedTemplate).ToNot(BeNil(), "new template should exists")
 			f.ManageTemplates(updatedTemplate)
@@ -565,7 +565,7 @@ var _ = Describe("Modify template task", func() {
 
 			template := config.TaskData.Template
 			if template != nil {
-				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageTemplates(template)
 			}
@@ -579,7 +579,7 @@ var _ = Describe("Modify template task", func() {
 					"namespace": config.TaskData.TemplateNamespace,
 				})
 
-			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.Background(), config.TaskData.TemplateName, v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(updatedTemplate).ToNot(BeNil(), "new template should exists")
 			f.ManageTemplates(updatedTemplate)
@@ -608,7 +608,7 @@ var _ = Describe("Modify template task", func() {
 
 			template := config.TaskData.Template
 			if template != nil {
-				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageTemplates(template)
 			}
@@ -622,7 +622,7 @@ var _ = Describe("Modify template task", func() {
 					"namespace": config.TaskData.TemplateNamespace,
 				})
 
-			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+			updatedTemplate, err := f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Get(context.Background(), config.TaskData.TemplateName, v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(updatedTemplate).ToNot(BeNil(), "new template should exists")
 			f.ManageTemplates(updatedTemplate)
@@ -647,7 +647,7 @@ var _ = Describe("Modify template task", func() {
 
 			template := config.TaskData.Template
 			if template != nil {
-				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.TODO(), template, v1.CreateOptions{})
+				template, err := f.TemplateClient.Templates(template.Namespace).Create(context.Background(), template, v1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageTemplates(template)
 			}
@@ -662,7 +662,7 @@ var _ = Describe("Modify template task", func() {
 				})
 
 			Eventually(func() bool {
-				_, err := f.TemplateClient.Templates(config.TaskData.TemplateNamespace).Get(context.TODO(), config.TaskData.TemplateName, v1.GetOptions{})
+				_, err := f.TemplateClient.Templates(config.TaskData.TemplateNamespace).Get(context.Background(), config.TaskData.TemplateName, v1.GetOptions{})
 				return errors.IsNotFound(err)
 			}, time.Second*360, time.Second).Should(BeTrue())
 		})
