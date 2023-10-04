@@ -321,23 +321,13 @@ rules:
     resources:
       - virtualmachines/start
   - verbs:
-      - '*'
-    apiGroups:
-      - kubevirt.io
-    resources:
-      - virtualmachines/finalizers
-  - verbs:
-      - '*'
+      - update
+
     apiGroups:
       - ''
     resources:
       - persistentvolumeclaims
-  - verbs:
-      - '*'
-    apiGroups:
-      - cdi.kubevirt.io
-    resources:
-      - datavolumes
+
 
 ---
 apiVersion: v1
@@ -452,7 +442,7 @@ rules:
       - virtualmachines
       - virtualmachineinstances
   - verbs:
-      - '*'
+      - get
     apiGroups:
       - kubevirt.io
     resources:
@@ -472,13 +462,8 @@ rules:
     resources:
       - processedtemplates
   - verbs:
-      - '*'
-    apiGroups:
-      - ''
-    resources:
-      - persistentvolumeclaims
-  - verbs:
-      - '*'
+      - create
+
     apiGroups:
       - cdi.kubevirt.io
     resources:
@@ -955,7 +940,10 @@ metadata:
   name: generate-ssh-keys-task
 rules:
   - verbs:
-      - '*'
+      - get
+      - list
+      - create
+      - patch
     apiGroups:
       - ''
     resources:

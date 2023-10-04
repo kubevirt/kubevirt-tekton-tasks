@@ -79,7 +79,10 @@ metadata:
   name: generate-ssh-keys-task
 rules:
   - verbs:
-      - '*'
+      - get
+      - list
+      - create
+      - patch
     apiGroups:
       - ''
     resources:
