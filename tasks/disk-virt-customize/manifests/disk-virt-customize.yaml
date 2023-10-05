@@ -30,7 +30,7 @@ spec:
       default: ""
   steps:
     - name: run-virt-customize
-      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.15.0"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.16.0"
       command:
         - entrypoint
       args:
