@@ -44,7 +44,7 @@ spec:
       description: The namespace of a template that was created.
   steps:
     - name: copytemplate
-      image: "quay.io/kubevirt/tekton-tasks:v0.15.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.16.0"
       command:
         - copy-template
       args:
