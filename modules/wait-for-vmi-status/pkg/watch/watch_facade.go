@@ -6,11 +6,11 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/wait-for-vmi-status/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/wait-for-vmi-status/pkg/utils/parse"
 	"go.uber.org/zap"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	api "k8s.io/kubernetes/pkg/apis/core"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 	kubevirtcliv1 "kubevirt.io/client-go/kubecli"
 	"time"
@@ -49,7 +49,7 @@ func (f *WatchFacade) WaitForVMIConditions() bool {
 	listerWatcher := cache.NewListWatchFromClient(f.kubevirtClient.RestClient(),
 		"virtualmachineinstances",
 		f.clioptions.VirtualMachineInstanceNamespace,
-		fields.OneTermEqualSelector(api.ObjectNameField, f.clioptions.VirtualMachineInstanceName),
+		fields.OneTermEqualSelector(v1.ObjectNameField, f.clioptions.VirtualMachineInstanceName),
 	)
 
 	stop := make(chan struct{})
