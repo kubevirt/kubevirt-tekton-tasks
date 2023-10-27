@@ -106,7 +106,7 @@ func (t *TemplateCreator) CopyTemplate() (*v1.Template, error) {
 	return t.templateProvider.Create(updatedTemplate)
 }
 func removeCommonTemplateMetadataFromUnstructuredVM(unstructuredVM *unstructured.Unstructured, path []string, additionalMetadata map[string]string) error {
-	obj, foundObj, err := GetMapStringFromUnstructuredVM(unstructuredVM, path)
+	obj, foundObj, err := unstructured.NestedStringMap(unstructuredVM.UnstructuredContent(), path...)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,10 @@ func removeCommonTemplateMetadataFromUnstructuredVM(unstructuredVM *unstructured
 			obj[key] = value
 		}
 
-		setMapStringToUnstructuredVM(unstructuredVM, obj, path)
+		err := unstructured.SetNestedStringMap(unstructuredVM.UnstructuredContent(), obj, path...)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -240,23 +243,4 @@ func getUnstructuredVM(template *templatev1.Template) (*unstructured.Unstructure
 		return nil, err
 	}
 	return unstructuredVM, nil
-}
-
-func GetMapStringFromUnstructuredVM(unstructuredVM *unstructured.Unstructured, path []string) (map[string]string, bool, error) {
-	m, found, err := unstructured.NestedStringMap(unstructuredVM.UnstructuredContent(), path...)
-	if err != nil {
-		return nil, false, err
-	}
-	if !found {
-		return nil, false, nil
-	}
-	return m, true, nil
-}
-
-func setMapStringToUnstructuredVM(unstructuredVM *unstructured.Unstructured, m map[string]string, path []string) error {
-	err := unstructured.SetNestedStringMap(unstructuredVM.UnstructuredContent(), m, path...)
-	if err != nil {
-		return err
-	}
-	return nil
 }
