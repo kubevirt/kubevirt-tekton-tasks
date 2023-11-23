@@ -1,0 +1,15 @@
+# Snyk (https://snyk.io) policy file
+exclude:
+  global:
+    - modules/copy-template/vendor/**
+    - modules/create-vm/vendor/**
+    - modules/disk-virt-customize/vendor/**
+    - modules/disk-virt-sysprep/vendor/**
+    - modules/execute-in-vm/vendor/**
+    - modules/generate-ssh-keys/vendor/**
+    - modules/modify-data-object/vendor/**
+    - modules/modify-vm-template/vendor/**
+    - modules/shared/vendor/**
+    - modules/sharedtest/vendor/**
+    - modules/tests/vendor/**
+    - modules/wait-for-vmi-status/vendor/**
