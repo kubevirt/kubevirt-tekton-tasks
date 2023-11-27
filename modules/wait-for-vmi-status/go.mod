@@ -11,8 +11,8 @@ require (
 	go.uber.org/zap v1.19.0
 	k8s.io/apimachinery v0.27.1
 	k8s.io/client-go v12.0.0+incompatible
-	kubevirt.io/api v1.0.0
-	kubevirt.io/client-go v1.0.0
+	kubevirt.io/api v1.1.0
+	kubevirt.io/client-go v1.1.0
 )
 
 require (
@@ -28,7 +28,7 @@ require (
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/glog v1.0.0 // indirect
+	github.com/golang/glog v1.1.0 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
@@ -51,7 +51,6 @@ require (
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.8.2 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/goleak v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
@@ -61,18 +60,18 @@ require (
 	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.8.0 // indirect
+	golang.org/x/tools v0.12.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.27.1 // indirect
-	k8s.io/apiextensions-apiserver v0.26.3 // indirect
+	k8s.io/apiextensions-apiserver v0.26.4 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230525220651-2546d827e515 // indirect
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106 // indirect
-	kubevirt.io/containerized-data-importer-api v1.57.0 // indirect
+	kubevirt.io/containerized-data-importer-api v1.58.0 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.0.0-20220329064328-f3cc58c6ed90 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
@@ -81,11 +80,11 @@ require (
 
 // Kubernetes
 replace (
-	k8s.io/api => k8s.io/api v0.26.3
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.26.3
-	k8s.io/apimachinery => k8s.io/apimachinery v0.26.3
-	k8s.io/client-go => k8s.io/client-go v0.26.3
-	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.26.3
+	k8s.io/api => k8s.io/api v0.26.11
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.26.11
+	k8s.io/apimachinery => k8s.io/apimachinery v0.26.11
+	k8s.io/client-go => k8s.io/client-go v0.26.11
+	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.26.11
 )
 
 // locally referenced modules
@@ -96,6 +95,6 @@ replace (
 
 // Openshift
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20220325173635-8107b7a38e53
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220316161609-20d926360175
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20231118005202-0f638a8a4705
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
 )

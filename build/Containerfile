@@ -11,6 +11,7 @@ RUN mkdir /out
 
 RUN task_names=("copy-template" "create-vm" "execute-in-vm" "generate-ssh-keys" "modify-data-object" "modify-vm-template" "wait-for-vmi-status"); \
     for TASK_NAME in ${task_names[@]}; do \
+        echo "compiling $TASK_NAME"; \
         cd /src/modules/$TASK_NAME/; \
         CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o /out/${TASK_NAME} cmd/${TASK_NAME}/main.go; \
     done
