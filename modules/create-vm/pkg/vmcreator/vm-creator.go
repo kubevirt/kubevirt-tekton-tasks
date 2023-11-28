@@ -14,9 +14,11 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"k8s.io/client-go/rest"
 	kubevirtv1 "kubevirt.io/api/core/v1"
+	"kubevirt.io/client-go/kubecli"
 	kubevirtcliv1 "kubevirt.io/client-go/kubecli"
 	virtctl "kubevirt.io/kubevirt/pkg/virtctl/create"
 	"sigs.k8s.io/yaml"
@@ -102,7 +104,16 @@ func (v *VMCreator) createVMVirtctl() (*kubevirtv1.VirtualMachine, error) {
 func runCommand(params string) ([]byte, error) {
 	args := strings.Split(params, " ")
 	output := &bytes.Buffer{}
-	cmd := virtctl.NewCommand()
+	rootCmd := &cobra.Command{
+		Use:           "kubevirt-tekton-tasks-create-vm",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		Run: func(cmd *cobra.Command, args []string) {
+			cmd.Printf(cmd.UsageString())
+		},
+	}
+	clientConfig := kubecli.DefaultClientConfig(rootCmd.PersistentFlags())
+	cmd := virtctl.NewCommand(clientConfig)
 	cmd.SetArgs(append([]string{"vm"}, args...))
 	cmd.SetOut(output)
 	err := cmd.Execute()

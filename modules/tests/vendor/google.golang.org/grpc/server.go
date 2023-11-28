@@ -115,6 +115,12 @@ type serviceInfo struct {
 	mdata       any
 }
 
+type serverWorkerData struct {
+	st     transport.ServerTransport
+	wg     *sync.WaitGroup
+	stream *transport.Stream
+}
+
 // Server is a gRPC server to serve RPC requests.
 type Server struct {
 	opts serverOptions
@@ -139,7 +145,7 @@ type Server struct {
 	channelzID *channelz.Identifier
 	czData     *channelzData
 
-	serverWorkerChannel chan func()
+	serverWorkerChannel chan *serverWorkerData
 }
 
 type serverOptions struct {
@@ -173,7 +179,6 @@ type serverOptions struct {
 }
 
 var defaultServerOptions = serverOptions{
-	maxConcurrentStreams:  math.MaxUint32,
 	maxReceiveMessageSize: defaultServerMaxReceiveMessageSize,
 	maxSendMessageSize:    defaultServerMaxSendMessageSize,
 	connectionTimeout:     120 * time.Second,
@@ -399,9 +404,6 @@ func MaxSendMsgSize(m int) ServerOption {
 // MaxConcurrentStreams returns a ServerOption that will apply a limit on the number
 // of concurrent streams to each ServerTransport.
 func MaxConcurrentStreams(n uint32) ServerOption {
-	if n == 0 {
-		n = math.MaxUint32
-	}
 	return newFuncServerOption(func(o *serverOptions) {
 		o.maxConcurrentStreams = n
 	})
@@ -603,19 +605,24 @@ const serverWorkerResetThreshold = 1 << 16
 // [1] https://github.com/golang/go/issues/18138
 func (s *Server) serverWorker() {
 	for completed := 0; completed < serverWorkerResetThreshold; completed++ {
-		f, ok := <-s.serverWorkerChannel
+		data, ok := <-s.serverWorkerChannel
 		if !ok {
 			return
 		}
-		f()
+		s.handleSingleStream(data)
 	}
 	go s.serverWorker()
+}
+
+func (s *Server) handleSingleStream(data *serverWorkerData) {
+	defer data.wg.Done()
+	s.handleStream(data.st, data.stream, s.traceInfo(data.st, data.stream))
 }
 
 // initServerWorkers creates worker goroutines and a channel to process incoming
 // connections to reduce the time spent overall on runtime.morestack.
 func (s *Server) initServerWorkers() {
-	s.serverWorkerChannel = make(chan func())
+	s.serverWorkerChannel = make(chan *serverWorkerData)
 	for i := uint32(0); i < s.opts.numServerWorkers; i++ {
 		go s.serverWorker()
 	}
@@ -975,26 +982,27 @@ func (s *Server) serveStreams(st transport.ServerTransport) {
 	defer st.Close(errors.New("finished serving streams for the server transport"))
 	var wg sync.WaitGroup
 
-	streamQuota := newHandlerQuota(s.opts.maxConcurrentStreams)
 	st.HandleStreams(func(stream *transport.Stream) {
 		wg.Add(1)
-
-		streamQuota.acquire()
-		f := func() {
-			defer streamQuota.release()
-			defer wg.Done()
-			s.handleStream(st, stream)
-		}
-
 		if s.opts.numServerWorkers > 0 {
+			data := &serverWorkerData{st: st, wg: &wg, stream: stream}
 			select {
-			case s.serverWorkerChannel <- f:
+			case s.serverWorkerChannel <- data:
 				return
 			default:
 				// If all stream workers are busy, fallback to the default code path.
 			}
 		}
-		go f()
+		go func() {
+			defer wg.Done()
+			s.handleStream(st, stream, s.traceInfo(st, stream))
+		}()
+	}, func(ctx context.Context, method string) context.Context {
+		if !EnableTracing {
+			return ctx
+		}
+		tr := trace.New("grpc.Recv."+methodFamily(method), method)
+		return trace.NewContext(ctx, tr)
 	})
 	wg.Wait()
 }
@@ -1041,6 +1049,30 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer s.removeConn(listenerAddressForServeHTTP, st)
 	s.serveStreams(st)
+}
+
+// traceInfo returns a traceInfo and associates it with stream, if tracing is enabled.
+// If tracing is not enabled, it returns nil.
+func (s *Server) traceInfo(st transport.ServerTransport, stream *transport.Stream) (trInfo *traceInfo) {
+	if !EnableTracing {
+		return nil
+	}
+	tr, ok := trace.FromContext(stream.Context())
+	if !ok {
+		return nil
+	}
+
+	trInfo = &traceInfo{
+		tr: tr,
+		firstLine: firstLine{
+			client:     false,
+			remoteAddr: st.RemoteAddr(),
+		},
+	}
+	if dl, ok := stream.Context().Deadline(); ok {
+		trInfo.firstLine.deadline = time.Until(dl)
+	}
+	return trInfo
 }
 
 func (s *Server) addConn(addr string, st transport.ServerTransport) bool {
@@ -1103,7 +1135,7 @@ func (s *Server) incrCallsFailed() {
 	atomic.AddInt64(&s.czData.callsFailed, 1)
 }
 
-func (s *Server) sendResponse(ctx context.Context, t transport.ServerTransport, stream *transport.Stream, msg any, cp Compressor, opts *transport.Options, comp encoding.Compressor) error {
+func (s *Server) sendResponse(t transport.ServerTransport, stream *transport.Stream, msg any, cp Compressor, opts *transport.Options, comp encoding.Compressor) error {
 	data, err := encode(s.getCodec(stream.ContentSubtype()), msg)
 	if err != nil {
 		channelz.Error(logger, s.channelzID, "grpc: server failed to encode response: ", err)
@@ -1122,7 +1154,7 @@ func (s *Server) sendResponse(ctx context.Context, t transport.ServerTransport, 
 	err = t.Write(stream, hdr, payload, opts)
 	if err == nil {
 		for _, sh := range s.opts.statsHandlers {
-			sh.HandleRPC(ctx, outPayload(false, msg, data, payload, time.Now()))
+			sh.HandleRPC(stream.Context(), outPayload(false, msg, data, payload, time.Now()))
 		}
 	}
 	return err
@@ -1164,7 +1196,7 @@ func getChainUnaryHandler(interceptors []UnaryServerInterceptor, curr int, info 
 	}
 }
 
-func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTransport, stream *transport.Stream, info *serviceInfo, md *MethodDesc, trInfo *traceInfo) (err error) {
+func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.Stream, info *serviceInfo, md *MethodDesc, trInfo *traceInfo) (err error) {
 	shs := s.opts.statsHandlers
 	if len(shs) != 0 || trInfo != nil || channelz.IsOn() {
 		if channelz.IsOn() {
@@ -1178,7 +1210,7 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 				IsClientStream: false,
 				IsServerStream: false,
 			}
-			sh.HandleRPC(ctx, statsBegin)
+			sh.HandleRPC(stream.Context(), statsBegin)
 		}
 		if trInfo != nil {
 			trInfo.tr.LazyLog(&trInfo.firstLine, false)
@@ -1210,7 +1242,7 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 				if err != nil && err != io.EOF {
 					end.Error = toRPCErr(err)
 				}
-				sh.HandleRPC(ctx, end)
+				sh.HandleRPC(stream.Context(), end)
 			}
 
 			if channelz.IsOn() {
@@ -1232,6 +1264,7 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 		}
 	}
 	if len(binlogs) != 0 {
+		ctx := stream.Context()
 		md, _ := metadata.FromIncomingContext(ctx)
 		logEntry := &binarylog.ClientHeader{
 			Header:     md,
@@ -1317,7 +1350,7 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 			return status.Errorf(codes.Internal, "grpc: error unmarshalling request: %v", err)
 		}
 		for _, sh := range shs {
-			sh.HandleRPC(ctx, &stats.InPayload{
+			sh.HandleRPC(stream.Context(), &stats.InPayload{
 				RecvTime:         time.Now(),
 				Payload:          v,
 				Length:           len(d),
@@ -1331,7 +1364,7 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 				Message: d,
 			}
 			for _, binlog := range binlogs {
-				binlog.Log(ctx, cm)
+				binlog.Log(stream.Context(), cm)
 			}
 		}
 		if trInfo != nil {
@@ -1339,7 +1372,7 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 		}
 		return nil
 	}
-	ctx = NewContextWithServerTransportStream(ctx, stream)
+	ctx := NewContextWithServerTransportStream(stream.Context(), stream)
 	reply, appErr := md.Handler(info.serviceImpl, ctx, df, s.opts.unaryInt)
 	if appErr != nil {
 		appStatus, ok := status.FromError(appErr)
@@ -1364,7 +1397,7 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 					Header: h,
 				}
 				for _, binlog := range binlogs {
-					binlog.Log(ctx, sh)
+					binlog.Log(stream.Context(), sh)
 				}
 			}
 			st := &binarylog.ServerTrailer{
@@ -1372,7 +1405,7 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 				Err:     appErr,
 			}
 			for _, binlog := range binlogs {
-				binlog.Log(ctx, st)
+				binlog.Log(stream.Context(), st)
 			}
 		}
 		return appErr
@@ -1387,7 +1420,7 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 	if stream.SendCompress() != sendCompressorName {
 		comp = encoding.GetCompressor(stream.SendCompress())
 	}
-	if err := s.sendResponse(ctx, t, stream, reply, cp, opts, comp); err != nil {
+	if err := s.sendResponse(t, stream, reply, cp, opts, comp); err != nil {
 		if err == io.EOF {
 			// The entire stream is done (for unary RPC only).
 			return err
@@ -1414,8 +1447,8 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 				Err:     appErr,
 			}
 			for _, binlog := range binlogs {
-				binlog.Log(ctx, sh)
-				binlog.Log(ctx, st)
+				binlog.Log(stream.Context(), sh)
+				binlog.Log(stream.Context(), st)
 			}
 		}
 		return err
@@ -1429,8 +1462,8 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 			Message: reply,
 		}
 		for _, binlog := range binlogs {
-			binlog.Log(ctx, sh)
-			binlog.Log(ctx, sm)
+			binlog.Log(stream.Context(), sh)
+			binlog.Log(stream.Context(), sm)
 		}
 	}
 	if channelz.IsOn() {
@@ -1448,7 +1481,7 @@ func (s *Server) processUnaryRPC(ctx context.Context, t transport.ServerTranspor
 			Err:     appErr,
 		}
 		for _, binlog := range binlogs {
-			binlog.Log(ctx, st)
+			binlog.Log(stream.Context(), st)
 		}
 	}
 	return t.WriteStatus(stream, statusOK)
@@ -1490,7 +1523,7 @@ func getChainStreamHandler(interceptors []StreamServerInterceptor, curr int, inf
 	}
 }
 
-func (s *Server) processStreamingRPC(ctx context.Context, t transport.ServerTransport, stream *transport.Stream, info *serviceInfo, sd *StreamDesc, trInfo *traceInfo) (err error) {
+func (s *Server) processStreamingRPC(t transport.ServerTransport, stream *transport.Stream, info *serviceInfo, sd *StreamDesc, trInfo *traceInfo) (err error) {
 	if channelz.IsOn() {
 		s.incrCallsStarted()
 	}
@@ -1504,10 +1537,10 @@ func (s *Server) processStreamingRPC(ctx context.Context, t transport.ServerTran
 			IsServerStream: sd.ServerStreams,
 		}
 		for _, sh := range shs {
-			sh.HandleRPC(ctx, statsBegin)
+			sh.HandleRPC(stream.Context(), statsBegin)
 		}
 	}
-	ctx = NewContextWithServerTransportStream(ctx, stream)
+	ctx := NewContextWithServerTransportStream(stream.Context(), stream)
 	ss := &serverStream{
 		ctx:                   ctx,
 		t:                     t,
@@ -1543,7 +1576,7 @@ func (s *Server) processStreamingRPC(ctx context.Context, t transport.ServerTran
 					end.Error = toRPCErr(err)
 				}
 				for _, sh := range shs {
-					sh.HandleRPC(ctx, end)
+					sh.HandleRPC(stream.Context(), end)
 				}
 			}
 
@@ -1585,7 +1618,7 @@ func (s *Server) processStreamingRPC(ctx context.Context, t transport.ServerTran
 			logEntry.PeerAddr = peer.Addr
 		}
 		for _, binlog := range ss.binlogs {
-			binlog.Log(ctx, logEntry)
+			binlog.Log(stream.Context(), logEntry)
 		}
 	}
 
@@ -1663,7 +1696,7 @@ func (s *Server) processStreamingRPC(ctx context.Context, t transport.ServerTran
 				Err:     appErr,
 			}
 			for _, binlog := range ss.binlogs {
-				binlog.Log(ctx, st)
+				binlog.Log(stream.Context(), st)
 			}
 		}
 		t.WriteStatus(ss.s, appStatus)
@@ -1681,50 +1714,33 @@ func (s *Server) processStreamingRPC(ctx context.Context, t transport.ServerTran
 			Err:     appErr,
 		}
 		for _, binlog := range ss.binlogs {
-			binlog.Log(ctx, st)
+			binlog.Log(stream.Context(), st)
 		}
 	}
 	return t.WriteStatus(ss.s, statusOK)
 }
 
-func (s *Server) handleStream(t transport.ServerTransport, stream *transport.Stream) {
-	ctx := stream.Context()
-	var ti *traceInfo
-	if EnableTracing {
-		tr := trace.New("grpc.Recv."+methodFamily(stream.Method()), stream.Method())
-		ctx = trace.NewContext(ctx, tr)
-		ti = &traceInfo{
-			tr: tr,
-			firstLine: firstLine{
-				client:     false,
-				remoteAddr: t.RemoteAddr(),
-			},
-		}
-		if dl, ok := ctx.Deadline(); ok {
-			ti.firstLine.deadline = time.Until(dl)
-		}
-	}
-
+func (s *Server) handleStream(t transport.ServerTransport, stream *transport.Stream, trInfo *traceInfo) {
 	sm := stream.Method()
 	if sm != "" && sm[0] == '/' {
 		sm = sm[1:]
 	}
 	pos := strings.LastIndex(sm, "/")
 	if pos == -1 {
-		if ti != nil {
-			ti.tr.LazyLog(&fmtStringer{"Malformed method name %q", []any{sm}}, true)
-			ti.tr.SetError()
+		if trInfo != nil {
+			trInfo.tr.LazyLog(&fmtStringer{"Malformed method name %q", []any{sm}}, true)
+			trInfo.tr.SetError()
 		}
 		errDesc := fmt.Sprintf("malformed method name: %q", stream.Method())
 		if err := t.WriteStatus(stream, status.New(codes.Unimplemented, errDesc)); err != nil {
-			if ti != nil {
-				ti.tr.LazyLog(&fmtStringer{"%v", []any{err}}, true)
-				ti.tr.SetError()
+			if trInfo != nil {
+				trInfo.tr.LazyLog(&fmtStringer{"%v", []any{err}}, true)
+				trInfo.tr.SetError()
 			}
 			channelz.Warningf(logger, s.channelzID, "grpc: Server.handleStream failed to write status: %v", err)
 		}
-		if ti != nil {
-			ti.tr.Finish()
+		if trInfo != nil {
+			trInfo.tr.Finish()
 		}
 		return
 	}
@@ -1734,17 +1750,17 @@ func (s *Server) handleStream(t transport.ServerTransport, stream *transport.Str
 	srv, knownService := s.services[service]
 	if knownService {
 		if md, ok := srv.methods[method]; ok {
-			s.processUnaryRPC(ctx, t, stream, srv, md, ti)
+			s.processUnaryRPC(t, stream, srv, md, trInfo)
 			return
 		}
 		if sd, ok := srv.streams[method]; ok {
-			s.processStreamingRPC(ctx, t, stream, srv, sd, ti)
+			s.processStreamingRPC(t, stream, srv, sd, trInfo)
 			return
 		}
 	}
 	// Unknown service, or known server unknown method.
 	if unknownDesc := s.opts.unknownStreamDesc; unknownDesc != nil {
-		s.processStreamingRPC(ctx, t, stream, nil, unknownDesc, ti)
+		s.processStreamingRPC(t, stream, nil, unknownDesc, trInfo)
 		return
 	}
 	var errDesc string
@@ -1753,19 +1769,19 @@ func (s *Server) handleStream(t transport.ServerTransport, stream *transport.Str
 	} else {
 		errDesc = fmt.Sprintf("unknown method %v for service %v", method, service)
 	}
-	if ti != nil {
-		ti.tr.LazyPrintf("%s", errDesc)
-		ti.tr.SetError()
+	if trInfo != nil {
+		trInfo.tr.LazyPrintf("%s", errDesc)
+		trInfo.tr.SetError()
 	}
 	if err := t.WriteStatus(stream, status.New(codes.Unimplemented, errDesc)); err != nil {
-		if ti != nil {
-			ti.tr.LazyLog(&fmtStringer{"%v", []any{err}}, true)
-			ti.tr.SetError()
+		if trInfo != nil {
+			trInfo.tr.LazyLog(&fmtStringer{"%v", []any{err}}, true)
+			trInfo.tr.SetError()
 		}
 		channelz.Warningf(logger, s.channelzID, "grpc: Server.handleStream failed to write status: %v", err)
 	}
-	if ti != nil {
-		ti.tr.Finish()
+	if trInfo != nil {
+		trInfo.tr.Finish()
 	}
 }
 
@@ -2074,35 +2090,4 @@ func validateSendCompressor(name, clientCompressors string) error {
 		}
 	}
 	return fmt.Errorf("client does not support compressor %q", name)
-}
-
-// atomicSemaphore implements a blocking, counting semaphore. acquire should be
-// called synchronously; release may be called asynchronously.
-type atomicSemaphore struct {
-	n    atomic.Int64
-	wait chan struct{}
-}
-
-func (q *atomicSemaphore) acquire() {
-	if q.n.Add(-1) < 0 {
-		// We ran out of quota.  Block until a release happens.
-		<-q.wait
-	}
-}
-
-func (q *atomicSemaphore) release() {
-	// N.B. the "<= 0" check below should allow for this to work with multiple
-	// concurrent calls to acquire, but also note that with synchronous calls to
-	// acquire, as our system does, n will never be less than -1.  There are
-	// fairness issues (queuing) to consider if this was to be generalized.
-	if q.n.Add(1) <= 0 {
-		// An acquire was waiting on us.  Unblock it.
-		q.wait <- struct{}{}
-	}
-}
-
-func newHandlerQuota(n uint32) *atomicSemaphore {
-	a := &atomicSemaphore{wait: make(chan struct{}, 1)}
-	a.n.Store(int64(n))
-	return a
 }

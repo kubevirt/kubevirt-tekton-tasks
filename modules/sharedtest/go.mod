@@ -7,8 +7,8 @@ require (
 	github.com/openshift/api v0.0.0-20230503133300-8bbcb7ca7183
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
-	kubevirt.io/api v1.0.0
-	kubevirt.io/containerized-data-importer-api v1.57.0
+	kubevirt.io/api v1.1.0
+	kubevirt.io/containerized-data-importer-api v1.58.0
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -37,15 +37,15 @@ require (
 
 // Kubernetes
 replace (
-	k8s.io/api => k8s.io/api v0.26.3
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.26.3
-	k8s.io/apimachinery => k8s.io/apimachinery v0.26.3
-	k8s.io/client-go => k8s.io/client-go v0.26.3
-	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.26.3
+	k8s.io/api => k8s.io/api v0.26.11
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.26.11
+	k8s.io/apimachinery => k8s.io/apimachinery v0.26.11
+	k8s.io/client-go => k8s.io/client-go v0.26.11
+	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.26.11
 )
 
-// OpenShift
+// Openshift
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20220325173635-8107b7a38e53
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220325173635-8107b7a38e53
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20231118005202-0f638a8a4705
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
 )
