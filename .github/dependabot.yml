@@ -5,7 +5,47 @@
 
 version: 2
 updates:
-  - package-ecosystem: "gomod" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "gomod"
+    directory: "/"
     schedule:
       interval: "daily"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "ksimon1"
+      - "0xFelix"
+  - package-ecosystem: "gomod"
+    directory: "/"
+    target-branch: "release-v0.16"
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "ksimon1"
+      - "0xFelix"
+  - package-ecosystem: "gomod"
+    directory: "/"
+    target-branch: "release-v0.15"
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "ksimon1"
+      - "0xFelix"
+  - package-ecosystem: "gomod"
+    directory: "/"
+    target-branch: "release-v0.13"
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-type: "all"
+    assignees:
+      - "ksimon1"
+      - "0xFelix"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  
