@@ -9,7 +9,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
@@ -23,29 +23,29 @@ var _ = Describe("Pipelines tests", func() {
 				ServiceAccount: ModifyDataObjectServiceAccountName,
 				Timeout:        Timeouts.PipelineRunExtraWaitDelay,
 			},
-			Pipeline: &v1beta1.Pipeline{
+			Pipeline: &pipev1.Pipeline{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test-pipeline-dvs",
 				},
-				Spec: v1beta1.PipelineSpec{
-					Tasks: []v1beta1.PipelineTask{
+				Spec: pipev1.PipelineSpec{
+					Tasks: []pipev1.PipelineTask{
 						{
 							Name: "create-dv",
-							TaskRef: &v1beta1.TaskRef{
-								Kind: v1beta1.NamespacedTaskKind,
+							TaskRef: &pipev1.TaskRef{
+								Kind: pipev1.NamespacedTaskKind,
 								Name: "modify-data-object",
 							},
-							Params: []v1beta1.Param{
+							Params: []pipev1.Param{
 								{
 									Name: "waitForSuccess",
-									Value: v1beta1.ArrayOrString{
-										Type:      v1beta1.ParamTypeString,
+									Value: pipev1.ParamValue{
+										Type:      pipev1.ParamTypeString,
 										StringVal: "true",
 									},
 								}, {
 									Name: "manifest",
-									Value: v1beta1.ArrayOrString{
-										Type: v1beta1.ParamTypeString,
+									Value: pipev1.ParamValue{
+										Type: pipev1.ParamTypeString,
 										StringVal: `
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
@@ -69,21 +69,21 @@ spec:
 							},
 						}, {
 							Name: "sysprep-dv",
-							TaskRef: &v1beta1.TaskRef{
-								Kind: v1beta1.NamespacedTaskKind,
+							TaskRef: &pipev1.TaskRef{
+								Kind: pipev1.NamespacedTaskKind,
 								Name: "disk-virt-sysprep",
 							},
-							Params: []v1beta1.Param{
+							Params: []pipev1.Param{
 								{
 									Name: "sysprepCommands",
-									Value: v1beta1.ArrayOrString{
-										Type:      v1beta1.ParamTypeString,
+									Value: pipev1.ParamValue{
+										Type:      pipev1.ParamTypeString,
 										StringVal: "run-command echo 'krtek' > new",
 									},
 								}, {
 									Name: "pvc",
-									Value: v1beta1.ArrayOrString{
-										Type:      v1beta1.ParamTypeString,
+									Value: pipev1.ParamValue{
+										Type:      pipev1.ParamTypeString,
 										StringVal: "$(tasks.create-dv.results.name)",
 									},
 								},
@@ -91,16 +91,16 @@ spec:
 							RunAfter: []string{"create-dv"},
 						}, {
 							Name: "create-updated-dv",
-							TaskRef: &v1beta1.TaskRef{
-								Kind: v1beta1.NamespacedTaskKind,
+							TaskRef: &pipev1.TaskRef{
+								Kind: pipev1.NamespacedTaskKind,
 								Name: "modify-data-object",
 							},
-							Params: []v1beta1.Param{
+							Params: []pipev1.Param{
 								{
 
 									Name: "manifest",
-									Value: v1beta1.ArrayOrString{
-										Type: v1beta1.ParamTypeString,
+									Value: pipev1.ParamValue{
+										Type: pipev1.ParamTypeString,
 										StringVal: `
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
@@ -131,17 +131,17 @@ spec:
 			},
 			PipelineRunData: testconfigs.PipelineRunData{
 				Name:   "test-dv-hardening",
-				Params: []v1beta1.Param{},
-				PipelineRef: &v1beta1.PipelineRef{
+				Params: []pipev1.Param{},
+				PipelineRef: &pipev1.PipelineRef{
 					Name: "test-pipeline-dvs",
 				},
-				TaskRunSpecs: []v1beta1.PipelineTaskRunSpec{
+				TaskRunSpecs: []pipev1.PipelineTaskRunSpec{
 					{
-						PipelineTaskName:       "create-dv",
-						TaskServiceAccountName: "modify-data-object-task",
+						PipelineTaskName:   "create-dv",
+						ServiceAccountName: "modify-data-object-task",
 					}, {
-						PipelineTaskName:       "create-updated-dv",
-						TaskServiceAccountName: "modify-data-object-task",
+						PipelineTaskName:   "create-updated-dv",
+						ServiceAccountName: "modify-data-object-task",
 					},
 				},
 			},

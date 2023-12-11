@@ -3,7 +3,7 @@ package testconfigs
 import (
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
@@ -70,59 +70,59 @@ func (c *ExecuteOrCleanupVMTestConfig) Init(options *testoptions.TestOptions) {
 	}
 }
 
-func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
+func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *pipev1.TaskRun {
 	var taskName, serviceAccountName, vmNamespace string
 
 	if !c.TaskData.UseDefaultVMNamespacesInTaskParams {
 		vmNamespace = c.TaskData.VMNamespace
 	}
 
-	params := []v1beta1.Param{
+	params := []pipev1.Param{
 		{
 			Name: ExecuteOrCleanupVMParams.VMName,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.VMName,
 			},
 		},
 		{
 			Name: ExecuteOrCleanupVMParams.VMNamespace,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: vmNamespace,
 			},
 		},
 		{
 			Name: ExecuteOrCleanupVMParams.SecretName,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.SecretName,
 			},
 		},
 		{
 			Name: ExecuteOrCleanupVMParams.Script,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.Script,
 			},
 		},
 	}
 
 	if len(c.TaskData.Command) > 0 {
-		params = append(params, v1beta1.Param{
+		params = append(params, pipev1.Param{
 			Name: ExecuteOrCleanupVMParams.Command,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
+			Value: pipev1.ParamValue{
+				Type:     pipev1.ParamTypeArray,
 				ArrayVal: c.TaskData.Command,
 			},
 		})
 	}
 
 	if len(c.TaskData.CommandArgs) > 0 {
-		params = append(params, v1beta1.Param{
+		params = append(params, pipev1.Param{
 			Name: ExecuteOrCleanupVMParams.Args,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
+			Value: pipev1.ParamValue{
+				Type:     pipev1.ParamTypeArray,
 				ArrayVal: c.TaskData.CommandArgs,
 			},
 		})
@@ -135,26 +135,26 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		}
 
 		params = append(params,
-			v1beta1.Param{
+			pipev1.Param{
 				Name: ExecuteOrCleanupVMParams.Stop,
-				Value: v1beta1.ArrayOrString{
-					Type:      v1beta1.ParamTypeString,
+				Value: pipev1.ParamValue{
+					Type:      pipev1.ParamTypeString,
 					StringVal: ToStringBoolean(c.TaskData.Stop),
 				},
 			},
-			v1beta1.Param{
+			pipev1.Param{
 				Name: ExecuteOrCleanupVMParams.Delete,
-				Value: v1beta1.ArrayOrString{
-					Type:      v1beta1.ParamTypeString,
+				Value: pipev1.ParamValue{
+					Type:      pipev1.ParamTypeString,
 					StringVal: ToStringBoolean(c.TaskData.Delete),
 				},
 			})
 		if c.TaskData.Timeout != nil {
 			params = append(params,
-				v1beta1.Param{
+				pipev1.Param{
 					Name: ExecuteOrCleanupVMParams.Timeout,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: c.TaskData.Timeout.Duration.String(),
 					},
 				})
@@ -166,15 +166,15 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		}
 	}
 
-	return &v1beta1.TaskRun{
+	return &pipev1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      E2ETestsRandomName("taskrun-" + string(c.TaskData.ExecInVMMode)),
 			Namespace: c.deploymentNamespace,
 		},
-		Spec: v1beta1.TaskRunSpec{
-			TaskRef: &v1beta1.TaskRef{
+		Spec: pipev1.TaskRunSpec{
+			TaskRef: &pipev1.TaskRef{
 				Name: taskName,
-				Kind: v1beta1.NamespacedTaskKind,
+				Kind: pipev1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: serviceAccountName,

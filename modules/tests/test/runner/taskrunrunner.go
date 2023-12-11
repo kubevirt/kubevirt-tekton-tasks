@@ -8,7 +8,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	. "github.com/onsi/gomega"
-	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	tkntest "github.com/tektoncd/pipeline/test"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
@@ -16,11 +16,11 @@ import (
 
 type TaskRunRunner struct {
 	framework *framework2.Framework
-	taskRun   *pipev1beta1.TaskRun
+	taskRun   *pipev1.TaskRun
 	logs      string
 }
 
-func NewTaskRunRunner(framework *framework2.Framework, taskRun *pipev1beta1.TaskRun) *TaskRunRunner {
+func NewTaskRunRunner(framework *framework2.Framework, taskRun *pipev1.TaskRun) *TaskRunRunner {
 	Expect(taskRun).ShouldNot(BeNil())
 	return &TaskRunRunner{
 		framework: framework,
@@ -28,7 +28,7 @@ func NewTaskRunRunner(framework *framework2.Framework, taskRun *pipev1beta1.Task
 	}
 }
 
-func (r *TaskRunRunner) GetTaskRun() *pipev1beta1.TaskRun {
+func (r *TaskRunRunner) GetTaskRun() *pipev1.TaskRun {
 	return r.taskRun
 }
 
@@ -91,7 +91,7 @@ func (r *TaskRunRunner) ExpectTermination(termination *testconfigs.TaskRunExpect
 }
 
 func (r *TaskRunRunner) GetResults() map[string]string {
-	return tekton.TaskResultsToMap(r.taskRun.Status.TaskRunResults)
+	return tekton.TaskResultsToMap(r.taskRun.Status.Results)
 }
 
 func (r *TaskRunRunner) ExpectResults(results map[string]string) *TaskRunRunner {

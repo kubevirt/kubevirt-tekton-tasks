@@ -7,7 +7,7 @@ import (
 	framework2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
 	. "github.com/onsi/gomega"
-	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	tkntest "github.com/tektoncd/pipeline/test"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
@@ -15,11 +15,11 @@ import (
 
 type PipelineRunRunner struct {
 	framework   *framework2.Framework
-	pipelineRun *pipev1beta1.PipelineRun
+	pipelineRun *pipev1.PipelineRun
 	logs        string
 }
 
-func NewPipelineRunRunner(framework *framework2.Framework, pipelineRun *pipev1beta1.PipelineRun) *PipelineRunRunner {
+func NewPipelineRunRunner(framework *framework2.Framework, pipelineRun *pipev1.PipelineRun) *PipelineRunRunner {
 	Expect(pipelineRun).ShouldNot(BeNil())
 	return &PipelineRunRunner{
 		framework:   framework,
@@ -27,7 +27,7 @@ func NewPipelineRunRunner(framework *framework2.Framework, pipelineRun *pipev1be
 	}
 }
 
-func (r *PipelineRunRunner) GetPipelineRun() *pipev1beta1.PipelineRun {
+func (r *PipelineRunRunner) GetPipelineRun() *pipev1.PipelineRun {
 	return r.pipelineRun
 }
 
@@ -82,7 +82,7 @@ func (r *PipelineRunRunner) ExpectLogs(logs ...string) *PipelineRunRunner {
 }
 
 func (r *PipelineRunRunner) GetResults() map[string]string {
-	return tekton.PipelineResultsToMap(r.pipelineRun.Status.PipelineResults)
+	return tekton.PipelineResultsToMap(r.pipelineRun.Status.Results)
 }
 
 func (r *PipelineRunRunner) ExpectResults(results map[string]string) *PipelineRunRunner {

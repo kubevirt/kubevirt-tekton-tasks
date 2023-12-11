@@ -10,7 +10,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
 	. "github.com/onsi/ginkgo/v2"
 	templatev1 "github.com/openshift/api/template/v1"
-	pipev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
@@ -22,9 +22,9 @@ var TestOptionsInstance = &testoptions.TestOptions{}
 var ClientsInstance = &clients.Clients{}
 
 type ManagedResources struct {
-	taskRuns             []*pipev1beta1.TaskRun
-	pipelineRuns         []*pipev1beta1.PipelineRun
-	pipelines            []*pipev1beta1.Pipeline
+	taskRuns             []*pipev1.TaskRun
+	pipelineRuns         []*pipev1.PipelineRun
+	pipelines            []*pipev1.Pipeline
 	dataVolumes          []*cdiv1beta1.DataVolume
 	dataSources          []*cdiv1beta1.DataSource
 	vms                  []*kubevirtv1.VirtualMachine
@@ -150,17 +150,17 @@ func (f *Framework) AfterEach() {
 	}
 }
 
-func (f *Framework) ManageTaskRuns(taskRuns ...*pipev1beta1.TaskRun) *Framework {
+func (f *Framework) ManageTaskRuns(taskRuns ...*pipev1.TaskRun) *Framework {
 	f.managedResources.taskRuns = append(f.managedResources.taskRuns, taskRuns...)
 	return f
 }
 
-func (f *Framework) ManagePipelineRuns(pipelineRuns ...*pipev1beta1.PipelineRun) *Framework {
+func (f *Framework) ManagePipelineRuns(pipelineRuns ...*pipev1.PipelineRun) *Framework {
 	f.managedResources.pipelineRuns = append(f.managedResources.pipelineRuns, pipelineRuns...)
 	return f
 }
 
-func (f *Framework) ManagePipelines(pipelines ...*pipev1beta1.Pipeline) *Framework {
+func (f *Framework) ManagePipelines(pipelines ...*pipev1.Pipeline) *Framework {
 	f.managedResources.pipelines = append(f.managedResources.pipelines, pipelines...)
 	return f
 }

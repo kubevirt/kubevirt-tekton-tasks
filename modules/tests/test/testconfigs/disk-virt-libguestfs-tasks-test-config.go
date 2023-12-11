@@ -3,13 +3,13 @@ package testconfigs
 import (
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1beta12 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
+	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
 type DiskVirtLibguestfsTaskData struct {
-	Datavolume        *v1beta12.DataVolume
+	Datavolume        *cdiv1beta1.DataVolume
 	PVCName           string
 	Commands          string
 	AdditionalOptions string
@@ -49,65 +49,65 @@ func (c *DiskVirtLibguestfsTestConfig) Init(options *testoptions.TestOptions) {
 
 }
 
-func (c *DiskVirtLibguestfsTestConfig) GetTaskRun() *v1beta1.TaskRun {
+func (c *DiskVirtLibguestfsTestConfig) GetTaskRun() *pipev1.TaskRun {
 	return c.GetTaskRunWithName("")
 }
 
-func (c *DiskVirtLibguestfsTestConfig) GetTaskRunWithName(nameSuffix string) *v1beta1.TaskRun {
+func (c *DiskVirtLibguestfsTestConfig) GetTaskRunWithName(nameSuffix string) *pipev1.TaskRun {
 	var taskName string
 
-	params := []v1beta1.Param{
+	params := []pipev1.Param{
 		{
 			Name: DiskVirtLibguestfsTasksParams.PVCName,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.PVCName,
 			},
 		},
 		{
 			Name: DiskVirtLibguestfsTasksParams.Verbose,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: ToStringBoolean(c.TaskData.Verbose),
 			},
 		},
 		{
 			Name: DiskVirtLibguestfsTasksParams.AdditionalOptions,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.AdditionalOptions,
 			},
 		},
 	}
 	if c.TaskData.LibguestfsTaskType == VirtSysPrepTaskType {
-		params = append(params, v1beta1.Param{
+		params = append(params, pipev1.Param{
 			Name: DiskVirtLibguestfsTasksParams.SysprepCommands,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.Commands,
 			},
 		})
 		taskName = DiskVirtSysprepTaskName
 	} else {
-		params = append(params, v1beta1.Param{
+		params = append(params, pipev1.Param{
 			Name: DiskVirtLibguestfsTasksParams.CustomizeCommands,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.Commands,
 			},
 		})
 		taskName = DiskVirtCustomizeTaskName
 	}
 
-	return &v1beta1.TaskRun{
+	return &pipev1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      E2ETestsRandomName("taskrun-disk-" + string(c.TaskData.LibguestfsTaskType) + nameSuffix),
 			Namespace: c.deploymentNamespace,
 		},
-		Spec: v1beta1.TaskRunSpec{
-			TaskRef: &v1beta1.TaskRef{
+		Spec: pipev1.TaskRunSpec{
+			TaskRef: &pipev1.TaskRef{
 				Name: taskName,
-				Kind: v1beta1.NamespacedTaskKind,
+				Kind: pipev1.NamespacedTaskKind,
 			},
 			Timeout: &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			Params:  params,

@@ -12,7 +12,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	tkntest "github.com/tektoncd/pipeline/test"
 
 	v1 "k8s.io/api/core/v1"
@@ -48,7 +48,7 @@ func (l *taskRunsLogs) getAllLogs() string {
 	return logs
 }
 
-func WaitForPipelineRunState(clients *clients.Clients, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) (*v1beta1.PipelineRun, string) {
+func WaitForPipelineRunState(clients *clients.Clients, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) (*pipev1.PipelineRun, string) {
 	pipelinePodsLogs := taskRunsLogs{}
 	pipelinePodsLogs.logs = make(map[string]string)
 	var wg sync.WaitGroup
@@ -58,8 +58,8 @@ func WaitForPipelineRunState(clients *clients.Clients, namespace, name string, t
 			return true, err
 		}
 
-		for _, taskRun := range pipelineRun.Status.TaskRuns {
-			podName := taskRun.Status.PodName
+		for _, reference := range pipelineRun.Status.ChildReferences {
+			podName := reference.Name
 			if pipelinePodsLogs.getLog(podName) == "" && podName != "" {
 				wg.Add(1)
 				go func() {

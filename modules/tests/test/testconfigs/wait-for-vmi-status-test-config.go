@@ -3,7 +3,7 @@ package testconfigs
 import (
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 )
@@ -46,43 +46,43 @@ func (c *WaitForVMIStatusTestConfig) Init(options *testoptions.TestOptions) {
 	}
 }
 
-func (c *WaitForVMIStatusTestConfig) GetTaskRun() *v1beta1.TaskRun {
-	return &v1beta1.TaskRun{
+func (c *WaitForVMIStatusTestConfig) GetTaskRun() *pipev1.TaskRun {
+	return &pipev1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      E2ETestsRandomName("taskrun-" + WaitForVMIStatusTaskName),
 			Namespace: c.deploymentNamespace,
 		},
-		Spec: v1beta1.TaskRunSpec{
-			TaskRef: &v1beta1.TaskRef{
+		Spec: pipev1.TaskRunSpec{
+			TaskRef: &pipev1.TaskRef{
 				Name: WaitForVMIStatusTaskName,
-				Kind: v1beta1.NamespacedTaskKind,
+				Kind: pipev1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: c.ServiceAccount,
-			Params: []v1beta1.Param{
+			Params: []pipev1.Param{
 				{
 					Name: WaitForVMIStatusTasksParams.VMINamespace,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: c.TaskData.VMINamespace,
 					},
 				},
 				{
 					Name: WaitForVMIStatusTasksParams.VMIName,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: c.TaskData.VMIName,
 					},
 				}, {
 					Name: WaitForVMIStatusTasksParams.SuccessCondition,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: c.TaskData.SuccessCondition,
 					},
 				}, {
 					Name: WaitForVMIStatusTasksParams.FailureCondition,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: c.TaskData.FailureCondition,
 					},
 				},
