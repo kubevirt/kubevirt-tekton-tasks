@@ -8,7 +8,7 @@
     - ../../scripts/ansible/common.yaml
   tasks:
     - name: Init
-      include: "{{ repo_dir }}/scripts/ansible/init-task-generation.yaml"
+      include_tasks: "{{ repo_dir }}/scripts/ansible/init-task-generation.yaml"
     - name: "Generate {{ task_name }} task"
       template:
         src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
@@ -38,4 +38,4 @@
         task_path: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
         task_yaml: "{{ lookup('file', task_path) | from_yaml }}"
     - name: Assemble task
-      include: "{{ repo_dir }}/scripts/ansible/assemble-task.yaml"
+      include_tasks: "{{ repo_dir }}/scripts/ansible/assemble-task.yaml"

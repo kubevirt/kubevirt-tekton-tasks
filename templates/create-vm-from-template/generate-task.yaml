@@ -10,14 +10,14 @@
     create_vm_from_manifest_manifest_templates_dir: ../create-vm-from-manifest/manifests
   tasks:
     - name: Init
-      include: "{{ repo_dir }}/scripts/ansible/init-task-generation.yaml"
+      include_tasks: "{{ repo_dir }}/scripts/ansible/init-task-generation.yaml"
     - name: "Generate {{ task_name }} task"
       template:
         src: "{{ create_vm_from_manifest_manifest_templates_dir }}/{{ task_category }}.yaml"
         dest: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
         mode: "{{ default_file_mode }}"
     - name: Generate roles
-      include: "{{ repo_dir }}/scripts/ansible/generate-roles.yaml"
+      include_tasks: "{{ repo_dir }}/scripts/ansible/generate-roles.yaml"
       with_items:
         - { role_type: ClusterRole, prefix: zz- }
       vars:
@@ -45,4 +45,4 @@
         task_path: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
         task_yaml: "{{ lookup('file', task_path) | from_yaml }}"
     - name: Assemble task
-      include: "{{ repo_dir }}/scripts/ansible/assemble-task.yaml"
+      include_tasks: "{{ repo_dir }}/scripts/ansible/assemble-task.yaml"
