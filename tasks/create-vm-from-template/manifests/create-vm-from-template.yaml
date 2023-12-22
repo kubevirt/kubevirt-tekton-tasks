@@ -56,7 +56,7 @@ spec:
       description: The namespace of a VM that was created.
   steps:
     - name: createvm
-      image: "quay.io/kubevirt/tekton-tasks:v0.16.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.17.0"
       command:
         - create-vm
       args:
