@@ -343,6 +343,14 @@
           "description": "Description is a user-facing description of the parameter that may be used to populate a UI.",
           "type": "string"
         },
+        "enum": {
+          "description": "Enum declares a set of allowed param input values for tasks/pipelines that can be validated. If Enum is not set, no input validation is performed for the param.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
         "name": {
           "description": "Name declares the name by which a parameter is referenced.",
           "type": "string",
@@ -885,6 +893,10 @@
           "description": "Name is the name of this task within the context of a Pipeline. Name is used as a coordinate with the `from` and `runAfter` fields to establish the execution order of tasks relative to one another.",
           "type": "string"
         },
+        "onError": {
+          "description": "OnError defines the exiting behavior of a PipelineRun on error can be set to [ continue | stopAndFail ] Note: OnError is in preview mode and not yet supported",
+          "type": "string"
+        },
         "params": {
           "description": "Parameters declares parameters passed to this task.",
           "type": "array",
@@ -1086,6 +1098,16 @@
         "refSource": {
           "description": "RefSource identifies the source where a remote task/pipeline came from.",
           "$ref": "#/definitions/v1.RefSource"
+        }
+      }
+    },
+    "v1.Ref": {
+      "description": "Ref can be used to refer to a specific instance of a StepAction.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of the referenced step",
+          "type": "string"
         }
       }
     },
@@ -1441,6 +1463,28 @@
           "description": "OnError defines the exiting behavior of a container on error can be set to [ continue | stopAndFail ]",
           "type": "string"
         },
+        "params": {
+          "description": "Params declares parameters passed to this step action.",
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/v1.Param"
+          },
+          "x-kubernetes-list-type": "atomic"
+        },
+        "ref": {
+          "description": "Contains the reference to an existing StepAction.",
+          "$ref": "#/definitions/v1.Ref"
+        },
+        "results": {
+          "description": "Results declares StepResults produced by the Step.\n\nThis is field is at an ALPHA stability level and gated by \"enable-step-actions\" feature flag.\n\nIt can be used in an inlined Step when used to store Results to $(step.results.resultName.path). It cannot be used when referencing StepActions using [v1.Step.Ref]. The Results declared by the StepActions will be stored here instead.",
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/v1.StepResult"
+          },
+          "x-kubernetes-list-type": "atomic"
+        },
         "script": {
           "description": "Script is the contents of an executable file to execute.\n\nIf Script is not empty, the Step cannot have an Command and the Args will be passed to the Script.",
           "type": "string"
@@ -1508,6 +1552,36 @@
         }
       }
     },
+    "v1.StepResult": {
+      "description": "StepResult used to describe the Results of a Step.\n\nThis is field is at an ALPHA stability level and gated by \"enable-step-actions\" feature flag.",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "description": {
+          "description": "Description is a human-readable description of the result",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name the given name",
+          "type": "string",
+          "default": ""
+        },
+        "properties": {
+          "description": "Properties is the JSON Schema properties to support key-value pairs results.",
+          "type": "object",
+          "additionalProperties": {
+            "default": {},
+            "$ref": "#/definitions/v1.PropertySpec"
+          }
+        },
+        "type": {
+          "description": "The possible types are 'string', 'array', and 'object', with 'string' as the default.",
+          "type": "string"
+        }
+      }
+    },
     "v1.StepState": {
       "description": "StepState reports the results of running a step in a Task.",
       "type": "object",
@@ -1520,6 +1594,13 @@
         },
         "name": {
           "type": "string"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/v1.TaskRunResult"
+          }
         },
         "running": {
           "description": "Details about a running container",
@@ -1645,6 +1726,16 @@
         }
       }
     },
+    "v1.TaskBreakpoints": {
+      "description": "TaskBreakpoints defines the breakpoint config for a particular Task",
+      "type": "object",
+      "properties": {
+        "onFailure": {
+          "description": "if enabled, pause TaskRun on failure of a step failed step will not exit",
+          "type": "string"
+        }
+      }
+    },
     "v1.TaskList": {
       "description": "TaskList contains a list of Task",
       "type": "object",
@@ -1718,6 +1809,10 @@
         "type": {
           "description": "Type is the user-specified type of the result. The possible type is currently \"string\" and will support \"array\" in following work.",
           "type": "string"
+        },
+        "value": {
+          "description": "Value the expression used to retrieve the value of the result from an underlying Step.",
+          "$ref": "#/definitions/v1.ParamValue"
         }
       }
     },
@@ -1751,13 +1846,8 @@
       "description": "TaskRunDebug defines the breakpoint config for a particular TaskRun",
       "type": "object",
       "properties": {
-        "breakpoint": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "default": ""
-          },
-          "x-kubernetes-list-type": "atomic"
+        "breakpoints": {
+          "$ref": "#/definitions/v1.TaskBreakpoints"
         }
       }
     },
@@ -1804,7 +1894,7 @@
       }
     },
     "v1.TaskRunResult": {
-      "description": "TaskRunResult used to describe the results of a task",
+      "description": "TaskRunStepResult is a type alias of TaskRunResult",
       "type": "object",
       "required": [
         "name",
@@ -2211,21 +2301,18 @@
     "v1.WhenExpression": {
       "description": "WhenExpression allows a PipelineTask to declare expressions to be evaluated before the Task is run to determine whether the Task should be executed or skipped",
       "type": "object",
-      "required": [
-        "input",
-        "operator",
-        "values"
-      ],
       "properties": {
+        "cel": {
+          "description": "CEL is a string of Common Language Expression, which can be used to conditionally execute the task based on the result of the expression evaluation More info about CEL syntax: https://github.com/google/cel-spec/blob/master/doc/langdef.md",
+          "type": "string"
+        },
         "input": {
           "description": "Input is the string for guard checking which can be a static input or an output from a parent Task",
-          "type": "string",
-          "default": ""
+          "type": "string"
         },
         "operator": {
           "description": "Operator that represents an Input's relationship to the values",
-          "type": "string",
-          "default": ""
+          "type": "string"
         },
         "values": {
           "description": "Values is an array of strings, which is compared against the input, for guard checking It must be non-empty",
