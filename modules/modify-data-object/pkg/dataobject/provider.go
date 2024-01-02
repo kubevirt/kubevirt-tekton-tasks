@@ -71,6 +71,32 @@ func (d *dataObjectProvider) DeletePVC(namespace string, name string) error {
 	return d.k8sClient.PersistentVolumeClaims(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 }
 
+func waitUntilDataObjectIsDeleted(helper *resource.Helper, namespace, name string) {
+	wait.PollImmediate(constants.PollInterval, constants.PollTimeout, func() (bool, error) {
+		obj, err := helper.Get(namespace, name)
+		if err != nil {
+			return false, err
+		}
+		if obj == nil {
+			return true, nil
+		}
+		return false, nil
+	})
+}
+
+func (d *dataObjectProvider) waitUntilPVCIsDeleted(namespace, name string) {
+	wait.PollImmediate(constants.PollInterval, constants.PollTimeout, func() (bool, error) {
+		obj, err := d.GetPVC(namespace, name)
+		if err != nil {
+			return false, err
+		}
+		if obj == nil {
+			return true, nil
+		}
+		return false, nil
+	})
+}
+
 func (d *dataObjectProvider) deleteOldObject(helper *resource.Helper, obj *unstructured.Unstructured) error {
 	name := obj.GetName()
 	namespace := obj.GetNamespace()
@@ -85,12 +111,24 @@ func (d *dataObjectProvider) deleteOldObject(helper *resource.Helper, obj *unstr
 		if err != nil {
 			return err
 		}
+		err = d.DeletePVC(namespace, name)
+		if err != nil {
+			return err
+		}
 
-		return d.DeletePVC(namespace, name)
+		d.waitUntilPVCIsDeleted(namespace, name)
+
+		return nil
 	}
 
 	_, err = helper.Delete(namespace, name)
-	return err
+	if err != nil {
+		return err
+	}
+
+	waitUntilDataObjectIsDeleted(helper, namespace, name)
+
+	return nil
 }
 
 func (d *dataObjectProvider) CreateDo(obj *unstructured.Unstructured, allowReplace bool) (*unstructured.Unstructured, error) {
