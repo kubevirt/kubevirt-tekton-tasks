@@ -3,7 +3,6 @@ module github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest
 go 1.20
 
 require (
-	github.com/onsi/ginkgo/v2 v2.4.0
 	github.com/openshift/api v0.0.0-20230503133300-8bbcb7ca7183
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
@@ -23,7 +22,6 @@ require (
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
 	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
