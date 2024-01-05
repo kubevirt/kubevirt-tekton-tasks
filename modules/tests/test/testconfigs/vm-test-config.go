@@ -9,7 +9,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/onsi/ginkgo/v2"
 	v1 "github.com/openshift/api/template/v1"
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 	"sigs.k8s.io/yaml"
@@ -159,21 +159,21 @@ func (c *CreateVMTestConfig) initCreateVMTemplate(options *testoptions.TestOptio
 	}
 }
 
-func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
+func (c *CreateVMTestConfig) GetTaskRun() *pipev1.TaskRun {
 	var taskName, taskRunName string
 
-	params := []v1beta1.Param{
+	params := []pipev1.Param{
 		{
 			Name: CreateVMFromTemplateParams.StartVM,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.StartVM,
 			},
 		},
 		{
 			Name: CreateVMFromTemplateParams.RunStrategy,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.RunStrategy,
 			},
 		},
@@ -190,24 +190,24 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		taskRunName = "taskrun-vm-create-from-manifest"
 
 		params = append(params,
-			v1beta1.Param{
+			pipev1.Param{
 				Name: CreateVMFromManifestParams.Manifest,
-				Value: v1beta1.ArrayOrString{
-					Type:      v1beta1.ParamTypeString,
+				Value: pipev1.ParamValue{
+					Type:      pipev1.ParamTypeString,
 					StringVal: c.TaskData.VMManifest,
 				},
 			},
-			v1beta1.Param{
+			pipev1.Param{
 				Name: CreateVMFromManifestParams.Namespace,
-				Value: v1beta1.ArrayOrString{
-					Type:      v1beta1.ParamTypeString,
+				Value: pipev1.ParamValue{
+					Type:      pipev1.ParamTypeString,
 					StringVal: vmNamespace,
 				},
 			},
-			v1beta1.Param{
+			pipev1.Param{
 				Name: CreateVMFromManifestParams.Virtctl,
-				Value: v1beta1.ArrayOrString{
-					Type:      v1beta1.ParamTypeString,
+				Value: pipev1.ParamValue{
+					Type:      pipev1.ParamTypeString,
 					StringVal: c.TaskData.Virtctl,
 				},
 			},
@@ -223,50 +223,50 @@ func (c *CreateVMTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		}
 
 		params = append(params,
-			v1beta1.Param{
+			pipev1.Param{
 				Name: CreateVMFromTemplateParams.TemplateName,
-				Value: v1beta1.ArrayOrString{
-					Type:      v1beta1.ParamTypeString,
+				Value: pipev1.ParamValue{
+					Type:      pipev1.ParamTypeString,
 					StringVal: c.TaskData.TemplateName,
 				},
 			},
-			v1beta1.Param{
+			pipev1.Param{
 				Name: CreateVMFromTemplateParams.TemplateNamespace,
-				Value: v1beta1.ArrayOrString{
-					Type:      v1beta1.ParamTypeString,
+				Value: pipev1.ParamValue{
+					Type:      pipev1.ParamTypeString,
 					StringVal: templateNamespace,
 				},
 			},
 
-			v1beta1.Param{
+			pipev1.Param{
 				Name: CreateVMFromTemplateParams.VmNamespace,
-				Value: v1beta1.ArrayOrString{
-					Type:      v1beta1.ParamTypeString,
+				Value: pipev1.ParamValue{
+					Type:      pipev1.ParamTypeString,
 					StringVal: vmNamespace,
 				},
 			},
 		)
 
 		if len(c.TaskData.TemplateParams) > 0 {
-			params = append(params, v1beta1.Param{
+			params = append(params, pipev1.Param{
 				Name: CreateVMFromTemplateParams.TemplateParams,
-				Value: v1beta1.ArrayOrString{
-					Type:     v1beta1.ParamTypeArray,
+				Value: pipev1.ParamValue{
+					Type:     pipev1.ParamTypeArray,
 					ArrayVal: c.TaskData.TemplateParams,
 				},
 			})
 		}
 	}
 
-	return &v1beta1.TaskRun{
+	return &pipev1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      E2ETestsRandomName(taskRunName),
 			Namespace: c.deploymentNamespace,
 		},
-		Spec: v1beta1.TaskRunSpec{
-			TaskRef: &v1beta1.TaskRef{
+		Spec: pipev1.TaskRunSpec{
+			TaskRef: &pipev1.TaskRef{
 				Name: taskName,
-				Kind: v1beta1.NamespacedTaskKind,
+				Kind: pipev1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: c.ServiceAccount,

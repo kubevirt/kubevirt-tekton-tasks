@@ -5,7 +5,7 @@ import (
 
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -59,64 +59,64 @@ func (c *GenerateSshKeysTestConfig) Init(options *testoptions.TestOptions) {
 
 }
 
-func (c *GenerateSshKeysTestConfig) GetTaskRun() *v1beta1.TaskRun {
-	params := []v1beta1.Param{
+func (c *GenerateSshKeysTestConfig) GetTaskRun() *pipev1.TaskRun {
+	params := []pipev1.Param{
 		{
 			Name: GenerateSshKeysParams.PublicKeySecretName,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.PublicKeySecretName,
 			},
 		},
 		{
 			Name: GenerateSshKeysParams.PublicKeySecretNamespace,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.PublicKeySecretNamespace,
 			},
 		},
 		{
 			Name: GenerateSshKeysParams.PrivateKeySecretName,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.PrivateKeySecretName,
 			},
 		},
 		{
 			Name: GenerateSshKeysParams.PrivateKeySecretNamespace,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.PrivateKeySecretNamespace,
 			},
 		},
 		{
 			Name: GenerateSshKeysParams.AdditionalSSHKeygenOptions,
-			Value: v1beta1.ArrayOrString{
-				Type:      v1beta1.ParamTypeString,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.AdditionalSSHKeygenOptions,
 			},
 		},
 	}
 
 	if len(c.TaskData.PrivateKeyConnectionOptions) > 0 {
-		params = append(params, v1beta1.Param{
+		params = append(params, pipev1.Param{
 			Name: GenerateSshKeysParams.PrivateKeyConnectionOptions,
-			Value: v1beta1.ArrayOrString{
-				Type:     v1beta1.ParamTypeArray,
+			Value: pipev1.ParamValue{
+				Type:     pipev1.ParamTypeArray,
 				ArrayVal: c.TaskData.PrivateKeyConnectionOptions,
 			},
 		})
 	}
 
-	return &v1beta1.TaskRun{
+	return &pipev1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      E2ETestsRandomName("taskrun-generate-ssh-keys"),
 			Namespace: c.deploymentNamespace,
 		},
-		Spec: v1beta1.TaskRunSpec{
-			TaskRef: &v1beta1.TaskRef{
+		Spec: pipev1.TaskRunSpec{
+			TaskRef: &pipev1.TaskRef{
 				Name: GenerateSshKeysTaskName,
-				Kind: v1beta1.NamespacedTaskKind,
+				Kind: pipev1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: c.ServiceAccount,

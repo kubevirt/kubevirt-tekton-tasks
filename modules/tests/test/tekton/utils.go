@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 )
 
-func TaskResultsToMap(results []beta1.TaskRunResult) map[string]string {
+func TaskResultsToMap(results []pipev1.TaskRunResult) map[string]string {
 	mappedResult := make(map[string]string, len(results))
 
 	for _, result := range results {
@@ -17,7 +17,7 @@ func TaskResultsToMap(results []beta1.TaskRunResult) map[string]string {
 	return mappedResult
 }
 
-func PipelineResultsToMap(results []beta1.PipelineRunResult) map[string]string {
+func PipelineResultsToMap(results []pipev1.PipelineRunResult) map[string]string {
 	mappedResult := make(map[string]string, len(results))
 
 	for _, result := range results {
@@ -27,7 +27,7 @@ func PipelineResultsToMap(results []beta1.PipelineRunResult) map[string]string {
 	return mappedResult
 }
 
-func resultToString(value beta1.ParamValue) string {
+func resultToString(value pipev1.ParamValue) string {
 	if value.StringVal != "" {
 		return value.StringVal
 	}

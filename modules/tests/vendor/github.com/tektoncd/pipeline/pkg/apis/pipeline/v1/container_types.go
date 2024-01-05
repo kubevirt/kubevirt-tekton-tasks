@@ -135,6 +135,33 @@ type Step struct {
 	// Stores configuration for the stderr stream of the step.
 	// +optional
 	StderrConfig *StepOutputConfig `json:"stderrConfig,omitempty"`
+	// Contains the reference to an existing StepAction.
+	//+optional
+	Ref *Ref `json:"ref,omitempty"`
+	// Params declares parameters passed to this step action.
+	// +optional
+	// +listType=atomic
+	Params Params `json:"params,omitempty"`
+	// Results declares StepResults produced by the Step.
+	//
+	// This is field is at an ALPHA stability level and gated by "enable-step-actions" feature flag.
+	//
+	// It can be used in an inlined Step when used to store Results to $(step.results.resultName.path).
+	// It cannot be used when referencing StepActions using [v1.Step.Ref].
+	// The Results declared by the StepActions will be stored here instead.
+	// +optional
+	// +listType=atomic
+	Results []StepResult `json:"results,omitempty"`
+}
+
+// Ref can be used to refer to a specific instance of a StepAction.
+type Ref struct {
+	// Name of the referenced step
+	Name string `json:"name,omitempty"`
+	// ResolverRef allows referencing a StepAction in a remote location
+	// like a git repo.
+	// +optional
+	ResolverRef `json:",omitempty"`
 }
 
 // OnErrorType defines a list of supported exiting behavior of a container on error
@@ -186,6 +213,36 @@ func (s *Step) SetContainerFields(c corev1.Container) {
 	s.VolumeDevices = c.VolumeDevices
 	s.ImagePullPolicy = c.ImagePullPolicy
 	s.SecurityContext = c.SecurityContext
+}
+
+// GetVarSubstitutionExpressions walks all the places a substitution reference can be used
+func (s *Step) GetVarSubstitutionExpressions() []string {
+	var allExpressions []string
+	allExpressions = append(allExpressions, validateString(s.Name)...)
+	allExpressions = append(allExpressions, validateString(s.Image)...)
+	allExpressions = append(allExpressions, validateString(string(s.ImagePullPolicy))...)
+	allExpressions = append(allExpressions, validateString(s.Script)...)
+	allExpressions = append(allExpressions, validateString(s.WorkingDir)...)
+	for _, cmd := range s.Command {
+		allExpressions = append(allExpressions, validateString(cmd)...)
+	}
+	for _, arg := range s.Args {
+		allExpressions = append(allExpressions, validateString(arg)...)
+	}
+	for _, env := range s.Env {
+		allExpressions = append(allExpressions, validateString(env.Value)...)
+		if env.ValueFrom != nil {
+			if env.ValueFrom.SecretKeyRef != nil {
+				allExpressions = append(allExpressions, validateString(env.ValueFrom.SecretKeyRef.Key)...)
+				allExpressions = append(allExpressions, validateString(env.ValueFrom.SecretKeyRef.LocalObjectReference.Name)...)
+			}
+			if env.ValueFrom.ConfigMapKeyRef != nil {
+				allExpressions = append(allExpressions, validateString(env.ValueFrom.ConfigMapKeyRef.Key)...)
+				allExpressions = append(allExpressions, validateString(env.ValueFrom.ConfigMapKeyRef.LocalObjectReference.Name)...)
+			}
+		}
+	}
+	return allExpressions
 }
 
 // StepTemplate is a template for a Step
@@ -540,4 +597,34 @@ func (s *Sidecar) SetContainerFields(c corev1.Container) {
 	s.Stdin = c.Stdin
 	s.StdinOnce = c.StdinOnce
 	s.TTY = c.TTY
+}
+
+// GetVarSubstitutionExpressions walks all the places a substitution reference can be used
+func (s *Sidecar) GetVarSubstitutionExpressions() []string {
+	var allExpressions []string
+	allExpressions = append(allExpressions, validateString(s.Name)...)
+	allExpressions = append(allExpressions, validateString(s.Image)...)
+	allExpressions = append(allExpressions, validateString(string(s.ImagePullPolicy))...)
+	allExpressions = append(allExpressions, validateString(s.Script)...)
+	allExpressions = append(allExpressions, validateString(s.WorkingDir)...)
+	for _, cmd := range s.Command {
+		allExpressions = append(allExpressions, validateString(cmd)...)
+	}
+	for _, arg := range s.Args {
+		allExpressions = append(allExpressions, validateString(arg)...)
+	}
+	for _, env := range s.Env {
+		allExpressions = append(allExpressions, validateString(env.Value)...)
+		if env.ValueFrom != nil {
+			if env.ValueFrom.SecretKeyRef != nil {
+				allExpressions = append(allExpressions, validateString(env.ValueFrom.SecretKeyRef.Key)...)
+				allExpressions = append(allExpressions, validateString(env.ValueFrom.SecretKeyRef.LocalObjectReference.Name)...)
+			}
+			if env.ValueFrom.ConfigMapKeyRef != nil {
+				allExpressions = append(allExpressions, validateString(env.ValueFrom.ConfigMapKeyRef.Key)...)
+				allExpressions = append(allExpressions, validateString(env.ValueFrom.ConfigMapKeyRef.LocalObjectReference.Name)...)
+			}
+		}
+	}
+	return allExpressions
 }

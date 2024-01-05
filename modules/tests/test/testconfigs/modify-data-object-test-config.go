@@ -6,7 +6,7 @@ import (
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
 	"github.com/onsi/ginkgo/v2"
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 	"sigs.k8s.io/yaml"
@@ -89,7 +89,7 @@ func (c *ModifyDataObjectTestConfig) Init(options *testoptions.TestOptions) {
 	}
 }
 
-func (c *ModifyDataObjectTestConfig) GetTaskRun() *v1beta1.TaskRun {
+func (c *ModifyDataObjectTestConfig) GetTaskRun() *pipev1.TaskRun {
 	var do interface{}
 	if c.TaskData.DataVolume != nil {
 		do = c.TaskData.DataVolume
@@ -106,65 +106,65 @@ func (c *ModifyDataObjectTestConfig) GetTaskRun() *v1beta1.TaskRun {
 		doStr = string(doBytes)
 	}
 
-	return &v1beta1.TaskRun{
+	return &pipev1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      E2ETestsRandomName(ModifyDataObjectTaskrunName),
 			Namespace: c.deploymentNamespace,
 		},
-		Spec: v1beta1.TaskRunSpec{
-			TaskRef: &v1beta1.TaskRef{
+		Spec: pipev1.TaskRunSpec{
+			TaskRef: &pipev1.TaskRef{
 				Name: ModifyDataObjectTaskName,
-				Kind: v1beta1.NamespacedTaskKind,
+				Kind: pipev1.NamespacedTaskKind,
 			},
 			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			ServiceAccountName: c.ServiceAccount,
-			Params: []v1beta1.Param{
+			Params: []pipev1.Param{
 				{
 					Name: ModifyDataObjectParams.Manifest,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: doStr,
 					},
 				},
 				{
 					Name: ModifyDataObjectParams.WaitForSuccess,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: ToStringBoolean(c.TaskData.WaitForSuccess),
 					},
 				},
 				{
 					Name: ModifyDataObjectParams.AllowReplace,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: ToStringBoolean(c.TaskData.AllowReplace),
 					},
 				},
 				{
 					Name: ModifyDataObjectParams.DeleteObject,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: ToStringBoolean(c.TaskData.DeleteObject),
 					},
 				},
 				{
 					Name: ModifyDataObjectParams.DeleteObjectName,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: c.TaskData.DeleteObjectName,
 					},
 				},
 				{
 					Name: ModifyDataObjectParams.DeleteObjectKind,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: c.TaskData.DeleteObjectKind,
 					},
 				},
 				{
 					Name: ModifyDataObjectParams.DataObjectNamespace,
-					Value: v1beta1.ArrayOrString{
-						Type:      v1beta1.ParamTypeString,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
 						StringVal: c.TaskData.dataObjectNamespace,
 					},
 				},

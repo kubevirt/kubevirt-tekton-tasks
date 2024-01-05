@@ -10,7 +10,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/clients"
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	tkntest "github.com/tektoncd/pipeline/test"
 	v1 "k8s.io/api/core/v1"
 
@@ -20,10 +20,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) (*v1beta1.TaskRun, string) {
+func WaitForTaskRunState(clients *clients.Clients, namespace, name string, timeout time.Duration, inState tkntest.ConditionAccessorFn) (*pipev1.TaskRun, string) {
 	isCapturing := false
 	logs := make(chan string, 1)
-	var taskRun *v1beta1.TaskRun
+	var taskRun *pipev1.TaskRun
 	err := wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
 		var err error
 		taskRun, err = clients.TknClient.TaskRuns(namespace).Get(context.Background(), name, metav1.GetOptions{})
@@ -77,7 +77,7 @@ func PrintTaskRunDebugInfo(clients *clients.Clients, taskRunNamespace, taskRunNa
 	}
 }
 
-func getTaskRunLogs(coreClient clientv1.CoreV1Interface, taskRun *v1beta1.TaskRun) string {
+func getTaskRunLogs(coreClient clientv1.CoreV1Interface, taskRun *pipev1.TaskRun) string {
 	if taskRun.Status.PodName == "" {
 		return ""
 	}
