@@ -1,5 +1,5 @@
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -131,7 +131,7 @@ subjects:
   - kind: ServiceAccount
     name: cleanup-vm-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -250,7 +250,7 @@ subjects:
   - kind: ServiceAccount
     name: create-vm-from-manifest-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -378,7 +378,7 @@ spec:
       optional: true
       mountPath: /data10
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -506,7 +506,7 @@ spec:
       optional: true
       mountPath: /data10
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -616,7 +616,7 @@ subjects:
   - kind: ServiceAccount
     name: execute-in-vm-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -724,7 +724,7 @@ subjects:
   - kind: ServiceAccount
     name: generate-ssh-keys-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -844,7 +844,7 @@ subjects:
   - kind: ServiceAccount
     name: modify-data-object-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -963,7 +963,7 @@ spec:
       emptyDir:
         sizeLimit: 12Gi
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
