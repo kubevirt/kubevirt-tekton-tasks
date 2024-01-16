@@ -540,7 +540,7 @@ spec:
           value: $(params.additionalOptions)
         - name: LIBGUESTFS_BACKEND
           value: direct
-      resources:
+      computeResources:
         limits:
           devices.kubevirt.io/kvm: '1'
           devices.kubevirt.io/tun: '1'
@@ -668,7 +668,7 @@ spec:
           value: $(params.additionalOptions)
         - name: LIBGUESTFS_BACKEND
           value: direct
-      resources:
+      computeResources:
         limits:
           devices.kubevirt.io/kvm: '1'
           devices.kubevirt.io/tun: '1'
@@ -1324,7 +1324,7 @@ spec:
           value: "direct"
         - name: "HOME"
           value: "/usr/local/lib/guestfs/appliance"
-      resources:
+      computeResources:
         limits:
           devices.kubevirt.io/kvm: '1'
         requests:

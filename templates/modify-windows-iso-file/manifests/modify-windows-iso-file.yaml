@@ -50,7 +50,7 @@ spec:
           value: "direct"
         - name: "HOME"
           value: "/usr/local/lib/guestfs/appliance"
-      resources:
+      computeResources:
         limits:
           devices.kubevirt.io/kvm: '1'
         requests:
