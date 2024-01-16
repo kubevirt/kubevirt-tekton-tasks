@@ -1,5 +1,5 @@
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -131,7 +131,7 @@ subjects:
   - kind: ServiceAccount
     name: cleanup-vm-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -229,7 +229,7 @@ subjects:
   - kind: ServiceAccount
     name: copy-template-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -348,7 +348,7 @@ subjects:
   - kind: ServiceAccount
     name: create-vm-from-manifest-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -494,7 +494,7 @@ subjects:
   - kind: ServiceAccount
     name: create-vm-from-template-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -540,7 +540,7 @@ spec:
           value: $(params.additionalOptions)
         - name: LIBGUESTFS_BACKEND
           value: direct
-      resources:
+      computeResources:
         limits:
           devices.kubevirt.io/kvm: '1'
           devices.kubevirt.io/tun: '1'
@@ -622,7 +622,7 @@ spec:
       optional: true
       mountPath: /data10
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -668,7 +668,7 @@ spec:
           value: $(params.additionalOptions)
         - name: LIBGUESTFS_BACKEND
           value: direct
-      resources:
+      computeResources:
         limits:
           devices.kubevirt.io/kvm: '1'
           devices.kubevirt.io/tun: '1'
@@ -750,7 +750,7 @@ spec:
       optional: true
       mountPath: /data10
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -860,7 +860,7 @@ subjects:
   - kind: ServiceAccount
     name: execute-in-vm-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -968,7 +968,7 @@ subjects:
   - kind: ServiceAccount
     name: generate-ssh-keys-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -1088,7 +1088,7 @@ subjects:
   - kind: ServiceAccount
     name: modify-data-object-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -1273,7 +1273,7 @@ subjects:
   - kind: ServiceAccount
     name: modify-vm-template-task
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
@@ -1324,7 +1324,7 @@ spec:
           value: "direct"
         - name: "HOME"
           value: "/usr/local/lib/guestfs/appliance"
-      resources:
+      computeResources:
         limits:
           devices.kubevirt.io/kvm: '1'
         requests:
@@ -1392,7 +1392,7 @@ spec:
       emptyDir:
         sizeLimit: 12Gi
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
