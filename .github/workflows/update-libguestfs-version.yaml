@@ -1,0 +1,62 @@
+name: Update libguestfs version
+on:
+  schedule:
+    - cron: "0 8 * * 1"
+jobs:
+  update-libguestfs-version:
+    name: Update kubevirt libguestfs container version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for new release of kubevirt libguestfs container and create PR if necessary
+        run: |
+          # If GITHUB_FORK_USER is changed, a new access token should be set as a repo secret (ACTIONS_TOKEN)
+          GITHUB_FORK_USER=ksimon1
+
+          # Set git configs to sign the commit
+          git config --global user.email "ksimon@redhat.com"
+          git config --global user.name "Kubevirt tekton tasks Update Automation"
+
+          # Clone the kubevirt-tekton-tasks repo with a token to allow pushing before creating a PR
+          git clone "https://${GITHUB_FORK_USER}:${{ secrets.ACTIONS_TOKEN }}@github.com/${GITHUB_FORK_USER}/kubevirt-tekton-tasks"
+
+          # Authenticate with gh cli
+          echo "${{ secrets.ACTIONS_TOKEN }}" > token.txt
+          gh auth login --with-token < token.txt
+          rm token.txt
+
+          # Fetch kubevirt-tekton-tasks changes
+          cd kubevirt-tekton-tasks || exit
+          git remote add upstream https://github.com/kubevirt/kubevirt-tekton-tasks
+          git fetch upstream
+          git reset --hard upstream/main
+
+          # Fetch kubevirt version
+          KUBEVIRT_VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt/releases | \
+            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+
+          LOCAL_KUBEVIRT_VERSION=$(grep -Po '(?<=libguestfs-tools:)[^"]+' build/Containerfile.DiskVirt)
+
+          if [[ ${LOCAL_KUBEVIRT_VERSION} != ${KUBEVIRT_VERSION} ]]; then
+            sed -i "s/${LOCAL_KUBEVIRT_VERSION}/${KUBEVIRT_VERSION}/g" build/Containerfile.DiskVirt
+            PATCH_BRANCH="update-libguestfs-version-${KUBEVIRT_VERSION}"
+
+            git checkout -b "${PATCH_BRANCH}"
+            git add build/Containerfile.DiskVirt
+
+            git commit -sm "Update libguestfs image version to ${KUBEVIRT_VERSION}"
+            git push --set-upstream --force origin "${PATCH_BRANCH}"
+
+            # Create a new PR in the kubevirt-tekton-tasks repo
+            gh pr create --repo kubevirt/kubevirt-tekton-tasks \
+              --base main \
+              --head "${GITHUB_FORK_USER}:${PATCH_BRANCH}" \
+              --title "chore: Update libguestfs image version to ${KUBEVIRT_VERSION}" \
+              --body "$(cat <<- EOF
+          		Update libguestfs image version to ${KUBEVIRT_VERSION}
+          		**Release note**:
+          		\`\`\`release-note
+          		chore: Update libguestfs image version to ${KUBEVIRT_VERSION}
+          		\`\`\`
+          		EOF
+              )"
+          fi
