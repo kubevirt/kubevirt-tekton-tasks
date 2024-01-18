@@ -1,8 +1,3 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
 version: 2
 updates:
   - package-ecosystem: "gomod"
@@ -11,41 +6,18 @@ updates:
       interval: "daily"
     allow:
       - dependency-type: "all"
-    assignees:
-      - "ksimon1"
-      - "0xFelix"
-  - package-ecosystem: "gomod"
-    directory: "/"
-    target-branch: "release-v0.16"
-    schedule:
-      interval: "daily"
-    allow:
-      - dependency-type: "all"
-    assignees:
-      - "ksimon1"
-      - "0xFelix"
-  - package-ecosystem: "gomod"
-    directory: "/"
-    target-branch: "release-v0.15"
-    schedule:
-      interval: "daily"
-    allow:
-      - dependency-type: "all"
-    assignees:
-      - "ksimon1"
-      - "0xFelix"
-  - package-ecosystem: "gomod"
-    directory: "/"
-    target-branch: "release-v0.13"
-    schedule:
-      interval: "daily"
-    allow:
-      - dependency-type: "all"
-    assignees:
-      - "ksimon1"
-      - "0xFelix"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+    open-pull-requests-limit: 3
+    labels:
+      - "release-note-none"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-  
+      interval: "weekly"  
+    open-pull-requests-limit: 3
+    labels:
+      - "release-note-none"
