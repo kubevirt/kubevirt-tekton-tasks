@@ -53,7 +53,7 @@ jobs:
 
       # triggers https://github.com/kubevirt/ssp-operator/blob/main/.github/workflows/release-tekton-tasks.yaml
       - name: Trigger ssp-operator
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.ACTIONS_TOKEN }}
           repository: kubevirt/ssp-operator
