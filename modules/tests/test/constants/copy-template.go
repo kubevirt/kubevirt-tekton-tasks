@@ -1,11 +1,9 @@
 package constants
 
 const (
-	CopyTemplateTaskName                     = "copy-template"
-	CopyTemplateServiceAccountName           = "copy-template-task"
-	CopyTemplateServiceAccountNameNamespaced = "copy-template-test"
-	CopyTemplateTaskRunName                  = "taskrun-copy-template"
-	NewTemplateName                          = "test-template"
+	CopyTemplateTaskName    = "copy-template"
+	CopyTemplateTaskRunName = "taskrun-copy-template"
+	NewTemplateName         = "test-template"
 
 	SourceTemplateNameOptionName      = "sourceTemplateName"
 	SourceTemplateNamespaceOptionName = "sourceTemplateNamespace"

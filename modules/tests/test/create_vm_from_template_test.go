@@ -48,15 +48,13 @@ var _ = Describe("Create VM from template", func() {
 	},
 		Entry("no template specified", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "only one of vm-manifest, template-name or virtctl should be specified",
+				ExpectedLogs: "only one of vm-manifest, template-name or virtctl should be specified",
 			},
 			TaskData: testconfigs.CreateVMTaskData{},
 		}),
 		Entry("template with no VM", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "no VM object found",
+				ExpectedLogs: "no VM object found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().WithNoVM().Build(),
@@ -67,18 +65,15 @@ var _ = Describe("Create VM from template", func() {
 		}),
 		Entry("non existent template", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "templates.template.openshift.io \"non-existent-template\" not found",
+				ExpectedLogs: "templates.template.openshift.io \"non-existent-template\" not found",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				TemplateTargetNamespace: TestTargetNS,
-				TemplateName:            "non-existent-template",
+				TemplateName: "non-existent-template",
 			},
 		}),
 		Entry("invalid template params", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "invalid template-params: no key found before \"InvalidDescription\"; pair should be in \"KEY:VAL\" format",
+				ExpectedLogs: "invalid template-params: no key found before \"InvalidDescription\"; pair should be in \"KEY:VAL\" format",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
@@ -90,8 +85,7 @@ var _ = Describe("Create VM from template", func() {
 		}),
 		Entry("missing template params", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "required params are missing values: NAME",
+				ExpectedLogs: "required params are missing values: NAME",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -100,8 +94,7 @@ var _ = Describe("Create VM from template", func() {
 
 		Entry("missing one template param", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "required params are missing values: DESCRIPTION",
+				ExpectedLogs: "required params are missing values: DESCRIPTION",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
@@ -112,39 +105,12 @@ var _ = Describe("Create VM from template", func() {
 		}),
 		Entry("create vm with non matching disk fails", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "admission webhook \"virtualmachine-validator.kubevirt.io\" denied the request: spec.template.spec.domain.devices.disks[0].Name",
+				ExpectedLogs: "admission webhook \"virtualmachine-validator.kubevirt.io\" denied the request: spec.template.spec.domain.devices.disks[0].Name",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().WithNonMatchingDisk().Build(),
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("non-matching-disk-fail-creation")),
-				},
-			},
-		}),
-		Entry("cannot create a VM in different namespace", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountNameNamespaced,
-				ExpectedLogs:   "cannot get resource \"templates\"",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
-				TemplateParams: []string{
-					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("different-ns-namespace-scope")),
-				},
-				VMTargetNamespace: SystemTargetNS,
-			},
-		}),
-		Entry("cannot use template from a different namespace", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountNameNamespaced,
-				ExpectedLogs:   "templates.template.openshift.io \"unreachable-template\" is forbidden",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				TemplateTargetNamespace: SystemTargetNS,
-				TemplateName:            "unreachable-template",
-				TemplateParams: []string{
-					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("different-ns-namespace-scope")),
 				},
 			},
 		}),
@@ -176,8 +142,7 @@ var _ = Describe("Create VM from template", func() {
 	},
 		Entry("simple vm", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -188,56 +153,43 @@ var _ = Describe("Create VM from template", func() {
 		}),
 		Entry("vm to deploy namespace by default", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-to-deploy-by-default")),
 				},
-				VMTargetNamespace:                  DeployTargetNS,
-				UseDefaultVMNamespacesInTaskParams: true,
 			},
 		}),
 		Entry("vm with template from deploy namespace by default", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-template-from-deploy-by-default")),
 				},
-				TemplateTargetNamespace:                  DeployTargetNS,
-				UseDefaultTemplateNamespacesInTaskParams: true,
 			},
 		}),
 		Entry("vm with template to deploy namespace by default", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-template-to-deploy-by-default")),
 				},
-				VMTargetNamespace:                        DeployTargetNS,
-				TemplateTargetNamespace:                  DeployTargetNS,
-				UseDefaultVMNamespacesInTaskParams:       true,
-				UseDefaultTemplateNamespacesInTaskParams: true,
 			},
 		}),
 		Entry("vm with multiple params with template in deploy NS", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   "description: e2e description with spaces",
+				ExpectedLogs: "description: e2e description with spaces",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template:                testtemplate.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
-				TemplateTargetNamespace: DeployTargetNS,
+				Template: testtemplate.NewCirrosServerTinyTemplate().WithDescriptionParam().Build(),
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.DescriptionParam, "e2e description with spaces"),
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-with-params")),
@@ -247,13 +199,10 @@ var _ = Describe("Create VM from template", func() {
 		}),
 		Entry("works also in the same namespace as deploy", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
-				TemplateTargetNamespace: DeployTargetNS,
-				VMTargetNamespace:       DeployTargetNS,
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("same-ns")),
 				},
@@ -264,8 +213,7 @@ var _ = Describe("Create VM from template", func() {
 	It("VM from common template is created successfully + test trim", func() {
 		config := &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				TemplateName:      SpacesSmall + "fedora-server-tiny",
@@ -273,8 +221,7 @@ var _ = Describe("Create VM from template", func() {
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-common-template")),
 				},
-				IsCommonTemplate:  true,
-				VMTargetNamespace: DeployTargetNS,
+				IsCommonTemplate: true,
 			},
 		}
 		f.TestSetup(config)
@@ -299,8 +246,7 @@ var _ = Describe("Create VM from template", func() {
 		template := testtemplate.NewCirrosServerTinyTemplate().Build()
 		config := &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromTemplateServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Template: template,
@@ -379,8 +325,7 @@ var _ = Describe("Create VM from template", func() {
 		},
 			Entry("with invalid StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromTemplateServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -392,8 +337,7 @@ var _ = Describe("Create VM from template", func() {
 			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
 			Entry("with false StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromTemplateServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -405,8 +349,7 @@ var _ = Describe("Create VM from template", func() {
 			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
 			Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromTemplateServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -446,8 +389,7 @@ var _ = Describe("Create VM from template", func() {
 		},
 			Entry("with RunStrategy always", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromTemplateServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -460,8 +402,7 @@ var _ = Describe("Create VM from template", func() {
 			}, kubevirtv1.RunStrategyAlways),
 			Entry("with RunStrategy halted", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromTemplateServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -473,8 +414,7 @@ var _ = Describe("Create VM from template", func() {
 			}, kubevirtv1.RunStrategyHalted),
 			Entry("with RunStrategy halted and startVM", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromTemplateServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -487,8 +427,7 @@ var _ = Describe("Create VM from template", func() {
 			}, kubevirtv1.RunStrategyAlways),
 			Entry("with RunStrategy Manual", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromTemplateServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -501,8 +440,7 @@ var _ = Describe("Create VM from template", func() {
 			}, kubevirtv1.RunStrategyManual),
 			Entry("with RunStrategy RerunOnFailure", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromTemplateServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),

@@ -12,7 +12,7 @@
     - name: "Generate {{ task_name }} task"
       template:
         src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
-        dest: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
+        dest: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
         mode: "{{ default_file_mode }}"
     - name: Prepare examples dist directory
       file:
@@ -29,13 +29,21 @@
       with_items:
         - "{{ task_name }}-taskrun"
         - "{{ task_name }}-taskrun-workspace"
+    - name: Prepare readme dist directory
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ readme_output_dir_tmp }}"
     - name: Generate README
       template:
         src: "{{ readmes_templates_dir }}/README.md"
-        dest: "{{ output_dir }}/README.md"
+        dest: "{{ readme_output_dir }}/README.md"
         mode: "{{ default_file_mode }}"
       vars:
-        task_path: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
+        task_path: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
         task_yaml: "{{ lookup('file', task_path) | from_yaml }}"
-    - name: Assemble task
-      include_tasks: "{{ repo_dir }}/scripts/ansible/assemble-task.yaml"
+    - name: "Delete readme tmp directory"
+      file:
+        path: "{{ readme_output_dir_tmp }}"
+        state: absent

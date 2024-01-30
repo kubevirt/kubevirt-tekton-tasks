@@ -1,10 +1,8 @@
 package constants
 
 const ExecuteInVMTaskName = "execute-in-vm"
-const ExecuteInVMServiceAccountName = "execute-in-vm-task"
 
 const CleanupVMTaskName = "cleanup-vm"
-const CleanupVMServiceAccountName = "cleanup-vm-task"
 
 type executeOrCleanupVMParams struct {
 	VMName      string

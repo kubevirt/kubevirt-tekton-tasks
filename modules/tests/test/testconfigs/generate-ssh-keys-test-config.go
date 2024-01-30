@@ -49,13 +49,13 @@ func (c *GenerateSshKeysTestConfig) Init(options *testoptions.TestOptions) {
 		data.PublicKeySecretName = E2ETestsRandomName(data.PublicKeySecretName)
 	}
 
-	data.PublicKeySecretNamespace = options.ResolveNamespace(data.PublicKeySecretTargetNamespace, data.PublicKeySecretNamespace)
+	data.PublicKeySecretNamespace = options.GetDefaultNamespace()
 
 	if data.PrivateKeySecretName != "" {
 		data.PrivateKeySecretName = E2ETestsRandomName(data.PrivateKeySecretName)
 	}
 
-	data.PrivateKeySecretNamespace = options.ResolveNamespace(data.PrivateKeySecretTargetNamespace, data.PrivateKeySecretNamespace)
+	data.PrivateKeySecretNamespace = options.GetDefaultNamespace()
 
 }
 
@@ -118,9 +118,8 @@ func (c *GenerateSshKeysTestConfig) GetTaskRun() *pipev1.TaskRun {
 				Name: GenerateSshKeysTaskName,
 				Kind: pipev1.NamespacedTaskKind,
 			},
-			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
-			ServiceAccountName: c.ServiceAccount,
-			Params:             params,
+			Timeout: &metav1.Duration{Duration: c.GetTaskRunTimeout()},
+			Params:  params,
 		},
 	}
 }

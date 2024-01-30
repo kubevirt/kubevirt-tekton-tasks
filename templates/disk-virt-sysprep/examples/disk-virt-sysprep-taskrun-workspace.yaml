@@ -11,9 +11,6 @@ kind: TaskRun
 metadata:
   name: {{ item }}
 spec:
-{% if task_yaml.metadata.annotations['task.kubevirt.io/associatedServiceAccount'] is defined %}
-  serviceAccountName: {{ sa_name }}
-{% endif %}
   taskRef:
     kind: Task
     name: {{ task_name }}

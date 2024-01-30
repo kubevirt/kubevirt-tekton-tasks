@@ -3,7 +3,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
     manifest.params.task.kubevirt.io/type: {{ task_param_types.resource_yaml }}
     manifest.params.task.kubevirt.io/apiVersion: {{ task_param_types.cdi_beta_api_version }}
     waitForSuccess.params.task.kubevirt.io/type: {{ task_param_types.boolean }}

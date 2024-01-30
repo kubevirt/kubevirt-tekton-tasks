@@ -3,7 +3,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
 {% if task_name == "create-vm-from-manifest" %}
     manifest.params.task.kubevirt.io/type: {{ task_param_types.resource_yaml }}
     manifest.params.task.kubevirt.io/kind: {{ task_param_types.vm_kind}}

@@ -3,7 +3,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
     vmiNamespace.params.task.kubevirt.io/type: namespace
   labels:
     task.kubevirt.io/type: {{ task_name }}

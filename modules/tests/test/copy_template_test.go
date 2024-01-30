@@ -39,8 +39,7 @@ var _ = Describe("Copy template task", func() {
 		},
 			Entry("no source template name specified", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-					ExpectedLogs:   "source-template-name param has to be specified",
+					ExpectedLogs: "source-template-name param has to be specified",
 				},
 				TaskData: testconfigs.CopyTemplateTaskData{
 					TargetTemplateName: NewTemplateName,
@@ -48,22 +47,10 @@ var _ = Describe("Copy template task", func() {
 			}),
 			Entry("source template doesn't exist", &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-					ExpectedLogs:   "templates.template.openshift.io \"cirros-vm-template\" not found",
+					ExpectedLogs: "templates.template.openshift.io \"cirros-vm-template\" not found",
 				},
 				TaskData: testconfigs.CopyTemplateTaskData{
 					SourceTemplateName: testtemplate.CirrosTemplateName,
-				},
-			}),
-			Entry("cannot copy template in different namespace", &testconfigs.CopyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountNameNamespaced,
-					ExpectedLogs:   "cannot get resource \"templates\"",
-				},
-				TaskData: testconfigs.CopyTemplateTaskData{
-					SourceTemplateName:      testtemplate.CirrosTemplateName,
-					TargetTemplateNamespace: SystemTargetNS,
-					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
 		)
@@ -94,66 +81,39 @@ var _ = Describe("Copy template task", func() {
 			f.ManageTemplates(newTemplate)
 		},
 			Entry("should create template in the same namespace", &testconfigs.CopyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.CopyTemplateTaskData{
 					SourceTemplateName: testtemplate.CirrosTemplateName,
 					TargetTemplateName: NewTemplateName,
 					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
-			Entry("should create template in different namespace", &testconfigs.CopyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-				},
-				TaskData: testconfigs.CopyTemplateTaskData{
-					SourceTemplateName:      testtemplate.CirrosTemplateName,
-					TargetTemplateName:      NewTemplateName,
-					TargetTemplateNamespace: DeployTargetNS,
-					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
-				},
-			}),
 			Entry("no target template name specified", &testconfigs.CopyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.CopyTemplateTaskData{
 					SourceTemplateName: testtemplate.CirrosTemplateName,
 					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
 			Entry("no target namespaces specified", &testconfigs.CopyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.CopyTemplateTaskData{
-					SourceTemplateName:      testtemplate.CirrosTemplateName,
-					TargetTemplateNamespace: EmptyTargetNS,
-					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
+					SourceTemplateName: testtemplate.CirrosTemplateName,
+					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
 			Entry("no source namespaces specified", &testconfigs.CopyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.CopyTemplateTaskData{
-					SourceTemplateName:      testtemplate.CirrosTemplateName,
-					SourceTemplateNamespace: EmptyTargetNS,
-					TemplateNamespace:       DeployTargetNS,
-					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
+					SourceTemplateName: testtemplate.CirrosTemplateName,
+					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
 			Entry("no namespaces specified", &testconfigs.CopyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.CopyTemplateTaskData{
-					SourceTemplateName:      testtemplate.CirrosTemplateName,
-					SourceTemplateNamespace: EmptyTargetNS,
-					TargetTemplateNamespace: EmptyTargetNS,
-					TemplateNamespace:       DeployTargetNS,
-					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
+					SourceTemplateName: testtemplate.CirrosTemplateName,
+					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}),
 		)
@@ -162,19 +122,16 @@ var _ = Describe("Copy template task", func() {
 	Context("Remove common templates labels / annotations", func() {
 		It("taskrun succeeds and template is updated", func() {
 			config := &testconfigs.CopyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.CopyTemplateTaskData{
-					SourceTemplateName:      testtemplate.RhelTemplateName,
-					TargetTemplateName:      NewTemplateName,
-					TargetTemplateNamespace: TestTargetNS,
-					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					SourceTemplateName: testtemplate.RhelTemplateName,
+					TargetTemplateName: NewTemplateName,
+					Template:           testtemplate.NewRhelDesktopTinyTemplate().Build(),
 				},
 			}
 			f.TestSetup(config)
 
-			t, err := f.TemplateClient.Templates(config.TaskData.SourceNamespace).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
+			t, err := f.TemplateClient.Templates(config.TaskData.TemplateNamespace).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(t)
 
@@ -210,25 +167,23 @@ var _ = Describe("Copy template task", func() {
 		It("taskrun fails and new template is not created", func() {
 			config := &testconfigs.CopyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-					ExpectedLogs:   "templates.template.openshift.io \"test-template\" already exists",
+					ExpectedLogs: "templates.template.openshift.io \"test-template\" already exists",
 				},
 				TaskData: testconfigs.CopyTemplateTaskData{
-					SourceTemplateName:      testtemplate.CirrosTemplateName,
-					TargetTemplateName:      NewTemplateName,
-					TargetTemplateNamespace: TestTargetNS,
-					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
+					SourceTemplateName: testtemplate.CirrosTemplateName,
+					TargetTemplateName: NewTemplateName,
+					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}
 			f.TestSetup(config)
 
-			t, err := f.TemplateClient.Templates(config.TaskData.SourceNamespace).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
+			t, err := f.TemplateClient.Templates(config.TaskData.TemplateNamespace).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(t)
 
 			//create template which has the same name as template which will be created
 			config.TaskData.Template.Name = NewTemplateName
-			t, err = f.TemplateClient.Templates(string(config.TaskData.SourceNamespace)).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
+			t, err = f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(t)
 
@@ -241,27 +196,24 @@ var _ = Describe("Copy template task", func() {
 
 		It("taskrun succeeds and template is updated", func() {
 			config := &testconfigs.CopyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CopyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.CopyTemplateTaskData{
-					SourceTemplateName:      testtemplate.CirrosTemplateName,
-					TargetTemplateName:      NewTemplateName,
-					TargetTemplateNamespace: TestTargetNS,
-					AllowReplace:            "true",
-					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
+					SourceTemplateName: testtemplate.CirrosTemplateName,
+					TargetTemplateName: E2ETestsRandomName(NewTemplateName),
+					AllowReplace:       "true",
+					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
 				},
 			}
 			f.TestSetup(config)
 
-			t, err := f.TemplateClient.Templates(config.TaskData.SourceNamespace).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
+			t, err := f.TemplateClient.Templates(config.TaskData.TemplateNamespace).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(t)
 
 			//create template which has the same name as template which will be created
-			config.TaskData.Template.Name = NewTemplateName
+			config.TaskData.Template.Name = config.TaskData.TargetTemplateName
 			config.TaskData.Template.Objects = []runtime.RawExtension{}
-			t, err = f.TemplateClient.Templates(string(config.TaskData.SourceNamespace)).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
+			t, err = f.TemplateClient.Templates(string(config.TaskData.TemplateNamespace)).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
 
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageTemplates(t)

@@ -22,7 +22,7 @@
     src: "{{ role_output_dir }}/tmp-role"
     dest: "{{ role_output_dir }}/{{ item.prefix if item.prefix is defined else '' }}{{ task_name }}-rbac.yaml"
     mode: "{{ default_file_mode }}"
-    delimiter: '\n'
+    delimiter: ''
 - name: "Delete role tmp directory"
   file:
     path: "{{ role_output_dir }}/tmp-role"

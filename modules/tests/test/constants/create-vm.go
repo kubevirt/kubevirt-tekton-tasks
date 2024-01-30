@@ -1,12 +1,8 @@
 package constants
 
 const CreateVMFromTemplateTaskName = "create-vm-from-template"
-const CreateVMFromTemplateServiceAccountName = "create-vm-from-template-task"
-const CreateVMFromTemplateServiceAccountNameNamespaced = "create-vm-from-template-test"
 
 const CreateVMFromManifestTaskName = "create-vm-from-manifest"
-const CreateVMFromManifestServiceAccountName = "create-vm-from-manifest-task"
-const CreateVMFromManifestServiceAccountNameNamespaced = "create-vm-from-manifest-test"
 
 type createVMFromManifestParams struct {
 	Namespace string

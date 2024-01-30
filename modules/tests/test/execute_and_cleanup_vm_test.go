@@ -215,8 +215,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}),
 			Entry("non existent VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "virtualmachine.kubevirt.io \"non-existent\" not found",
+					ExpectedLogs: "virtualmachine.kubevirt.io \"non-existent\" not found",
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					Secret: testobjects.NewTestSecret(sshConnectionInfo),
@@ -226,8 +225,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}),
 			Entry("not working VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
+
+					Timeout: Timeouts.QuickTaskRun,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM:     testobjects.NewTestFedoraCloudVM("not-working-vm").WithMemory("5000Pi").Build(),
@@ -237,21 +236,19 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}),
 			Entry("not authorized VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "Permission denied",
+					ExpectedLogs: "Permission denied",
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
-					VM:                testobjects.NewTestFedoraCloudVM("not-authorized-vm").Build(),
-					Secret:            testobjects.NewTestSecret(sshConnectionInfo),
-					Script:            helloWorldScript,
-					VMTargetNamespace: TestTargetNS,
+					VM:     testobjects.NewTestFedoraCloudVM("not-authorized-vm").Build(),
+					Secret: testobjects.NewTestSecret(sshConnectionInfo),
+					Script: helloWorldScript,
 				},
 			}),
 			Entry("fail script", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
-					ExpectedLogs:   "fail",
+
+					Timeout:      Timeouts.QuickTaskRun,
+					ExpectedLogs: "fail",
 					ExpectedTermination: &testconfigs.TaskRunExpectedTermination{
 						ExitCode: 25,
 					},
@@ -264,8 +261,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}),
 			Entry("execute with wrong public key", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "REMOTE HOST IDENTIFICATION HAS CHANGED",
+					ExpectedLogs: "REMOTE HOST IDENTIFICATION HAS CHANGED",
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM: testobjects.NewTestFedoraCloudVM("execute-with-wrong-public-key").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -278,33 +274,22 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					Script: helloWorldScript,
 				},
 			}),
-			Entry("cannot execute command in different namespace", &testconfigs.ExecuteOrCleanupVMTestConfig{
-				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
-					VM:                testobjects.NewTestFedoraCloudVM("execute-command-in-different-ns").WithCloudConfig(fedoraCloudConfig).Build(),
-					Secret:            testobjects.NewTestSecret(sshConnectionInfo),
-					Script:            helloWorldScript,
-					VMTargetNamespace: SystemTargetNS,
-				},
-			}),
 			// positive cases
 			Entry("execute script", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "hello world",
-					ExpectSuccess:  true,
+					ExpectedLogs:  "hello world",
+					ExpectSuccess: true,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
-					VM:                testobjects.NewTestFedoraCloudVM("execute-script").WithCloudConfig(fedoraCloudConfig).Build(),
-					Secret:            testobjects.NewTestSecret(sshConnectionInfo),
-					Script:            helloWorldScript,
-					VMTargetNamespace: TestTargetNS,
+					VM:     testobjects.NewTestFedoraCloudVM("execute-script").WithCloudConfig(fedoraCloudConfig).Build(),
+					Secret: testobjects.NewTestSecret(sshConnectionInfo),
+					Script: helloWorldScript,
 				},
 			}),
 			Entry("execute command in running vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "hello",
-					ExpectSuccess:  true,
+					ExpectedLogs:  "hello",
+					ExpectSuccess: true,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM:            testobjects.NewTestFedoraCloudVM("execute-command-in-running-vm").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -315,9 +300,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}),
 			Entry("execute command with args", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "hello world !",
-					ExpectSuccess:  true,
+					ExpectedLogs:  "hello world !",
+					ExpectSuccess: true,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM:          testobjects.NewTestFedoraCloudVM("execute-command-with-args").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -328,22 +312,19 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}),
 			Entry("execute command in the same namespace as deploy", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "hello world",
-					ExpectSuccess:  true,
+					ExpectedLogs:  "hello world",
+					ExpectSuccess: true,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
-					VM:                testobjects.NewTestFedoraCloudVM("execute-command-in-same-ns").WithCloudConfig(fedoraCloudConfig).Build(),
-					Secret:            testobjects.NewTestSecret(sshConnectionInfo),
-					Script:            helloWorldScript,
-					VMTargetNamespace: DeployTargetNS,
+					VM:     testobjects.NewTestFedoraCloudVM("execute-command-in-same-ns").WithCloudConfig(fedoraCloudConfig).Build(),
+					Secret: testobjects.NewTestSecret(sshConnectionInfo),
+					Script: helloWorldScript,
 				},
 			}),
 			Entry("execute script with options", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "hello world",
-					ExpectSuccess:  true,
+					ExpectedLogs:  "hello world",
+					ExpectSuccess: true,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM: testobjects.NewTestFedoraCloudVM("execute-script-with-options").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -360,9 +341,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}),
 			Entry("execute with public key", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "hello world",
-					ExpectSuccess:  true,
+					ExpectedLogs:  "hello world",
+					ExpectSuccess: true,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM: testobjects.NewTestFedoraCloudVM("execute-with-public-key").WithCloudConfig(testobjects.CloudConfig{
@@ -385,9 +365,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}),
 			Entry("execute with malformed private key", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "hello world",
-					ExpectSuccess:  true,
+					ExpectedLogs:  "hello world",
+					ExpectSuccess: true,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM: testobjects.NewTestFedoraCloudVM("execute-with-malformed-private-key").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -402,9 +381,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}),
 			Entry("execute with kubernetes.io/ssh-auth secret type", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ExecuteInVMServiceAccountName,
-					ExpectedLogs:   "hello world",
-					ExpectSuccess:  true,
+					ExpectedLogs:  "hello world",
+					ExpectSuccess: true,
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					VM: testobjects.NewTestFedoraCloudVM("execute-with-kubernetes-ssh-secret-type").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -466,8 +444,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		// negative cases
 		Entry("execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CleanupVMServiceAccountName,
-				ExpectedLogs:   "command timed out",
+
+				ExpectedLogs: "command timed out",
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:            testobjects.NewTestFedoraCloudVM("execute-too-low-timeout-stop-vm").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -483,8 +461,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 
 		Entry("starts and execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CleanupVMServiceAccountName,
-				ExpectedLogs:   "command timed out",
+
+				ExpectedLogs: "command timed out",
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:     testobjects.NewTestFedoraCloudVM("start-execute-too-low-timeout-stop-vm").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -499,8 +477,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		// positive cases
 		Entry("stop vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CleanupVMServiceAccountName,
-				ExpectSuccess:  true,
+
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:            testobjects.NewTestFedoraCloudVM("stop-vm").Build(),
@@ -511,8 +489,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("stop non running vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CleanupVMServiceAccountName,
-				ExpectSuccess:  true,
+
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:         testobjects.NewTestFedoraCloudVM("stop-non-running-vm").Build(),
@@ -522,8 +500,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CleanupVMServiceAccountName,
-				ExpectSuccess:  true,
+
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:            testobjects.NewTestFedoraCloudVM("delete-vm").Build(),
@@ -534,8 +512,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("stop and delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CleanupVMServiceAccountName,
-				ExpectSuccess:  true,
+
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:            testobjects.NewTestFedoraCloudVM("stop-delete-vm").Build(),
@@ -547,9 +525,9 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("execute and stop and delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CleanupVMServiceAccountName,
-				ExpectedLogs:   "hello world",
-				ExpectSuccess:  true,
+
+				ExpectedLogs:  "hello world",
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:            testobjects.NewTestFedoraCloudVM("execute-stop-delete-vm").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -562,9 +540,9 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("execute and stops vm with timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CleanupVMServiceAccountName,
-				ExpectedLogs:   "hello world",
-				ExpectSuccess:  true,
+
+				ExpectedLogs:  "hello world",
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:            testobjects.NewTestFedoraCloudVM("execute-timeout-stop-vm").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -577,9 +555,9 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("execute and deletes vm with timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CleanupVMServiceAccountName,
-				ExpectedLogs:   "hello world",
-				ExpectSuccess:  true,
+
+				ExpectedLogs:  "hello world",
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:            testobjects.NewTestFedoraCloudVM("execute-timeout-delete-vm").WithCloudConfig(fedoraCloudConfig).Build(),
@@ -592,8 +570,8 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("stops failed VMI", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CleanupVMServiceAccountName,
-				ExpectSuccess:  true,
+
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:            testobjects.NewTestFedoraCloudVM("stops-failed-vmi").WithMemory("100Pi").Build(),

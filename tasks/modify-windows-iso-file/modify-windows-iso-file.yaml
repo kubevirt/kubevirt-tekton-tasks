@@ -2,8 +2,6 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  annotations:
-    task.kubevirt.io/associatedServiceAccount: modify-windows-iso-file-task
   labels:
     task.kubevirt.io/type: modify-windows-iso-file
     task.kubevirt.io/category: modify-windows-iso-file

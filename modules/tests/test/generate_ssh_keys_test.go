@@ -39,65 +39,26 @@ var _ = Describe("Generate SSH Keys", func() {
 	},
 		Entry("invalid public secret name", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   "invalid public-key-secret-name value: a lowercase RFC 1123 subdomain must consist of",
+				ExpectedLogs: "invalid public-key-secret-name value: a lowercase RFC 1123 subdomain must consist of",
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PublicKeySecretName: "public secret",
 			},
 		}),
-		Entry("invalid public secret namespace", &testconfigs.GenerateSshKeysTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   "invalid public-key-secret-namespace value: a lowercase RFC 1123 subdomain must consist of",
-			},
-			TaskData: testconfigs.GenerateSshKeysTaskData{
-				PublicKeySecretNamespace: "my ns",
-			},
-		}),
 		Entry("invalid private secret name", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   "invalid private-key-secret-name value: a lowercase RFC 1123 subdomain must consist of",
+				ExpectedLogs: "invalid private-key-secret-name value: a lowercase RFC 1123 subdomain must consist of",
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PrivateKeySecretName: "private secret",
 			},
 		}),
-		Entry("invalid private secret namespace", &testconfigs.GenerateSshKeysTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   "invalid private-key-secret-namespace value: a lowercase RFC 1123 subdomain must consist of",
-			},
-			TaskData: testconfigs.GenerateSshKeysTaskData{
-				PrivateKeySecretNamespace: "my ns",
-			},
-		}),
 		Entry("invalid ssh-keygen options", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   "unknown option -- 3",
+				ExpectedLogs: "unknown option -- 3",
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				AdditionalSSHKeygenOptions: "-3 unknown-param test",
-			},
-		}),
-		Entry("cannot create public secret in different namespace", &testconfigs.GenerateSshKeysTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountNameNamespaced,
-				ExpectedLogs:   "secrets is forbidden",
-			},
-			TaskData: testconfigs.GenerateSshKeysTaskData{
-				PublicKeySecretTargetNamespace: SystemTargetNS,
-			},
-		}),
-		Entry("cannot create private secret in different namespace", &testconfigs.GenerateSshKeysTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountNameNamespaced,
-				ExpectedLogs:   "secrets is forbidden",
-			},
-			TaskData: testconfigs.GenerateSshKeysTaskData{
-				PrivateKeySecretTargetNamespace: SystemTargetNS,
 			},
 		}),
 	)
@@ -142,15 +103,13 @@ var _ = Describe("Generate SSH Keys", func() {
 	},
 		Entry("generates secret with no additional data", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   ExpectedGenerateSshKeysMessage,
+				ExpectedLogs: ExpectedGenerateSshKeysMessage,
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{},
 		}),
 		Entry("generates secret with private secret name", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   ExpectedGenerateSshKeysMessage,
+				ExpectedLogs: ExpectedGenerateSshKeysMessage,
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PrivateKeySecretName: "test-private-secret",
@@ -158,8 +117,7 @@ var _ = Describe("Generate SSH Keys", func() {
 		}),
 		Entry("generates secret with public secret name", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   ExpectedGenerateSshKeysMessage,
+				ExpectedLogs: ExpectedGenerateSshKeysMessage,
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PublicKeySecretName: "test-public-secret",
@@ -167,23 +125,19 @@ var _ = Describe("Generate SSH Keys", func() {
 		}),
 		Entry("generates secret with empty namespaces", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   ExpectedGenerateSshKeysMessage,
+				ExpectedLogs: ExpectedGenerateSshKeysMessage,
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PrivateKeySecretTargetNamespace: EmptyTargetNS,
-				PublicKeySecretTargetNamespace:  DeployTargetNS,
 			},
 		}),
 		Entry("generates complex secret", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   ExpectedGenerateSshKeysMessage,
+				ExpectedLogs: ExpectedGenerateSshKeysMessage,
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
-				PrivateKeySecretName:           "complex-private-key",
-				PublicKeySecretName:            "complex-public-key",
-				PublicKeySecretTargetNamespace: DeployTargetNS,
+				PrivateKeySecretName: "complex-private-key",
+				PublicKeySecretName:  "complex-public-key",
 				PrivateKeyConnectionOptions: []string{
 					fmt.Sprintf("%v:%v", PrivateKeyConnectionOptions.User, "root"),
 					fmt.Sprintf("%v:%v", PrivateKeyConnectionOptions.DisableStrictHostKeyCheckingAttr, "false"),
@@ -195,8 +149,7 @@ var _ = Describe("Generate SSH Keys", func() {
 		}),
 		Entry("generates complex mixed secret", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   ExpectedGenerateSshKeysMessage,
+				ExpectedLogs: ExpectedGenerateSshKeysMessage,
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
 				PrivateKeySecretName:           "complex-private-key",
@@ -209,12 +162,7 @@ var _ = Describe("Generate SSH Keys", func() {
 		}),
 		Entry("works also in the same namespace as deploy", &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   ExpectedGenerateSshKeysMessage,
-			},
-			TaskData: testconfigs.GenerateSshKeysTaskData{
-				PrivateKeySecretTargetNamespace: DeployTargetNS,
-				PublicKeySecretTargetNamespace:  DeployTargetNS,
+				ExpectedLogs: ExpectedGenerateSshKeysMessage,
 			},
 		}),
 	)
@@ -222,12 +170,10 @@ var _ = Describe("Generate SSH Keys", func() {
 	It("appends to existing secret", func() {
 		config := &testconfigs.GenerateSshKeysTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: GenerateSshKeysServiceAccountName,
-				ExpectedLogs:   ExpectedGenerateSshKeysMessage,
+				ExpectedLogs: ExpectedGenerateSshKeysMessage,
 			},
 			TaskData: testconfigs.GenerateSshKeysTaskData{
-				PublicKeySecretName:            "authorized-keys-append-secret",
-				PublicKeySecretTargetNamespace: TestTargetNS,
+				PublicKeySecretName: "authorized-keys-append-secret",
 				PrivateKeyConnectionOptions: []string{
 					fmt.Sprintf("%v:%v", PrivateKeyConnectionOptions.User, "root"),
 					fmt.Sprintf("%v:%v", PrivateKeyConnectionOptions.DisableStrictHostKeyCheckingAttr, "true"),
@@ -245,7 +191,7 @@ var _ = Describe("Generate SSH Keys", func() {
 			},
 		}
 
-		publicSecret, err := f.CoreV1Client.Secrets(f.TestNamespace).Create(context.Background(), publicSecret, metav1.CreateOptions{})
+		publicSecret, err := f.CoreV1Client.Secrets(f.GetDefaultNamespace()).Create(context.Background(), publicSecret, metav1.CreateOptions{})
 		Expect(err).ShouldNot(HaveOccurred())
 		f.ManageSecrets(publicSecret)
 

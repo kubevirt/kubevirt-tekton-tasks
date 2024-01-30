@@ -15,7 +15,7 @@ DRY_RUN="${DRY_RUN:=false}"
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
-RESOURCE_TYPES=(manifests examples README.md)
+RESOURCE_TYPES=(manifests examples readme)
 RELEASE_TYPES=(kubernetes okd)
 
 if [[ $# -eq 0 ]]; then
@@ -30,14 +30,18 @@ function generateTaskResources() {
   for TASK_NAME in ${TASK_NAMES[*]}; do
     visit "${REPO_DIR}/templates/${TASK_NAME}"
       ansible-playbook generate-task.yaml
+      DESTINATION_PARENT_DIR="${REPO_DIR}/tasks/${TASK_NAME}"
+      rm -rf "${DESTINATION_PARENT_DIR}"
+      mkdir -p "${DESTINATION_PARENT_DIR}"
       for RESOURCE_TYPE in ${RESOURCE_TYPES[*]}; do
-        DESTINATION_PARENT_DIR="${REPO_DIR}/tasks/${TASK_NAME}"
-        DESTINATION="${DESTINATION_PARENT_DIR}/${RESOURCE_TYPE}"
-        SOURCE="${REPO_DIR}/templates/${TASK_NAME}/dist/${RESOURCE_TYPE}"
+        DESTINATION="${DESTINATION_PARENT_DIR}"
+        SOURCE="${REPO_DIR}/templates/${TASK_NAME}/dist/${RESOURCE_TYPE}/."
 
         if [ "${DRY_RUN}" == "false" ] && [ -e "${SOURCE}" ]; then
-          mkdir -p "${DESTINATION_PARENT_DIR}"
-          rm -rf "${DESTINATION}"
+          if [ "${RESOURCE_TYPE}" == "examples" ]; then
+            DESTINATION="${DESTINATION}/${RESOURCE_TYPE}"
+          fi
+
           cp -r "${SOURCE}" "${DESTINATION}"
         fi
       done
@@ -67,7 +71,7 @@ function combineTaskManifestsIntoRelease() {
           continue
         fi
 
-        cat "${TASK_NAME}"/manifests/* >> "${RESULT_FILE}"
+        cat "${TASK_NAME}"/*.yaml >> "${RESULT_FILE}"
       done
     leave
   done
