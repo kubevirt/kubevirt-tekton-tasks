@@ -53,7 +53,10 @@ build-release-images:
 push-release-images:
 	./scripts/push-release-images.sh
 
-release: generate-yaml-tasks build-release-images push-release-images
+run-catalog-cd:
+	./scripts/run-catalog-cd.sh
+
+release: generate-yaml-tasks build-release-images push-release-images run-catalog-cd
 
 vendor:
 	./scripts/vendor.sh

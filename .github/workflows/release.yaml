@@ -51,14 +51,27 @@ jobs:
           asset_name: kubevirt-tekton-tasks-okd.yaml
           asset_content_type: text/plain
 
-      # triggers https://github.com/kubevirt/ssp-operator/blob/main/.github/workflows/release-tekton-tasks.yaml
-      - name: Trigger ssp-operator
-        uses: peter-evans/repository-dispatch@v3
+      - name: Upload catalog.yaml manifest
+        id: catalog  
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
         with:
-          token: ${{ secrets.ACTIONS_TOKEN }}
-          repository: kubevirt/ssp-operator
-          event-type: release-tekton-tasks
-          client-payload: '{"release_version": "${{ steps.get_release.outputs.tag_name }}"}'
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: release/catalog.yaml
+          asset_name: catalog.yaml
+          asset_content_type: text/plain
+
+      - name: Upload resources.tar.gz 
+        id: resources  
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: release/resources.tar.gz
+          asset_name: resources.tar.gz
+          asset_content_type: text/plain
 
       - name: Update tekton tasks manifests
         run: |
