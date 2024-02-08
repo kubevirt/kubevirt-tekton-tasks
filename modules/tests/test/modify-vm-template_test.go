@@ -97,8 +97,7 @@ var _ = Describe("Modify template task", func() {
 		},
 			Entry("no source template name specified", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "template-name param has to be specified",
+					ExpectedLogs: "template-name param has to be specified",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
@@ -106,28 +105,15 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("no template specified", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "templates.template.openshift.io \"cirros-vm-template\" not found",
+					ExpectedLogs: "templates.template.openshift.io \"cirros-vm-template\" not found",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
 				},
 			}),
-			Entry("cannot updated template in different namespace", &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountNameNamespaced,
-					ExpectedLogs:   "cannot get resource \"templates\" in API group \"template.openshift.io\"",
-				},
-				TaskData: testconfigs.ModifyTemplateTaskData{
-					TemplateName:            testtemplate.CirrosTemplateName,
-					SourceTemplateNamespace: SystemTargetNS,
-					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
-				},
-			}),
 			Entry("wrong memory value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "quantities must match the regular expression",
+					ExpectedLogs: "quantities must match the regular expression",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
@@ -136,8 +122,7 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("wrong number of CPU cores value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "parsing \"wrong cpu cores\": invalid syntax",
+					ExpectedLogs: "parsing \"wrong cpu cores\": invalid syntax",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
@@ -146,8 +131,7 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("wrong number of CPU Sockets value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "parsing \"wrong cpu sockets\": invalid syntax",
+					ExpectedLogs: "parsing \"wrong cpu sockets\": invalid syntax",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
@@ -158,8 +142,7 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("wrong number of CPU Threads value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "parsing \"wrong cpu threads\": invalid syntax",
+					ExpectedLogs: "parsing \"wrong cpu threads\": invalid syntax",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
@@ -169,8 +152,7 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("wrong template labels value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
+					ExpectedLogs: "pair should be in \"KEY:VAL\" format",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName:   testtemplate.CirrosTemplateName,
@@ -182,8 +164,7 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("wrong template annotations value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
+					ExpectedLogs: "pair should be in \"KEY:VAL\" format",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName:        testtemplate.CirrosTemplateName,
@@ -196,8 +177,7 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("wrong vm labels value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
+					ExpectedLogs: "pair should be in \"KEY:VAL\" format",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName:        testtemplate.CirrosTemplateName,
@@ -211,8 +191,7 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("wrong template annotations value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "pair should be in \"KEY:VAL\" format",
+					ExpectedLogs: "pair should be in \"KEY:VAL\" format",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName:        testtemplate.CirrosTemplateName,
@@ -227,8 +206,7 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("wrong disks value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "invalid character 'w' looking for beginning of value",
+					ExpectedLogs: "invalid character 'w' looking for beginning of value",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
@@ -237,8 +215,7 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("wrong volumes value provided", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "invalid character 'w' looking for beginning of value",
+					ExpectedLogs: "invalid character 'w' looking for beginning of value",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName: testtemplate.CirrosTemplateName,
@@ -247,8 +224,7 @@ var _ = Describe("Modify template task", func() {
 			}),
 			Entry("cannot delete non-existent template", &testconfigs.ModifyTemplateTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-					ExpectedLogs:   "templates.template.openshift.io \"" + testtemplate.CirrosTemplateName + "\" not found",
+					ExpectedLogs: "templates.template.openshift.io \"" + testtemplate.CirrosTemplateName + "\" not found",
 				},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					TemplateName:   testtemplate.CirrosTemplateName,
@@ -296,9 +272,7 @@ var _ = Describe("Modify template task", func() {
 
 		},
 			Entry("should update template in the same namespace", &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:            testtemplate.NewCirrosServerTinyTemplate().Build(),
 					TemplateName:        testtemplate.CirrosTemplateName,
@@ -328,24 +302,21 @@ var _ = Describe("Modify template task", func() {
 				ExpectedDataVolumeTemplates:      DataVolumeTemplates,
 			}),
 			Entry("should update template across namespaces", &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyTemplateTaskData{
-					Template:                testtemplate.NewCirrosServerTinyTemplate().Build(),
-					TemplateName:            testtemplate.CirrosTemplateName,
-					SourceTemplateNamespace: DeployTargetNS,
-					CPUCores:                CPUCoresTopologyNumberStr,
-					CPUSockets:              CPUSocketsTopologyNumberStr,
-					CPUThreads:              CPUThreadsTopologyNumberStr,
-					Memory:                  MemoryValue,
-					TemplateAnnotations:     MockTemplateAnnotations,
-					TemplateLabels:          MockTemplateLabels,
-					VMAnnotations:           MockVMAnnotations,
-					VMLabels:                MockVMLabels,
-					Disks:                   MockDisks,
-					Volumes:                 MockVolumes,
-					DataVolumeTemplates:     MockDataVolumeTemplates,
+					Template:            testtemplate.NewCirrosServerTinyTemplate().Build(),
+					TemplateName:        testtemplate.CirrosTemplateName,
+					CPUCores:            CPUCoresTopologyNumberStr,
+					CPUSockets:          CPUSocketsTopologyNumberStr,
+					CPUThreads:          CPUThreadsTopologyNumberStr,
+					Memory:              MemoryValue,
+					TemplateAnnotations: MockTemplateAnnotations,
+					TemplateLabels:      MockTemplateLabels,
+					VMAnnotations:       MockVMAnnotations,
+					VMLabels:            MockVMLabels,
+					Disks:               MockDisks,
+					Volumes:             MockVolumes,
+					DataVolumeTemplates: MockDataVolumeTemplates,
 				},
 			}, ExpectedResults{
 				ExpectedCPUSocketsTopologyNumber: CPUSocketsTopologyNumber,
@@ -364,13 +335,10 @@ var _ = Describe("Modify template task", func() {
 
 		It("taskrun succeded and template datavolume is removed and volumes, disks are updated", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                 testtemplate.NewRhelDesktopTinyTemplate().Build(),
 					TemplateName:             testtemplate.RhelTemplateName,
-					SourceTemplateNamespace:  DeployTargetNS,
 					DeleteDatavolumeTemplate: true,
 				},
 			}
@@ -410,13 +378,10 @@ var _ = Describe("Modify template task", func() {
 
 		It("taskrun succeded and template datavolume is removed and replaced by a new one", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                 testtemplate.NewRhelDesktopTinyTemplate().Build(),
 					TemplateName:             testtemplate.RhelTemplateName,
-					SourceTemplateNamespace:  DeployTargetNS,
 					DataVolumeTemplates:      MockDataVolumeTemplates,
 					DeleteDatavolumeTemplate: true,
 				},
@@ -451,13 +416,10 @@ var _ = Describe("Modify template task", func() {
 
 		It("taskrun succeded and defaults do not modify template", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyTemplateTaskData{
-					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
-					TemplateName:            testtemplate.RhelTemplateName,
-					SourceTemplateNamespace: DeployTargetNS,
+					Template:     testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName: testtemplate.RhelTemplateName,
 				},
 			}
 			f.TestSetup(config)
@@ -507,15 +469,12 @@ var _ = Describe("Modify template task", func() {
 
 		It("taskrun succeded and disks are deleted and replaced by a new one", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyTemplateTaskData{
-					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
-					TemplateName:            testtemplate.RhelTemplateName,
-					SourceTemplateNamespace: DeployTargetNS,
-					DeleteDisks:             true,
-					Disks:                   MockDisk,
+					Template:     testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName: testtemplate.RhelTemplateName,
+					DeleteDisks:  true,
+					Disks:        MockDisk,
 				},
 			}
 			f.TestSetup(config)
@@ -550,15 +509,12 @@ var _ = Describe("Modify template task", func() {
 
 		It("taskrun succeded and volumes are deleted and replaced by a new one", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyTemplateTaskData{
-					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
-					TemplateName:            testtemplate.RhelTemplateName,
-					SourceTemplateNamespace: DeployTargetNS,
-					DeleteVolumes:           true,
-					Volumes:                 MockVolume,
+					Template:      testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName:  testtemplate.RhelTemplateName,
+					DeleteVolumes: true,
+					Volumes:       MockVolume,
 				},
 			}
 			f.TestSetup(config)
@@ -593,13 +549,10 @@ var _ = Describe("Modify template task", func() {
 
 		It("taskrun succeded and template parameters are deleted and replaced by a new one", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyTemplateTaskData{
 					Template:                 testtemplate.NewRhelDesktopTinyTemplate().Build(),
 					TemplateName:             testtemplate.RhelTemplateName,
-					SourceTemplateNamespace:  DeployTargetNS,
 					DeleteTemplateParameters: true,
 					TemplateParameters:       MockTemplateParameter,
 				},
@@ -633,14 +586,11 @@ var _ = Describe("Modify template task", func() {
 
 		It("taskrun succeeded and template was deleted", func() {
 			config := &testconfigs.ModifyTemplateTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyTemplateServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyTemplateTaskData{
-					Template:                testtemplate.NewRhelDesktopTinyTemplate().Build(),
-					TemplateName:            testtemplate.RhelTemplateName,
-					SourceTemplateNamespace: DeployTargetNS,
-					DeleteTemplate:          true,
+					Template:       testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					TemplateName:   testtemplate.RhelTemplateName,
+					DeleteTemplate: true,
 				},
 			}
 			f.TestSetup(config)

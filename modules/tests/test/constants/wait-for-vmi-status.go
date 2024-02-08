@@ -1,9 +1,7 @@
 package constants
 
 const (
-	WaitForVMIStatusTaskName                     = "wait-for-vmi-status"
-	WaitForVMIStatusServiceAccountName           = "wait-for-vmi-status-task"
-	WaitForVMIStatusServiceAccountNameNamespaced = "wait-for-vmi-status-test"
+	WaitForVMIStatusTaskName = "wait-for-vmi-status"
 )
 
 type waitForVMIStatusTasksParams struct {

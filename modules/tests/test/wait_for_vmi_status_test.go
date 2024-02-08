@@ -2,16 +2,13 @@ package test
 
 import (
 	"context"
-	"time"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "kubevirt.io/api/core/v1"
 )
 
@@ -53,15 +50,6 @@ var _ = Describe("Wait for VMI Status", func() {
 				VMIName: "name with spaces",
 			},
 		}),
-		Entry("invalid vmi namespace", &testconfigs.WaitForVMIStatusTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ExpectedLogs: "invalid vmi-namespace value: a lowercase RFC 1123 subdomain must consist of",
-			},
-			TaskData: testconfigs.WaitForVMIStatusTaskData{
-				VMIName:      "test",
-				VMINamespace: "namespace with spaces",
-			},
-		}),
 		Entry("invalid success condition", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ExpectedLogs: "success-condition: invalid condition: cannot parse jsonpath",
@@ -80,22 +68,9 @@ var _ = Describe("Wait for VMI Status", func() {
 				FailureCondition: "invalid#$%^$&",
 			},
 		}),
-		Entry("cannot check status for VMI in different namespace", &testconfigs.WaitForVMIStatusTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: constants.WaitForVMIStatusServiceAccountNameNamespaced,
-				ExpectedLogs:   "cannot list resource \"virtualmachineinstances\" in API group \"kubevirt.io\"",
-				Timeout:        &metav1.Duration{1 * time.Minute},
-			},
-			TaskData: testconfigs.WaitForVMIStatusTaskData{
-				VM:                testobjects.NewTestAlpineVM("wait-for-vmi-status-in-different-ns").Build(),
-				VMTargetNamespace: constants.SystemTargetNS,
-				SuccessCondition:  "status.phase == Running",
-			},
-		}),
 		// negative cases
 		Entry("fulfills failure condition", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
 				ExpectedTermination: &testconfigs.TaskRunExpectedTermination{
 					ExitCode: 2,
 				},
@@ -109,8 +84,7 @@ var _ = Describe("Wait for VMI Status", func() {
 		// positive cases
 		Entry("no conditions report success immediately", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
-				ExpectSuccess:  true,
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.WaitForVMIStatusTaskData{
 				VMIName: "test",
@@ -118,8 +92,7 @@ var _ = Describe("Wait for VMI Status", func() {
 		}),
 		Entry("fulfills success condition", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
-				ExpectSuccess:  true,
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.WaitForVMIStatusTaskData{
 				VM:               testobjects.NewTestAlpineVM("fulfills-success-condition").Build(),
@@ -130,8 +103,7 @@ var _ = Describe("Wait for VMI Status", func() {
 		}),
 		Entry("fulfills complex success condition", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
-				ExpectSuccess:  true,
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.WaitForVMIStatusTaskData{
 				VM:               testobjects.NewTestAlpineVM("fulfills-complex-success-condition").Build(),
@@ -142,14 +114,12 @@ var _ = Describe("Wait for VMI Status", func() {
 		}),
 		Entry("fulfills success condition in the same namespace as deploy", &testconfigs.WaitForVMIStatusTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: constants.WaitForVMIStatusServiceAccountName,
-				ExpectSuccess:  true,
+				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.WaitForVMIStatusTaskData{
-				VM:                testobjects.NewTestAlpineVM("fulfills-success-condition-in-same-ns").Build(),
-				SuccessCondition:  "status.phase == Scheduled",
-				ShouldStartVM:     true,
-				VMTargetNamespace: constants.DeployTargetNS,
+				VM:               testobjects.NewTestAlpineVM("fulfills-success-condition-in-same-ns").Build(),
+				SuccessCondition: "status.phase == Scheduled",
+				ShouldStartVM:    true,
 			},
 		}),
 	)

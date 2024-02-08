@@ -32,7 +32,7 @@ type WaitForVMIStatusTestConfig struct {
 
 func (c *WaitForVMIStatusTestConfig) Init(options *testoptions.TestOptions) {
 	c.deploymentNamespace = options.DeployNamespace
-	c.TaskData.VMINamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace, c.TaskData.VMINamespace)
+	c.TaskData.VMINamespace = options.GetDeployNamespace()
 
 	if vm := c.TaskData.VM; vm != nil {
 		if vm.Name != "" {
@@ -57,8 +57,7 @@ func (c *WaitForVMIStatusTestConfig) GetTaskRun() *pipev1.TaskRun {
 				Name: WaitForVMIStatusTaskName,
 				Kind: pipev1.NamespacedTaskKind,
 			},
-			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
-			ServiceAccountName: c.ServiceAccount,
+			Timeout: &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			Params: []pipev1.Param{
 				{
 					Name: WaitForVMIStatusTasksParams.VMINamespace,

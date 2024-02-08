@@ -1,9 +1,7 @@
 package constants
 
 const (
-	GenerateSshKeysTaskName                     = "generate-ssh-keys"
-	GenerateSshKeysServiceAccountName           = "generate-ssh-keys-task"
-	GenerateSshKeysServiceAccountNameNamespaced = "generate-ssh-keys-test"
+	GenerateSshKeysTaskName = "generate-ssh-keys"
 )
 
 type generateSshKeysParams struct {

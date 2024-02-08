@@ -44,8 +44,7 @@ var _ = Describe("Modify data objects", func() {
 		},
 			Entry("empty dv", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					ExpectedLogs:   "data-object-manifest param has to be specified",
+					ExpectedLogs: "data-object-manifest param has to be specified",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume: nil,
@@ -53,8 +52,7 @@ var _ = Describe("Modify data objects", func() {
 			}),
 			Entry("malformed dv", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					ExpectedLogs:   "could not read data object manifest",
+					ExpectedLogs: "could not read data object manifest",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume: datavolume.NewBlankDataVolume("malformed").WithoutTypeMeta().Build(),
@@ -62,20 +60,10 @@ var _ = Describe("Modify data objects", func() {
 			}),
 			Entry("missing name", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					ExpectedLogs:   "invalid: metadata.name: Required value: name",
+					ExpectedLogs: "invalid: metadata.name: Required value: name",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume: datavolume.NewBlankDataVolume("").Build(),
-				},
-			}),
-			Entry("cannot create a DataVolume in different namespace", &testconfigs.ModifyDataObjectTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ExpectedLogs: "datavolumes.cdi.kubevirt.io is forbidden",
-				},
-				TaskData: testconfigs.ModifyDataObjectTaskData{
-					DataVolume: datavolume.NewBlankDataVolume("different-ns-namespace-scope").Build(),
-					Namespace:  SystemTargetNS,
 				},
 			}),
 		)
@@ -100,8 +88,8 @@ var _ = Describe("Modify data objects", func() {
 		},
 			Entry("blank no wait", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.SmallDVCreation,
+
+					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume: datavolume.NewBlankDataVolume("blank").Build(),
@@ -109,8 +97,8 @@ var _ = Describe("Modify data objects", func() {
 			}),
 			Entry("blank wait", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.SmallDVCreation,
+
+					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume:     datavolume.NewBlankDataVolume("blank-wait").Build(),
@@ -119,13 +107,12 @@ var _ = Describe("Modify data objects", func() {
 			}),
 			Entry("works also in the same namespace as deploy", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.SmallDVCreation,
+
+					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume:     datavolume.NewBlankDataVolume("same-ns").Build(),
 					WaitForSuccess: true,
-					Namespace:      DeployTargetNS,
 				},
 			}),
 		)
@@ -133,8 +120,8 @@ var _ = Describe("Modify data objects", func() {
 		It("DataVolume and PVC is modified successfully with generateName", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.SmallDVCreation,
+
+					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume:     datavolume.NewBlankDataVolume("").WithGenerateName("blank-wait-").Build(),
@@ -158,8 +145,8 @@ var _ = Describe("Modify data objects", func() {
 		It("TaskRun fails and DataVolume is modified but does not import successfully", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
+
+					Timeout: Timeouts.QuickTaskRun,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume: datavolume.NewBlankDataVolume("import-failed").
@@ -185,8 +172,8 @@ var _ = Describe("Modify data objects", func() {
 		It("Existing DataVolume is not replaced", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
+
+					Timeout: Timeouts.QuickTaskRun,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume:   datavolume.NewBlankDataVolume("existing-dv").Build(),
@@ -224,8 +211,8 @@ var _ = Describe("Modify data objects", func() {
 
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
+
+					Timeout: Timeouts.QuickTaskRun,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume: datavolume.NewBlankDataVolume("replace-me").
@@ -285,8 +272,8 @@ var _ = Describe("Modify data objects", func() {
 
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
+
+					Timeout: Timeouts.QuickTaskRun,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume: datavolume.NewBlankDataVolume("replace-me").
@@ -341,8 +328,7 @@ var _ = Describe("Modify data objects", func() {
 		},
 			Entry("empty ds", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					ExpectedLogs:   "data-object-manifest param has to be specified",
+					ExpectedLogs: "data-object-manifest param has to be specified",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource: nil,
@@ -350,8 +336,7 @@ var _ = Describe("Modify data objects", func() {
 			}),
 			Entry("malformed ds", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					ExpectedLogs:   "could not read data object manifest",
+					ExpectedLogs: "could not read data object manifest",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource: datasource.NewDataSource("malformed").WithoutTypeMeta().Build(),
@@ -359,21 +344,10 @@ var _ = Describe("Modify data objects", func() {
 			}),
 			Entry("missing name", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					ExpectedLogs:   "invalid: metadata.name: Required value: name",
+					ExpectedLogs: "invalid: metadata.name: Required value: name",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource: datasource.NewDataSource("").Build(),
-				},
-			}),
-			Entry("cannot create a DataSource in different namespace", &testconfigs.ModifyDataObjectTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountNameNamespaced,
-					ExpectedLogs:   "datasources.cdi.kubevirt.io is forbidden",
-				},
-				TaskData: testconfigs.ModifyDataObjectTaskData{
-					DataSource: datasource.NewDataSource("different-ns-namespace-scope").Build(),
-					Namespace:  SystemTargetNS,
 				},
 			}),
 		)
@@ -412,8 +386,7 @@ var _ = Describe("Modify data objects", func() {
 		},
 			Entry("blank no wait", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.SmallDVCreation,
+					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource: datasource.NewDataSource("blank").Build(),
@@ -421,8 +394,8 @@ var _ = Describe("Modify data objects", func() {
 			}),
 			Entry("blank wait", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.SmallDVCreation,
+
+					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource:     datasource.NewDataSource("blank-wait").Build(),
@@ -431,13 +404,12 @@ var _ = Describe("Modify data objects", func() {
 			}),
 			Entry("works also in the same namespace as deploy", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.SmallDVCreation,
+
+					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource:     datasource.NewDataSource("same-ns").Build(),
 					WaitForSuccess: true,
-					Namespace:      DeployTargetNS,
 				},
 			}),
 		)
@@ -445,8 +417,8 @@ var _ = Describe("Modify data objects", func() {
 		It("DataSource is modified successfully with generateName", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.SmallDVCreation,
+
+					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource:     datasource.NewDataSource("").WithGenerateName("blank-wait-").Build(),
@@ -481,9 +453,7 @@ var _ = Describe("Modify data objects", func() {
 
 		It("TaskRun fails and DataSource is modified but does not get ready", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource:     datasource.NewDataSource("import-failed").Build(),
 					WaitForSuccess: true,
@@ -517,8 +487,7 @@ var _ = Describe("Modify data objects", func() {
 		It("Existing DataSource is not replaced", func() {
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
+					Timeout: Timeouts.QuickTaskRun,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource:   datasource.NewDataSource("existing-ds").Build(),
@@ -557,8 +526,8 @@ var _ = Describe("Modify data objects", func() {
 
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
+
+					Timeout: Timeouts.QuickTaskRun,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource:   datasource.NewDataSource("existing-ds").WithSourcePVC(replacedPVC, replacedNS).Build(),
@@ -604,25 +573,19 @@ var _ = Describe("Modify data objects", func() {
 				ExpectResults(nil)
 		},
 			Entry("Unsupported group", &testconfigs.ModifyDataObjectTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					RawManifest: datasource.NewDataSource("unsupported-apiversion").WithAPIVersion("unsupported").ToString(),
 				},
 			}),
 			Entry("Unsupported kind", &testconfigs.ModifyDataObjectTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					RawManifest: datasource.NewDataSource("unsupported-kind").WithKind("unsupported").ToString(),
 				},
 			}),
 			Entry("With VirtualMachine", &testconfigs.ModifyDataObjectTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-				},
+				TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					RawManifest: testobjects.NewTestAlpineVM("alpine-vm").ToString(),
 				},
@@ -651,9 +614,9 @@ var _ = Describe("Modify data objects", func() {
 		},
 			Entry("missing kind", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
-					ExpectedLogs:   "object-kind param has to be specified",
+
+					Timeout:      Timeouts.QuickTaskRun,
+					ExpectedLogs: "object-kind param has to be specified",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource:       datasource.NewDataSource("existing-ds").Build(),
@@ -663,9 +626,9 @@ var _ = Describe("Modify data objects", func() {
 			}),
 			Entry("Unsupported kind", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
-					ExpectedLogs:   "name param has to be specified",
+
+					Timeout:      Timeouts.QuickTaskRun,
+					ExpectedLogs: "name param has to be specified",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource:       datasource.NewDataSource("existing-ds").Build(),
@@ -679,8 +642,8 @@ var _ = Describe("Modify data objects", func() {
 
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
+
+					Timeout: Timeouts.QuickTaskRun,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataSource:       ds,
@@ -717,8 +680,8 @@ var _ = Describe("Modify data objects", func() {
 			dv.Annotations["cdi.kubevirt.io/storage.deleteAfterCompletion"] = "false"
 			config := &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
+
+					Timeout: Timeouts.QuickTaskRun,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume:       dv,
@@ -771,9 +734,9 @@ var _ = Describe("Modify data objects", func() {
 		},
 			Entry("missing kind", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
-					ExpectedLogs:   "object-kind param has to be specified",
+
+					Timeout:      Timeouts.QuickTaskRun,
+					ExpectedLogs: "object-kind param has to be specified",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume:       datavolume.NewBlankDataVolume("existing-ds").Build(),
@@ -783,9 +746,9 @@ var _ = Describe("Modify data objects", func() {
 			}),
 			Entry("Unsupported kind", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: ModifyDataObjectServiceAccountName,
-					Timeout:        Timeouts.QuickTaskRun,
-					ExpectedLogs:   "name param has to be specified",
+
+					Timeout:      Timeouts.QuickTaskRun,
+					ExpectedLogs: "name param has to be specified",
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
 					DataVolume:       datavolume.NewBlankDataVolume("existing-ds").Build(),

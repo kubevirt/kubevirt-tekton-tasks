@@ -58,8 +58,7 @@ var _ = Describe("Create VM from manifest", func() {
 		}),
 		Entry("invalid manifest", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "could not read VM manifest: error unmarshaling",
+				ExpectedLogs: "could not read VM manifest: error unmarshaling",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				VMManifest: "invalid manifest",
@@ -67,56 +66,29 @@ var _ = Describe("Create VM from manifest", func() {
 		}),
 		Entry("create vm with non matching disk fails", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "admission webhook \"virtualmachine-validator.kubevirt.io\" denied the request: spec.template.spec.domain.devices.disks[0].Name",
+				ExpectedLogs: "admission webhook \"virtualmachine-validator.kubevirt.io\" denied the request: spec.template.spec.domain.devices.disks[0].Name",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				VM: testobjects.NewTestAlpineVM("vm-with-non-existent-pvc").WithNonMatchingDisk().Build(),
 			},
 		}),
-		Entry("cannot create a VM in different namespace", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountNameNamespaced,
-				ExpectedLogs:   "cannot create resource \"virtualmachines\" in API group \"kubevirt.io\"",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				VM:                testobjects.NewTestAlpineVM("different-ns-namespace-scope").Build(),
-				VMTargetNamespace: SystemTargetNS,
-			},
-		}),
-		Entry("cannot create a VM in different namespace in manifest", &testconfigs.CreateVMTestConfig{
-			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountNameNamespaced,
-				ExpectedLogs:   "cannot create resource \"virtualmachines\" in API group \"kubevirt.io\"",
-			},
-			TaskData: testconfigs.CreateVMTaskData{
-				VM:                        testobjects.NewTestAlpineVM("different-ns-namespace-scope-in-manifest").Build(),
-				VMManifestTargetNamespace: SystemTargetNS,
-			},
-		}),
 		Entry("manifest and virtctl are specified", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "only one of vm-manifest, template-name or virtctl should be specified",
+				ExpectedLogs: "only one of vm-manifest, template-name or virtctl should be specified",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Virtctl:                            "--volume-containerdisk src:my.registry/my-image:my-tag",
-				VM:                                 testobjects.NewTestAlpineVM("vm-with-manifest-namespace").Build(),
-				VMManifestTargetNamespace:          DeployTargetNS,
-				UseDefaultVMNamespacesInTaskParams: true,
+				Virtctl: "--volume-containerdisk src:my.registry/my-image:my-tag",
+				VM:      testobjects.NewTestAlpineVM("vm-with-manifest-namespace").Build(),
 			},
 		}),
 		Entry("manifest, template and virtctl are specified", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "only one of vm-manifest, template-name or virtctl should be specified",
+				ExpectedLogs: "only one of vm-manifest, template-name or virtctl should be specified",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				Virtctl:                            "--volume-containerdisk src:my.registry/my-image:my-tag",
-				VM:                                 testobjects.NewTestAlpineVM("vm-with-manifest-namespace").Build(),
-				VMManifestTargetNamespace:          DeployTargetNS,
-				UseDefaultVMNamespacesInTaskParams: true,
-				Template:                           testtemplate.NewCirrosServerTinyTemplate().Build(),
+				Virtctl:  "--volume-containerdisk src:my.registry/my-image:my-tag",
+				VM:       testobjects.NewTestAlpineVM("vm-with-manifest-namespace").Build(),
+				Template: testtemplate.NewCirrosServerTinyTemplate().Build(),
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("simple-vm")),
 				},
@@ -124,8 +96,7 @@ var _ = Describe("Create VM from manifest", func() {
 		}),
 		Entry("should fail with invalid params", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   "unknown flag: --invalid",
+				ExpectedLogs: "unknown flag: --invalid",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				Virtctl: "--invalid params",
@@ -154,8 +125,7 @@ var _ = Describe("Create VM from manifest", func() {
 	},
 		Entry("simple vm", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				VM: testobjects.NewTestAlpineVM("simple-vm").Build(),
@@ -163,35 +133,27 @@ var _ = Describe("Create VM from manifest", func() {
 		}),
 		Entry("vm to deploy namespace by default", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				VM:                                 testobjects.NewTestAlpineVM("vm-to-deploy-by-default").Build(),
-				VMTargetNamespace:                  DeployTargetNS,
-				UseDefaultVMNamespacesInTaskParams: true,
+				VM: testobjects.NewTestAlpineVM("vm-to-deploy-by-default").Build(),
 			},
 		}),
 		Entry("vm with manifest namespace", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				VM:                                 testobjects.NewTestAlpineVM("vm-with-manifest-namespace").Build(),
-				VMManifestTargetNamespace:          DeployTargetNS,
-				UseDefaultVMNamespacesInTaskParams: true,
+				VM: testobjects.NewTestAlpineVM("vm-with-manifest-namespace").Build(),
 			},
 		}),
 
 		Entry("vm with overridden manifest namespace", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				VM:                        testobjects.NewTestAlpineVM("vm-with-overridden-manifest-namespace").Build(),
-				VMManifestTargetNamespace: DeployTargetNS,
+				VM: testobjects.NewTestAlpineVM("vm-with-overridden-manifest-namespace").Build(),
 			},
 		}),
 	)
@@ -199,8 +161,7 @@ var _ = Describe("Create VM from manifest", func() {
 	It("VM is created from manifest properly ", func() {
 		config := &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: CreateVMFromManifestServiceAccountName,
-				ExpectedLogs:   ExpectedSuccessfulVMCreation,
+				ExpectedLogs: ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
@@ -251,8 +212,7 @@ var _ = Describe("Create VM from manifest", func() {
 			vmName := "my-vm-0"
 			config := &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Virtctl:     fmt.Sprintf("--name %s --memory 256Mi", vmName),
@@ -280,8 +240,7 @@ var _ = Describe("Create VM from manifest", func() {
 		It("should succeed without specified namespace", func() {
 			config := &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Virtctl: "--run-strategy Halted --memory 256Mi",
@@ -311,8 +270,7 @@ var _ = Describe("Create VM from manifest", func() {
 			instancetypeName := "instancetype-2"
 			config := &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Virtctl: fmt.Sprintf("--instancetype %s", instancetypeName),
@@ -346,8 +304,7 @@ var _ = Describe("Create VM from manifest", func() {
 			instancetypeName := "instancetype-3"
 			config := &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					Virtctl: fmt.Sprintf("--run-strategy Halted --instancetype %s", instancetypeName),
@@ -403,8 +360,7 @@ var _ = Describe("Create VM from manifest", func() {
 		},
 			Entry("with false StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
@@ -417,8 +373,7 @@ var _ = Describe("Create VM from manifest", func() {
 			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
 			Entry("with invalid StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
@@ -431,8 +386,7 @@ var _ = Describe("Create VM from manifest", func() {
 			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
 			Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
@@ -469,8 +423,7 @@ var _ = Describe("Create VM from manifest", func() {
 		},
 			Entry("with RunStrategy always", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
@@ -484,8 +437,7 @@ var _ = Describe("Create VM from manifest", func() {
 			}, kubevirtv1.RunStrategyAlways),
 			Entry("with RunStrategy halted", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
@@ -498,8 +450,7 @@ var _ = Describe("Create VM from manifest", func() {
 			}, kubevirtv1.RunStrategyHalted),
 			Entry("with RunStrategy halted and startVM", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
@@ -513,8 +464,7 @@ var _ = Describe("Create VM from manifest", func() {
 			}, kubevirtv1.RunStrategyAlways),
 			Entry("with RunStrategy Manual", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").
@@ -528,8 +478,7 @@ var _ = Describe("Create VM from manifest", func() {
 			}, kubevirtv1.RunStrategyManual),
 			Entry("with RunStrategy RerunOnFailure", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ServiceAccount: CreateVMFromManifestServiceAccountName,
-					ExpectedLogs:   ExpectedSuccessfulVMCreation,
+					ExpectedLogs: ExpectedSuccessfulVMCreation,
 				},
 				TaskData: testconfigs.CreateVMTaskData{
 					VM: testobjects.NewTestAlpineVM("vm-from-manifest-data").

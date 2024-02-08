@@ -44,7 +44,7 @@ type ExecuteOrCleanupVMTestConfig struct {
 
 func (c *ExecuteOrCleanupVMTestConfig) Init(options *testoptions.TestOptions) {
 	c.deploymentNamespace = options.DeployNamespace
-	c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace, c.TaskData.VMNamespace)
+	c.TaskData.VMNamespace = options.GetDeployNamespace()
 
 	if vm := c.TaskData.VM; vm != nil {
 		if vm.Name != "" {
@@ -71,7 +71,7 @@ func (c *ExecuteOrCleanupVMTestConfig) Init(options *testoptions.TestOptions) {
 }
 
 func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *pipev1.TaskRun {
-	var taskName, serviceAccountName, vmNamespace string
+	var taskName, vmNamespace string
 
 	if !c.TaskData.UseDefaultVMNamespacesInTaskParams {
 		vmNamespace = c.TaskData.VMNamespace
@@ -130,9 +130,6 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *pipev1.TaskRun {
 
 	if c.TaskData.ExecInVMMode == CleanupVMMode {
 		taskName = CleanupVMTaskName
-		if c.ServiceAccount != "" {
-			serviceAccountName = CleanupVMServiceAccountName
-		}
 
 		params = append(params,
 			pipev1.Param{
@@ -161,9 +158,6 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *pipev1.TaskRun {
 		}
 	} else {
 		taskName = ExecuteInVMTaskName
-		if c.ServiceAccount != "" {
-			serviceAccountName = ExecuteInVMServiceAccountName
-		}
 	}
 
 	return &pipev1.TaskRun{
@@ -176,9 +170,8 @@ func (c *ExecuteOrCleanupVMTestConfig) GetTaskRun() *pipev1.TaskRun {
 				Name: taskName,
 				Kind: pipev1.NamespacedTaskKind,
 			},
-			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
-			ServiceAccountName: serviceAccountName,
-			Params:             params,
+			Timeout: &metav1.Duration{Duration: c.GetTaskRunTimeout()},
+			Params:  params,
 		},
 	}
 }

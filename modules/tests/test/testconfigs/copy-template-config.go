@@ -9,16 +9,12 @@ import (
 )
 
 type CopyTemplateTaskData struct {
-	Template *v1.Template
-
-	SourceTemplateName      string
-	SourceTemplateNamespace TargetNamespace
-	TargetTemplateName      string
-	TargetTemplateNamespace TargetNamespace
-	SourceNamespace         string
-	TargetNamespace         string
-	AllowReplace            string
-	TemplateNamespace       TargetNamespace
+	Template                   *v1.Template
+	TemplateNamespace          string
+	SourceTemplateName         string
+	TargetTemplateName         string
+	AllowReplace               string
+	UsePlainTargetTemplateName bool
 }
 
 type CopyTemplateTestConfig struct {
@@ -30,14 +26,12 @@ type CopyTemplateTestConfig struct {
 
 func (c *CopyTemplateTestConfig) Init(options *testoptions.TestOptions) {
 	c.deploymentNamespace = options.DeployNamespace
-
-	c.TaskData.SourceNamespace = options.ResolveNamespace(c.TaskData.SourceTemplateNamespace, options.TestNamespace)
-
-	c.TaskData.TargetNamespace = options.ResolveNamespace(c.TaskData.TargetTemplateNamespace, options.TestNamespace)
-
+	if !c.TaskData.UsePlainTargetTemplateName && c.TaskData.AllowReplace != "true" {
+		c.TaskData.TargetTemplateName = E2ETestsRandomName(c.TaskData.TargetTemplateName)
+	}
 	if c.TaskData.Template != nil {
-		c.TaskData.Template.Namespace = options.ResolveNamespace(c.TaskData.TemplateNamespace, options.TestNamespace)
-
+		c.TaskData.Template.Namespace = options.GetDeployNamespace()
+		c.TaskData.TemplateNamespace = options.GetDeployNamespace()
 		originalTemplateName := c.TaskData.Template.Name
 		c.TaskData.Template.Name = E2ETestsRandomName(c.TaskData.Template.Name)
 		if c.TaskData.SourceTemplateName == originalTemplateName {
@@ -59,7 +53,7 @@ func (c *CopyTemplateTestConfig) GetTaskRun() *pipev1.TaskRun {
 			Name: SourceTemplateNamespaceOptionName,
 			Value: pipev1.ParamValue{
 				Type:      pipev1.ParamTypeString,
-				StringVal: c.TaskData.SourceNamespace,
+				StringVal: c.TaskData.TemplateNamespace,
 			},
 		},
 		{
@@ -73,7 +67,7 @@ func (c *CopyTemplateTestConfig) GetTaskRun() *pipev1.TaskRun {
 			Name: TargetTemplateNamespaceOptionName,
 			Value: pipev1.ParamValue{
 				Type:      pipev1.ParamTypeString,
-				StringVal: c.TaskData.TargetNamespace,
+				StringVal: c.TaskData.TemplateNamespace,
 			},
 		}, {
 			Name: AllowReplaceOptionName,
@@ -94,9 +88,8 @@ func (c *CopyTemplateTestConfig) GetTaskRun() *pipev1.TaskRun {
 				Name: CopyTemplateTaskName,
 				Kind: pipev1.NamespacedTaskKind,
 			},
-			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
-			ServiceAccountName: c.ServiceAccount,
-			Params:             params,
+			Timeout: &metav1.Duration{Duration: c.GetTaskRunTimeout()},
+			Params:  params,
 		},
 	}
 }

@@ -54,7 +54,7 @@ func (c *ModifyDataObjectTestConfig) Init(options *testoptions.TestOptions) {
 		if dv.Name != "" {
 			dv.Name = E2ETestsRandomName(dv.Name)
 		}
-		dv.Namespace = options.ResolveNamespace(c.TaskData.Namespace, "")
+		dv.Namespace = options.GetDeployNamespace()
 
 		if options.StorageClass != "" {
 			dv.Spec.PVC.StorageClassName = &options.StorageClass
@@ -73,7 +73,7 @@ func (c *ModifyDataObjectTestConfig) Init(options *testoptions.TestOptions) {
 		if ds.Name != "" {
 			ds.Name = E2ETestsRandomName(ds.Name)
 		}
-		ds.Namespace = options.ResolveNamespace(c.TaskData.Namespace, "")
+		ds.Namespace = options.GetDeployNamespace()
 		if c.TaskData.DeleteObjectName != "" {
 			c.TaskData.DeleteObjectName = ds.Name
 		}
@@ -116,8 +116,7 @@ func (c *ModifyDataObjectTestConfig) GetTaskRun() *pipev1.TaskRun {
 				Name: ModifyDataObjectTaskName,
 				Kind: pipev1.NamespacedTaskKind,
 			},
-			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
-			ServiceAccountName: c.ServiceAccount,
+			Timeout: &metav1.Duration{Duration: c.GetTaskRunTimeout()},
 			Params: []pipev1.Param{
 				{
 					Name: ModifyDataObjectParams.Manifest,
