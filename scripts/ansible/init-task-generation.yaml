@@ -5,5 +5,5 @@
 - name: Prepare dist directory
   file:
     # includes also manifests_output_dir
-    path: "{{ manifests_output_dir }}/tmp"
+    path: "{{ manifests_output_dir }}"
     state: directory
