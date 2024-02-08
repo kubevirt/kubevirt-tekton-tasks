@@ -2,7 +2,6 @@
 
 This task uses [virt-customize](https://libguestfs.org/virt-customize.1.html) to run a customize script on a target pvc.
 
-
 ### Parameters
 
 - **pvc**: PersistentVolumeClaim to run the the virt-customize script in. PVC should be in the same namespace as taskrun/pipelinerun.

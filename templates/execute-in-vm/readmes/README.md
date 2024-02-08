@@ -9,11 +9,6 @@ the VM afterwards. Best used together with tekton pipelines finally construct.
 This task can execute a script, or a command in a Virtual Machine
 {% endif %}
 
-### Service Account
-
-This task should be run with `{{task_yaml.metadata.annotations['task.kubevirt.io/associatedServiceAccount']}}` serviceAccount.
-Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
-
 ### Parameters
 
 {% for item in task_yaml.spec.params %}
@@ -56,3 +51,13 @@ Please see [examples](examples).
 {% else %}
 - [start postgresql service over ssh](examples/taskruns/execute-in-vm-with-ssh-taskrun.yaml)
 {% endif %}
+
+### Usage in different namespaces
+
+You can use task to do actions in different namespace. To do that, tasks requires special permissions. Apply these RBAC objects and permissions and update accordingly task run object with correct serviceAccount:
+
+```
+{% for item in rbac_yaml %}
+{{ item | to_nice_yaml }}---
+{% endfor %}
+```

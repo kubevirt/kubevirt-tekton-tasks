@@ -3,7 +3,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    task.kubevirt.io/associatedServiceAccount: create-vm-from-manifest-task
     manifest.params.task.kubevirt.io/type: resource-yaml
     manifest.params.task.kubevirt.io/kind: VirtualMachine
     manifest.params.task.kubevirt.io/apiVersion: kubevirt.io/v1
@@ -66,54 +65,3 @@ spec:
           value: $(params.startVM)
         - name: RUN_STRATEGY
           value: $(params.runStrategy)
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: create-vm-from-manifest-task
-rules:
-  - verbs:
-      - get
-      - list
-      - watch
-      - create
-      - update
-    apiGroups:
-      - kubevirt.io
-    resources:
-      - virtualmachines
-      - virtualmachineinstances
-  - verbs:
-      - 'update'
-    apiGroups:
-      - subresources.kubevirt.io
-    resources:
-      - virtualmachines/start
-  - verbs:
-      - update
-
-    apiGroups:
-      - ''
-    resources:
-      - persistentvolumeclaims
-
-
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: create-vm-from-manifest-task
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: create-vm-from-manifest-task
-roleRef:
-  kind: ClusterRole
-  name: create-vm-from-manifest-task
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-  - kind: ServiceAccount
-    name: create-vm-from-manifest-task

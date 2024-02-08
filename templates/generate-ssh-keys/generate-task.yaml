@@ -12,16 +12,10 @@
     - name: "Generate {{ task_name }} task"
       template:
         src: "{{ manifest_templates_dir }}/{{ task_name }}.yaml"
-        dest: "{{ manifests_output_dir_tmp }}/{{ item.task_with_flavor_name }}.yaml"
+        dest: "{{ manifests_output_dir }}/{{ item.task_with_flavor_name }}.yaml"
         mode: "{{ default_file_mode }}"
       with_items:
         - { task_type: Default, task_with_flavor_name: "{{ task_name }}" }
-    - name: Generate roles
-      include_tasks: "{{ repo_dir }}/scripts/ansible/generate-roles.yaml"
-      with_items:
-        - { role_type: ClusterRole, prefix: zz- }
-      vars:
-        role_output_dir: "{{ manifests_output_dir_tmp }}"
     - name: Prepare examples dist directory
       file:
         path: "{{ item }}"
@@ -29,6 +23,18 @@
       with_items:
         - "{{ examples_output_dir }}"
         - "{{ examples_taskruns_output_dir }}"
+    - name: Prepare readme dist directory
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ readme_output_dir_tmp }}"
+    - name: Generate roles
+      include_tasks: "{{ repo_dir }}/scripts/ansible/generate-roles.yaml"
+      with_items:
+        - { role_type: ClusterRole, prefix: zz- }
+      vars:
+        role_output_dir: "{{ readme_output_dir_tmp }}"
     - name: Generate example task runs
       template:
         src: "{{ examples_templates_dir }}/{{ task_name }}-taskrun.yaml"
@@ -40,10 +46,14 @@
     - name: Generate README
       template:
         src: "{{ readmes_templates_dir }}/README.md"
-        dest: "{{ output_dir }}/README.md"
+        dest: "{{ readme_output_dir }}/README.md"
         mode: "{{ default_file_mode }}"
       vars:
-        task_path: "{{ manifests_output_dir_tmp }}/{{ task_name }}.yaml"
+        task_path: "{{ manifests_output_dir }}/{{ task_name }}.yaml"
         task_yaml: "{{ lookup('file', task_path) | from_yaml }}"
-    - name: Assemble task
-      include_tasks: "{{ repo_dir }}/scripts/ansible/assemble-task.yaml"
+        rbac_path: "{{ readme_output_dir_tmp }}/zz-{{ task_name }}-rbac.yaml"
+        rbac_yaml: "{{ lookup('file', rbac_path) | from_yaml_all }}"
+    - name: "Delete readme tmp directory"
+      file:
+        path: "{{ readme_output_dir_tmp }}"
+        state: absent

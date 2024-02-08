@@ -3,7 +3,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
     publicKeySecretName.params.task.kubevirt.io/kind: {{ task_param_types.secret_kind }}
     publicKeySecretName.params.task.kubevirt.io/apiVersion: {{ task_param_types.v1_version }}
     publicKeySecretNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}

@@ -4,7 +4,6 @@ kind: Task
 metadata:
   annotations:
     tekton.dev/deprecated: "true"
-    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
     sourceTemplateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
     sourceTemplateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
     sourceTemplateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}

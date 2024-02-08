@@ -2,11 +2,6 @@
 
 This task can execute a script, or a command in a Virtual Machine
 
-### Service Account
-
-This task should be run with `execute-in-vm-task` serviceAccount.
-Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
-
 ### Parameters
 
 - **vmName**: Name of a VM to execute the action in.
@@ -47,3 +42,50 @@ Please see [examples](examples).
 #### Specific examples
 
 - [start postgresql service over ssh](examples/taskruns/execute-in-vm-with-ssh-taskrun.yaml)
+
+### Usage in different namespaces
+
+You can use task to do actions in different namespace. To do that, tasks requires special permissions. Apply these RBAC objects and permissions and update accordingly task run object with correct serviceAccount:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: execute-in-vm-task
+rules:
+-   apiGroups:
+    - kubevirt.io
+    resources:
+    - virtualmachines
+    - virtualmachineinstances
+    verbs:
+    - get
+    - list
+    - watch
+-   apiGroups:
+    - subresources.kubevirt.io
+    resources:
+    - virtualmachines/start
+    - virtualmachines/stop
+    - virtualmachines/restart
+    verbs:
+    - update
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: execute-in-vm-task
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    name: execute-in-vm-task
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: execute-in-vm-task
+subjects:
+-   kind: ServiceAccount
+    name: execute-in-vm-task
+---
+```

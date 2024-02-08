@@ -2,11 +2,6 @@
 
 This task modifies a data object (DataVolumes or DataSources).
 
-### Service Account
-
-This task should be run with `modify-data-object-task` serviceAccount.
-Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
-
 ### Parameters
 
 - **manifest**: YAML manifest of a data object to be created.
@@ -25,3 +20,55 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 ### Usage
 
 Please see [examples](examples) on how to modify data objects.
+
+### Usage in different namespaces
+
+You can use task to do actions in different namespace. To do that, tasks requires special permissions. Apply these RBAC objects and permissions and update accordingly task run object with correct serviceAccount:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: modify-data-object-task
+rules:
+-   apiGroups:
+    - cdi.kubevirt.io
+    resources:
+    - datavolumes
+    - datasources
+    verbs:
+    - get
+    - create
+    - delete
+-   apiGroups:
+    - ''
+    resources:
+    - pods
+    verbs:
+    - create
+-   apiGroups:
+    - ''
+    resources:
+    - persistentvolumeclaims
+    verbs:
+    - get
+    - delete
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: modify-data-object-task
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    name: modify-data-object-task
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: modify-data-object-task
+subjects:
+-   kind: ServiceAccount
+    name: modify-data-object-task
+---
+```

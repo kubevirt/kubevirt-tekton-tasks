@@ -5,11 +5,6 @@
 This task copies a template.
 A bundle of predefined templates to use can be found in [Common Templates](https://github.com/kubevirt/common-templates) project.
 
-### Service Account
-
-This task should be run with `copy-template-task` serviceAccount.
-Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
-
 ### Parameters
 
 - **sourceTemplateName**: Name of an OpenShift template to copy template from.
@@ -26,3 +21,43 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 ### Usage
 
 Please see [examples](examples) on how to copy a template.
+
+### Usage in different namespaces
+
+You can use task to do actions in different namespace. To do that, tasks requires special permissions. Apply these RBAC objects and permissions and update accordingly task run object with correct serviceAccount:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: copy-template-task
+rules:
+-   apiGroups:
+    - template.openshift.io
+    resources:
+    - templates
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: copy-template-task
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    name: copy-template-task
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: copy-template-task
+subjects:
+-   kind: ServiceAccount
+    name: copy-template-task
+---
+```

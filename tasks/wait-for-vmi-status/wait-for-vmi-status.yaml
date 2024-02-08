@@ -3,7 +3,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    task.kubevirt.io/associatedServiceAccount: wait-for-vmi-status-task
     vmiNamespace.params.task.kubevirt.io/type: namespace
   labels:
     task.kubevirt.io/type: wait-for-vmi-status
@@ -40,37 +39,3 @@ spec:
           value: $(params.successCondition)
         - name: FAILURE_CONDITION
           value: $(params.failureCondition)
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: wait-for-vmi-status-task
-rules:
-  - verbs:
-      - get
-      - list
-      - watch
-    apiGroups:
-      - kubevirt.io
-    resources:
-      - virtualmachineinstances
-
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: wait-for-vmi-status-task
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: wait-for-vmi-status-task
-roleRef:
-  kind: ClusterRole
-  name: wait-for-vmi-status-task
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-  - kind: ServiceAccount
-    name: wait-for-vmi-status-task

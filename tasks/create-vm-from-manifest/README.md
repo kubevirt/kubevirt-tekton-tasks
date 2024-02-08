@@ -2,11 +2,6 @@
 
 This task creates a VirtualMachine from YAML manifest
 
-### Service Account
-
-This task should be run with `create-vm-from-manifest-task` serviceAccount.
-Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
-
 ### Parameters
 
 - **manifest**: YAML manifest of a VirtualMachine resource to be created.
@@ -23,3 +18,56 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 ### Usage
 
 Please see [examples](examples) on how to create VMs.
+
+### Usage in different namespaces
+
+You can use task to do actions in different namespace. To do that, tasks requires special permissions. Apply these RBAC objects and permissions and update accordingly task run object with correct serviceAccount:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: create-vm-from-manifest-task
+rules:
+-   apiGroups:
+    - kubevirt.io
+    resources:
+    - virtualmachines
+    - virtualmachineinstances
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+-   apiGroups:
+    - subresources.kubevirt.io
+    resources:
+    - virtualmachines/start
+    verbs:
+    - update
+-   apiGroups:
+    - ''
+    resources:
+    - persistentvolumeclaims
+    verbs:
+    - update
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: create-vm-from-manifest-task
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    name: create-vm-from-manifest-task
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: create-vm-from-manifest-task
+subjects:
+-   kind: ServiceAccount
+    name: create-vm-from-manifest-task
+---
+```
