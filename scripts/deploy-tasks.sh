@@ -4,6 +4,7 @@ set -e
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
+DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --output 'jsonpath={..namespace}')}"
 
 source "${SCRIPT_DIR}/common.sh"
 
@@ -14,10 +15,6 @@ fi
 
 # run only for specified tasks in script arguments
 # or default to all if no arguments specified
-
-DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --output 'jsonpath={..namespace}')}"
-
-kubectl config set-context --current --namespace="${DEPLOY_NAMESPACE}" || true
 
 visit "${REPO_DIR}/tasks"
   if [[ $# -eq 0 ]]; then
@@ -39,37 +36,13 @@ visit "${REPO_DIR}/tasks"
 
     # cleanup first
     kubectl delete -f manifests 2> /dev/null || true
-    kubectl delete clusterrolebinding "${TASK_NAME}-task" 2> /dev/null || true
 
     visit "${TASK_NAME}"
 
       if [[ -z ${CUSTOM_IMAGE} ]]; then
-        kubectl apply -f "manifests/${TASK_NAME}.yaml"
+        kubectl apply -n ${DEPLOY_NAMESPACE} -f "${TASK_NAME}.yaml"
       else
-        sed "s!${MAIN_IMAGE}!${CUSTOM_IMAGE}!g" "manifests/${TASK_NAME}.yaml" | kubectl apply -f -
-      fi
-    kubectl apply -f - << EOF
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: ${TASK_NAME}-test
-  namespace: ${DEPLOY_NAMESPACE}
-EOF
-      if grep -q ClusterRole "manifests/${TASK_NAME}.yaml"; then
-        kubectl apply -f - << EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: ${TASK_NAME}-task
-roleRef:
-  kind: ClusterRole
-  name: ${TASK_NAME}-task
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-  - kind: ServiceAccount
-    name:  ${TASK_NAME}-task
-    namespace: ${DEPLOY_NAMESPACE}
-EOF
+        sed "s!${MAIN_IMAGE}!${CUSTOM_IMAGE}!g" "${TASK_NAME}.yaml" | kubectl apply -n ${DEPLOY_NAMESPACE} -f -
       fi
     leave
   done

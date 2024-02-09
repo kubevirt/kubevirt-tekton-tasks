@@ -7,7 +7,6 @@ REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 
 source "${SCRIPT_DIR}/common.sh"
 
-export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --output 'jsonpath={..namespace}')}"
 IMAGE_REGISTRY=""
 IN_CLUSTER_IMAGE_REGISTRY=""
 
@@ -37,8 +36,6 @@ podman build -f "build/Containerfile" -t "${IMAGE}" .
 podman push "${IMAGE}" --tls-verify=false
 
 # set inside-cluster registry
-export IMAGE="image-registry.openshift-image-registry.svc:5000/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
-
 export IMAGE="${IN_CLUSTER_IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
 export TEKTON_TASKS_IMAGE="${IMAGE}"
 
@@ -48,7 +45,7 @@ podman build -f "build/Containerfile.DiskVirt" -t "${IMAGE}" .
 podman push "${IMAGE}" --tls-verify=false
 
 # set inside-cluster registry
-export IMAGE="image-registry.openshift-image-registry.svc:5000/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
+export IMAGE="${IN_CLUSTER_IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_TAG}"
 export TEKTON_TASKS_DISK_VIRT_IMAGE="${IMAGE}"
 
 "${REPO_DIR}/scripts/deploy-tasks.sh" "$@"
