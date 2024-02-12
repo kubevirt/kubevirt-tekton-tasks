@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm
 
-go 1.20
+go 1.21
 
 require (
 	github.com/alexflint/go-arg v1.3.0
@@ -10,6 +10,7 @@ require (
 	github.com/onsi/gomega v1.27.6
 	github.com/openshift/api v0.0.0
 	github.com/openshift/client-go v0.0.0
+	github.com/spf13/cobra v1.6.0
 	go.uber.org/zap v1.19.1
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
@@ -57,7 +58,6 @@ require (
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/spf13/cobra v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
