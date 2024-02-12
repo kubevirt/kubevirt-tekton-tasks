@@ -2,11 +2,6 @@
 
 This task waits for a specific status of a VirtualMachineInstance (VMI) and fails/succeeds accordingly.
 
-### Service Account
-
-This task should be run with `wait-for-vmi-status-task` serviceAccount.
-Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
-
 ### Parameters
 
 - **vmiName**: Name of a VirtualMachineInstance to wait for.
@@ -17,3 +12,41 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 ### Usage
 
 Please see [examples](examples)
+
+### Usage in different namespaces
+
+You can use task to do actions in different namespace. To do that, tasks requires special permissions. Apply these RBAC objects and permissions and update accordingly task run object with correct serviceAccount:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: wait-for-vmi-status-task
+rules:
+-   apiGroups:
+    - kubevirt.io
+    resources:
+    - virtualmachineinstances
+    verbs:
+    - get
+    - list
+    - watch
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: wait-for-vmi-status-task
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    name: wait-for-vmi-status-task
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: wait-for-vmi-status-task
+subjects:
+-   kind: ServiceAccount
+    name: wait-for-vmi-status-task
+---
+```

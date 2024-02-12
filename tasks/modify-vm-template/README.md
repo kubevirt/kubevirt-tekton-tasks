@@ -7,7 +7,7 @@ A bundle of predefined templates to use can be found in [Common Templates](https
 
 ### Service Account
 
-This task should be run with `modify-vm-template-task` serviceAccount.
+This task should be run with serviceAccount.
 Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
 
 ### Parameters
@@ -40,3 +40,42 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 ### Usage
 
 Please see [examples](examples) on how to do a copy template from a template.
+
+### Usage in different namespaces
+
+You can use task to do actions in different namespace. To do that, tasks requires special permissions. Apply these RBAC objects and permissions and update accordingly task run object with correct serviceAccount:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: modify-vm-template-task
+rules:
+-   apiGroups:
+    - template.openshift.io
+    resources:
+    - templates
+    verbs:
+    - get
+    - list
+    - patch
+    - delete
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: modify-vm-template-task
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    name: modify-vm-template-task
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: modify-vm-template-task
+subjects:
+-   kind: ServiceAccount
+    name: modify-vm-template-task
+---
+```

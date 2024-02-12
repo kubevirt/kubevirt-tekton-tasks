@@ -44,7 +44,7 @@ type ModifyTemplateTestConfig struct {
 
 func (m *ModifyTemplateTestConfig) Init(options *testoptions.TestOptions) {
 	m.deploymentNamespace = options.DeployNamespace
-	m.TaskData.TemplateNamespace = options.ResolveNamespace(m.TaskData.SourceTemplateNamespace, options.TestNamespace)
+	m.TaskData.TemplateNamespace = options.GetDeployNamespace()
 
 	if m.TaskData.Template != nil {
 		m.TaskData.Template.Name = E2ETestsRandomName(m.TaskData.Template.Name)
@@ -215,9 +215,8 @@ func (m *ModifyTemplateTestConfig) GetTaskRun() *pipev1.TaskRun {
 				Name: ModifyTemplateTaskName,
 				Kind: pipev1.NamespacedTaskKind,
 			},
-			Timeout:            &metav1.Duration{Duration: m.GetTaskRunTimeout()},
-			ServiceAccountName: m.ServiceAccount,
-			Params:             params,
+			Timeout: &metav1.Duration{Duration: m.GetTaskRunTimeout()},
+			Params:  params,
 		},
 	}
 }

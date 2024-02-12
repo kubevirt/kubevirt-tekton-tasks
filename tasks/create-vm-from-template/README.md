@@ -6,11 +6,6 @@ This task creates a VirtualMachine from OKD Template.
 Virtual machines can be described and parametrized in a generic form with these templates.
 A bundle of predefined templates to use can be found in [Common Templates](https://github.com/kubevirt/common-templates) project.
 
-### Service Account
-
-This task should be run with `create-vm-from-template-task` serviceAccount.
-Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
-
 ### Parameters
 
 - **templateName**: Name of an OKD template to create VM from.
@@ -28,3 +23,76 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 ### Usage
 
 Please see [examples](examples) on how to create VMs from a template.
+
+### Usage in different namespaces
+
+You can use task to do actions in different namespace. To do that, tasks requires special permissions. Apply these RBAC objects and permissions and update accordingly task run object with correct serviceAccount:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: create-vm-from-template-task
+rules:
+-   apiGroups:
+    - kubevirt.io
+    resources:
+    - virtualmachines
+    - virtualmachineinstances
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+-   apiGroups:
+    - kubevirt.io
+    resources:
+    - virtualmachines/finalizers
+    verbs:
+    - get
+-   apiGroups:
+    - template.openshift.io
+    resources:
+    - templates
+    verbs:
+    - get
+    - list
+    - watch
+-   apiGroups:
+    - template.openshift.io
+    resources:
+    - processedtemplates
+    verbs:
+    - create
+-   apiGroups:
+    - cdi.kubevirt.io
+    resources:
+    - datavolumes
+    verbs:
+    - create
+-   apiGroups:
+    - subresources.kubevirt.io
+    resources:
+    - virtualmachines/start
+    verbs:
+    - update
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: create-vm-from-template-task
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    name: create-vm-from-template-task
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: create-vm-from-template-task
+subjects:
+-   kind: ServiceAccount
+    name: create-vm-from-template-task
+---
+```

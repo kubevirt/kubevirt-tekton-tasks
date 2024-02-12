@@ -22,12 +22,7 @@ rm -rf "${ARTIFACT_DIR}"
 
 mkdir -p "${ARTIFACT_DIR}"
 
-export TEST_NAMESPACE="${TEST_NAMESPACE:-e2e-tests-$(shuf -i10000-99999 -n1)}"
-
-kubectl get namespaces -o name | grep -Eq "^namespace/$TEST_NAMESPACE$" || kubectl create namespace "$TEST_NAMESPACE" > /dev/null
 kubectl get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || kubectl create namespace "$DEPLOY_NAMESPACE" > /dev/null
-
-kubectl config set-context --current --namespace="$DEPLOY_NAMESPACE"
 
 pushd modules/tests || exit
   rm -rf dist
@@ -38,7 +33,6 @@ pushd modules/tests || exit
 
   ginkgo -r -p --randomize-all --randomize-suites --fail-on-pending --trace --race --nodes="${NUM_NODES}" -- \
     --deploy-namespace="${DEPLOY_NAMESPACE}" \
-    --test-namespace="${TEST_NAMESPACE}" \
     --kubeconfig-path="${KUBECONFIG}" \
     --is-okd="${IS_OKD}" \
     --ginkgo.junit-report="${ARTIFACT_DIR}/xunit_results.xml" \

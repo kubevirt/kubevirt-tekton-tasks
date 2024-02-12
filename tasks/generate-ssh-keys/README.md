@@ -2,11 +2,6 @@
 
 This task uses `ssh-keygen` to generate a private and public key pair
 
-### Service Account
-
-This task should be run with `generate-ssh-keys-task` serviceAccount.
-Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
-
 ### Parameters
 
 - **publicKeySecretName**: Name of a new or existing secret to append the generated public key to. The name will be generated and new secret created if not specified.
@@ -26,3 +21,42 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 ### Usage
 
 Please see [examples](examples)
+
+### Usage in different namespaces
+
+You can use task to do actions in different namespace. To do that, tasks requires special permissions. Apply these RBAC objects and permissions and update accordingly task run object with correct serviceAccount:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: generate-ssh-keys-task
+rules:
+-   apiGroups:
+    - ''
+    resources:
+    - secrets
+    verbs:
+    - get
+    - list
+    - create
+    - patch
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: generate-ssh-keys-task
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    name: generate-ssh-keys-task
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: generate-ssh-keys-task
+subjects:
+-   kind: ServiceAccount
+    name: generate-ssh-keys-task
+---
+```

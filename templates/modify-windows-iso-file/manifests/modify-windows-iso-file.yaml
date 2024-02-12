@@ -2,8 +2,6 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  annotations:
-    task.kubevirt.io/associatedServiceAccount: {{ sa_name }}
   labels:
     task.kubevirt.io/type: {{ task_name }}
     task.kubevirt.io/category: {{ task_category }}

@@ -7,7 +7,6 @@ import (
 	template2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects/template"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
-	"github.com/onsi/ginkgo/v2"
 	v1 "github.com/openshift/api/template/v1"
 	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,16 +20,12 @@ type CreateVMTaskData struct {
 	Template                *v1.Template
 	TemplateTargetNamespace TargetNamespace
 
-	VM                        *kubevirtv1.VirtualMachine
-	VMTargetNamespace         TargetNamespace
-	VMManifestTargetNamespace TargetNamespace
+	VM *kubevirtv1.VirtualMachine
 
-	IsCommonTemplate                         bool
-	UseDefaultTemplateNamespacesInTaskParams bool
-	UseDefaultVMNamespacesInTaskParams       bool
-	StartVM                                  string
-	RunStrategy                              string
-	ExpectedAdditionalDiskBus                string
+	IsCommonTemplate          bool
+	StartVM                   string
+	RunStrategy               string
+	ExpectedAdditionalDiskBus string
 
 	// Params
 	// these two are set if Template is not nil
@@ -100,7 +95,9 @@ func (c *CreateVMTestConfig) Init(options *testoptions.TestOptions) {
 
 	switch c.TaskData.CreateMode {
 	case CreateVMVMManifestMode:
-		c.initCreateVMManifest(options)
+		if c.TaskData.VM != nil {
+			c.initCreateVMManifest(options)
+		}
 	case CreateVMTemplateMode:
 		c.initCreateVMTemplate(options)
 	default:
@@ -109,47 +106,29 @@ func (c *CreateVMTestConfig) Init(options *testoptions.TestOptions) {
 }
 
 func (c *CreateVMTestConfig) initCreateVMManifest(options *testoptions.TestOptions) {
-	if c.TaskData.VMTargetNamespace != "" && c.TaskData.VMManifestTargetNamespace != "" {
-		ginkgo.Fail("only one of VMTargetNamespace|VMManifestTargetNamespace can be set")
+	vm := c.TaskData.VM
+	if vm.Name != "" {
+		vm.Name = E2ETestsRandomName(vm.Name)
+		vm.Spec.Template.ObjectMeta.Name = vm.Name
 	}
 
-	if vm := c.TaskData.VM; vm != nil {
-		if vm.Name != "" {
-			vm.Name = E2ETestsRandomName(vm.Name)
-			vm.Spec.Template.ObjectMeta.Name = vm.Name
-		}
+	vm.Spec.Template.ObjectMeta.Namespace = ""
 
-		vm.Spec.Template.ObjectMeta.Namespace = ""
+	vm.Namespace = ""
+	c.TaskData.VMNamespace = options.GetDeployNamespace()
 
-		if c.TaskData.VMManifestTargetNamespace != "" {
-			vm.Namespace = options.ResolveNamespace(c.TaskData.VMManifestTargetNamespace, "")
-			c.TaskData.VMNamespace = ""
-		} else {
-			vm.Namespace = ""
-			c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace, c.TaskData.VMNamespace)
-		}
+	c.TaskData.VMManifest = (&testobjects.TestVM{Data: vm}).ToString()
 
-		c.TaskData.VMManifest = (&testobjects.TestVM{Data: vm}).ToString()
-	} else {
-		// just for invalid YAMLs - otherwise use TaskData.VM
-		if c.TaskData.VMManifestTargetNamespace != "" {
-			ginkgo.Fail("VMManifestTargetNamespace cannot be set for manifest")
-		}
-		if c.TaskData.VMTargetNamespace != "" {
-			ginkgo.Fail("VMTargetNamespace cannot be set for manifest")
-		}
-	}
 }
 
 func (c *CreateVMTestConfig) initCreateVMTemplate(options *testoptions.TestOptions) {
-	c.TaskData.VMNamespace = options.ResolveNamespace(c.TaskData.VMTargetNamespace, c.TaskData.VMNamespace)
-	c.TaskData.TemplateNamespace = options.ResolveNamespace(c.TaskData.TemplateTargetNamespace, c.TaskData.TemplateNamespace)
+	c.TaskData.VMNamespace = options.GetDeployNamespace()
 
 	if tmpl := c.TaskData.Template; tmpl != nil {
 		if tmpl.Name != "" {
 			tmpl.Name = E2ETestsRandomName(tmpl.Name)
 		}
-		tmpl.Namespace = c.TaskData.TemplateNamespace
+		tmpl.Namespace = options.GetDeployNamespace()
 
 		c.TaskData.TemplateName = tmpl.Name
 	} else {
@@ -179,10 +158,7 @@ func (c *CreateVMTestConfig) GetTaskRun() *pipev1.TaskRun {
 		},
 	}
 
-	var vmNamespace string
-	if !c.TaskData.UseDefaultVMNamespacesInTaskParams {
-		vmNamespace = c.TaskData.VMNamespace
-	}
+	vmNamespace := c.TaskData.VMNamespace
 
 	switch c.TaskData.CreateMode {
 	case CreateVMVMManifestMode:
@@ -216,11 +192,7 @@ func (c *CreateVMTestConfig) GetTaskRun() *pipev1.TaskRun {
 		taskName = CreateVMFromTemplateTaskName
 		taskRunName = "taskrun-vm-create-from-template"
 
-		var templateNamespace string
-
-		if !c.TaskData.UseDefaultTemplateNamespacesInTaskParams {
-			templateNamespace = c.TaskData.TemplateNamespace
-		}
+		templateNamespace := c.TaskData.TemplateNamespace
 
 		params = append(params,
 			pipev1.Param{
@@ -268,9 +240,8 @@ func (c *CreateVMTestConfig) GetTaskRun() *pipev1.TaskRun {
 				Name: taskName,
 				Kind: pipev1.NamespacedTaskKind,
 			},
-			Timeout:            &metav1.Duration{Duration: c.GetTaskRunTimeout()},
-			ServiceAccountName: c.ServiceAccount,
-			Params:             params,
+			Timeout: &metav1.Duration{Duration: c.GetTaskRunTimeout()},
+			Params:  params,
 		},
 	}
 }

@@ -20,8 +20,7 @@ var _ = Describe("Pipelines tests", func() {
 	It("DV is created, disk-virt-sysprep, create dv, delete dvs", func() {
 		config := &testconfigs.PipelineTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ServiceAccount: ModifyDataObjectServiceAccountName,
-				Timeout:        Timeouts.PipelineRunExtraWaitDelay,
+				Timeout: Timeouts.PipelineRunExtraWaitDelay,
 			},
 			Pipeline: &pipev1.Pipeline{
 				ObjectMeta: metav1.ObjectMeta{
@@ -134,15 +133,6 @@ spec:
 				Params: []pipev1.Param{},
 				PipelineRef: &pipev1.PipelineRef{
 					Name: "test-pipeline-dvs",
-				},
-				TaskRunSpecs: []pipev1.PipelineTaskRunSpec{
-					{
-						PipelineTaskName:   "create-dv",
-						ServiceAccountName: "modify-data-object-task",
-					}, {
-						PipelineTaskName:   "create-updated-dv",
-						ServiceAccountName: "modify-data-object-task",
-					},
 				},
 			},
 		}

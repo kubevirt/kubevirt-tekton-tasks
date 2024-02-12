@@ -2,13 +2,6 @@
 
 This task uses [virt-sysprep](https://libguestfs.org/virt-sysprep.1.html) to run a sysprep script on a target pvc.
 
-{% if task_yaml.metadata.annotations['task.kubevirt.io/associatedServiceAccount'] is defined %}
-### Service Account
-
-This task should be run with `{{task_yaml.metadata.annotations['task.kubevirt.io/associatedServiceAccount']}}` serviceAccount.
-Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permissions.md) for more details.
-{% endif %}
-
 ### Parameters
 
 {% for item in task_yaml.spec.params %}
