@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest
 
-go 1.20
+go 1.21
 
 require (
 	github.com/openshift/api v0.0.0-20230503133300-8bbcb7ca7183
