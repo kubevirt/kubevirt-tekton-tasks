@@ -82,7 +82,7 @@ jobs:
           git rebase upstream/main
           git checkout -b update-tekton-tasks-manifests-${RELEASE_VERSION}
           sed -i "s/export RELEASE_VERSION.*=.*/export RELEASE_VERSION ?=${RELEASE_VERSION}/g" scripts/makefile-snippets/makefile-release.mk
-          make generate-yaml-tasks
+          make generate-yaml-tasks copy-released-manifests
           git add .
           git commit -sm "Update tekton tasks manifests to version ${RELEASE_VERSION}"
           git push --set-upstream origin update-tekton-tasks-manifests-${RELEASE_VERSION}
