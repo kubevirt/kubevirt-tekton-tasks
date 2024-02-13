@@ -3,27 +3,20 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt create VM from template"
+    tekton.dev/platforms: "linux/amd64"
     tekton.dev/deprecated: "true"
-    templateName.params.task.kubevirt.io/type: vm-template-name
-    templateName.params.task.kubevirt.io/kind: Template
-    templateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
-    templateNamespace.params.task.kubevirt.io/type: namespace
-    templateParams.params.task.kubevirt.io/type: template-params-array
-    vmNamespace.params.task.kubevirt.io/type: namespace
-    dataVolumes.params.task.kubevirt.io/kind: DataVolume
-    dataVolumes.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
-    ownDataVolumes.params.task.kubevirt.io/kind: DataVolume
-    ownDataVolumes.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
-    persistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    persistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
-    ownPersistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    ownPersistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
-    startVM.params.task.kubevirt.io/type: boolean
   labels:
-    task.kubevirt.io/type: create-vm-from-template
-    task.kubevirt.io/category: create-vm
+    app.kubernetes.io/version: v0.17.0
   name: create-vm-from-template
 spec:
+  description: >-
+    Automates creation of the KubeVirt virtual machine.
+    User can create VM from OpenShift template.
+    It is possible to immediatelly start the vm after creation with startVM parameter.
   params:
     - name: templateName
       description: Name of an OKD template to create VM from.

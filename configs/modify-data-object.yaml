@@ -1,3 +1,4 @@
 task_name: modify-data-object
 task_category: modify-data-object
 main_image: quay.io/kubevirt/tekton-tasks
+nice_name: modify data object

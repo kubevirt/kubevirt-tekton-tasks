@@ -3,17 +3,18 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    vmNamespace.params.task.kubevirt.io/type: namespace
-    secretName.params.task.kubevirt.io/type: execute-in-vm-secret
-    script.params.task.kubevirt.io/type: script
-    delete.params.task.kubevirt.io/type: boolean
-    stop.params.task.kubevirt.io/type: boolean
-    timeout.params.task.kubevirt.io/type: duration
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt cleanup VM"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: cleanup-vm
-    task.kubevirt.io/category: execute-in-vm
+    app.kubernetes.io/version: v0.17.0
   name: cleanup-vm
 spec:
+  description: >-
+    Run commands in KubeVirt virtual machine.
+    This task can stop and delete VMs
   params:
     - description: Name of a VM to execute the action in.
       name: vmName

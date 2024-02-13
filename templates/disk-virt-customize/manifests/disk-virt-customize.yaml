@@ -3,15 +3,17 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    pvc.params.task.kubevirt.io/kind: {{ task_param_types.pvc_kind }}
-    pvc.params.task.kubevirt.io/apiVersion: {{ task_param_types.v1_version }}
-    customizeCommands.params.task.kubevirt.io/type: {{ task_param_types.script }}
-    verbose.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt {{ nice_name }}"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: {{ task_name }}
-    task.kubevirt.io/category: {{ task_category }}
+    app.kubernetes.io/version: {{ version }}
   name: {{ task_name }}
 spec:
+  description: >-
+    Run virt-customize command on given PVC. Usefull for manipulation with virtual machine's disks.
   params:
     - name: pvc
       description: PersistentVolumeClaim to run the the virt-customize script in. PVC should be in the same namespace as taskrun/pipelinerun.

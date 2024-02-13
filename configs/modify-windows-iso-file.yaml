@@ -3,3 +3,4 @@ task_category: modify-windows-iso-file
 extract_iso_image: quay.io/kubevirt/tekton-tasks-disk-virt
 modify_iso_image: quay.io/kubevirt/tekton-tasks
 create_iso_image: quay.io/kubevirt/tekton-tasks
+nice_name: modify Windows iso

@@ -3,12 +3,13 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    manifest.params.task.kubevirt.io/type: {{ task_param_types.resource_yaml }}
-    manifest.params.task.kubevirt.io/apiVersion: {{ task_param_types.cdi_beta_api_version }}
-    waitForSuccess.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt {{ nice_name }}"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: {{ task_name }}
-    task.kubevirt.io/category: {{ task_category }}
+    app.kubernetes.io/version: {{ version }}
   name: {{ task_name }}
 spec:
   description: >-

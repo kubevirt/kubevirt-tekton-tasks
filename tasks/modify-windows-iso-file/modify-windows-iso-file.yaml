@@ -2,11 +2,24 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt modify Windows iso"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: modify-windows-iso-file
-    task.kubevirt.io/category: modify-windows-iso-file
+    app.kubernetes.io/version: v0.17.0
   name: modify-windows-iso-file
 spec:
+  description: >-
+    This tasks is modifying windows iso file. It replaces prompt 
+    bootloader with non prompt one. This helps with automation of 
+    windows installation which requires EFI - the prompt bootloader will not 
+    continue with installation until some key is pressed. The non prompt 
+    bootloader will not require any key press. This task is used in 
+    combination with KubeVirt. It is part of windows-efi-installer pipeline 
+    https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/examples/pipelines/windows-efi-installer.
   params:
     - name: pvcName
       description: PersistentVolumeClaim which contains windows iso.

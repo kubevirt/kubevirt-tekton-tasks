@@ -3,17 +3,18 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    vmNamespace.params.task.kubevirt.io/type: namespace
-    secretName.params.task.kubevirt.io/type: execute-in-vm-secret
-    script.params.task.kubevirt.io/type: script
-    delete.params.task.kubevirt.io/type: boolean
-    stop.params.task.kubevirt.io/type: boolean
-    timeout.params.task.kubevirt.io/type: duration
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt cleanup VM"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: cleanup-vm
-    task.kubevirt.io/category: execute-in-vm
+    app.kubernetes.io/version: v0.17.0
   name: cleanup-vm
 spec:
+  description: >-
+    Run commands in KubeVirt virtual machine.
+    This task can stop and delete VMs
   params:
     - description: Name of a VM to execute the action in.
       name: vmName
@@ -91,18 +92,19 @@ kind: Task
 metadata:
   annotations:
     tekton.dev/deprecated: "true"
-    sourceTemplateName.params.task.kubevirt.io/kind: Template
-    sourceTemplateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
-    sourceTemplateNamespace.params.task.kubevirt.io/type: namespace
-    targetTemplateName.params.task.kubevirt.io/kind: Template
-    targetTemplateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
-    targetTemplateNamespace.params.task.kubevirt.io/type: namespace
-    allowReplace.params.task.kubevirt.io/type: boolean
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt copy template"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: copy-template
-    task.kubevirt.io/category: copy-template
+    app.kubernetes.io/version: v0.17.0
   name: copy-template
 spec:
+  description: >-
+    Automates the copying of OpenShift template. The task copies original template 
+    and saves it under new name or if parameter allowReplace is true, then it replaces 
+    template with the same name.
   params:
     - name: sourceTemplateName
       description: Name of an OpenShift template to copy template from.
@@ -151,24 +153,19 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    manifest.params.task.kubevirt.io/type: resource-yaml
-    manifest.params.task.kubevirt.io/kind: VirtualMachine
-    manifest.params.task.kubevirt.io/apiVersion: kubevirt.io/v1
-    namespace.params.task.kubevirt.io/type: namespace
-    dataVolumes.params.task.kubevirt.io/kind: DataVolume
-    dataVolumes.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
-    ownDataVolumes.params.task.kubevirt.io/kind: DataVolume
-    ownDataVolumes.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
-    persistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    persistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
-    ownPersistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    ownPersistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
-    startVM.params.task.kubevirt.io/type: boolean
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt create VM from manifest"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: create-vm-from-manifest
-    task.kubevirt.io/category: create-vm
+    app.kubernetes.io/version: v0.17.0
   name: create-vm-from-manifest
 spec:
+  description: >-
+    Automates creation of the KubeVirt virtual machine.
+    User can create VM from manifest or with the same parameters as for virtctl.
+    It is possible to immediatelly start the vm after creation with startVM parameter.
   params:
     - name: manifest
       description: YAML manifest of a VirtualMachine resource to be created.
@@ -218,27 +215,20 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt create VM from template"
+    tekton.dev/platforms: "linux/amd64"
     tekton.dev/deprecated: "true"
-    templateName.params.task.kubevirt.io/type: vm-template-name
-    templateName.params.task.kubevirt.io/kind: Template
-    templateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
-    templateNamespace.params.task.kubevirt.io/type: namespace
-    templateParams.params.task.kubevirt.io/type: template-params-array
-    vmNamespace.params.task.kubevirt.io/type: namespace
-    dataVolumes.params.task.kubevirt.io/kind: DataVolume
-    dataVolumes.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
-    ownDataVolumes.params.task.kubevirt.io/kind: DataVolume
-    ownDataVolumes.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
-    persistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    persistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
-    ownPersistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    ownPersistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
-    startVM.params.task.kubevirt.io/type: boolean
   labels:
-    task.kubevirt.io/type: create-vm-from-template
-    task.kubevirt.io/category: create-vm
+    app.kubernetes.io/version: v0.17.0
   name: create-vm-from-template
 spec:
+  description: >-
+    Automates creation of the KubeVirt virtual machine.
+    User can create VM from OpenShift template.
+    It is possible to immediatelly start the vm after creation with startVM parameter.
   params:
     - name: templateName
       description: Name of an OKD template to create VM from.
@@ -293,15 +283,17 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    pvc.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    pvc.params.task.kubevirt.io/apiVersion: v1
-    customizeCommands.params.task.kubevirt.io/type: script
-    verbose.params.task.kubevirt.io/type: boolean
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt disk virt customize"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: disk-virt-customize
-    task.kubevirt.io/category: disk-virt-customize
+    app.kubernetes.io/version: v0.17.0
   name: disk-virt-customize
 spec:
+  description: >-
+    Run virt-customize command on given PVC. Usefull for manipulation with virtual machine's disks.
   params:
     - name: pvc
       description: PersistentVolumeClaim to run the the virt-customize script in. PVC should be in the same namespace as taskrun/pipelinerun.
@@ -421,15 +413,17 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    pvc.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    pvc.params.task.kubevirt.io/apiVersion: v1
-    sysprepCommands.params.task.kubevirt.io/type: script
-    verbose.params.task.kubevirt.io/type: boolean
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt disk virt sysprep"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: disk-virt-sysprep
-    task.kubevirt.io/category: disk-virt-sysprep
+    app.kubernetes.io/version: v0.17.0
   name: disk-virt-sysprep
 spec:
+  description: >-
+    Run virt-sysprep command on given PVC. Usefull for manipulation with virtual machine's disks.
   params:
     - name: pvc
       description: PersistentVolumeClaim to run the the virt-sysprep script in. PVC should be in the same namespace as taskrun/pipelinerun.
@@ -549,14 +543,17 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    vmNamespace.params.task.kubevirt.io/type: namespace
-    secretName.params.task.kubevirt.io/type: execute-in-vm-secret
-    script.params.task.kubevirt.io/type: script
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt execute in vm"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: execute-in-vm
-    task.kubevirt.io/category: execute-in-vm
+    app.kubernetes.io/version: v0.17.0
   name: execute-in-vm
 spec:
+  description: >-
+    Run commands in KubeVirt virtual machine.
   params:
     - description: Name of a VM to execute the action in.
       name: vmName
@@ -615,18 +612,17 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    publicKeySecretName.params.task.kubevirt.io/kind: Secret
-    publicKeySecretName.params.task.kubevirt.io/apiVersion: v1
-    publicKeySecretNamespace.params.task.kubevirt.io/type: namespace
-    privateKeySecretName.params.task.kubevirt.io/kind: Secret
-    privateKeySecretName.params.task.kubevirt.io/apiVersion: v1
-    privateKeySecretNamespace.params.task.kubevirt.io/type: namespace
-    privateKeyConnectionOptions.params.task.kubevirt.io/type: private-key-options-array
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt generate ssh keys"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: generate-ssh-keys
-    task.kubevirt.io/category: generate-ssh-keys
+    app.kubernetes.io/version: v0.17.0
   name: generate-ssh-keys
 spec:
+  description: >-
+    Generate SSH keys which can be used for KubeVirt virtual machines.
   params:
     - name: publicKeySecretName
       description: Name of a new or existing secret to append the generated public key to. The name will be generated and new secret created if not specified.
@@ -687,12 +683,13 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    manifest.params.task.kubevirt.io/type: resource-yaml
-    manifest.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
-    waitForSuccess.params.task.kubevirt.io/type: boolean
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt modify data object"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: modify-data-object
-    task.kubevirt.io/category: modify-data-object
+    app.kubernetes.io/version: v0.17.0
   name: modify-data-object
 spec:
   description: >-
@@ -759,21 +756,19 @@ kind: Task
 metadata:
   annotations:
     tekton.dev/deprecated: "true"
-    templateName.params.task.kubevirt.io/kind: Template
-    templateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
-    templateNamespace.params.task.kubevirt.io/kind: namespace
-    cpuSockets.params.task.kubevirt.io/type: number
-    cpuCores.params.task.kubevirt.io/type: number
-    cpuThreads.params.task.kubevirt.io/type: number
-    memory.params.task.kubevirt.io/type: memory
-    deleteDatavolumeTemplate.params.task.kubevirt.io/type: boolean
-    deleteTemplateParameters.params.task.kubevirt.io/type: boolean
-    deleteTemplate.params.task.kubevirt.io/type: boolean
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt modify VM template"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: modify-vm-template
-    task.kubevirt.io/category: modify-vm-template
+    app.kubernetes.io/version: v0.17.0
   name: modify-vm-template
 spec:
+  description: >-
+    Automates the modifying of OpenShift template with KubeVirt virtual machine. 
+    This task is working only with https://github.com/kubevirt/common-templates. 
+    Other templates will not work.
   params:
     - name: templateName
       description: Name of an OpenShift template.
@@ -906,11 +901,24 @@ spec:
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt modify Windows iso"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: modify-windows-iso-file
-    task.kubevirt.io/category: modify-windows-iso-file
+    app.kubernetes.io/version: v0.17.0
   name: modify-windows-iso-file
 spec:
+  description: >-
+    This tasks is modifying windows iso file. It replaces prompt 
+    bootloader with non prompt one. This helps with automation of 
+    windows installation which requires EFI - the prompt bootloader will not 
+    continue with installation until some key is pressed. The non prompt 
+    bootloader will not require any key press. This task is used in 
+    combination with KubeVirt. It is part of windows-efi-installer pipeline 
+    https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/examples/pipelines/windows-efi-installer.
   params:
     - name: pvcName
       description: PersistentVolumeClaim which contains windows iso.
@@ -1024,12 +1032,19 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    vmiNamespace.params.task.kubevirt.io/type: namespace
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt wait for VMI status"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: wait-for-vmi-status
-    task.kubevirt.io/category: wait-for-vmi-status
+    app.kubernetes.io/version: v0.17.0
   name: wait-for-vmi-status
 spec:
+  description: >-
+    This tasks waits until KubeVirt virtual machine is in some 
+    state. It can be used in pipeline where user needs to wait until e.g. 
+    VM finish some installation.
   params:
     - name: vmiName
       description: Name of a VirtualMachineInstance to wait for.

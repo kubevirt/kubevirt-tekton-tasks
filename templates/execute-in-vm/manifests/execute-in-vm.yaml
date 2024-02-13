@@ -3,19 +3,20 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    vmNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
-    secretName.params.task.kubevirt.io/type: {{ task_param_types.execute_in_vm_secret }}
-    script.params.task.kubevirt.io/type: {{ task_param_types.script }}
-{% if is_cleanup %}
-    delete.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
-    stop.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
-    timeout.params.task.kubevirt.io/type: {{ task_param_types.duration }}
-{% endif %}
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt {{ nice_name }}"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: {{ task_name }}
-    task.kubevirt.io/category: {{ task_category }}
+    app.kubernetes.io/version: {{ version }}
   name: {{ task_name }}
 spec:
+  description: >-
+    Run commands in KubeVirt virtual machine.
+{% if is_cleanup %}
+    This task can stop and delete VMs
+{% endif %}
   params:
     - description: Name of a VM to execute the action in.
       name: vmName

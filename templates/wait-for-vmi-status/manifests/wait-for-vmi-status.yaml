@@ -3,12 +3,19 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    vmiNamespace.params.task.kubevirt.io/type: namespace
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt {{ nice_name }}"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: {{ task_name }}
-    task.kubevirt.io/category: {{ task_category }}
+    app.kubernetes.io/version: {{ version }}
   name: {{ task_name }}
 spec:
+  description: >-
+    This tasks waits until KubeVirt virtual machine is in some 
+    state. It can be used in pipeline where user needs to wait until e.g. 
+    VM finish some installation.
   params:
     - name: vmiName
       description: Name of a VirtualMachineInstance to wait for.

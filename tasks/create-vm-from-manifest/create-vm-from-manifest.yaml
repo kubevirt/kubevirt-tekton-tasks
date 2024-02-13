@@ -3,24 +3,19 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    manifest.params.task.kubevirt.io/type: resource-yaml
-    manifest.params.task.kubevirt.io/kind: VirtualMachine
-    manifest.params.task.kubevirt.io/apiVersion: kubevirt.io/v1
-    namespace.params.task.kubevirt.io/type: namespace
-    dataVolumes.params.task.kubevirt.io/kind: DataVolume
-    dataVolumes.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
-    ownDataVolumes.params.task.kubevirt.io/kind: DataVolume
-    ownDataVolumes.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
-    persistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    persistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
-    ownPersistentVolumeClaims.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    ownPersistentVolumeClaims.params.task.kubevirt.io/apiVersion: v1
-    startVM.params.task.kubevirt.io/type: boolean
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt create VM from manifest"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: create-vm-from-manifest
-    task.kubevirt.io/category: create-vm
+    app.kubernetes.io/version: v0.17.0
   name: create-vm-from-manifest
 spec:
+  description: >-
+    Automates creation of the KubeVirt virtual machine.
+    User can create VM from manifest or with the same parameters as for virtctl.
+    It is possible to immediatelly start the vm after creation with startVM parameter.
   params:
     - name: manifest
       description: YAML manifest of a VirtualMachine resource to be created.
