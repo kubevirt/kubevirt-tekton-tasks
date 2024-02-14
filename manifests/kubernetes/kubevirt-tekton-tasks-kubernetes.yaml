@@ -16,7 +16,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.17.0
+    app.kubernetes.io/version: v0.18.0
   name: cleanup-vm
 spec:
   description: >-
@@ -60,7 +60,7 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: "quay.io/kubevirt/tekton-tasks:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
       command:
         - entrypoint
       args:
@@ -111,7 +111,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.17.0
+    app.kubernetes.io/version: v0.18.0
   name: create-vm-from-manifest
 spec:
   description: >-
@@ -146,7 +146,7 @@ spec:
       description: The namespace of a VM that was created.
   steps:
     - name: createvm
-      image: "quay.io/kubevirt/tekton-tasks:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
       command:
         - create-vm
       args:
@@ -180,7 +180,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.17.0
+    app.kubernetes.io/version: v0.18.0
   name: disk-virt-customize
 spec:
   description: >-
@@ -203,7 +203,7 @@ spec:
       default: ""
   steps:
     - name: run-virt-customize
-      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.18.0"
       command:
         - entrypoint
       args:
@@ -317,7 +317,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.17.0
+    app.kubernetes.io/version: v0.18.0
   name: disk-virt-sysprep
 spec:
   description: >-
@@ -340,7 +340,7 @@ spec:
       default: ""
   steps:
     - name: run-virt-sysprep
-      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.18.0"
       command:
         - entrypoint
       args:
@@ -454,7 +454,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.17.0
+    app.kubernetes.io/version: v0.18.0
   name: execute-in-vm
 spec:
   description: >-
@@ -485,7 +485,7 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: "quay.io/kubevirt/tekton-tasks:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
       command:
         - entrypoint
       args:
@@ -530,7 +530,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.17.0
+    app.kubernetes.io/version: v0.18.0
   name: generate-ssh-keys
 spec:
   description: >-
@@ -571,7 +571,7 @@ spec:
       description: The namespace of a private key secret.
   steps:
     - name: generate-ssh-keys
-      image: "quay.io/kubevirt/tekton-tasks:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
       command:
         - entrypoint
       args:
@@ -608,7 +608,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.17.0
+    app.kubernetes.io/version: v0.18.0
   name: modify-data-object
 spec:
   description: >-
@@ -649,7 +649,7 @@ spec:
       description: The namespace of the data object that was created.
   steps:
     - name: modify-data-object
-      image: "quay.io/kubevirt/tekton-tasks:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
       command:
         - modify-data-object
       args:
@@ -687,7 +687,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.17.0
+    app.kubernetes.io/version: v0.18.0
   name: modify-windows-iso-file
 spec:
   description: >-
@@ -710,7 +710,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.18.0"
       script: |
         #!/bin/bash
         set -x
@@ -755,7 +755,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-tasks:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
       script: |
         #!/bin/bash
         set -ex
@@ -782,7 +782,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.18.0"
       script: |
         #!/bin/bash
         set -x
@@ -824,7 +824,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.17.0
+    app.kubernetes.io/version: v0.18.0
   name: wait-for-vmi-status
 spec:
   description: >-
@@ -847,7 +847,7 @@ spec:
       description: A label selector expression to decide if the VirtualMachineInstance (VMI) is in a failed state. Eg. "status.phase in (Failed, Unknown)". It is evaluated on each VMI update and will result in this task failing if true.
   steps:
     - name: wait-for-vmi-status
-      image: "quay.io/kubevirt/tekton-tasks:v0.17.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
       command:
         - entrypoint
       env:

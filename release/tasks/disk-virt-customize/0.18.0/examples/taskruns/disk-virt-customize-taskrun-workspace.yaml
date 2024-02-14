@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: disk-virt-customize-taskrun-workspace
+type: Opaque
+stringData:
+  password: mysecretpassword
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: disk-virt-customize-taskrun-workspace
+spec:
+  taskRef:
+    kind: Task
+    name: disk-virt-customize
+  params:
+    - name: pvc
+      value: example-pvc
+    - name: customizeCommands
+      value: |
+        update
+        install make,ansible
+        delete /var/cache/dnf
+        root-password file:/data/password
+  workspaces:
+    - name: data
+      secret:
+        name: disk-virt-customize-taskrun-workspace
