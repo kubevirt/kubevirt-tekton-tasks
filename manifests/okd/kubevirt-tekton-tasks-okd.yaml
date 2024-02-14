@@ -8,6 +8,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt cleanup VM"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: cleanup-vm
@@ -97,6 +104,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt copy template"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: copy-template
@@ -158,6 +172,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt create VM from manifest"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: create-vm-from-manifest
@@ -220,6 +241,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt create VM from template"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
     tekton.dev/deprecated: "true"
   labels:
     app.kubernetes.io/version: v0.17.0
@@ -288,6 +316,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt disk virt customize"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: disk-virt-customize
@@ -418,6 +453,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt disk virt sysprep"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: disk-virt-sysprep
@@ -548,6 +590,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt execute in vm"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: execute-in-vm
@@ -617,6 +666,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt generate ssh keys"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: generate-ssh-keys
@@ -688,6 +744,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt modify data object"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: modify-data-object
@@ -761,6 +824,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt modify VM template"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: modify-vm-template
@@ -907,6 +977,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt modify Windows iso"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: modify-windows-iso-file
@@ -1037,6 +1114,13 @@ metadata:
     tekton.dev/tags: kubevirt
     tekton.dev/displayName: "KubeVirt wait for VMI status"
     tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: Karel Simon
+        email: ksimon@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
   labels:
     app.kubernetes.io/version: v0.17.0
   name: wait-for-vmi-status
