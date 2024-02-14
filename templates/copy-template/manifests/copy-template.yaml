@@ -4,18 +4,19 @@ kind: Task
 metadata:
   annotations:
     tekton.dev/deprecated: "true"
-    sourceTemplateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
-    sourceTemplateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
-    sourceTemplateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
-    targetTemplateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
-    targetTemplateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
-    targetTemplateNamespace.params.task.kubevirt.io/type: {{ task_param_types.namespace }}
-    allowReplace.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt {{ nice_name }}"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: {{ task_name }}
-    task.kubevirt.io/category: {{ task_category }}
+    app.kubernetes.io/version: {{ version }}
   name: {{ task_name }}
 spec:
+  description: >-
+    Automates the copying of OpenShift template. The task copies original template 
+    and saves it under new name or if parameter allowReplace is true, then it replaces 
+    template with the same name.
   params:
     - name: sourceTemplateName
       description: Name of an OpenShift template to copy template from.

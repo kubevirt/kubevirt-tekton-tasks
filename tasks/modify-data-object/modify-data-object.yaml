@@ -3,12 +3,13 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    manifest.params.task.kubevirt.io/type: resource-yaml
-    manifest.params.task.kubevirt.io/apiVersion: cdi.kubevirt.io/v1beta1
-    waitForSuccess.params.task.kubevirt.io/type: boolean
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt modify data object"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: modify-data-object
-    task.kubevirt.io/category: modify-data-object
+    app.kubernetes.io/version: v0.17.0
   name: modify-data-object
 spec:
   description: >-

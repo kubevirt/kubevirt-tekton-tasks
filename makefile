@@ -53,6 +53,12 @@ build-release-images:
 push-release-images:
 	./scripts/push-release-images.sh
 
+copy-released-manifests:
+	./scripts/copy-released-manifests.sh
+
+run-ah-linter:
+	./scripts/run-ah-linter.sh
+
 release: generate-yaml-tasks build-release-images push-release-images
 
 vendor:
@@ -74,6 +80,8 @@ vendor:
 	cluster-clean \
 	cluster-clean-and-skip-images \
 	release \
+	copy-released-manifests \
 	e2e-tests \
+	run-ah-linter \
 	onboard-new-task-with-ci-stub \
 	vendor

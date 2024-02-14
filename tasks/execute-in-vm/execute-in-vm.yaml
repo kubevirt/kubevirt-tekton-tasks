@@ -3,14 +3,17 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    vmNamespace.params.task.kubevirt.io/type: namespace
-    secretName.params.task.kubevirt.io/type: execute-in-vm-secret
-    script.params.task.kubevirt.io/type: script
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt execute in vm"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: execute-in-vm
-    task.kubevirt.io/category: execute-in-vm
+    app.kubernetes.io/version: v0.17.0
   name: execute-in-vm
 spec:
+  description: >-
+    Run commands in KubeVirt virtual machine.
   params:
     - description: Name of a VM to execute the action in.
       name: vmName

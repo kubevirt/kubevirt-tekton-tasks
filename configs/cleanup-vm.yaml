@@ -2,3 +2,4 @@ task_name: cleanup-vm
 task_category: execute-in-vm
 # execute-in-vm.yaml main_image should be also updated to match this one!
 main_image: quay.io/kubevirt/tekton-tasks
+nice_name: cleanup VM

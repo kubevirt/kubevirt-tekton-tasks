@@ -3,15 +3,17 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    pvc.params.task.kubevirt.io/kind: PersistentVolumeClaim
-    pvc.params.task.kubevirt.io/apiVersion: v1
-    sysprepCommands.params.task.kubevirt.io/type: script
-    verbose.params.task.kubevirt.io/type: boolean
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt disk virt sysprep"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: disk-virt-sysprep
-    task.kubevirt.io/category: disk-virt-sysprep
+    app.kubernetes.io/version: v0.17.0
   name: disk-virt-sysprep
 spec:
+  description: >-
+    Run virt-sysprep command on given PVC. Usefull for manipulation with virtual machine's disks.
   params:
     - name: pvc
       description: PersistentVolumeClaim to run the the virt-sysprep script in. PVC should be in the same namespace as taskrun/pipelinerun.

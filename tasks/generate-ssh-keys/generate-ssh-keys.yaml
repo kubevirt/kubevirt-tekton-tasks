@@ -3,18 +3,17 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
-    publicKeySecretName.params.task.kubevirt.io/kind: Secret
-    publicKeySecretName.params.task.kubevirt.io/apiVersion: v1
-    publicKeySecretNamespace.params.task.kubevirt.io/type: namespace
-    privateKeySecretName.params.task.kubevirt.io/kind: Secret
-    privateKeySecretName.params.task.kubevirt.io/apiVersion: v1
-    privateKeySecretNamespace.params.task.kubevirt.io/type: namespace
-    privateKeyConnectionOptions.params.task.kubevirt.io/type: private-key-options-array
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt generate ssh keys"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: generate-ssh-keys
-    task.kubevirt.io/category: generate-ssh-keys
+    app.kubernetes.io/version: v0.17.0
   name: generate-ssh-keys
 spec:
+  description: >-
+    Generate SSH keys which can be used for KubeVirt virtual machines.
   params:
     - name: publicKeySecretName
       description: Name of a new or existing secret to append the generated public key to. The name will be generated and new secret created if not specified.

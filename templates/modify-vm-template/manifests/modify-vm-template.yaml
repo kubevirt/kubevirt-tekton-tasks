@@ -4,21 +4,19 @@ kind: Task
 metadata:
   annotations:
     tekton.dev/deprecated: "true"
-    templateName.params.task.kubevirt.io/kind: {{ task_param_types.template_kind }}
-    templateName.params.task.kubevirt.io/apiVersion: {{ task_param_types.template_version }}
-    templateNamespace.params.task.kubevirt.io/kind: {{ task_param_types.namespace }}
-    cpuSockets.params.task.kubevirt.io/type: {{ task_param_types.number }}
-    cpuCores.params.task.kubevirt.io/type: {{ task_param_types.number }}
-    cpuThreads.params.task.kubevirt.io/type: {{ task_param_types.number }}
-    memory.params.task.kubevirt.io/type: {{ task_param_types.memory }}
-    deleteDatavolumeTemplate.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
-    deleteTemplateParameters.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
-    deleteTemplate.params.task.kubevirt.io/type: {{ task_param_types.boolean }}
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt {{ nice_name }}"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: {{ task_name }}
-    task.kubevirt.io/category: {{ task_category }}
+    app.kubernetes.io/version: {{ version }}
   name: {{ task_name }}
 spec:
+  description: >-
+    Automates the modifying of OpenShift template with KubeVirt virtual machine. 
+    This task is working only with https://github.com/kubevirt/common-templates. 
+    Other templates will not work.
   params:
     - name: templateName
       description: Name of an OpenShift template.

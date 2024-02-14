@@ -1,3 +1,4 @@
 task_name: generate-ssh-keys
 task_category: generate-ssh-keys
 main_image: quay.io/kubevirt/tekton-tasks
+nice_name: generate ssh keys

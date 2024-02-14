@@ -4,21 +4,19 @@ kind: Task
 metadata:
   annotations:
     tekton.dev/deprecated: "true"
-    templateName.params.task.kubevirt.io/kind: Template
-    templateName.params.task.kubevirt.io/apiVersion: template.openshift.io/v1
-    templateNamespace.params.task.kubevirt.io/kind: namespace
-    cpuSockets.params.task.kubevirt.io/type: number
-    cpuCores.params.task.kubevirt.io/type: number
-    cpuThreads.params.task.kubevirt.io/type: number
-    memory.params.task.kubevirt.io/type: memory
-    deleteDatavolumeTemplate.params.task.kubevirt.io/type: boolean
-    deleteTemplateParameters.params.task.kubevirt.io/type: boolean
-    deleteTemplate.params.task.kubevirt.io/type: boolean
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt modify VM template"
+    tekton.dev/platforms: "linux/amd64"
   labels:
-    task.kubevirt.io/type: modify-vm-template
-    task.kubevirt.io/category: modify-vm-template
+    app.kubernetes.io/version: v0.17.0
   name: modify-vm-template
 spec:
+  description: >-
+    Automates the modifying of OpenShift template with KubeVirt virtual machine. 
+    This task is working only with https://github.com/kubevirt/common-templates. 
+    Other templates will not work.
   params:
     - name: templateName
       description: Name of an OpenShift template.
