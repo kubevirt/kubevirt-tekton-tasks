@@ -1,0 +1,17 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: modify-windows-iso-file-taskrun
+spec:
+  podTemplate:
+    securityContext:
+      runAsUser: 1001
+      runAsGroup: 1001
+      fsGroup: 1001
+  taskRef:
+    kind: Task
+    name: modify-windows-iso-file
+  params:
+  - name: pvcName
+    value: w11

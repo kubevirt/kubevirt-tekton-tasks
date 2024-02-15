@@ -1,0 +1,50 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: create-vm-from-manifest-taskrun
+spec:
+  serviceAccountName: create-vm-from-manifest-task
+  taskRef:
+    kind: Task
+    name: create-vm-from-manifest
+  params:
+  - name: manifest
+    value: |
+      apiVersion: kubevirt.io/v1
+      kind: VirtualMachine
+      metadata:
+        labels:
+          kubevirt.io/vm: vm-cirros
+        generateName: vm-cirros-
+      spec:
+        running: false
+        template:
+          metadata:
+            labels:
+              kubevirt.io/vm: vm-cirros
+          spec:
+            domain:
+              devices:
+                disks:
+                - disk:
+                    bus: virtio
+                  name: containerdisk
+                - disk:
+                    bus: virtio
+                  name: cloudinitdisk
+              machine:
+                type: ""
+              resources:
+                requests:
+                  memory: 64M
+            terminationGracePeriodSeconds: 0
+            volumes:
+            - containerDisk:
+                image: kubevirt/cirros-container-disk-demo
+              name: containerdisk
+            - cloudInitNoCloud:
+                userData: |
+                  #!/bin/sh
+                  echo 'printed from cloud-init userdata'
+              name: cloudinitdisk
