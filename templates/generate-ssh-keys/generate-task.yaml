@@ -41,8 +41,7 @@
         dest: "{{ examples_taskruns_output_dir }}/{{ item.taskrun_with_flavor_name }}.yaml"
         mode: "{{ default_file_mode }}"
       with_items:
-        - { type: "simple", taskrun_with_flavor_name: "{{ task_name }}-simple-taskrun" }
-        - { type: "advanced", taskrun_with_flavor_name: "{{ task_name }}-advanced-taskrun" }
+        - { taskrun_with_flavor_name: "{{ task_name }}-advanced-taskrun-resolver" }
     - name: Generate README
       template:
         src: "{{ readmes_templates_dir }}/README.md"
@@ -53,6 +52,10 @@
         task_yaml: "{{ lookup('file', task_path) | from_yaml }}"
         rbac_path: "{{ readme_output_dir_tmp }}/zz-{{ task_name }}-rbac.yaml"
         rbac_yaml: "{{ lookup('file', rbac_path) | from_yaml_all }}"
+        task_run_path: "{{ examples_taskruns_output_dir }}/{{ task_name }}-advanced-taskrun.yaml"
+        task_run_yaml: "{{ lookup('file', task_run_path) | from_yaml }}"
+        task_run_resolver_path: "{{ examples_taskruns_output_dir }}/{{ task_name }}-advanced-taskrun-resolver.yaml"
+        task_run_resolver_yaml: "{{ lookup('file', task_run_resolver_path) | from_yaml }}"
     - name: "Delete readme tmp directory"
       file:
         path: "{{ readme_output_dir_tmp }}"

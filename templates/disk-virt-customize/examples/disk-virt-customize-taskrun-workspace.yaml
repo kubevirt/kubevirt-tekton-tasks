@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ item }}
+  name: {{ item.name }}
 type: Opaque
 stringData:
   password: mysecretpassword
@@ -9,7 +9,7 @@ stringData:
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  name: {{ item }}
+  name: {{ item.name }}
 spec:
   taskRef:
     kind: Task
@@ -26,4 +26,4 @@ spec:
   workspaces:
     - name: data
       secret:
-        name: {{ item }}
+        name: {{ item.name }}

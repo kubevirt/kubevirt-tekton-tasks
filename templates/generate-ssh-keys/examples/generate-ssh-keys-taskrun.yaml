@@ -21,6 +21,3 @@ spec:
         - 'additional-ssh-options:-p 8022'
     - name: additionalSSHKeygenOptions
       value: '-t rsa-sha2-512 -b 4096'
-{% else %}
-  params: []
-{% endif %}

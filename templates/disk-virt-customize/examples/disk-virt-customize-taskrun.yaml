@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  name: {{ item }}
+  name: {{ item.name }}
 spec:
   taskRef:
     kind: Task
