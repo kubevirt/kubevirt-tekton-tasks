@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  generateName: create-vm-from-template-taskrun-
+  generateName: create-vm-from-manifest-taskrun-resolver-
 spec:
   taskRef:
     resolver: hub
@@ -14,15 +14,10 @@ spec:
     - name: kind
       value: task
     - name: name
-      value: create-vm-from-template
+      value: create-vm-from-manifest
     - name: version
       value: v0.18.0
   params:
-  - name: templateName
-    value: vm-template-example
-  - name: templateParams
-    value:
-      - 'NAME:example-vm'
-  - name: ownDataVolumes
-    value:
-      - example-dv
+  - name: manifest
+    value: |
+      <VM manifest>

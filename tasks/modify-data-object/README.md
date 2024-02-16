@@ -19,7 +19,50 @@ This task modifies a data object (DataVolumes or DataSources).
 
 ### Usage
 
-Please see [examples](examples) on how to modify data objects.
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: modify-data-object-taskrun-resolver-
+spec:
+    params:
+    -   name: waitForSuccess
+        value: 'true'
+    -   name: manifest
+        value: <DV or DS manifest>
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: modify-data-object
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
+
+As an example for `manifest` parameter, you can use this DV definition:
+```
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+    generateName: example-dv-
+spec:
+    pvc:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+            requests:
+                storage: 100Mi
+        volumeMode: Filesystem
+    source:
+        blank: {}
+```
 
 ### Usage in different namespaces
 
@@ -72,3 +115,7 @@ subjects:
     name: modify-data-object-task
 ---
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

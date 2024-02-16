@@ -2,12 +2,21 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  name: generate-ssh-keys-advanced-taskrun
+  generateName: generate-ssh-keys-advanced-taskrun-resolver-
 spec:
-  serviceAccountName: generate-ssh-keys-task
   taskRef:
-    kind: Task
-    name: generate-ssh-keys
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: generate-ssh-keys
+    - name: version
+      value: v0.18.0
   params:
     - name: publicKeySecretName
       value: my-client-public-secret

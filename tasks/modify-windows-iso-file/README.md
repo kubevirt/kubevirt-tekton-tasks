@@ -11,5 +11,31 @@ bootloader will not require any key pres.
 
 ### Usage
 
-Please see [examples](examples) on how to run iso modification task.
-The task run has to specify spec.podTemplate.securityContext! See [examples](examples) for example how to specify it.
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: modify-windows-iso-file-taskrun-resolver-
+spec:
+    params:
+    -   name: pvcName
+        value: w11
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: modify-windows-iso-file
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

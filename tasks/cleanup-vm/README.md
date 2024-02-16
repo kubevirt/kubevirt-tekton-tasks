@@ -41,12 +41,45 @@ Please see [secret](examples/secrets) examples.
 
 ### Usage
 
-Please see [examples](examples).
-
-#### Specific examples
-
-- [delete a VM](examples/taskruns/cleanup-vm-simple-taskrun.yaml)
-- [stop postgresql service over ssh and stop a VM](examples/taskruns/cleanup-vm-with-ssh-taskrun.yaml)
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: cleanup-vm-taskrun-resolver-
+spec:
+    params:
+    -   name: vmName
+        value: vm-example
+    -   name: secretName
+        value: ssh-secret
+    -   name: stop
+        value: 'true'
+    -   name: delete
+        value: 'false'
+    -   name: timeout
+        value: 10m
+    -   name: command
+        value:
+        - systemctl
+    -   name: args
+        value:
+        - stop
+        - postgresql
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: cleanup-vm
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
 
 ### Usage in different namespaces
 
@@ -95,3 +128,7 @@ subjects:
     name: cleanup-vm-task
 ---
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  generateName: create-vm-from-template-taskrun-
+  generateName: create-vm-from-template-taskrun-resolver-
 spec:
   taskRef:
     resolver: hub

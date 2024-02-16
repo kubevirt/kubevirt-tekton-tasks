@@ -39,7 +39,32 @@ Please see [RBAC permissions for running the tasks](../../docs/tasks-rbac-permis
 
 ### Usage
 
-Please see [examples](examples) on how to do a copy template from a template.
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: modify-vm-template-taskrun-resolver-
+spec:
+    params:
+    -   name: templateName
+        value: vm-template-example
+    -   name: memory
+        value: 2G
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: modify-vm-template
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
 
 ### Usage in different namespaces
 
@@ -79,3 +104,7 @@ subjects:
     name: modify-vm-template-task
 ---
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

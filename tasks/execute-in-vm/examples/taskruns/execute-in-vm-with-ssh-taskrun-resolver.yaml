@@ -2,12 +2,21 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  name: execute-in-vm-with-ssh-taskrun
+  generateName: execute-in-vm-with-ssh-taskrun-resolver-
 spec:
-  serviceAccountName: execute-in-vm-task
   taskRef:
-    kind: Task
-    name: execute-in-vm
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: execute-in-vm
+    - name: version
+      value: v0.18.0
   params:
     - name: vmName
       value: vm-example

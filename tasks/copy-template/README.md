@@ -2,7 +2,7 @@
 
 #### Task is deprecated and will be removed in future versions.
 
-This task copies a template.
+This task copies a KubeVirt Virtual Machine template. 
 A bundle of predefined templates to use can be found in [Common Templates](https://github.com/kubevirt/common-templates) project.
 
 ### Parameters
@@ -20,7 +20,32 @@ A bundle of predefined templates to use can be found in [Common Templates](https
 
 ### Usage
 
-Please see [examples](examples) on how to copy a template.
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: copy-template-taskrun-resolver-
+spec:
+    params:
+    -   name: sourceTemplateName
+        value: source-vm-template-example
+    -   name: targetTemplateName
+        value: target-vm-template-example
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: copy-template
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
 
 ### Usage in different namespaces
 
@@ -61,3 +86,7 @@ subjects:
     name: copy-template-task
 ---
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

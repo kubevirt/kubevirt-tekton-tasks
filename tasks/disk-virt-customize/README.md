@@ -11,7 +11,32 @@ This task uses [virt-customize](https://libguestfs.org/virt-customize.1.html) to
 
 ### Usage
 
-Please see [examples](examples)
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: disk-virt-customize-taskrun-
+spec:
+    params:
+    -   name: pvc
+        value: example-pvc
+    -   name: customizeCommands
+        value: install make,ansible
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: disk-virt-customize
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
 
 #### Common Errors
 
