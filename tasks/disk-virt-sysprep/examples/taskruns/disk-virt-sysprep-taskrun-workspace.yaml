@@ -6,7 +6,7 @@ type: Opaque
 stringData:
   password: mysecretpassword
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
   name: disk-virt-sysprep-taskrun-workspace
