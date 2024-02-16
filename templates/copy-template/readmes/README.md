@@ -2,7 +2,7 @@
 
 #### Task is deprecated and will be removed in future versions.
 
-This task copies a template.
+This task copies a KubeVirt Virtual Machine template. 
 A bundle of predefined templates to use can be found in [Common Templates](https://github.com/kubevirt/common-templates) project.
 
 ### Parameters
@@ -19,7 +19,9 @@ A bundle of predefined templates to use can be found in [Common Templates](https
 
 ### Usage
 
-Please see [examples](examples) on how to copy a template.
+Task run using resolver:
+```
+{{ task_run_resolver_yaml | to_nice_yaml }}```
 
 ### Usage in different namespaces
 
@@ -30,3 +32,7 @@ You can use task to do actions in different namespace. To do that, tasks require
 {{ item | to_nice_yaml }}---
 {% endfor %}
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

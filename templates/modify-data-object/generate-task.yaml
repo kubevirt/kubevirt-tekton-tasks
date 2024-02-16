@@ -52,6 +52,8 @@
         rbac_yaml: "{{ lookup('file', rbac_path) | from_yaml_all }}"
         task_run_resolver_path: "{{ examples_taskruns_output_dir }}/{{ task_name }}-taskrun-resolver.yaml"
         task_run_resolver_yaml: "{{ lookup('file', task_run_resolver_path) | from_yaml }}"
+        dv_manifest_path: "{{ examples_templates_dir }}/dv.yaml"
+        dv_manifest_yaml: "{{ lookup('file', dv_manifest_path) | from_yaml }}"
     - name: "Delete readme tmp directory"
       file:
         path: "{{ readme_output_dir_tmp }}"

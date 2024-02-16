@@ -16,7 +16,13 @@ This task modifies a data object (DataVolumes or DataSources).
 
 ### Usage
 
-Please see [examples](examples) on how to modify data objects.
+Task run using resolver:
+```
+{{ task_run_resolver_yaml | to_nice_yaml }}```
+
+As an example for `manifest` parameter, you can use this DV definition:
+```
+{{ dv_manifest_yaml | to_nice_yaml }}```
 
 ### Usage in different namespaces
 
@@ -27,3 +33,7 @@ You can use task to do actions in different namespace. To do that, tasks require
 {{ item | to_nice_yaml }}---
 {% endfor %}
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

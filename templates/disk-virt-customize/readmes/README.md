@@ -10,7 +10,9 @@ This task uses [virt-customize](https://libguestfs.org/virt-customize.1.html) to
 
 ### Usage
 
-Please see [examples](examples)
+Task run using resolver:
+```
+{{ task_run_resolver_yaml | to_nice_yaml }}```
 
 #### Common Errors
 

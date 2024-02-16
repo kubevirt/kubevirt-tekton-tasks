@@ -41,15 +41,13 @@ Please see [secret](examples/secrets) examples.
 
 ### Usage
 
-Please see [examples](examples).
-
-#### Specific examples
-
+Task run using resolver:
 {% if is_cleanup %}
-- [delete a VM](examples/taskruns/cleanup-vm-simple-taskrun.yaml)
-- [stop postgresql service over ssh and stop a VM](examples/taskruns/cleanup-vm-with-ssh-taskrun.yaml)
+```
+{{ ssh_task_run_resolver_yaml | to_nice_yaml }}```
 {% else %}
-- [start postgresql service over ssh](examples/taskruns/execute-in-vm-with-ssh-taskrun.yaml)
+```
+{{ ssh_task_run_resolver_yaml | to_nice_yaml }}```
 {% endif %}
 
 ### Usage in different namespaces
@@ -61,3 +59,7 @@ You can use task to do actions in different namespace. To do that, tasks require
 {{ item | to_nice_yaml }}---
 {% endfor %}
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

@@ -9,7 +9,7 @@ stringData:
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  name: {{ item.name }}
+  generateName: {{ item.name }}-
 spec:
   taskRef:
     kind: Task
@@ -18,7 +18,7 @@ spec:
     - name: pvc
       value: example-pvc
     - name: customizeCommands
-      value: |
+      value: |-
         update
         install make,ansible
         delete /var/cache/dnf

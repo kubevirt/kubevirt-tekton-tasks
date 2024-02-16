@@ -8,10 +8,11 @@ This task uses [virt-sysprep](https://libguestfs.org/virt-sysprep.1.html) to run
 - **{{ item.name }}**: {{ item.description | replace('"', '`') }}
 {% endfor %}
 
-
 ### Usage
 
-Please see [examples](examples)
+Task run using resolver:
+```
+{{ task_run_resolver_yaml | to_nice_yaml }}```
 
 #### Common Errors
 

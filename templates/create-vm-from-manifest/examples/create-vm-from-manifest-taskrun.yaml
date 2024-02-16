@@ -2,12 +2,21 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  name: {{ item.taskrun_with_flavor_name }}
+  generateName: {{ item.taskrun_with_flavor_name }}-
 spec:
-  serviceAccountName: {{ sa_name }}
   taskRef:
-    kind: Task
-    name: {{ task_name }}
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: {{ task_name }}
+    - name: version
+      value: {{ version }}
   params:
   - name: manifest
     value: |
