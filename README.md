@@ -9,32 +9,16 @@ This repository provides KubeVirt-specific Tekton tasks, which focus on:
 
 ## Deployment
 
-### On Kubernetes
-
 In order to install the KubeVirt Tekton tasks in the active namespace you need to apply the following manifest.
 You have to repeat this for every namespace in which you'd like to run the tasks.
 
 ```bash
 VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt-tekton-tasks/releases | \
             jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
-kubectl apply -f "https://github.com/kubevirt/kubevirt-tekton-tasks/releases/download/${VERSION}/kubevirt-tekton-tasks-kubernetes.yaml"
+kubectl apply -f "https://github.com/kubevirt/kubevirt-tekton-tasks/releases/download/${VERSION}/kubevirt-tekton-tasks.yaml"
 ```
 
 Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) if the pipeline needs to create/access resources (VMs, PVCs, etc.) in a different namespace other than the one the pipeline runs in.
-
-### On OKD
-
-In order to install the KubeVirt Tekton tasks with additional OKD-specific tasks in the active namespace you need to apply the following manifest.
-You have to repeat this for every namespace in which you'd like to run the tasks.
-
-```bash
-VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt-tekton-tasks/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
-kubectl apply -f "https://github.com/kubevirt/kubevirt-tekton-tasks/releases/download/${VERSION}/kubevirt-tekton-tasks-okd.yaml"
-```
-
-Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) if the pipeline needs to create/access resources (VMs, PVCs, etc.) in a different namespace other than the one the pipeline runs in.
-
 
 ## Usage
 

@@ -29,26 +29,15 @@ jobs:
           export RELEASE_VERSION="${{ steps.get_release.outputs.tag_name }}"
           make release
 
-      - name: Upload kubernetes manifest
-        id: kubernetes-manifest 
+      - name: Upload manifest
+        id: manifest
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: manifests/kubernetes/kubevirt-tekton-tasks-kubernetes.yaml
-          asset_name: kubevirt-tekton-tasks-kubernetes.yaml
-          asset_content_type: text/plain
-
-      - name: Upload okd manifest
-        id: okd-manifest  
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: manifests/okd/kubevirt-tekton-tasks-okd.yaml
-          asset_name: kubevirt-tekton-tasks-okd.yaml
+          asset_path: manifests/kubevirt-tekton-tasks.yaml
+          asset_name: kubevirt-tekton-tasks.yaml
           asset_content_type: text/plain
 
       - name: Update tekton tasks manifests

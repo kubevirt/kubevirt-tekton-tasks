@@ -19,13 +19,6 @@ if ! echo "${TASK_ENV_VAR}" |  grep -qE "^[A-Z_]+_IMAGE$"; then
   exit 1
 fi
 
-read -p "Is it only OKD task? true/false: " ONLY_OKD
-
-if ! echo "${ONLY_OKD}" |  grep -qE "^true$|^false$"; then
-  echo "Invalid bool value! Should comply with ^true$|^false$ regex" 1>&2
-  exit 1
-fi
-
 CONFIG_FILE="${REPO_DIR}/configs/${TASK_NAME}.yaml"
 
 if [ ! -f "${CONFIG_FILE}" ]; then
@@ -35,10 +28,6 @@ task_name: ${TASK_NAME}
 task_category: ${TASK_NAME}
 main_image: quay.io/kubevirt/tekton-tasks
 EOF
-fi
-
-if [[ "${ONLY_OKD}" == "true" ]]; then
-  echo "is_okd: true" >> "${CONFIG_FILE}"
 fi
 
 mkdir -p "${REPO_DIR}/modules/${TASK_NAME}"

@@ -16,7 +16,6 @@ DRY_RUN="${DRY_RUN:=false}"
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 RESOURCE_TYPES=(manifests examples readme)
-RELEASE_TYPES=(kubernetes okd)
 
 if [[ $# -eq 0 ]]; then
   visit "${REPO_DIR}/templates"
@@ -53,8 +52,7 @@ function generateTaskResources() {
 }
 
 function combineTaskManifestsIntoRelease() {
-  for RELEASE_TYPE in ${RELEASE_TYPES[*]}; do
-    RESULT_DIR="${REPO_DIR}/manifests/${RELEASE_TYPE}"
+    RESULT_DIR="${REPO_DIR}/manifests/"
     if [ "${DRY_RUN}" == "false" ]; then
       rm -rf "${RESULT_DIR}"
     else
@@ -62,19 +60,12 @@ function combineTaskManifestsIntoRelease() {
     fi
 
     mkdir -p "${RESULT_DIR}"
-    RESULT_FILE="${RESULT_DIR}/kubevirt-tekton-tasks-${RELEASE_TYPE}.yaml"
+    RESULT_FILE="${RESULT_DIR}/kubevirt-tekton-tasks.yaml"
     visit "${REPO_DIR}/tasks"
       for TASK_NAME in *; do
-        CONFIG_FILE="../configs/${TASK_NAME}.yaml"
-        IS_TASK_OKD="$(sed -n  's/^is_okd *: *//p' ${CONFIG_FILE})"
-        if [ "${RELEASE_TYPE}" != okd ] && [ "${IS_TASK_OKD}" == true ]; then
-          continue
-        fi
-
         cat "${TASK_NAME}"/*.yaml >> "${RESULT_FILE}"
       done
     leave
-  done
 }
 
 generateTaskResources
