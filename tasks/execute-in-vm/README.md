@@ -37,11 +37,39 @@ Please see [secret](examples/secrets) examples.
 
 ### Usage
 
-Please see [examples](examples).
-
-#### Specific examples
-
-- [start postgresql service over ssh](examples/taskruns/execute-in-vm-with-ssh-taskrun.yaml)
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: execute-in-vm-with-ssh-taskrun-resolver-
+spec:
+    params:
+    -   name: vmName
+        value: vm-example
+    -   name: secretName
+        value: ssh-secret
+    -   name: command
+        value:
+        - systemctl
+    -   name: args
+        value:
+        - start
+        - postgresql.service
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: execute-in-vm
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
 
 ### Usage in different namespaces
 
@@ -89,3 +117,7 @@ subjects:
     name: execute-in-vm-task
 ---
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

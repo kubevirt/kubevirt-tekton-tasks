@@ -1,0 +1,33 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  labels:
+    kubevirt.io/vm: vm-fedora
+  generateName: vm-fedora-
+spec:
+  running: false
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: vm-fedora
+    spec:
+      domain:
+        memory:
+          guest: 1Gi
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: containerdisk
+          - disk:
+              bus: virtio
+            name: cloudinitdisk
+      volumes:
+      - containerDisk:
+          image: quay.io/containerdisks/fedora:latest
+        name: containerdisk
+      - cloudInitNoCloud:
+          userData: |
+            #!/bin/sh
+            echo 'printed from cloud-init userdata'
+        name: cloudinitdisk

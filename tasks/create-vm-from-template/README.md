@@ -22,7 +22,36 @@ A bundle of predefined templates to use can be found in [Common Templates](https
 
 ### Usage
 
-Please see [examples](examples) on how to create VMs from a template.
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: create-vm-from-template-taskrun-resolver-
+spec:
+    params:
+    -   name: templateName
+        value: vm-template-example
+    -   name: templateParams
+        value:
+        - NAME:example-vm
+    -   name: ownDataVolumes
+        value:
+        - example-dv
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: create-vm-from-template
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
 
 ### Usage in different namespaces
 
@@ -96,3 +125,7 @@ subjects:
     name: create-vm-from-template-task
 ---
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

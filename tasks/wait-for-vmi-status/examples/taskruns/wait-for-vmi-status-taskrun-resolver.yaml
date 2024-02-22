@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  generateName: create-vm-from-template-taskrun-
+  generateName: wait-for-vmi-status-taskrun-resolver-
 spec:
   taskRef:
     resolver: hub
@@ -14,15 +14,13 @@ spec:
     - name: kind
       value: task
     - name: name
-      value: create-vm-from-template
+      value: wait-for-vmi-status
     - name: version
       value: v0.18.0
   params:
-  - name: templateName
-    value: vm-template-example
-  - name: templateParams
-    value:
-      - 'NAME:example-vm'
-  - name: ownDataVolumes
-    value:
-      - example-dv
+    - name: vmiName
+      value: example-vm
+    - name: successCondition
+      value: "status.phase == Succeeded"
+    - name: failureCondition
+      value: "status.phase in (Failed, Unknown)"

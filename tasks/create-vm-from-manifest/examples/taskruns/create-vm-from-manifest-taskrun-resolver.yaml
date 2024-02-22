@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  generateName: {{ item.taskrun_with_flavor_name }}-
+  generateName: create-vm-from-manifest-taskrun-resolver-
 spec:
   taskRef:
     resolver: hub
@@ -14,11 +14,10 @@ spec:
     - name: kind
       value: task
     - name: name
-      value: {{ task_name }}
+      value: create-vm-from-manifest
     - name: version
-      value: {{ version }}
+      value: v0.18.0
   params:
-  - name: sourceTemplateName
-    value: source-vm-template-example
-  - name: targetTemplateName
-    value: target-vm-template-example
+  - name: manifest
+    value: |
+      <VM manifest>

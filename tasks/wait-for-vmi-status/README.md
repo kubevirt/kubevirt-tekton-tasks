@@ -11,7 +11,34 @@ This task waits for a specific status of a VirtualMachineInstance (VMI) and fail
 
 ### Usage
 
-Please see [examples](examples)
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: wait-for-vmi-status-taskrun-resolver-
+spec:
+    params:
+    -   name: vmiName
+        value: example-vm
+    -   name: successCondition
+        value: status.phase == Succeeded
+    -   name: failureCondition
+        value: status.phase in (Failed, Unknown)
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: wait-for-vmi-status
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
 
 ### Usage in different namespaces
 
@@ -50,3 +77,7 @@ subjects:
     name: wait-for-vmi-status-task
 ---
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

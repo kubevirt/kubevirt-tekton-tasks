@@ -9,7 +9,7 @@ stringData:
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  name: disk-virt-customize-taskrun-workspace
+  generateName: disk-virt-customize-taskrun-workspace-
 spec:
   taskRef:
     kind: Task
@@ -18,7 +18,7 @@ spec:
     - name: pvc
       value: example-pvc
     - name: customizeCommands
-      value: |
+      value: |-
         update
         install make,ansible
         delete /var/cache/dnf

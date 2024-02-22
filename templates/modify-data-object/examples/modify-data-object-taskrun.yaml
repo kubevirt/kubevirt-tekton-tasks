@@ -2,28 +2,24 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  name: {{ item.taskrun_with_flavor_name }}
+  generateName: {{ item.taskrun_with_flavor_name }}-
 spec:
-  serviceAccountName: {{ sa_name }}
   taskRef:
-    kind: Task
-    name: {{ task_name }}
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: {{ task_name }}
+    - name: version
+      value: {{ version }}
   params:
     - name: waitForSuccess
       value: 'true'
     - name: manifest
       value: |
-        apiVersion: cdi.kubevirt.io/v1beta1
-        kind: DataVolume
-        metadata:
-          generateName: example-dv-
-        spec:
-          pvc:
-            accessModes:
-              - ReadWriteOnce
-            resources:
-              requests:
-                storage: 100Mi
-            volumeMode: Filesystem
-          source:
-            blank: {}
+        <DV or DS manifest>

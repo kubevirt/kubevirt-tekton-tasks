@@ -2,16 +2,24 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  name: {{ item }}
+  generateName: {{ item.name }}-
 spec:
   taskRef:
-    kind: Task
-    name: {{ task_name }}
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: {{ task_name }}
+    - name: version
+      value: {{ version }}
   params:
     - name: pvc
       value: example-pvc
     - name: customizeCommands
-      value: |
-        update
+      value: |-
         install make,ansible
-        delete /var/cache/dnf

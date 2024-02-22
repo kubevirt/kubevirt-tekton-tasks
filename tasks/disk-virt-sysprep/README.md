@@ -9,10 +9,34 @@ This task uses [virt-sysprep](https://libguestfs.org/virt-sysprep.1.html) to run
 - **verbose**: Enable verbose mode and tracing of libguestfs API calls.
 - **additionalOptions**: Additional options to pass to virt-sysprep.
 
-
 ### Usage
 
-Please see [examples](examples)
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: disk-virt-sysprep-taskrun-
+spec:
+    params:
+    -   name: pvc
+        value: example-pvc
+    -   name: sysprepCommands
+        value: install make,ansible
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: disk-virt-sysprep
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
 
 #### Common Errors
 

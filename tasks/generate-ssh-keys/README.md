@@ -20,7 +20,39 @@ This task uses `ssh-keygen` to generate a private and public key pair
 
 ### Usage
 
-Please see [examples](examples)
+Task run using resolver:
+```
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+    generateName: generate-ssh-keys-advanced-taskrun-resolver-
+spec:
+    params:
+    -   name: publicKeySecretName
+        value: my-client-public-secret
+    -   name: privateKeySecretName
+        value: my-client-private-secret
+    -   name: privateKeyConnectionOptions
+        value:
+        - user:root
+        - disable-strict-host-key-checking:true
+        - additional-ssh-options:-p 8022
+    -   name: additionalSSHKeygenOptions
+        value: -t rsa-sha2-512 -b 4096
+    taskRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-tasks
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: generate-ssh-keys
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+```
 
 ### Usage in different namespaces
 
@@ -60,3 +92,7 @@ subjects:
     name: generate-ssh-keys-task
 ---
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.

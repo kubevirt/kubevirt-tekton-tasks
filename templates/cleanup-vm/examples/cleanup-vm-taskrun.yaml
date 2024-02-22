@@ -2,16 +2,24 @@
 apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
-  name: {{ item.taskrun_with_flavor_name }}
+  generateName: {{ item.taskrun_with_flavor_name }}-
 spec:
-  serviceAccountName: {{ sa_name }}
   taskRef:
-    kind: Task
-    name: {{ task_name }}
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: {{ task_name }}
+    - name: version
+      value: {{ version }}
   params:
     - name: vmName
       value: vm-example
-{% if item.taskrun_type == "SSH" %}
     - name: secretName
       value: {{ item.secret_name }}
     - name: stop
@@ -27,8 +35,3 @@ spec:
       value:
         - 'stop'
         - 'postgresql'
-{% endif %}
-{% if item.taskrun_type == "Simple" %}
-    - name: delete
-      value: "true"
-{% endif %}

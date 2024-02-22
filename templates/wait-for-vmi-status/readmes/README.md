@@ -14,7 +14,9 @@ This task waits for a specific status of a VirtualMachineInstance (VMI) and fail
 
 ### Usage
 
-Please see [examples](examples)
+Task run using resolver:
+```
+{{ task_run_resolver_yaml | to_nice_yaml }}```
 
 ### Usage in different namespaces
 
@@ -25,3 +27,7 @@ You can use task to do actions in different namespace. To do that, tasks require
 {{ item | to_nice_yaml }}---
 {% endfor %}
 ```
+
+### Platforms
+
+The Task can be run on linux/amd64 platform.
