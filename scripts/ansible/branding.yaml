@@ -1,0 +1,5 @@
+display_name_provider: "KubeVirt"
+provider: "KubeVirt"
+maintainer_name: "Karel Simon"
+maintainer_email: "ksimon@redhat.com"
+recommendation_url: "https://kubevirt.io/"

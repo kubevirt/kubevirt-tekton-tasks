@@ -6,6 +6,7 @@
     - ../../configs/create-vm-from-template.yaml
     - ../../scripts/ansible/enums.yaml
     - ../../scripts/ansible/common.yaml
+    - ../../scripts/ansible/branding.yaml
   vars:
     create_vm_from_manifest_manifest_templates_dir: ../create-vm-from-manifest/manifests
   tasks:
