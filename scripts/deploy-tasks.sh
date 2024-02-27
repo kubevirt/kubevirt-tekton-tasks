@@ -26,23 +26,20 @@ visit "${REPO_DIR}/tasks"
     if [ ! -d  "${TASK_NAME}" ]; then
       continue
     fi
-    CONFIG_FILE="${REPO_DIR}/configs/${TASK_NAME}.yaml"
-    MAIN_IMAGE="$(sed -n  's/^main_image *: *//p' "${CONFIG_FILE}"):${RELEASE_VERSION}"
-    CUSTOM_IMAGE="${TEKTON_TASKS_IMAGE}"
-
-    if [[ "${TASK_NAME}" =~ "disk-virt" ]]; then
-      CUSTOM_IMAGE="${TEKTON_TASKS_DISK_VIRT_IMAGE}"
-    fi
 
     # cleanup first
     kubectl delete -f manifests 2> /dev/null || true
 
     visit "${TASK_NAME}"
-
-      if [[ -z ${CUSTOM_IMAGE} ]]; then
+      if [[ -z ${TEKTON_TASKS_IMAGE} ]]; then
         kubectl apply -n ${DEPLOY_NAMESPACE} -f "${TASK_NAME}.yaml"
       else
-        sed "s!${MAIN_IMAGE}!${CUSTOM_IMAGE}!g" "${TASK_NAME}.yaml" | kubectl apply -n ${DEPLOY_NAMESPACE} -f -
+        TASKS_IMAGE="quay.io/kubevirt/tekton-tasks:${RELEASE_VERSION}"
+        DISK_VIRT_IMAGE="quay.io/kubevirt/tekton-tasks-disk-virt:${RELEASE_VERSION}"
+
+        sed "s!${TASKS_IMAGE}!${TEKTON_TASKS_IMAGE}!g" "${TASK_NAME}.yaml" | \
+        sed "s!${DISK_VIRT_IMAGE}!${TEKTON_TASKS_DISK_VIRT_IMAGE}!g" "${TASK_NAME}.yaml"  | \
+        kubectl apply -n ${DEPLOY_NAMESPACE} -f -
       fi
     leave
   done
