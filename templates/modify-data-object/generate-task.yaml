@@ -6,6 +6,7 @@
     - ../../configs/modify-data-object.yaml
     - ../../scripts/ansible/enums.yaml
     - ../../scripts/ansible/common.yaml
+    - ../../scripts/ansible/branding.yaml
   tasks:
     - name: Init
       include_tasks: "{{ repo_dir }}/scripts/ansible/init-task-generation.yaml"
