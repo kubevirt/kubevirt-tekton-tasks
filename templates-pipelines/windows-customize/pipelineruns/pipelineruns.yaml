@@ -1,0 +1,73 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: windows11-customize-run-
+spec:
+  pipelineRef:
+    resolver: hub
+    params:
+      - name: catalog
+        value: {{ pipelines_catalog }}
+      - name: type
+        value: {{ catalog_type }}
+      - name: kind
+        value: task
+      - name: name
+        value: {{ item.pipeline_name }}
+      - name: version
+        value: {{ version }}
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: windows2k22-customize-run-
+spec:
+  params:
+    - name: sourceDiskImageName
+      value: win2k22
+    - name: baseDvName
+      value: win2k22-customized
+    - name: preferenceName
+      value: windows.2k22
+    - name: customizeConfigMapName
+      value: windows-sqlserver
+  pipelineRef:
+    resolver: hub
+    params:
+      - name: catalog
+        value: {{ pipelines_catalog }}
+      - name: type
+        value: {{ catalog_type }}
+      - name: kind
+        value: task
+      - name: name
+        value: {{ item.pipeline_name }}
+      - name: version
+        value: {{ version }}
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: windows10-customize-run-
+spec:
+  params:
+    - name: sourceDiskImageName
+      value: win10
+    - name: baseDvName
+      value: win10-customized
+    - name: preferenceName
+      value: windows.10
+  pipelineRef:
+    resolver: hub
+    params:
+      - name: catalog
+        value: {{ pipelines_catalog }}
+      - name: type
+        value: {{ catalog_type }}
+      - name: kind
+        value: task
+      - name: name
+        value: {{ item.pipeline_name }}
+      - name: version
+        value: {{ version }}
