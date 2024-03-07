@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 function visit() {
-  pushd "${1}" > /dev/null
+  pushd "${1}" > /dev/null || return
 }
 
 function leave() {
-  popd > /dev/null
+  popd > /dev/null || return
 }
 
 export IS_OKD="false"

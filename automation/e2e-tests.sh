@@ -2,10 +2,7 @@
 
 set -ex
 
-export DEV_MODE="${DEV_MODE:-false}"
-export STORAGE_CLASS="${STORAGE_CLASS:-}"
 export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-e2e-tests-$(shuf -i10000-99999 -n1)}"
-export NUM_NODES=${NUM_NODES:-2}
 
 # See scripts/common.sh for IMAGE env variable names
 

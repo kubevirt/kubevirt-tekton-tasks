@@ -1,0 +1,23 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: windows2k22-installer-run-
+  labels:
+    pipelinerun: windows2k22-installer-run
+spec:
+  params:
+    - name: winImageDownloadURL
+      value: http://http-server/disk.img
+    - name: preferenceName
+      value: windows.2k22
+    - name: autounattendConfigMapName
+      value: windows2k22-autounattend
+    - name: baseDvName
+      value: win2k22
+    - name: isoDVName
+      value: win2k22
+    - name: baseDvNamespace
+      value: kubevirt
+  pipelineRef:
+    name: windows-efi-installer
