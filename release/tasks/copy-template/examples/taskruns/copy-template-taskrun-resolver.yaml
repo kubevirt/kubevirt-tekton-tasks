@@ -1,0 +1,24 @@
+---
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: copy-template-taskrun-resolver-
+spec:
+  taskRef:
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: copy-template
+    - name: version
+      value: v0.18.0
+  params:
+  - name: sourceTemplateName
+    value: source-vm-template-example
+  - name: targetTemplateName
+    value: target-vm-template-example

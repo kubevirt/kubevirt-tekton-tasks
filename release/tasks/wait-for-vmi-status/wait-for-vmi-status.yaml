@@ -1,0 +1,55 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt wait for VMI status"
+    tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: KubeVirt Tekton tasks maintainers
+        email: kubevirt-tekton-tasks@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
+  labels:
+    app.kubernetes.io/version: v0.18.0
+  name: wait-for-vmi-status
+spec:
+  description: >-
+    This tasks waits until KubeVirt virtual machine is in some 
+    state. It can be used in pipeline where user needs to wait until e.g. 
+    VM finish some installation.
+  params:
+    - name: vmiName
+      description: Name of a VirtualMachineInstance to wait for.
+      type: string
+    - name: vmiNamespace
+      description: Namespace of a VirtualMachineInstance to wait for. (defaults to manifest namespace or active namespace)
+      default: ""
+      type: string
+    - name: successCondition
+      default: ""
+      description: A label selector expression to decide if the VirtualMachineInstance (VMI) is in a success state. Eg. "status.phase == Succeeded". It is evaluated on each VMI update and will result in this task succeeding if true.
+    - name: failureCondition
+      default: ""
+      description: A label selector expression to decide if the VirtualMachineInstance (VMI) is in a failed state. Eg. "status.phase in (Failed, Unknown)". It is evaluated on each VMI update and will result in this task failing if true.
+  steps:
+    - name: wait-for-vmi-status
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
+      command:
+        - entrypoint
+      env:
+        - name: COMMAND
+          value: wait-for-vmi-status
+        - name: VMI_NAME
+          value: $(params.vmiName)
+        - name: VMI_NAMESPACE
+          value: $(params.vmiNamespace)
+        - name: SUCCESS_CONDITION
+          value: $(params.successCondition)
+        - name: FAILURE_CONDITION
+          value: $(params.failureCondition)

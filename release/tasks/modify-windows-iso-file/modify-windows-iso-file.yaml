@@ -1,0 +1,137 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt modify Windows iso"
+    tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: KubeVirt Tekton tasks maintainers
+        email: kubevirt-tekton-tasks@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
+  labels:
+    app.kubernetes.io/version: v0.18.0
+  name: modify-windows-iso-file
+spec:
+  description: >-
+    This tasks is modifying windows iso file. It replaces prompt 
+    bootloader with non prompt one. This helps with automation of 
+    windows installation which requires EFI - the prompt bootloader will not 
+    continue with installation until some key is pressed. The non prompt 
+    bootloader will not require any key press. This task is used in 
+    combination with KubeVirt. It is part of windows-efi-installer pipeline 
+    https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/examples/pipelines/windows-efi-installer.
+  params:
+    - name: pvcName
+      description: PersistentVolumeClaim which contains windows iso.
+      type: string
+      default: ""
+  steps:
+    - name: modify-iso-file
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.18.0"
+      script: |
+        #!/bin/bash
+        set -x
+
+        export LIBGUESTFS_PATH=/usr/local/lib/guestfs/appliance
+        export ISO_FILES_PATH="/tmp/extracted-iso-files"
+        export EFI_BOOT="${ISO_FILES_PATH}/efi/microsoft/boot"
+        export TARGET_IMG_FILE_PATH="tmp/target-pvc/disk.img"
+
+        guestfish -a ${TARGET_IMG_FILE_PATH} -m /dev/sda tar-out / - | tar xvf - -C ${ISO_FILES_PATH} -m --no-overwrite-dir --owner=$(id -u) --group=$(id -g) --no-same-permissions
+
+        if [ ! -f ${EFI_BOOT}/efisys_noprompt.bin ] || [ ! -f ${EFI_BOOT}/cdboot_noprompt.efi ]; then
+          echo "${EFI_BOOT}/efisys_noprompt.bin or ${EFI_BOOT}/cdboot_noprompt.efi not found in the iso file! Exiting"
+          exit 1
+        fi
+
+        chmod u+w "${ISO_FILES_PATH}/efi" "${ISO_FILES_PATH}/efi/microsoft" "${ISO_FILES_PATH}/efi/microsoft/boot"
+        chmod u+w "${EFI_BOOT}/efisys.bin" "${EFI_BOOT}/cdboot.efi" "${EFI_BOOT}/efisys_noprompt.bin" "${EFI_BOOT}/cdboot_noprompt.efi"
+
+        rm "${EFI_BOOT}/efisys.bin" "${EFI_BOOT}/cdboot.efi"
+
+        mv "${EFI_BOOT}/efisys_noprompt.bin" "${EFI_BOOT}/efisys.bin"
+        mv "${EFI_BOOT}/cdboot_noprompt.efi" "${EFI_BOOT}/cdboot.efi"
+      env:
+        - name: "LIBGUESTFS_BACKEND"
+          value: "direct"
+        - name: "HOME"
+          value: "/usr/local/lib/guestfs/appliance"
+      computeResources:
+        limits:
+          devices.kubevirt.io/kvm: '1'
+        requests:
+          devices.kubevirt.io/kvm: '1'
+      volumeMounts:
+        - mountPath: /tmp/target-pvc/
+          name: target-pvc
+        - mountPath: /tmp/extracted-iso-files/
+          name: extracted-iso-files
+    - name: create-iso-file
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
+      script: |
+        #!/bin/bash
+        set -ex
+        export ISO_FILES_PATH="/tmp/extracted-iso-files"
+        export ISO_FILE_PATH="/tmp/iso-file/disk.iso"
+
+        xorriso -as mkisofs -no-emul-boot \
+            -e "efi/microsoft/boot/efisys.bin" \
+            -boot-load-size 1 \
+            -iso-level 4 \
+            -J -l -D -N \
+            -joliet-long \
+            -relaxed-filenames \
+            -V "WINDOWS" \
+            -o ${ISO_FILE_PATH} ${ISO_FILES_PATH}
+      volumeMounts:
+        - mountPath: /tmp/extracted-iso-files/
+          name: extracted-iso-files
+        - mountPath: /tmp/iso-file/
+          name: iso-file
+    - name: convert-iso-file
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.18.0"
+      script: |
+        #!/bin/bash
+        set -x
+        export ISO_FILE_PATH="/tmp/iso-file/disk.iso"
+        export TARGET_IMG_FILE_PATH="/tmp/target-pvc/disk.img"
+
+        rm ${TARGET_IMG_FILE_PATH}
+        qemu-img convert -t writeback -p -O raw ${ISO_FILE_PATH} ${TARGET_IMG_FILE_PATH}
+      volumeMounts:
+        - mountPath: /tmp/target-pvc/
+          name: target-pvc
+        - mountPath: /tmp/iso-file/
+          name: iso-file
+  volumes:
+    - name: target-pvc
+      persistentVolumeClaim:
+        claimName: "$(params.pvcName)"
+    - name: extracted-iso-files
+      emptyDir:
+        sizeLimit: 12Gi
+    - name: iso-file
+      emptyDir:
+        sizeLimit: 12Gi

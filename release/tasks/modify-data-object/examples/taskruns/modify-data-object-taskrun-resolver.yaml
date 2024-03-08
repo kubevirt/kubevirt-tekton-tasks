@@ -1,0 +1,25 @@
+---
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: modify-data-object-taskrun-resolver-
+spec:
+  taskRef:
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: modify-data-object
+    - name: version
+      value: v0.18.0
+  params:
+    - name: waitForSuccess
+      value: 'true'
+    - name: manifest
+      value: |
+        <DV or DS manifest>

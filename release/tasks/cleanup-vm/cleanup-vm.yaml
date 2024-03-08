@@ -1,0 +1,95 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt cleanup VM"
+    tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: KubeVirt Tekton tasks maintainers
+        email: kubevirt-tekton-tasks@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
+  labels:
+    app.kubernetes.io/version: v0.18.0
+  name: cleanup-vm
+spec:
+  description: >-
+    Run commands in KubeVirt virtual machine.
+    This task can stop and delete VMs
+  params:
+    - description: Name of a VM to execute the action in.
+      name: vmName
+      type: string
+    - description: Namespace of a VM to execute the action in. (defaults to active namespace)
+      name: vmNamespace
+      type: string
+      default: ""
+    - description: Stops the VM after executing the commands when set to true.
+      name: stop
+      type: string
+      default: "true"
+    - description: Deletes the VM after executing the commands when set to true.
+      name: delete
+      type: string
+      default: "false"
+    - description: Timeout for the command/script (includes potential VM start). The VM will be stopped or deleted accordingly once the timout expires. Should be in a 3h2m1s format.
+      name: timeout
+      type: string
+      default: "30m"
+    - description: Secret to use when connecting to a VM.
+      name: secretName
+      type: string
+      default: "__empty__"
+    - description: Command to execute in a VM.
+      name: command
+      type: array
+      default: []
+    - description: Arguments of a command.
+      name: args
+      type: array
+      default: []
+    - description: Script to execute in a VM.
+      name: script
+      type: string
+      default: ""
+  steps:
+    - name: execute-in-vm
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
+      command:
+        - entrypoint
+      args:
+        - '--stop'
+        - $(params.stop)
+        - '--delete'
+        - $(params.delete)
+        - '--timeout'
+        - $(params.timeout)
+        - '--'
+        - $(params.command)
+        - $(params.args)
+      env:
+        - name: COMMAND
+          value: execute-in-vm
+        - name: VM_NAME
+          value: $(params.vmName)
+        - name: VM_NAMESPACE
+          value: $(params.vmNamespace)
+        - name: EXECUTE_SCRIPT
+          value: $(params.script)
+        - name: CONNECTION_SECRET_NAME
+          value: $(params.secretName)
+      volumeMounts:
+        - mountPath: /data/connectionsecret/
+          name: connectionsecret
+          readOnly: true
+  volumes:
+    - name: connectionsecret
+      secret:
+        secretName: $(params.secretName)
+        optional: true

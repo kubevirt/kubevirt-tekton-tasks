@@ -1,0 +1,75 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt
+    tekton.dev/displayName: "KubeVirt create VM from template"
+    tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: KubeVirt Tekton tasks maintainers
+        email: kubevirt-tekton-tasks@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
+    tekton.dev/deprecated: "true"
+  labels:
+    app.kubernetes.io/version: v0.18.0
+  name: create-vm-from-template
+spec:
+  description: >-
+    Automates creation of the KubeVirt virtual machine.
+    User can create VM from OpenShift template.
+    It is possible to immediatelly start the vm after creation with startVM parameter.
+  params:
+    - name: templateName
+      description: Name of an OKD template to create VM from.
+      type: string
+    - name: templateNamespace
+      description: Namespace of an OKD template to create VM from. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: templateParams
+      description: Template params to pass when processing the template manifest. Each param should have KEY:VAL format. Eg ["NAME:my-vm", "DESC:blue"]
+      default: []
+      type: array
+    - name: vmNamespace
+      description: Namespace where to create the VM. (defaults to active namespace)
+      default: ""
+      type: string
+    - name: startVM
+      description: Set to true or false to start / not start vm after creation. In case of runStrategy is set to Always, startVM flag is ignored.
+      default: ""
+      type: string
+    - name: runStrategy
+      description: Set runStrategy to VM. If runStrategy is set, vm.spec.running attribute is set to nil.
+      default: ""
+      type: string
+  results:
+    - name: name
+      description: The name of a VM that was created.
+    - name: namespace
+      description: The namespace of a VM that was created.
+  steps:
+    - name: createvm
+      image: "quay.io/kubevirt/tekton-tasks:v0.18.0"
+      command:
+        - create-vm
+      args:
+        - "--output=yaml"
+        - '--template-params'
+        - $(params.templateParams)
+      env:
+        - name: TEMPLATE_NAME
+          value: $(params.templateName)
+        - name: TEMPLATE_NAMESPACE
+          value: $(params.templateNamespace)
+        - name: VM_NAMESPACE
+          value: $(params.vmNamespace)
+        - name: START_VM
+          value: $(params.startVM)
+        - name: RUN_STRATEGY
+          value: $(params.runStrategy)

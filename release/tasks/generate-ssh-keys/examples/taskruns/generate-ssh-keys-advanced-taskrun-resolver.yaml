@@ -1,0 +1,31 @@
+---
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: generate-ssh-keys-advanced-taskrun-resolver-
+spec:
+  taskRef:
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: generate-ssh-keys
+    - name: version
+      value: v0.18.0
+  params:
+    - name: publicKeySecretName
+      value: my-client-public-secret
+    - name: privateKeySecretName
+      value: my-client-private-secret
+    - name: privateKeyConnectionOptions
+      value:
+        - 'user:root'
+        - 'disable-strict-host-key-checking:true'
+        - 'additional-ssh-options:-p 8022'
+    - name: additionalSSHKeygenOptions
+      value: '-t rsa-sha2-512 -b 4096'

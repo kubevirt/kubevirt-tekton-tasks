@@ -1,0 +1,22 @@
+---
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: modify-windows-iso-file-taskrun-resolver-
+spec:
+  taskRef:
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: modify-windows-iso-file
+    - name: version
+      value: v0.18.0
+  params:
+  - name: pvcName
+    value: w11

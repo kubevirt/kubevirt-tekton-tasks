@@ -1,0 +1,37 @@
+---
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: cleanup-vm-taskrun-resolver-
+spec:
+  taskRef:
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: cleanup-vm
+    - name: version
+      value: v0.18.0
+  params:
+    - name: vmName
+      value: vm-example
+    - name: secretName
+      value: ssh-secret
+    - name: stop
+      value: "true"
+    - name: delete
+      value: "false"
+    - name: timeout
+      value: 10m
+    - name: command
+      value:
+        - systemctl
+    - name: args
+      value:
+        - 'stop'
+        - 'postgresql'
