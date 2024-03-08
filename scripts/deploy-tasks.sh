@@ -16,7 +16,7 @@ fi
 # run only for specified tasks in script arguments
 # or default to all if no arguments specified
 
-visit "${REPO_DIR}/tasks"
+visit "${REPO_DIR}/release/tasks"
   if [[ $# -eq 0 ]]; then
     TASK_NAMES=(*)
   else

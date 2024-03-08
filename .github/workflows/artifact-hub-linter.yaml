@@ -1,12 +1,13 @@
-name: artifact hub linter
-on:
-  pull_request:
-    branches: [ main ]
+#Disable this job until https://github.com/artifacthub/hub/issues/3691 is resolved
+#name: artifact hub linter
+#on:
+#  pull_request:
+#    branches: [ main ]
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: run ah linter
-      run: make run-ah-linter
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v4
+#    - name: run ah linter
+#      run: make run-ah-linter

@@ -29,7 +29,7 @@ function generateTaskResources() {
   for TASK_NAME in ${TASK_NAMES[*]}; do
     visit "${REPO_DIR}/templates/${TASK_NAME}"
       ansible-playbook generate-task.yaml
-      DESTINATION_PARENT_DIR="${REPO_DIR}/tasks/${TASK_NAME}"
+      DESTINATION_PARENT_DIR="${REPO_DIR}/release/tasks/${TASK_NAME}"
       rm -rf "${DESTINATION_PARENT_DIR}"
       mkdir -p "${DESTINATION_PARENT_DIR}"
       for RESOURCE_TYPE in ${RESOURCE_TYPES[*]}; do
@@ -61,7 +61,7 @@ function combineTaskManifestsIntoRelease() {
 
     mkdir -p "${RESULT_DIR}"
     RESULT_FILE="${RESULT_DIR}/kubevirt-tekton-tasks.yaml"
-    visit "${REPO_DIR}/tasks"
+    visit "${REPO_DIR}/release/tasks"
       for TASK_NAME in *; do
         cat "${TASK_NAME}"/*.yaml >> "${RESULT_FILE}"
       done
