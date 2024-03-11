@@ -7,6 +7,7 @@
     - ../../scripts/ansible/enums.yaml
     - ../../scripts/ansible/common.yaml
     - ../../scripts/ansible/branding.yaml
+    - ../../scripts/ansible/variables.yaml
   vars:
     examples_secrets_output_dir: "{{ examples_output_dir }}/secrets"
     ssh_secret_name: "ssh-secret"

@@ -3,8 +3,7 @@
 set -ex
 
 export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-e2e-tests-$(shuf -i10000-99999 -n1)}"
-
-# See scripts/common.sh for IMAGE env variable names
+source "./automation/e2e-source.sh"
 
 ./automation/e2e-deploy-resources.sh
 

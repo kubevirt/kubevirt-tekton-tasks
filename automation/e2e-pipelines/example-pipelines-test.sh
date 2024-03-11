@@ -29,7 +29,9 @@ cp -L "$KUBECONFIG" /tmp/kubeconfig && export KUBECONFIG=/tmp/kubeconfig
 export DEPLOY_NAMESPACE=kubevirt
 
 if ! hash kubectl 2>/dev/null; then
-  pushd "$(dirname $(which oc))" || return
+  oc_path="$(which oc)"
+  dir_name="dirname ${oc_path}"
+  pushd "$(${dir_name})" || return
   ln -s oc kubectl
   popd || return
 fi

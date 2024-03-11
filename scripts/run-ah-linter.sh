@@ -11,7 +11,8 @@ curl -L "https://github.com/artifacthub/hub/releases/download/${AH_VERSION}/ah_$
 make copy-released-manifests
 
 ./ah/ah lint -k tekton-task -p release/tasks/
-#TODO uncomment when pipelines are migrated to this repo
-#./ah/ah lint -k tekton-pipeline -p release/pipelines/
+#AH linter does not support git base versioning
+#https://github.com/artifacthub/hub/issues/3691
+#./ah lint -k tekton-pipeline -p pipelines/
 
 rm -r ah

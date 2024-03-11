@@ -5,7 +5,7 @@ set -e
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 
-source "${SCRIPT_DIR}/common.sh"
+source "./scripts/common.sh"
 
 IMAGE_REGISTRY=""
 IN_CLUSTER_IMAGE_REGISTRY=""
@@ -49,3 +49,4 @@ export IMAGE="${IN_CLUSTER_IMAGE_REGISTRY}/${DEPLOY_NAMESPACE}/${IMAGE_NAME_AND_
 export TEKTON_TASKS_DISK_VIRT_IMAGE="${IMAGE}"
 
 "${REPO_DIR}/scripts/deploy-tasks.sh" "$@"
+"${REPO_DIR}/scripts/deploy-pipelines.sh"

@@ -1,0 +1,84 @@
+---
+- connection: local
+  hosts: 127.0.0.1
+  gather_facts: no
+  vars_files:
+  - ../scripts/ansible/common.yaml
+  - ../scripts/ansible/branding.yaml
+  - ../scripts/ansible/variables.yaml
+  vars:
+    use_resolver_in_manifests: "{{ lookup('ansible.builtin.env', 'USE_RESOLVER_IN_MANIFESTS', default=true) | bool }}"
+  tasks:
+    - name: Clean dist directory
+      file:
+        path: "{{ pipelines_output_dir }}"
+        state: absent
+
+    - name: Prepare directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ bios_pipeline_dir }}"
+        - "{{ customize_pipeline_dir }}"
+        - "{{ efi_pipeline_dir }}"
+        - "{{ bios_pipeline_dir }}/configmaps"
+        - "{{ customize_pipeline_dir }}/configmaps"
+        - "{{ efi_pipeline_dir }}/configmaps"
+        - "{{ bios_pipeline_dir }}/pipelineruns"
+        - "{{ customize_pipeline_dir }}/pipelineruns"
+        - "{{ efi_pipeline_dir }}/pipelineruns"
+
+    - name: "copy config maps"
+      template:
+        src: "{{ item }}/configmaps/{{ item }}-configmaps.yaml"
+        dest: "{{ pipelines_output_dir }}/{{ item }}/configmaps/{{ item }}-configmaps.yaml"
+        mode: "{{ default_file_mode }}"
+      with_items:
+        - "{{ efi_pipeline_name }}"
+        - "{{ bios_pipeline_name }}"
+        - "{{ customize_pipeline_name }}"
+
+    - name: "copy manifests"
+      template:
+        src: "{{ item }}/manifests/{{ item }}.yaml"
+        dest: "{{ pipelines_output_dir }}/{{ item }}/{{ item }}.yaml"
+        mode: "{{ default_file_mode }}"
+      with_items:
+        - "{{ efi_pipeline_name }}"
+        - "{{ bios_pipeline_name }}"
+        - "{{ customize_pipeline_name }}"
+
+    - name: "copy pipelineruns"
+      template:
+        src: "{{ item.pipeline_name }}/pipelineruns/pipelineruns.yaml"
+        dest: "{{ pipelines_output_dir }}/{{ item.pipeline_name }}/pipelineruns/pipelineruns.yaml"
+        mode: "{{ default_file_mode }}"
+      with_items:
+        - { pipeline_name: "{{ efi_pipeline_name }}" }
+        - { pipeline_name: "{{ bios_pipeline_name }}" }
+        - { pipeline_name: "{{ customize_pipeline_name }}" }
+    
+    - name: "copy get iso URL script"
+      template:
+        src: "{{ item.pipeline_name }}/getisourl.py"
+        dest: "{{ pipelines_output_dir }}/{{ item.pipeline_name }}/getisourl.py"
+        mode: "{{ default_file_mode }}"
+      with_items:
+        - { pipeline_name: "{{ efi_pipeline_name }}" }
+        - { pipeline_name: "{{ bios_pipeline_name }}" }
+    
+    - name: Generate README
+      template:
+        src: "{{ item.pipeline_name }}/README.md"
+        dest: "{{ pipelines_output_dir }}/{{ item.pipeline_name }}/README.md"
+        mode: "{{ default_file_mode }}"
+      vars:
+        configmaps_path: "{{ pipelines_output_dir }}/{{ item.pipeline_name }}/configmaps/{{ item.pipeline_name }}-configmaps.yaml"
+        configmaps_yaml: "{{ lookup('file', configmaps_path) | from_yaml_all }}"
+        pipeline_runs_path: "{{ pipelines_output_dir }}/{{ item.pipeline_name }}/pipelineruns/pipelineruns.yaml"
+        pipeline_runs_yaml: "{{ lookup('file', pipeline_runs_path) | from_yaml_all }}"
+      with_items:
+        - { pipeline_name: "{{ efi_pipeline_name }}" }
+        - { pipeline_name: "{{ bios_pipeline_name }}" }
+        - { pipeline_name: "{{ customize_pipeline_name }}" }

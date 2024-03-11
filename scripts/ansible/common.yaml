@@ -13,3 +13,14 @@ sa_name: "{{ role_name }}"
 role_binding_name: "{{ role_name }}"
 default_file_mode: "0644"
 version: "{{ lookup('env','RELEASE_VERSION')| default('latest', true) }}"
+
+windows10: windows10
+windows11: windows11
+windows2k22: windows2k22
+pipelines_output_dir: ../release/pipelines
+efi_pipeline_name: windows-efi-installer
+bios_pipeline_name: windows-bios-installer
+customize_pipeline_name: windows-customize
+efi_pipeline_dir: "{{pipelines_output_dir}}/{{ efi_pipeline_name }}"
+bios_pipeline_dir: "{{pipelines_output_dir}}/{{ bios_pipeline_name }}"
+customize_pipeline_dir: "{{pipelines_output_dir}}/{{ customize_pipeline_name }}"
