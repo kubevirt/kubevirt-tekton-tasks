@@ -1,0 +1,15 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: windows11-customize-run-
+  labels:
+    pipelinerun: windows11-customize-run
+spec:
+  params:
+    - name: sourceDiskImageNamespace
+      value: kubevirt
+    - name: baseDvNamespace
+      value: kubevirt
+  pipelineRef:
+    name: windows-customize

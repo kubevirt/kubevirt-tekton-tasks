@@ -8,6 +8,9 @@ clean:
 generate-yaml-tasks:
 	./scripts/generate-yaml-tasks.sh
 
+generate-pipelines:
+	ansible-playbook templates-pipelines/generate-pipeline.yaml
+
 test-yaml-consistency:
 	./scripts/test-yaml-consistency.sh
 
@@ -68,6 +71,7 @@ vendor:
 	all \
 	clean \
 	generate-yaml-tasks \
+	generate-pipelines \
 	test-yaml-consistency \
 	deploy \
 	undeploy \

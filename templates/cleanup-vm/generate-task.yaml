@@ -7,6 +7,7 @@
     - ../../scripts/ansible/enums.yaml
     - ../../scripts/ansible/common.yaml
     - ../../scripts/ansible/branding.yaml
+    - ../../scripts/ansible/variables.yaml
   vars:
     execute_in_vm_manifest_templates_dir: ../execute-in-vm/manifests
     execute_in_vm_examples_templates_dir: ../execute-in-vm/examples

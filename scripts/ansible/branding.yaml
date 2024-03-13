@@ -1,5 +1,5 @@
-display_name_provider: "KubeVirt"
-provider: "KubeVirt"
-maintainer_name: "Karel Simon"
-maintainer_email: "ksimon@redhat.com"
-recommendation_url: "https://kubevirt.io/"
+display_name_provider: KubeVirt
+provider: KubeVirt
+maintainer_name: KubeVirt Tekton tasks maintainers
+maintainer_email: kubevirt-tekton-tasks@redhat.com
+recommendation_url: https://kubevirt.io/

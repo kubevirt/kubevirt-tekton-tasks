@@ -62,7 +62,22 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 
 ## Examples
 
-#### [Unit Tester Pipeline](examples/pipelines/unit-tester) 
+#### [Windows BIOS Installer Pipeline](pipelines/windows-bios-installer)
+
+Downloads a Windows ISO file into a PVC and automatically installs Windows in BIOS mode by using a custom Answer file into a new base DataVolume.
+Supported Windows versions: Windows 10
+
+#### [Windows EFI Installer Pipeline](pipelines/windows-efi-installer)
+
+Downloads a Windows ISO file into a PVC and automatically installs Windows 11 or Server 2k22 with EFI enabled by using a custom Answer file into a new base DataVolume.
+Supported Windows versions: Windows 11, Server 2k22
+
+#### [Windows Customize Pipeline](pipelines/windows-customize)
+
+Applies customizations to an existing Windows 10, 11, Server 2k22 installation by using a custom Answer file and creates a new base DataVolume.
+Supported Windows versions: Windows 10, 11, Server 2k22
+
+#### [Unit Tester Pipeline](examples/pipelines/unit-tester) - Unmaintained
 
 Good unit tests are detached from the operating system and can run everywhere.
 However, this is not always the case. Your tests may require access to entire operating system, or run as root,
@@ -73,30 +88,18 @@ The pipeline creates a VM, connects to it over SSH and runs tests inside it.
 It also showcases the `finally` construct.
 
 
-#### [Server Deployer Pipeline](examples/pipelines/server-deployer)
+#### [Server Deployer Pipeline](examples/pipelines/server-deployer) - Unmaintained
 
 For complex application server deployments it might be easier to start the server as is in a VM rather than converting it to cloud-native application.
 
 This example shows how you can initialize/modify a PVC and deploy such application in a VM.
 
-#### [Virt-sysprep Updater Pipeline](examples/pipelines/virt-sysprep-updater)
+#### [Virt-sysprep Updater Pipeline](examples/pipelines/virt-sysprep-updater) - Unmaintained
 
 Virt-sysprep can be used for preparing VM images which can be then used as base images for other VMs.
 
 This example shows how you can update an operating system and seal VM's image by using virt-customize.
 Then, a VM is created from such image.
-
-#### [Windows bios Installer Pipeline](examples/pipelines/windows-bios-installer)
-
-Downloads a Windows Source ISO into a PVC and automatically installs Windows by using a custom Answer file into a new base DV.
-
-#### [Windows efi Installer Pipeline](examples/pipelines/windows-efi-installer)
-
-Downloads a Windows Source ISO into a PVC and automatically installs Windows 11, or 2k22 with efi enabled by using a custom Answer file into a new base DV.
-
-#### [Windows Customize Pipeline](examples/pipelines/windows10-customize)
-
-Applies customizations to an existing Windows 10, 11, 2k22 installation by using a custom Answer file and creates a new base DV.
 
 ## Development Guide
 
