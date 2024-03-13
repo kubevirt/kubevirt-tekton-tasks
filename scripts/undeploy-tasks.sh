@@ -5,7 +5,7 @@ REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 
 source "${SCRIPT_DIR}/common.sh"
 
-visit "${REPO_DIR}/tasks"
+visit "${REPO_DIR}/release/tasks"
   for TASK_NAME in *; do
     visit "${TASK_NAME}"
       kubectl delete -f manifests 2> /dev/null
