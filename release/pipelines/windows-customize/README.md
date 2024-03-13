@@ -1,0 +1,126 @@
+# Windows Customize Pipeline
+
+This Pipeline clones the DataVolume of a basic and generalized Windows 10, 11 or Server 2k22 installation and runs arbitrary customization commands through an unattend.xml after startup of the VirtualMachine. As an example a ConfigMap which installs Microsoft SQL Server Express and generalizes the VirtualMachine after (`windows-sqlserver`) and a ConfigMap that installs VSCode (`windows-vs-code`) are included.
+For basic setup after the first start of a customized VirtualMachine an example unattend.xml is included in the Pipeline's ConfigMap `windows10-unattend`, or `windows11-unattend`.
+
+This example Pipeline can be used for running Windows 10, 11 or Server 2k22 (or others - not tested!). Always adjust Pipeline parameters for the Windows version you are currently using (e.g. differe name, different base image name, etc.). It is possible to use `windows-sqlserver` ConfigMap for Windows 11 or Server 2k22 and vice versa (`windows-vs-code` for Windows 10 or Server 2k22).
+
+The provided reference ConfigMap (`windows-sqlserver`) boots Windows 10, 11 or Windows Server 2k22 into Audit mode, applies the customizations as part of Powershell script (ran by `SynchronousCommand`) and then generalizes the VirtualMachine again. The Powershell script can be adapted as desired to apply other customizations.
+
+## Prerequisites
+
+- KubeVirt `>=v1.0.0`
+- Tekton Pipelines `>=v0.43.0`
+
+### Prepare unattend.xml ConfigMap
+
+1. Supply, generate or use the default unattend.xml. For information on answer files see [Startup Scripts - KubeVirt User Guide](https://kubevirt.io/user-guide/virtual_machines/startup_scripts/#sysprep).
+2. Create a new ConfigMap with the unattend.xml
+3. Pass the name of the new ConfigMap to the PipelineRun with the parameter `customizeConfigMapName`.
+
+## Pipeline Description
+
+```
+  copy-vm-root-disk --- create-vm --- wait-for-vmi-status --- cleanup-vm
+```
+
+1. `copy-vm-root-disk` Task copies PVC defined in `sourceDiskImageName` and `sourceDiskImageNamespace` parameters.
+2. `create-vm` Task creates a VirtualMachine called `windows-customize-*` from the base DataVolume and with the customize ConfigMap attached as a CD-ROM (Pipeline parameter `customizeConfigMapName`).
+3. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
+4. `cleanup-vm` deletes the installer VirtualMachine (also in case of failure of the previous Tasks).
+5. The output artifact will be the `win*-customized` DataVolume with the customized Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used (depends on the applied customizations).
+6. The `windows11-unattend` ConfigMap can be used to boot the VirtualMachine into the Desktop (depends on the applied customizations).
+
+## How to run
+
+Pipeline runs with resolvers:
+```yaml
+oc create -f - <<EOF
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+    generateName: windows11-customize-run-
+spec:
+    pipelineRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-pipelines
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: windows-customize
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+EOF
+```
+```yaml
+oc create -f - <<EOF
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+    generateName: windows2k22-customize-run-
+spec:
+    params:
+    -   name: sourceDiskImageName
+        value: win2k22
+    -   name: baseDvName
+        value: win2k22-customized
+    -   name: preferenceName
+        value: windows.2k22
+    -   name: customizeConfigMapName
+        value: windows-sqlserver
+    pipelineRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-pipelines
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: windows-customize
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+EOF
+```
+```yaml
+oc create -f - <<EOF
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+    generateName: windows10-customize-run-
+spec:
+    params:
+    -   name: sourceDiskImageName
+        value: win10
+    -   name: baseDvName
+        value: win10-customized
+    -   name: preferenceName
+        value: windows.10
+    pipelineRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-pipelines
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: task
+        -   name: name
+            value: windows-customize
+        -   name: version
+            value: v0.18.0
+        resolver: hub
+EOF
+```
+
+### Usage in multiple namespaces
+
+When a user defines a different namespace in e.g. `baseDvNamespace`, then the serviceAccount under which the Pipeline is running will require additional permissions in that namespace. Required permissions to run Task in different namespace can be found in README of each Task.
+
+## Cancelling/Deleting PipelineRuns
+
+When running the example Pipelines, they create temporary objects (DataVolumes, VirtualMachines, etc.). Each Pipeline has its own clean up system which should keep the cluster clean from leftovers. In case user hard deletes or cancels running PipelineRun, the PipelineRun will not clean temporary objects and objects will stay in the cluster and then they have to be deleted manually. To prevent this behaviour, cancel the [PipelineRun gracefully](https://tekton.dev/docs/pipelines/pipelineruns/#gracefully-cancelling-a-pipelinerun). It triggers special Tasks, which remove temporary objects and keep only result DataVolume/PVC.

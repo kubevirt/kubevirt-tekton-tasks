@@ -9,8 +9,8 @@ metadata:
     tekton.dev/displayName: "KubeVirt execute in vm"
     tekton.dev/platforms: "linux/amd64"
     artifacthub.io/maintainers: |
-      - name: Karel Simon
-        email: ksimon@redhat.com
+      - name: KubeVirt Tekton tasks maintainers
+        email: kubevirt-tekton-tasks@redhat.com
     artifacthub.io/provider: KubeVirt
     artifacthub.io/recommendations: |
       - url: https://kubevirt.io/

@@ -1,0 +1,22 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: windows10-installer-run-
+spec:
+  params:
+    - name: winImageDownloadURL
+      value: ${WIN_IMAGE_DOWNLOAD_URL}
+  pipelineRef:
+    resolver: hub
+    params:
+      - name: catalog
+        value: kubevirt-tekton-pipelines
+      - name: type
+        value: artifact
+      - name: kind
+        value: task
+      - name: name
+        value: windows-bios-installer
+      - name: version
+        value: v0.18.0
