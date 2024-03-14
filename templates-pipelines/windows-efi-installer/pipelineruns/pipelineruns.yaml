@@ -15,11 +15,18 @@ spec:
       - name: type
         value: {{ catalog_type }}
       - name: kind
-        value: task
+        value: pipeline
       - name: name
         value: {{ item.pipeline_name }}
       - name: version
         value: {{ version }}
+  taskRunSpecs:
+    - pipelineTaskName: "modify-windows-iso-file"
+      podTemplate:
+        securityContext:
+          runAsUser: 1001
+          runAsGroup: 1001
+          fsGroup: 1001   
 ---
 apiVersion: tekton.dev/v1
 kind: PipelineRun
@@ -45,9 +52,16 @@ spec:
       - name: type
         value: {{ catalog_type }}
       - name: kind
-        value: task
+        value: pipeline
       - name: name
         value: {{ item.pipeline_name }}
       - name: version
         value: {{ version }}
+  taskRunSpecs:
+    - pipelineTaskName: "modify-windows-iso-file"
+      podTemplate:
+        securityContext:
+          runAsUser: 1001
+          runAsGroup: 1001
+          fsGroup: 1001     
   timeout: 1h0m0s

@@ -62,7 +62,7 @@ spec:
         -   name: type
             value: artifact
         -   name: kind
-            value: task
+            value: pipeline
         -   name: name
             value: windows-bios-installer
         -   name: version

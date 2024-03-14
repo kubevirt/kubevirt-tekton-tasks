@@ -78,12 +78,19 @@ spec:
         -   name: type
             value: artifact
         -   name: kind
-            value: task
+            value: pipeline
         -   name: name
             value: windows-efi-installer
         -   name: version
             value: v0.19.0
         resolver: hub
+    taskRunSpecs:
+    -   pipelineTaskName: modify-windows-iso-file
+        podTemplate:
+            securityContext:
+                fsGroup: 1001
+                runAsGroup: 1001
+                runAsUser: 1001
 EOF
 ```
 ```yaml
@@ -111,12 +118,19 @@ spec:
         -   name: type
             value: artifact
         -   name: kind
-            value: task
+            value: pipeline
         -   name: name
             value: windows-efi-installer
         -   name: version
             value: v0.19.0
         resolver: hub
+    taskRunSpecs:
+    -   pipelineTaskName: modify-windows-iso-file
+        podTemplate:
+            securityContext:
+                fsGroup: 1001
+                runAsGroup: 1001
+                runAsUser: 1001
     timeout: 1h0m0s
 EOF
 ```
