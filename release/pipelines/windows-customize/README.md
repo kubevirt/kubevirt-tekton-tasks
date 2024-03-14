@@ -50,7 +50,7 @@ spec:
         -   name: type
             value: artifact
         -   name: kind
-            value: task
+            value: pipeline
         -   name: name
             value: windows-customize
         -   name: version
@@ -81,7 +81,7 @@ spec:
         -   name: type
             value: artifact
         -   name: kind
-            value: task
+            value: pipeline
         -   name: name
             value: windows-customize
         -   name: version
@@ -110,7 +110,7 @@ spec:
         -   name: type
             value: artifact
         -   name: kind
-            value: task
+            value: pipeline
         -   name: name
             value: windows-customize
         -   name: version
