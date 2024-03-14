@@ -25,13 +25,15 @@ The provided reference ConfigMap (`windows-sqlserver`) boots Windows 10, 11 or W
 ```
 
 1. `copy-vm-root-disk` Task copies PVC defined in `sourceDiskImageName` and `sourceDiskImageNamespace` parameters.
-2. `create-vm` Task creates a VirtualMachine called `windows-customize-*` from the base DataVolume and with the customize ConfigMap attached as a CD-ROM (Pipeline parameter `customizeConfigMapName`).
+2. `create-vm` Task creates a VirtualMachine called `windows-customize-*` from the base DataVolume and with the customize ConfigMap attached as a CD-ROM (Pipeline parameter `customizeConfigMapName`). The VirtualMachine has to be created in the same namespace as the source DataVolume.
 3. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
 4. `cleanup-vm` deletes the installer VirtualMachine (also in case of failure of the previous Tasks).
 5. The output artifact will be the `win*-customized` DataVolume with the customized Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used (depends on the applied customizations).
 6. The `windows11-unattend` ConfigMap can be used to boot the VirtualMachine into the Desktop (depends on the applied customizations).
 
 ## How to run
+
+Before you create PipelineRuns, you must create ConfigMaps with an autounattend.xml in the same namespace in which the VirtualMachine will be created.
 
 Pipeline runs with resolvers:
 ```yaml

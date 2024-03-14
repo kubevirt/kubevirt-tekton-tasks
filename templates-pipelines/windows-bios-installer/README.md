@@ -32,13 +32,15 @@ The Pipeline implements this by spinning up a new VirtualMachine which boots fro
 1. `create-vm-root-disk` Task creates an empty DataVolume.
 2. `create-vm` Task creates a VirtualMachine called `windows-bios-installer-*`
    from the empty DataVolume and with the `windows-bios-installer-cd-rom` DataVolume attached as a CD-ROM.
-   A second DataVolume with the virtio-win ISO will also be attached (Pipeline parameter `virtioContainerDiskName`).
+   A second DataVolume with the virtio-win ISO will also be attached (Pipeline parameter `virtioContainerDiskName`). The VirtualMachine has to be created in the same namespace as the empty DataVolume.
 3. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
 4. `cleanup-vm` deletes the installer VirtualMachine and ISO DataVolume (also in case of failure of the previous Tasks).
 5. The output artifact will be the `win10` DataVolume with the basic Windows installation.
    It will boot into the Windows OOBE and needs to be setup further before it can be used.
 
 ## How to run
+
+Before you create PipelineRuns, you must create ConfigMaps with an autounattend.xml in the same namespace in which the VirtualMachine will be created.
 
 Pipeline run with resolver:
 {% for item in pipeline_runs_yaml %}
