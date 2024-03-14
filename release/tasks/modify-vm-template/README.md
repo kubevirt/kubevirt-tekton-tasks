@@ -62,7 +62,7 @@ spec:
         -   name: name
             value: modify-vm-template
         -   name: version
-            value: v0.18.0
+            value: v0.19.0
         resolver: hub
 ```
 
