@@ -32,7 +32,7 @@ spec:
         -   name: name
             value: modify-windows-iso-file
         -   name: version
-            value: v0.18.0
+            value: v0.19.0
         resolver: hub
 ```
 

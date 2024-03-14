@@ -16,7 +16,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.18.0
+    app.kubernetes.io/version: v0.19.0
   name: windows-customize
 spec:
   description: >-
@@ -75,7 +75,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: v0.18.0
+            value: v0.19.0
       params:
         - name: manifest
           value: |-
@@ -145,7 +145,7 @@ spec:
           - name: name
             value: create-vm-from-manifest
           - name: version
-            value: v0.18.0
+            value: v0.19.0
       runAfter:
         - copy-vm-root-disk
     - name: wait-for-vmi-status
@@ -173,7 +173,7 @@ spec:
           - name: name
             value: wait-for-vmi-status
           - name: version
-            value: v0.18.0
+            value: v0.19.0
   finally:
     - name: cleanup-vm
       params:
@@ -196,7 +196,7 @@ spec:
           - name: name
             value: cleanup-vm
           - name: version
-            value: v0.18.0
+            value: v0.19.0
   results:
     - name: baseDvName
       description: Name of the created base DataVolume

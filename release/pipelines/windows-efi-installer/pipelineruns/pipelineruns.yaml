@@ -19,7 +19,7 @@ spec:
       - name: name
         value: windows-efi-installer
       - name: version
-        value: v0.18.0
+        value: v0.19.0
 ---
 apiVersion: tekton.dev/v1
 kind: PipelineRun
@@ -49,5 +49,5 @@ spec:
       - name: name
         value: windows-efi-installer
       - name: version
-        value: v0.18.0
+        value: v0.19.0
   timeout: 1h0m0s

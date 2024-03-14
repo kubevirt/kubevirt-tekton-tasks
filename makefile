@@ -59,7 +59,7 @@ push-release-images:
 run-ah-linter:
 	./scripts/run-ah-linter.sh
 
-release: generate-yaml-tasks build-release-images push-release-images
+release: generate-yaml-tasks generate-pipelines build-release-images push-release-images
 
 vendor:
 	./scripts/vendor.sh

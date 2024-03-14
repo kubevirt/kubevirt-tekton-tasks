@@ -82,7 +82,7 @@ spec:
         -   name: name
             value: windows-efi-installer
         -   name: version
-            value: v0.18.0
+            value: v0.19.0
         resolver: hub
 EOF
 ```
@@ -115,7 +115,7 @@ spec:
         -   name: name
             value: windows-efi-installer
         -   name: version
-            value: v0.18.0
+            value: v0.19.0
         resolver: hub
     timeout: 1h0m0s
 EOF

@@ -16,7 +16,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.18.0
+    app.kubernetes.io/version: v0.19.0
   name: windows-efi-installer
 spec:
   description: >-
@@ -98,7 +98,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: v0.18.0
+            value: v0.19.0
     - name: modify-windows-iso-file
       params:
         - name: pvcName
@@ -118,7 +118,7 @@ spec:
           - name: name
             value: modify-windows-iso-file
           - name: version
-            value: v0.18.0
+            value: v0.19.0
     - name: create-vm-root-disk
       taskRef:
         resolver: hub
@@ -132,7 +132,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: v0.18.0
+            value: v0.19.0
       params:
         - name: manifest
           value: |-
@@ -214,7 +214,7 @@ spec:
           - name: name
             value: create-vm-from-manifest
           - name: version
-            value: v0.18.0
+            value: v0.19.0
     - name: wait-for-vmi-status
       params:
         - name: vmiName
@@ -239,7 +239,7 @@ spec:
           - name: name
             value: wait-for-vmi-status
           - name: version
-            value: v0.18.0
+            value: v0.19.0
       timeout: 2h0m0s
     - name: create-base-dv
       params:
@@ -281,7 +281,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: v0.18.0
+            value: v0.19.0
   finally:
     - name: cleanup-vm
       params:
@@ -303,7 +303,7 @@ spec:
           - name: name
             value: cleanup-vm
           - name: version
-            value: v0.18.0
+            value: v0.19.0
       timeout: 10m0s
     - name: delete-imported-iso
       params:
@@ -327,7 +327,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: v0.18.0
+            value: v0.19.0
     - name: delete-vm-rootdisk
       params:
         - name: deleteObject
@@ -350,7 +350,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: v0.18.0
+            value: v0.19.0
   results:
     - description: Name of the created base DataVolume
       name: baseDvName
