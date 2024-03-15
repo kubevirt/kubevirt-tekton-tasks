@@ -148,7 +148,7 @@ exist.
 
 #### Obtaining a download URL in an automated way
 
-The script [`getisourl.py`](https://github.com/kubevirt/kubevirt-tekton-tasks/blob/main/pipelines/windows-efi-installer/getisourl.py) can be used to automatically obtain a Windows 11 ISO download URL.
+The script [`getisourl.py`](https://github.com/kubevirt/kubevirt-tekton-tasks/blob/main/release/pipelines/windows-efi-installer/getisourl.py) can be used to automatically obtain a Windows 11 ISO download URL.
 
 The prerequisites are:
 
