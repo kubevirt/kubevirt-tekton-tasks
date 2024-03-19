@@ -30,6 +30,6 @@ main_image: quay.io/kubevirt/tekton-tasks
 EOF
 fi
 
-mkdir -p "${REPO_DIR}/modules/${TASK_NAME}"
+mkdir -p "${REPO_DIR}/cmd/${TASK_NAME}"
 
 echo "Update build/Containerfile file with new task name!"

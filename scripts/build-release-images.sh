@@ -8,7 +8,6 @@ if [ -z "${RELEASE_VERSION}" ]; then
 fi
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 
 source "${SCRIPT_DIR}/release-var.sh"
 source "${SCRIPT_DIR}/common.sh"
