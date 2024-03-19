@@ -8,12 +8,13 @@ RUN curl -L https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/l
 ENV PATH=$PATH:/usr/local/go/bin
 
 COPY . /src
+WORKDIR /src
 RUN mkdir /out
 
 RUN task_names=("disk-virt-customize" "disk-virt-sysprep"); \
     for TASK_NAME in ${task_names[@]}; do \
-        cd /src/modules/$TASK_NAME/; \
-        CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o /out/${TASK_NAME} cmd/${TASK_NAME}/main.go; \
+        echo "compiling $TASK_NAME"; \
+        CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o /out/${TASK_NAME} ./cmd/${TASK_NAME}; \
     done
 
 FROM quay.io/kubevirt/libguestfs-tools:v1.2.0
