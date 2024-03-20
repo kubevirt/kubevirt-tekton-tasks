@@ -19,4 +19,4 @@ spec:
       - name: name
         value: {{ item.pipeline_name }}
       - name: version
-        value: {{ version }}
+        value: {{ catalog_version }}
