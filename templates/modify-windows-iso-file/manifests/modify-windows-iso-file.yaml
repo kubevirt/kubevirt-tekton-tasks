@@ -26,7 +26,7 @@ spec:
     continue with installation until some key is pressed. The non prompt 
     bootloader will not require any key press. This task is used in 
     combination with KubeVirt. It is part of windows-efi-installer pipeline 
-    https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/examples/pipelines/windows-efi-installer.
+    https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-efi-installer.
   params:
     - name: pvcName
       description: PersistentVolumeClaim which contains windows iso.

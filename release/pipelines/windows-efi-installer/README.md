@@ -14,7 +14,7 @@ After the ISO is modified it creates a new VirtualMachine which boots from the m
 
 - KubeVirt `>=v1.0.0`
 - Tekton Pipelines `>=v0.43.0`
-- Apply ConfigMaps with Windows sysprep (or select one which you will need) - examples can be found here: https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/pipelines/windows-efi-installer/configmaps
+- Apply ConfigMaps with Windows sysprep (or select one which you will need) - examples can be found here: https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-efi-installer/configmaps
 
 
 ### Obtain Windows 11 ISO download URL
