@@ -1,3 +1,4 @@
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/kubevirt-tekton-tasks)](https://artifacthub.io/packages/search?repo=kubevirt-tekton-tasks) [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/kubevirt-tekton-pipelines)](https://artifacthub.io/packages/search?repo=kubevirt-tekton-pipelines)
 # KubeVirt Tekton Tasks
 
 [Tekton Pipelines](https://github.com/tektoncd/pipeline) are CI/CD-style pipelines for Kubernetes.
