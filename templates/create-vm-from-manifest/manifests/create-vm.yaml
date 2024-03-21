@@ -19,7 +19,7 @@ metadata:
     tekton.dev/deprecated: "true"
 {% endif %}
   labels:
-    app.kubernetes.io/version: {{ version }}
+    app.kubernetes.io/version: {{ catalog_version }}
   name: {{ task_name }}
 spec:
   description: >-

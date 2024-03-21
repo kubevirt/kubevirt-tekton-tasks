@@ -16,7 +16,7 @@ spec:
     - name: name
       value: {{ task_name }}
     - name: version
-      value: {{ version }}
+      value: {{ catalog_version }}
   params:
   - name: sourceTemplateName
     value: source-vm-template-example

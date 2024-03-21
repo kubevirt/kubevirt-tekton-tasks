@@ -16,7 +16,7 @@ metadata:
       - url: {{ recommendation_url }}
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: {{ version }}
+    app.kubernetes.io/version: {{ catalog_version }}
   name: windows-efi-installer
 spec:
   description: >-
@@ -99,7 +99,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: {{ version }}
+            value: {{ catalog_version }}
 {% else %}
         kind: Task
         name: modify-data-object
@@ -124,7 +124,7 @@ spec:
           - name: name
             value: modify-windows-iso-file
           - name: version
-            value: {{ version }}
+            value: {{ catalog_version }}
 {% else %}
         kind: Task
         name: modify-windows-iso-file
@@ -143,7 +143,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: {{ version }}
+            value: {{ catalog_version }}
 {% else %}
         kind: Task
         name: modify-data-object
@@ -230,7 +230,7 @@ spec:
           - name: name
             value: create-vm-from-manifest
           - name: version
-            value: {{ version }}
+            value: {{ catalog_version }}
 {% else %}
         kind: Task
         name: create-vm-from-manifest
@@ -260,7 +260,7 @@ spec:
           - name: name
             value: wait-for-vmi-status
           - name: version
-            value: {{ version }}
+            value: {{ catalog_version }}
 {% else %}
         kind: Task
         name: wait-for-vmi-status
@@ -307,7 +307,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: {{ version }}
+            value: {{ catalog_version }}
 {% else %}
         kind: Task
         name: modify-data-object
@@ -334,7 +334,7 @@ spec:
           - name: name
             value: cleanup-vm
           - name: version
-            value: {{ version }}
+            value: {{ catalog_version }}
 {% else %}
         kind: Task
         name: cleanup-vm
@@ -363,7 +363,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: {{ version }}
+            value: {{ catalog_version }}
 {% else %}
         kind: Task
         name: modify-data-object
@@ -391,7 +391,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: {{ version }}
+            value: {{ catalog_version }}
 {% else %}
         kind: Task
         name: modify-data-object
