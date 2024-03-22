@@ -6,14 +6,11 @@ if kubectl get namespace tekton-pipelines > /dev/null 2>&1; then
   exit 0
 fi
 
-KUBEVIRT_VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+KUBEVIRT_VERSION=v0.56.1
 
-CDI_VERSION=$(curl -s https://api.github.com/repos/kubevirt/containerized-data-importer/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+CDI_VERSION=v1.55.2
 
-TEKTON_VERSION=$(curl -s https://api.github.com/repos/tektoncd/operator/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+TEKTON_VERSION="v0.57.0"
 
 if kubectl get templates > /dev/null 2>&1; then
   # okd
