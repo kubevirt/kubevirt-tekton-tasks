@@ -35,6 +35,8 @@ The provided reference ConfigMap (`windows-sqlserver`) boots Windows 10, 11 or W
 
 Before you create PipelineRuns, you must create ConfigMaps with an autounattend.xml in the same namespace in which the VirtualMachine will be created.
 
+Update the `sourceDiskImageNamespace` parameter with the namespace where the source PVC is located and `baseDvNamespace` parameter with the namespace where the result DataVolume should be created. In case you define different namespaces than PipelineRun is created, please see #Usage in multiple namespaces paragraph.
+
 Pipeline runs with resolvers:
 {% for item in pipeline_runs_yaml %}
 ```yaml

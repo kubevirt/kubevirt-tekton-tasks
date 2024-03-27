@@ -63,7 +63,6 @@ spec:
     - name: baseDvNamespace
       description: Namespace of the base DataVolume which is created.
       type: string
-      default: {{ os_image_namespace }}
   tasks:
     - name: create-vm-root-disk
       taskRef:

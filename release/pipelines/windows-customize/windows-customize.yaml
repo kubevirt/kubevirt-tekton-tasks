@@ -52,7 +52,6 @@ spec:
     - name: sourceDiskImageNamespace
       description: Namespace of the windows source disk which will be copied and modified with sysprep
       type: string
-      default: kubevirt-os-images
     - name: baseDvName
       description: Name of the result windows disk
       type: string
@@ -60,7 +59,6 @@ spec:
     - name: baseDvNamespace
       description: Namespace of the result windows disk
       type: string
-      default: kubevirt-os-images
   tasks:
     - name: copy-vm-root-disk
       taskRef:

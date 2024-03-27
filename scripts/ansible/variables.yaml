@@ -1,4 +1,3 @@
-os_image_namespace: kubevirt-os-images
 catalog: kubevirt-tekton-tasks
 catalog_type: artifact
 pipelines_catalog: kubevirt-tekton-pipelines
