@@ -42,6 +42,8 @@ The Pipeline implements this by spinning up a new VirtualMachine which boots fro
 
 Before you create PipelineRuns, you must create ConfigMaps with an autounattend.xml in the same namespace in which the VirtualMachine will be created.
 
+Update the `baseDvNamespace` parameter with the namespace where the result DataVolume should be created. In case you define different namespace than PipelineRun is created, please see #Usage in multiple namespaces paragraph.
+
 Pipeline run with resolver:
 {% for item in pipeline_runs_yaml %}
 ```yaml

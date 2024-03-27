@@ -7,6 +7,8 @@ spec:
   params:
     - name: winImageDownloadURL
       value: ${WIN_IMAGE_DOWNLOAD_URL}
+    - name: baseDvNamespace
+      value: <result-disk-namespace>
   pipelineRef:
     resolver: hub
     params:
@@ -34,6 +36,8 @@ metadata:
   generateName: windows2k22-installer-run-
 spec:
   params:
+    - name: baseDvNamespace
+      value: <result-disk-namespace>
     - name: winImageDownloadURL
       value: ${WIN_IMAGE_DOWNLOAD_URL}
     - name: preferenceName

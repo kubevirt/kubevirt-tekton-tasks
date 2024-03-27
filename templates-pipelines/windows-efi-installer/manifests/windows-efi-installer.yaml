@@ -56,8 +56,7 @@ spec:
       description: Name of the base DataVolume which is created. Pre-installed Windows VMs can be created from this DataVolume.
       name: baseDvName
       type: string
-    - default: {{ os_image_namespace }}
-      description: Namespace of the base DataVolume which is created.
+    - description: Namespace of the base DataVolume which is created.
       name: baseDvNamespace
       type: string
     - default: win11
