@@ -3,8 +3,8 @@ package testconfigs
 import (
 	"time"
 
-	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
+	. "github.com/kubevirt/kubevirt-tekton-tasks/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/framework/testoptions"
 	"github.com/onsi/ginkgo/v2"
 	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

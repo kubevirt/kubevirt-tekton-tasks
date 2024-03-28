@@ -3,7 +3,7 @@ package testconfigs
 import (
 	"time"
 
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/constants"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

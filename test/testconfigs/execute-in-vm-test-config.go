@@ -1,8 +1,8 @@
 package testconfigs
 
 import (
-	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/testoptions"
+	. "github.com/kubevirt/kubevirt-tekton-tasks/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/framework/testoptions"
 	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest/testobjects"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/framework"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/runner"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/testconfigs"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	v1 "kubevirt.io/api/core/v1"

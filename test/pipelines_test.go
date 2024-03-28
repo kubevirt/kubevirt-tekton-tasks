@@ -3,10 +3,10 @@ package test
 import (
 	"context"
 
-	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/runner"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
+	. "github.com/kubevirt/kubevirt-tekton-tasks/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/framework"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/runner"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/testconfigs"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"

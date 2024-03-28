@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework/clients"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/framework/clients"
 
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"

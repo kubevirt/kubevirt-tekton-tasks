@@ -3,10 +3,10 @@ package runner
 import (
 	"context"
 
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/constants"
-	framework2 "github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/framework"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/tekton"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/tests/test/testconfigs"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/constants"
+	framework2 "github.com/kubevirt/kubevirt-tekton-tasks/test/framework"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/tekton"
+	"github.com/kubevirt/kubevirt-tekton-tasks/test/testconfigs"
 	. "github.com/onsi/gomega"
 	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	tkntest "github.com/tektoncd/pipeline/test"
