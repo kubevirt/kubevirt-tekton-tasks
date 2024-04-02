@@ -41,6 +41,7 @@ The Pipeline implements this by spinning up a new VirtualMachine which boots fro
 ## How to run
 
 Before you create PipelineRuns, you must create ConfigMaps with an autounattend.xml in the same namespace in which the VirtualMachine will be created.
+Examples of ConfigMaps can be found [here](https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-bios-installer/configmaps).
 
 Pipeline run with resolver:
 {% for item in pipeline_runs_yaml %}
