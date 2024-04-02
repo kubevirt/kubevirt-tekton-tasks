@@ -49,18 +49,10 @@ spec:
       description: Name of the windows source disk which will be copied and modified with sysprep
       type: string
       default: win11
-    - name: sourceDiskImageNamespace
-      description: Namespace of the windows source disk which will be copied and modified with sysprep
-      type: string
-      default: {{ os_image_namespace }}
     - name: baseDvName
       description: Name of the result windows disk
       type: string
       default: win11-customized
-    - name: baseDvNamespace
-      description: Namespace of the result windows disk
-      type: string
-      default: {{ os_image_namespace }}
   tasks:
     - name: copy-vm-root-disk
       taskRef:
@@ -88,13 +80,12 @@ spec:
             kind: DataVolume
             metadata:
               name: $(params.baseDvName)
-              namespace: $(params.baseDvNamespace)
             spec:
               storage: {}
               source: 
                 pvc:
                   name: $(params.sourceDiskImageName)
-                  namespace: $(params.sourceDiskImageNamespace)
+                  namespace: $(context.pipelineRun.namespace)
         - name: waitForSuccess
           value: false
         - name: allowReplace
@@ -109,7 +100,6 @@ spec:
             kind: VirtualMachine
             metadata:
               generateName: windows-customize-
-              namespace: $(params.baseDvNamespace)
             spec:
               instancetype:
                 kind: $(params.instanceTypeKind)

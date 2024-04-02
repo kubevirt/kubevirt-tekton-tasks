@@ -9,7 +9,5 @@ spec:
   params:
     - name: winImageDownloadURL
       value: http://http-server/disk.img
-    - name: baseDvNamespace
-      value: kubevirt
   pipelineRef:
     name: windows-bios-installer

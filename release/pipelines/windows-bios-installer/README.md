@@ -71,10 +71,6 @@ spec:
 EOF
 ```
 
-### Usage in multiple namespaces
-
-When a user defines a different namespace in e.g. `baseDvNamespace`, then the serviceAccount under which the Pipeline is running will require additional permissions in that namespace. Required permissions to run Task in different namespace can be found in README of each Task.
-
 ## Possible Optimizations
 
 #### Obtaining a download URL in an automated way

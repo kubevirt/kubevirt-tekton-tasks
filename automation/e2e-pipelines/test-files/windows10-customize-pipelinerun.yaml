@@ -13,9 +13,5 @@ spec:
       value: win10-customized
     - name: preferenceName
       value: windows.10
-    - name: sourceDiskImageNamespace
-      value: kubevirt
-    - name: baseDvNamespace
-      value: kubevirt
   pipelineRef:
     name: windows-customize

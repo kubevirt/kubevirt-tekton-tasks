@@ -17,7 +17,5 @@ spec:
       value: win2k22
     - name: isoDVName
       value: win2k22
-    - name: baseDvNamespace
-      value: kubevirt
   pipelineRef:
     name: windows-efi-installer

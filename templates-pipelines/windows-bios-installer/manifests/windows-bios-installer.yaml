@@ -60,10 +60,6 @@ spec:
       description: Name of the base DataVolume which is created. Pre-installed Windows VMs can be created from this DataVolume.
       type: string
       default: win10
-    - name: baseDvNamespace
-      description: Namespace of the base DataVolume which is created.
-      type: string
-      default: {{ os_image_namespace }}
   tasks:
     - name: create-vm-root-disk
       taskRef:
@@ -96,7 +92,6 @@ spec:
                 "instancetype.kubevirt.io/default-preference-kind": $(params.virtualMachinePreferenceKind)
                 "instancetype.kubevirt.io/default-preference": $(params.preferenceName)
               name: $(params.baseDvName)
-              namespace: $(params.baseDvNamespace)
             spec:
               storage:
                 resources:
@@ -118,7 +113,6 @@ spec:
             kind: VirtualMachine
             metadata:
               generateName: windows-bios-installer-
-              namespace: $(params.baseDvNamespace)
             spec:
               instancetype:
                 kind: $(params.instanceTypeKind)
