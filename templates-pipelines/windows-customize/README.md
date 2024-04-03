@@ -9,8 +9,8 @@ The provided reference ConfigMap (`windows-sqlserver`) boots Windows 10, 11 or W
 
 ## Prerequisites
 
-- KubeVirt `>=v1.0.0`
-- Tekton Pipelines `>=v0.43.0`
+- {{ virt_project }} `>= {{ virt_project_version }}`
+- {{ tekton_project }} `>= {{ tekton_project_version }}`
 
 ### Prepare unattend.xml ConfigMap
 

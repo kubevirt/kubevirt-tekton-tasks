@@ -3,3 +3,7 @@ provider: KubeVirt
 maintainer_name: KubeVirt Tekton tasks maintainers
 maintainer_email: kubevirt-tekton-tasks@redhat.com
 recommendation_url: https://kubevirt.io/
+virt_project: KubeVirt
+tekton_project: Tekton Pipelines
+virt_project_version: v1.0.0
+tekton_project_version: v0.43.0
