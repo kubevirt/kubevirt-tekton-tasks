@@ -6,10 +6,5 @@ metadata:
   labels:
     pipelinerun: windows11-customize-run
 spec:
-  params:
-    - name: sourceDiskImageNamespace
-      value: kubevirt
-    - name: baseDvNamespace
-      value: kubevirt
   pipelineRef:
     name: windows-customize

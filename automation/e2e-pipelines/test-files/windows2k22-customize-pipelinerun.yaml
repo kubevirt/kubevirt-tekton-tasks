@@ -15,9 +15,5 @@ spec:
       value: windows.2k22
     - name: customizeConfigMapName
       value: windows-sqlserver
-    - name: sourceDiskImageNamespace
-      value: kubevirt
-    - name: baseDvNamespace
-      value: kubevirt
   pipelineRef:
     name: windows-customize
