@@ -15,7 +15,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: 'modules/tests/go.mod'
+          go-version-file: 'go.mod'
 
       - name: Get release
         id: get_release
