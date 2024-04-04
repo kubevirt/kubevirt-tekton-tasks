@@ -6,8 +6,8 @@ The Pipeline implements this by spinning up a new VirtualMachine which boots fro
 
 ## Prerequisites
 
-- KubeVirt `>=v1.0.0`
-- Tekton Pipelines `>=v0.43.0`
+- {{ virt_project }} `>= {{ virt_project_version }}`
+- {{ tekton_project }} `>= {{ tekton_project_version }}`
 
 ### Obtain Windows ISO download URL
 
