@@ -6,6 +6,10 @@ updates:
       interval: "daily"
     allow:
       - dependency-type: "all"
+    ignore:
+      # Ginkgo, gomega update needs a change in automation/build-test.sh.
+      - dependency-name: "github.com/onsi/ginkgo/v2"
+      - dependency-name: "github.com/onsi/gomega"
     groups:
       production-dependencies:
         dependency-type: "production"
