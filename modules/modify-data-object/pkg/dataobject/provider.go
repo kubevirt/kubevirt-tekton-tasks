@@ -72,6 +72,7 @@ func (d *dataObjectProvider) DeletePVC(namespace string, name string) error {
 }
 
 func waitUntilDataObjectIsDeleted(helper *resource.Helper, namespace, name string) {
+	log.Logger().Info("waiting until data object is deleted")
 	wait.PollImmediate(constants.PollInterval, constants.PollTimeout, func() (bool, error) {
 		obj, err := helper.Get(namespace, name)
 		if err != nil {
@@ -85,6 +86,7 @@ func waitUntilDataObjectIsDeleted(helper *resource.Helper, namespace, name strin
 }
 
 func (d *dataObjectProvider) waitUntilPVCIsDeleted(namespace, name string) {
+	log.Logger().Info("waiting until PVC is deleted")
 	wait.PollImmediate(constants.PollInterval, constants.PollTimeout, func() (bool, error) {
 		obj, err := d.GetPVC(namespace, name)
 		if err != nil {
@@ -224,7 +226,7 @@ func (d *DataObjectCreator) CreateDataObject() (*unstructured.Unstructured, erro
 	}
 
 	if d.cliOptions.GetWaitForSuccess() {
-		log.Logger().Debug("waiting for success of data object", zap.Reflect("createdDo", createdDo))
+		log.Logger().Info("waiting for success of data object", zap.Reflect("createdDo", createdDo))
 		if err := waitForSuccess(createdDo.GetNamespace(), createdDo.GetName()); err != nil {
 			return nil, zerrors.NewSoftError("Failed to wait for success of data object: %v", err.Error())
 		}
