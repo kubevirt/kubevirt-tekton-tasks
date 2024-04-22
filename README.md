@@ -27,38 +27,38 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 
 #### Create Virtual Machines
 
-- [create-vm-from-manifest](tasks/create-vm-from-manifest)
-- [create-vm-from-template](tasks/create-vm-from-template)
+- [create-vm-from-manifest](release/tasks/create-vm-from-manifest)
+- [create-vm-from-template](release/tasks/create-vm-from-template)
 
 #### Utilize Templates
 
-- [copy-template](tasks/copy-template)
-- [modify-vm-template](tasks/modify-vm-template)
+- [copy-template](release/tasks/copy-template)
+- [modify-vm-template](release/tasks/modify-vm-template)
 
 #### Modify data objects
 
-- [modify-data-object](tasks/modify-data-object)
+- [modify-data-object](release/tasks/modify-data-object)
 
 #### Generate SSH Keys
 
-- [generate-ssh-keys](tasks/generate-ssh-keys)
+- [generate-ssh-keys](release/tasks/generate-ssh-keys)
 
 #### Execute Commands in Virtual Machines
 
-- [execute-in-vm](tasks/execute-in-vm): execute commands over SSH
-- [cleanup-vm](tasks/cleanup-vm): execute commands and/or stop/delete VMs
+- [execute-in-vm](release/tasks/execute-in-vm): execute commands over SSH
+- [cleanup-vm](release/tasks/cleanup-vm): execute commands and/or stop/delete VMs
 
 #### Manipulate PVCs with libguestfs tools
 
-- [disk-virt-customize](tasks/disk-virt-customize): execute virt-customize commands in PVCs
-- [disk-virt-sysprep](tasks/disk-virt-sysprep): execute virt-sysprep commands in PVCs
+- [disk-virt-customize](release/tasks/disk-virt-customize): execute virt-customize commands in PVCs
+- [disk-virt-sysprep](release/tasks/disk-virt-sysprep): execute virt-sysprep commands in PVCs
 
 #### Wait for Virtual Machine Instance Status
 
-- [wait-for-vmi-status](tasks/wait-for-vmi-status)
+- [wait-for-vmi-status](release/tasks/wait-for-vmi-status)
 
 #### Modify Windows iso
-- [modify-windows-iso-file](tasks/modify-windows-iso-file) - modifies windows iso (replaces prompt bootloader with no-promt 
+- [modify-windows-iso-file](release/tasks/modify-windows-iso-file) - modifies windows iso (replaces prompt bootloader with no-promt 
    bootloader) and replaces original iso in PVC with updated one.
 
 ## Examples
