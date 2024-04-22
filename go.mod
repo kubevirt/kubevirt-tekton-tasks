@@ -126,11 +126,11 @@ require (
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
 	github.com/openzipkin/zipkin-go v0.4.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.1 // indirect
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2 // indirect
 	github.com/prometheus/client_golang v1.19.0 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.53.0 // indirect
-	github.com/prometheus/procfs v0.13.0 // indirect
+	github.com/prometheus/procfs v0.14.0 // indirect
 	github.com/prometheus/statsd_exporter v0.26.1 // indirect
 	github.com/secure-systems-lab/go-securesystemslib v0.8.0 // indirect
 	github.com/sigstore/sigstore v1.8.3 // indirect
@@ -155,7 +155,7 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.20.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
-	google.golang.org/api v0.174.0 // indirect
+	google.golang.org/api v0.175.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240304161311-37d4d3c04a78 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
 	google.golang.org/grpc v1.63.2 // indirect
