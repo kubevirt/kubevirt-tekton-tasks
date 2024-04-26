@@ -50,5 +50,5 @@ func NewTestFedoraCloudVM(name string) *TestVM {
 	}
 	return (&TestVM{
 		Data: newRandomVirtualMachine(vmi, false),
-	}).WithMemory("512Mi")
+	}).WithMemory("1Gi")
 }

@@ -24,12 +24,12 @@ func NewTestAlpineVM(name string) *TestVM {
 			Name: containerDiskName,
 			VolumeSource: v1.VolumeSource{
 				ContainerDisk: &v1.ContainerDiskSource{
-					Image: "kubevirt/alpine-container-disk-demo:latest",
+					Image: "quay.io/kubevirt/alpine-container-disk-demo:20240426_ca94b81c6",
 				},
 			},
 		},
 	}
 	return (&TestVM{
 		Data: newRandomVirtualMachine(vmi, false),
-	}).WithMemory("64Mi")
+	}).WithMemory("128Mi")
 }
