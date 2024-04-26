@@ -65,7 +65,7 @@ data:
             </OSImage>
           </ImageInstall>
           <UserData>
-            <AcceptEula>true</AcceptEula>
+            <!-- <AcceptEula>true</AcceptEula> -->
             <ProductKey>
               <Key/>
             </ProductKey>
