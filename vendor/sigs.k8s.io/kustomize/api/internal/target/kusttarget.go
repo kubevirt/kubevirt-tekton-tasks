@@ -6,23 +6,24 @@ package target
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"sigs.k8s.io/kustomize/api/ifc"
 	"sigs.k8s.io/kustomize/api/internal/accumulator"
 	"sigs.k8s.io/kustomize/api/internal/builtins"
 	"sigs.k8s.io/kustomize/api/internal/kusterr"
-	load "sigs.k8s.io/kustomize/api/internal/loader"
 	"sigs.k8s.io/kustomize/api/internal/plugins/builtinconfig"
 	"sigs.k8s.io/kustomize/api/internal/plugins/builtinhelpers"
 	"sigs.k8s.io/kustomize/api/internal/plugins/loader"
 	"sigs.k8s.io/kustomize/api/internal/utils"
 	"sigs.k8s.io/kustomize/api/konfig"
+	load "sigs.k8s.io/kustomize/api/loader"
 	"sigs.k8s.io/kustomize/api/resmap"
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/api/types"
-	"sigs.k8s.io/kustomize/kyaml/errors"
 	"sigs.k8s.io/kustomize/kyaml/openapi"
 	"sigs.k8s.io/yaml"
 )
@@ -44,40 +45,32 @@ func NewKustTarget(
 	validator ifc.Validator,
 	rFactory *resmap.Factory,
 	pLdr *loader.Loader) *KustTarget {
+	pLdrCopy := *pLdr
+	pLdrCopy.SetWorkDir(ldr.Root())
 	return &KustTarget{
 		ldr:       ldr,
 		validator: validator,
 		rFactory:  rFactory,
-		pLdr:      pLdr.LoaderWithWorkingDir(ldr.Root()),
+		pLdr:      &pLdrCopy,
 	}
 }
 
 // Load attempts to load the target's kustomization file.
 func (kt *KustTarget) Load() error {
-	content, kustFileName, err := LoadKustFile(kt.ldr)
+	content, kustFileName, err := loadKustFile(kt.ldr)
 	if err != nil {
 		return err
 	}
-
+	content, err = types.FixKustomizationPreUnmarshalling(content)
+	if err != nil {
+		return err
+	}
 	var k types.Kustomization
-	if err := k.Unmarshal(content); err != nil {
+	err = k.Unmarshal(content)
+	if err != nil {
 		return err
 	}
-
-	// show warning message when using deprecated fields.
-	if warningMessages := k.CheckDeprecatedFields(); warningMessages != nil {
-		for _, msg := range *warningMessages {
-			fmt.Fprintf(os.Stderr, "%v\n", msg)
-		}
-	}
-
-	k.FixKustomization()
-
-	// check that Kustomization is empty
-	if err := k.CheckEmpty(); err != nil {
-		return err
-	}
-
+	k.FixKustomizationPostUnmarshalling()
 	errs := k.EnforceFields()
 	if len(errs) > 0 {
 		return fmt.Errorf(
@@ -97,7 +90,7 @@ func (kt *KustTarget) Kustomization() types.Kustomization {
 	return result
 }
 
-func LoadKustFile(ldr ifc.Loader) ([]byte, string, error) {
+func loadKustFile(ldr ifc.Loader) ([]byte, string, error) {
 	var content []byte
 	match := 0
 	var kustFileName string
@@ -158,11 +151,6 @@ func (kt *KustTarget) makeCustomizedResMap() (resmap.ResMap, error) {
 		return nil, err
 	}
 
-	err = kt.IgnoreLocal(ra)
-	if err != nil {
-		return nil, err
-	}
-
 	return ra.ResMap(), nil
 }
 
@@ -200,7 +188,11 @@ func (kt *KustTarget) accumulateTarget(ra *accumulator.ResAccumulator) (
 	resRa *accumulator.ResAccumulator, err error) {
 	ra, err = kt.accumulateResources(ra, kt.kustomization.Resources)
 	if err != nil {
-		return nil, errors.WrapPrefixf(err, "accumulating resources")
+		return nil, errors.Wrap(err, "accumulating resources")
+	}
+	ra, err = kt.accumulateComponents(ra, kt.kustomization.Components)
+	if err != nil {
+		return nil, errors.Wrap(err, "accumulating components")
 	}
 	tConfig, err := builtinconfig.MakeTransformerConfig(
 		kt.ldr, kt.kustomization.Configurations)
@@ -209,31 +201,23 @@ func (kt *KustTarget) accumulateTarget(ra *accumulator.ResAccumulator) (
 	}
 	err = ra.MergeConfig(tConfig)
 	if err != nil {
-		return nil, errors.WrapPrefixf(
+		return nil, errors.Wrapf(
 			err, "merging config %v", tConfig)
 	}
 	crdTc, err := accumulator.LoadConfigFromCRDs(kt.ldr, kt.kustomization.Crds)
 	if err != nil {
-		return nil, errors.WrapPrefixf(
+		return nil, errors.Wrapf(
 			err, "loading CRDs %v", kt.kustomization.Crds)
 	}
 	err = ra.MergeConfig(crdTc)
 	if err != nil {
-		return nil, errors.WrapPrefixf(
+		return nil, errors.Wrapf(
 			err, "merging CRDs %v", crdTc)
 	}
 	err = kt.runGenerators(ra)
 	if err != nil {
 		return nil, err
 	}
-
-	// components are expected to execute after reading resources and adding generators ,before applying transformers and validation.
-	// https://github.com/kubernetes-sigs/kustomize/pull/5170#discussion_r1212101287
-	ra, err = kt.accumulateComponents(ra, kt.kustomization.Components)
-	if err != nil {
-		return nil, errors.WrapPrefixf(err, "accumulating components")
-	}
-
 	err = kt.runTransformers(ra)
 	if err != nil {
 		return nil, err
@@ -244,8 +228,12 @@ func (kt *KustTarget) accumulateTarget(ra *accumulator.ResAccumulator) (
 	}
 	err = ra.MergeVars(kt.kustomization.Vars)
 	if err != nil {
-		return nil, errors.WrapPrefixf(
+		return nil, errors.Wrapf(
 			err, "merging vars %v", kt.kustomization.Vars)
+	}
+	err = kt.IgnoreLocal(ra)
+	if err != nil {
+		return nil, err
 	}
 	return ra, nil
 }
@@ -274,7 +262,7 @@ func (kt *KustTarget) runGenerators(
 
 	gs, err = kt.configureExternalGenerators()
 	if err != nil {
-		return errors.WrapPrefixf(err, "loading generator plugins")
+		return errors.Wrap(err, "loading generator plugins")
 	}
 	generators = append(generators, gs...)
 	for i, g := range generators {
@@ -285,12 +273,12 @@ func (kt *KustTarget) runGenerators(
 		if resMap != nil {
 			err = resMap.AddOriginAnnotation(generators[i].Origin)
 			if err != nil {
-				return errors.WrapPrefixf(err, "adding origin annotations for generator %v", g)
+				return errors.Wrapf(err, "adding origin annotations for generator %v", g)
 			}
 		}
 		err = ra.AbsorbAll(resMap)
 		if err != nil {
-			return errors.WrapPrefixf(err, "merging from generator %v", g)
+			return errors.Wrapf(err, "merging from generator %v", g)
 		}
 	}
 	return nil
@@ -316,9 +304,7 @@ func (kt *KustTarget) configureExternalGenerators() (
 				rm.Replace(r)
 			}
 		}
-		if err = ra.AppendAll(rm); err != nil {
-			return nil, errors.WrapPrefixf(err, "configuring external generator")
-		}
+		ra.AppendAll(rm)
 	}
 	ra, err := kt.accumulateResources(ra, generatorPaths)
 	if err != nil {
@@ -362,10 +348,7 @@ func (kt *KustTarget) configureExternalTransformers(transformers []string) ([]*r
 				rm.Replace(r)
 			}
 		}
-
-		if err = ra.AppendAll(rm); err != nil {
-			return nil, errors.WrapPrefixf(err, "configuring external transformer")
-		}
+		ra.AppendAll(rm)
 	}
 	ra, err := kt.accumulateResources(ra, transformerPaths)
 	if err != nil {
@@ -420,22 +403,15 @@ func (kt *KustTarget) accumulateResources(
 		// try loading resource as file then as base (directory or git repository)
 		if errF := kt.accumulateFile(ra, path); errF != nil {
 			// not much we can do if the error is an HTTP error so we bail out
-			if errors.Is(errF, load.ErrHTTP) {
+			if errors.Is(errF, load.ErrorHTTP) {
+				return nil, errF
+			}
+			if kusterr.IsMalformedYAMLError(errF) { // Some error occurred while tyring to decode YAML file
 				return nil, errF
 			}
 			ldr, err := kt.ldr.New(path)
 			if err != nil {
-				// If accumulateFile found malformed YAML and there was a failure
-				// loading the resource as a base, then the resource is likely a
-				// file. The loader failure message is unnecessary, and could be
-				// confusing. Report only the file load error.
-				//
-				// However, a loader timeout implies there is a git repo at the
-				// path. In that case, both errors could be important.
-				if kusterr.IsMalformedYAMLError(errF) && !utils.IsErrTimeout(err) {
-					return nil, errF
-				}
-				return nil, errors.WrapPrefixf(
+				return nil, errors.Wrapf(
 					err, "accumulation err='%s'", errF.Error())
 			}
 			// store the origin, we'll need it later
@@ -449,10 +425,7 @@ func (kt *KustTarget) accumulateResources(
 				ra, err = kt.accumulateDirectory(ra, ldr, false)
 			}
 			if err != nil {
-				if kusterr.IsMalformedYAMLError(errF) { // Some error occurred while tyring to decode YAML file
-					return nil, errF
-				}
-				return nil, errors.WrapPrefixf(
+				return nil, errors.Wrapf(
 					err, "accumulation err='%s'", errF.Error())
 			}
 		}
@@ -494,14 +467,15 @@ func (kt *KustTarget) accumulateDirectory(
 	subKt := NewKustTarget(ldr, kt.validator, kt.rFactory, kt.pLdr)
 	err := subKt.Load()
 	if err != nil {
-		return nil, errors.WrapPrefixf(
+		return nil, errors.Wrapf(
 			err, "couldn't make target for path '%s'", ldr.Root())
 	}
 	subKt.kustomization.BuildMetadata = kt.kustomization.BuildMetadata
 	subKt.origin = kt.origin
 	var bytes []byte
+	path := ldr.Root()
 	if openApiPath, exists := subKt.Kustomization().OpenAPI["path"]; exists {
-		bytes, err = ldr.Load(openApiPath)
+		bytes, err = ldr.Load(filepath.Join(path, openApiPath))
 		if err != nil {
 			return nil, err
 		}
@@ -529,12 +503,12 @@ func (kt *KustTarget) accumulateDirectory(
 		subRa, err = subKt.AccumulateTarget()
 	}
 	if err != nil {
-		return nil, errors.WrapPrefixf(
+		return nil, errors.Wrapf(
 			err, "recursed accumulation of path '%s'", ldr.Root())
 	}
 	err = ra.MergeAccumulator(subRa)
 	if err != nil {
-		return nil, errors.WrapPrefixf(
+		return nil, errors.Wrapf(
 			err, "recursed merging from path '%s'", ldr.Root())
 	}
 	return ra, nil
@@ -544,21 +518,21 @@ func (kt *KustTarget) accumulateFile(
 	ra *accumulator.ResAccumulator, path string) error {
 	resources, err := kt.rFactory.FromFile(kt.ldr, path)
 	if err != nil {
-		return errors.WrapPrefixf(err, "accumulating resources from '%s'", path)
+		return errors.Wrapf(err, "accumulating resources from '%s'", path)
 	}
 	if kt.origin != nil {
 		originAnno, err := kt.origin.Append(path).String()
 		if err != nil {
-			return errors.WrapPrefixf(err, "cannot add path annotation for '%s'", path)
+			return errors.Wrapf(err, "cannot add path annotation for '%s'", path)
 		}
 		err = resources.AnnotateAll(utils.OriginAnnotationKey, originAnno)
 		if err != nil || originAnno == "" {
-			return errors.WrapPrefixf(err, "cannot add path annotation for '%s'", path)
+			return errors.Wrapf(err, "cannot add path annotation for '%s'", path)
 		}
 	}
 	err = ra.AppendAll(resources)
 	if err != nil {
-		return errors.WrapPrefixf(err, "merging resources from '%s'", path)
+		return errors.Wrapf(err, "merging resources from '%s'", path)
 	}
 	return nil
 }
@@ -569,7 +543,7 @@ func (kt *KustTarget) configureBuiltinPlugin(
 	if c != nil {
 		y, err = yaml.Marshal(c)
 		if err != nil {
-			return errors.WrapPrefixf(
+			return errors.Wrapf(
 				err, "builtin %s marshal", bpt)
 		}
 	}
@@ -578,7 +552,7 @@ func (kt *KustTarget) configureBuiltinPlugin(
 			kt.ldr, kt.validator, kt.rFactory, kt.pLdr.Config()),
 		y)
 	if err != nil {
-		return errors.WrapPrefixf(
+		return errors.Wrapf(
 			err, "trouble configuring builtin %s with config: `\n%s`", bpt, string(y))
 	}
 	return nil
