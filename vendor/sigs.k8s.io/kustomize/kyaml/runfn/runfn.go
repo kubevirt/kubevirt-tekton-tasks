@@ -308,10 +308,7 @@ func (r RunFns) getFunctionFilters(global bool, fns ...*yaml.RNode) (
 	var fltrs []kio.Filter
 	for i := range fns {
 		api := fns[i]
-		spec, err := runtimeutil.GetFunctionSpec(api)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get FunctionSpec: %w", err)
-		}
+		spec := runtimeutil.GetFunctionSpec(api)
 		if spec == nil {
 			// resource doesn't have function spec
 			continue
@@ -332,11 +329,8 @@ func (r RunFns) getFunctionFilters(global bool, fns ...*yaml.RNode) (
 			continue
 		}
 		cf, ok := c.(*container.Filter)
-		if ok {
-			if global {
-				cf.Exec.GlobalScope = true
-			}
-			cf.Exec.WorkingDir = r.WorkingDir
+		if global && ok {
+			cf.Exec.GlobalScope = true
 		}
 		fltrs = append(fltrs, c)
 	}
@@ -474,17 +468,11 @@ func (r *RunFns) ffp(spec runtimeutil.FunctionSpec, api *yaml.RNode, currentUser
 		if err != nil {
 			return nil, err
 		}
-
-		// Storage mounts can either come from kustomize fn run --mounts,
-		// or from the declarative function mounts field.
-		storageMounts := spec.Container.StorageMounts
-		storageMounts = append(storageMounts, r.StorageMounts...)
-
 		c := container.NewContainer(
 			runtimeutil.ContainerSpec{
 				Image:         spec.Container.Image,
 				Network:       spec.Container.Network,
-				StorageMounts: storageMounts,
+				StorageMounts: r.StorageMounts,
 				Env:           spec.Container.Env,
 			},
 			uidgid,

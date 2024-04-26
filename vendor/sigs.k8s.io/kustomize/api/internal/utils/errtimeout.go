@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"sigs.k8s.io/kustomize/kyaml/errors"
+	"github.com/pkg/errors"
 )
 
 type errTimeOut struct {
@@ -15,15 +15,22 @@ type errTimeOut struct {
 	cmd      string
 }
 
-func NewErrTimeOut(d time.Duration, c string) *errTimeOut {
-	return &errTimeOut{duration: d, cmd: c}
+func NewErrTimeOut(d time.Duration, c string) errTimeOut {
+	return errTimeOut{duration: d, cmd: c}
 }
 
-func (e *errTimeOut) Error() string {
+func (e errTimeOut) Error() string {
 	return fmt.Sprintf("hit %s timeout running '%s'", e.duration, e.cmd)
 }
 
 func IsErrTimeout(err error) bool {
-	e := &errTimeOut{}
-	return errors.As(err, &e)
+	if err == nil {
+		return false
+	}
+	_, ok := err.(errTimeOut)
+	if ok {
+		return true
+	}
+	_, ok = errors.Cause(err).(errTimeOut)
+	return ok
 }

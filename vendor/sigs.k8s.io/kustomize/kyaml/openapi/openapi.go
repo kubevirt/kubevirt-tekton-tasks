@@ -6,14 +6,11 @@ package openapi
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"io/ioutil"
 	"path/filepath"
 	"reflect"
 	"strings"
-	"sync"
 
-	openapi_v2 "github.com/google/gnostic-models/openapiv2"
-	"google.golang.org/protobuf/proto"
 	"k8s.io/kube-openapi/pkg/validation/spec"
 	"sigs.k8s.io/kustomize/kyaml/errors"
 	"sigs.k8s.io/kustomize/kyaml/openapi/kubernetesapi"
@@ -22,37 +19,14 @@ import (
 	k8syaml "sigs.k8s.io/yaml"
 )
 
-var (
-	// schemaLock is the lock for schema related globals.
-	//
-	// NOTE: This lock helps with preventing panics that might occur due to the data
-	// race that concurrent access on this variable might cause but it doesn't
-	// fully fix the issue described in https://github.com/kubernetes-sigs/kustomize/issues/4824.
-	// For instance concurrently running goroutines where each of them calls SetSchema()
-	// and/or GetSchemaVersion might end up received nil errors (success) whereas the
-	// seconds one would overwrite the global variable that has been written by the
-	// first one.
-	schemaLock sync.RWMutex //nolint:gochecknoglobals
+// globalSchema contains global state information about the openapi
+var globalSchema openapiData
 
-	// kubernetesOpenAPIVersion specifies which builtin kubernetes schema to use.
-	kubernetesOpenAPIVersion string //nolint:gochecknoglobals
+// kubernetesOpenAPIVersion specifies which builtin kubernetes schema to use
+var kubernetesOpenAPIVersion string
 
-	// globalSchema contains global state information about the openapi
-	globalSchema openapiData //nolint:gochecknoglobals
-
-	// customSchemaFile stores the custom OpenApi schema if it is provided
-	customSchema []byte //nolint:gochecknoglobals
-)
-
-// schemaParseStatus is used in cases when a schema should be parsed, but the
-// parsing may be delayed to a later time.
-type schemaParseStatus uint32
-
-const (
-	schemaNotParsed schemaParseStatus = iota
-	schemaParseDelayed
-	schemaParsed
-)
+// customSchemaFile stores the custom OpenApi schema if it is provided
+var customSchema []byte
 
 // openapiData contains the parsed openapi state.  this is in a struct rather than
 // a list of vars so that it can be reset from tests.
@@ -67,25 +41,14 @@ type openapiData struct {
 	// is namespaceable or not
 	namespaceabilityByResourceType map[yaml.TypeMeta]bool
 
-	// noUseBuiltInSchema stores whether we want to prevent using the built-in
+	// noUseBuiltInSchema stores whether we want to prevent using the built-n
 	// Kubernetes schema as part of the global schema
 	noUseBuiltInSchema bool
 
 	// schemaInit stores whether or not we've parsed the schema already,
 	// so that we only reparse the when necessary (to speed up performance)
 	schemaInit bool
-
-	// defaultBuiltInSchemaParseStatus stores the parse status of the default
-	// built-in schema.
-	defaultBuiltInSchemaParseStatus schemaParseStatus
 }
-
-type format string
-
-const (
-	JsonOrYaml format = "jsonOrYaml"
-	Proto      format = "proto"
-)
 
 // precomputedIsNamespaceScoped precomputes IsNamespaceScoped for known types. This avoids Schema creation,
 // which is expensive
@@ -132,7 +95,7 @@ var precomputedIsNamespaceScoped = map[yaml.TypeMeta]bool{
 	{APIVersion: "node.k8s.io/v1beta1", Kind: "RuntimeClass"}:                                    false,
 	{APIVersion: "policy/v1", Kind: "PodDisruptionBudget"}:                                       true,
 	{APIVersion: "policy/v1beta1", Kind: "PodDisruptionBudget"}:                                  true,
-	{APIVersion: "policy/v1beta1", Kind: "PodSecurityPolicy"}:                                    false, // remove after openapi upgrades to v1.25.
+	{APIVersion: "policy/v1beta1", Kind: "PodSecurityPolicy"}:                                    false,
 	{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRole"}:                            false,
 	{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRoleBinding"}:                     false,
 	{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "Role"}:                                   true,
@@ -248,7 +211,7 @@ func definitionRefsFromRNode(object *yaml.RNode) ([]string, error) {
 
 // parseOpenAPI reads openAPIPath yaml and converts it to RNode
 func parseOpenAPI(openAPIPath string) (*yaml.RNode, error) {
-	b, err := os.ReadFile(openAPIPath)
+	b, err := ioutil.ReadFile(openAPIPath)
 	if err != nil {
 		return nil, err
 	}
@@ -301,17 +264,12 @@ func schemaUsingField(object *yaml.RNode, field string) (*spec.Schema, error) {
 
 // AddSchema parses s, and adds definitions from s to the global schema.
 func AddSchema(s []byte) error {
-	return parse(s, JsonOrYaml)
+	return parse(s)
 }
 
 // ResetOpenAPI resets the openapi data to empty
 func ResetOpenAPI() {
-	schemaLock.Lock()
-	defer schemaLock.Unlock()
-
 	globalSchema = openapiData{}
-	customSchema = nil
-	kubernetesOpenAPIVersion = ""
 }
 
 // AddDefinitions adds the definitions to the global schema.
@@ -358,8 +316,9 @@ func toTypeMeta(ext interface{}) (yaml.TypeMeta, bool) {
 		return yaml.TypeMeta{}, false
 	}
 
+	g := m[groupKey].(string)
 	apiVersion := m[versionKey].(string)
-	if g, ok := m[groupKey].(string); ok && g != "" {
+	if g != "" {
 		apiVersion = g + "/" + apiVersion
 	}
 	return yaml.TypeMeta{Kind: m[kindKey].(string), APIVersion: apiVersion}, true
@@ -401,43 +360,16 @@ func GetSchema(s string, schema *spec.Schema) (*ResourceSchema, error) {
 // be true if the resource is namespace-scoped, and false if the type is
 // cluster-scoped.
 func IsNamespaceScoped(typeMeta yaml.TypeMeta) (bool, bool) {
-	if isNamespaceScoped, found := precomputedIsNamespaceScoped[typeMeta]; found {
-		return isNamespaceScoped, found
+	if res, f := precomputedIsNamespaceScoped[typeMeta]; f {
+		return res, true
 	}
-	if isInitSchemaNeededForNamespaceScopeCheck() {
-		initSchema()
-	}
-	isNamespaceScoped, found := globalSchema.namespaceabilityByResourceType[typeMeta]
-	return isNamespaceScoped, found
+	return isNamespaceScopedFromSchema(typeMeta)
 }
 
-// isInitSchemaNeededForNamespaceScopeCheck returns true if initSchema is needed
-// to ensure globalSchema.namespaceabilityByResourceType is fully populated for
-// cases where a custom or non-default built-in schema is in use.
-func isInitSchemaNeededForNamespaceScopeCheck() bool {
-	schemaLock.Lock()
-	defer schemaLock.Unlock()
-
-	if globalSchema.schemaInit {
-		return false // globalSchema already is initialized.
-	}
-	if customSchema != nil {
-		return true // initSchema is needed.
-	}
-	if kubernetesOpenAPIVersion == "" || kubernetesOpenAPIVersion == kubernetesOpenAPIDefaultVersion {
-		// The default built-in schema is in use. Since
-		// precomputedIsNamespaceScoped aligns with the default built-in schema
-		// (verified by TestIsNamespaceScopedPrecompute), there is no need to
-		// call initSchema.
-		if globalSchema.defaultBuiltInSchemaParseStatus == schemaNotParsed {
-			// The schema may be needed for purposes other than namespace scope
-			// checks. Flag it to be parsed when that need arises.
-			globalSchema.defaultBuiltInSchemaParseStatus = schemaParseDelayed
-		}
-		return false
-	}
-	// A non-default built-in schema is in use. initSchema is needed.
-	return true
+func isNamespaceScopedFromSchema(typeMeta yaml.TypeMeta) (bool, bool) {
+	initSchema()
+	isNamespaceScoped, found := globalSchema.namespaceabilityByResourceType[typeMeta]
+	return isNamespaceScoped, found
 }
 
 // IsCertainlyClusterScoped returns true for Node, Namespace, etc. and
@@ -458,7 +390,7 @@ func SuppressBuiltInSchemaUse() {
 
 // Elements returns the Schema for the elements of an array.
 func (rs *ResourceSchema) Elements() *ResourceSchema {
-	// load the schema from swagger files
+	// load the schema from swagger.json
 	initSchema()
 
 	if len(rs.Schema.Type) != 1 || rs.Schema.Type[0] != "array" {
@@ -504,7 +436,7 @@ func (rs *ResourceSchema) Lookup(path ...string) *ResourceSchema {
 
 // Field returns the Schema for a field.
 func (rs *ResourceSchema) Field(field string) *ResourceSchema {
-	// load the schema from swagger files
+	// load the schema from swagger.json
 	initSchema()
 
 	// locate the Schema
@@ -517,7 +449,7 @@ func (rs *ResourceSchema) Field(field string) *ResourceSchema {
 		// (the key doesn't matter, they all have the same value type)
 		s = *rs.Schema.AdditionalProperties.Schema
 	default:
-		// no Schema found from either swagger files or line comments
+		// no Schema found from either swagger.json or line comments
 		return nil
 	}
 
@@ -603,28 +535,24 @@ const (
 	groupKey = "group"
 	// versionKey is the key to lookup the version from the GVK extension
 	versionKey = "version"
-	// kindKey is the to lookup the kind from the GVK extension
+	// kindKey is the the to lookup the kind from the GVK extension
 	kindKey = "kind"
 )
 
 // SetSchema sets the kubernetes OpenAPI schema version to use
 func SetSchema(openAPIField map[string]string, schema []byte, reset bool) error {
-	schemaLock.Lock()
-	defer schemaLock.Unlock()
-
 	// this should only be set once
 	schemaIsSet := (kubernetesOpenAPIVersion != "") || customSchema != nil
 	if schemaIsSet && !reset {
 		return nil
 	}
 
-	version, versionProvided := openAPIField["version"]
+	version, exists := openAPIField["version"]
+	if exists && schema != nil {
+		return fmt.Errorf("builtin version and custom schema provided, cannot use both")
+	}
 
-	// use custom schema
-	if schema != nil {
-		if versionProvided {
-			return fmt.Errorf("builtin version and custom schema provided, cannot use both")
-		}
+	if schema != nil { // use custom schema
 		customSchema = schema
 		kubernetesOpenAPIVersion = "custom"
 		// if the schema is changed, initSchema should parse the new schema
@@ -633,14 +561,13 @@ func SetSchema(openAPIField map[string]string, schema []byte, reset bool) error 
 	}
 
 	// use builtin version
-	kubernetesOpenAPIVersion = version
+	kubernetesOpenAPIVersion = strings.ReplaceAll(version, ".", "")
 	if kubernetesOpenAPIVersion == "" {
 		return nil
 	}
 	if _, ok := kubernetesapi.OpenAPIMustAsset[kubernetesOpenAPIVersion]; !ok {
 		return fmt.Errorf("the specified OpenAPI version is not built in")
 	}
-
 	customSchema = nil
 	// if the schema is changed, initSchema should parse the new schema
 	globalSchema.schemaInit = false
@@ -649,9 +576,6 @@ func SetSchema(openAPIField map[string]string, schema []byte, reset bool) error 
 
 // GetSchemaVersion returns what kubernetes OpenAPI version is being used
 func GetSchemaVersion() string {
-	schemaLock.RLock()
-	defer schemaLock.RUnlock()
-
 	switch {
 	case kubernetesOpenAPIVersion == "" && customSchema == nil:
 		return kubernetesOpenAPIDefaultVersion
@@ -664,89 +588,71 @@ func GetSchemaVersion() string {
 
 // initSchema parses the json schema
 func initSchema() {
-	schemaLock.Lock()
-	defer schemaLock.Unlock()
-
 	if globalSchema.schemaInit {
 		return
 	}
 	globalSchema.schemaInit = true
 
-	// TODO(natasha41575): Accept proto-formatted schema files
 	if customSchema != nil {
-		err := parse(customSchema, JsonOrYaml)
+		err := parse(customSchema)
 		if err != nil {
-			panic(fmt.Errorf("invalid schema file: %w", err))
+			panic("invalid schema file")
 		}
-	} else {
-		if kubernetesOpenAPIVersion == "" || kubernetesOpenAPIVersion == kubernetesOpenAPIDefaultVersion {
-			parseBuiltinSchema(kubernetesOpenAPIDefaultVersion)
-			globalSchema.defaultBuiltInSchemaParseStatus = schemaParsed
-		} else {
-			parseBuiltinSchema(kubernetesOpenAPIVersion)
+		if err = parse(kustomizationapi.MustAsset(kustomizationAPIAssetName)); err != nil {
+			// this should never happen
+			panic(err)
 		}
+		return
 	}
 
-	if globalSchema.defaultBuiltInSchemaParseStatus == schemaParseDelayed {
+	if kubernetesOpenAPIVersion == "" {
 		parseBuiltinSchema(kubernetesOpenAPIDefaultVersion)
-		globalSchema.defaultBuiltInSchemaParseStatus = schemaParsed
-	}
-
-	if err := parse(kustomizationapi.MustAsset(kustomizationAPIAssetName), JsonOrYaml); err != nil {
-		// this should never happen
-		panic(err)
+	} else {
+		parseBuiltinSchema(kubernetesOpenAPIVersion)
 	}
 }
 
-// parseBuiltinSchema calls parse to parse the json or proto schemas
+// parseBuiltinSchema calls parse to parse the json schemas
 func parseBuiltinSchema(version string) {
 	if globalSchema.noUseBuiltInSchema {
 		// don't parse the built in schema
 		return
 	}
+
 	// parse the swagger, this should never fail
 	assetName := filepath.Join(
 		"kubernetesapi",
-		strings.ReplaceAll(version, ".", "_"),
-		"swagger.pb")
+		version,
+		"swagger.json")
 
-	if err := parse(kubernetesapi.OpenAPIMustAsset[version](assetName), Proto); err != nil {
+	if err := parse(kubernetesapi.OpenAPIMustAsset[version](assetName)); err != nil {
+		// this should never happen
+		panic(err)
+	}
+
+	if err := parse(kustomizationapi.MustAsset(kustomizationAPIAssetName)); err != nil {
 		// this should never happen
 		panic(err)
 	}
 }
 
-// parse parses and indexes a single json or proto schema
-func parse(b []byte, format format) error {
+// parse parses and indexes a single json schema
+func parse(b []byte) error {
 	var swagger spec.Swagger
-	switch {
-	case format == Proto:
-		doc := &openapi_v2.Document{}
-		// We parse protobuf and get an openapi_v2.Document here.
-		if err := proto.Unmarshal(b, doc); err != nil {
-			return fmt.Errorf("openapi proto unmarshalling failed: %w", err)
-		}
-		// convert the openapi_v2.Document back to Swagger
-		_, err := swagger.FromGnostic(doc)
+	s := string(b)
+	if len(s) > 0 && s[0] != '{' {
+		var err error
+		b, err = k8syaml.YAMLToJSON(b)
 		if err != nil {
 			return errors.Wrap(err)
 		}
-
-	case format == JsonOrYaml:
-		if len(b) > 0 && b[0] != byte('{') {
-			var err error
-			b, err = k8syaml.YAMLToJSON(b)
-			if err != nil {
-				return errors.Wrap(err)
-			}
-		}
-		if err := swagger.UnmarshalJSON(b); err != nil {
-			return errors.Wrap(err)
-		}
 	}
-
+	if err := swagger.UnmarshalJSON(b); err != nil {
+		return errors.Wrap(err)
+	}
 	AddDefinitions(swagger.Definitions)
 	findNamespaceability(swagger.Paths)
+
 	return nil
 }
 
@@ -790,9 +696,6 @@ func findNamespaceability(paths *spec.Paths) {
 }
 
 func resolve(root interface{}, ref *spec.Ref) (*spec.Schema, error) {
-	if s, ok := root.(*spec.Schema); ok && s == nil {
-		return nil, nil
-	}
 	res, _, err := ref.GetPointer().Get(root)
 	if err != nil {
 		return nil, errors.Wrap(err)

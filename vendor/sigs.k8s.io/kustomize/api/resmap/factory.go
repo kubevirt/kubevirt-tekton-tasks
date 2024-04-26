@@ -4,11 +4,11 @@
 package resmap
 
 import (
+	"github.com/pkg/errors"
 	"sigs.k8s.io/kustomize/api/ifc"
 	"sigs.k8s.io/kustomize/api/internal/kusterr"
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/api/types"
-	"sigs.k8s.io/kustomize/kyaml/errors"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
@@ -78,10 +78,10 @@ func (rmF *Factory) NewResMapFromBytes(b []byte) (ResMap, error) {
 func (rmF *Factory) NewResMapFromConfigMapArgs(
 	kvLdr ifc.KvLoader, argList []types.ConfigMapArgs) (ResMap, error) {
 	var resources []*resource.Resource
-	for i := range argList {
-		res, err := rmF.resF.MakeConfigMap(kvLdr, &argList[i])
+	for _, args := range argList {
+		res, err := rmF.resF.MakeConfigMap(kvLdr, &args)
 		if err != nil {
-			return nil, errors.WrapPrefixf(err, "NewResMapFromConfigMapArgs")
+			return nil, errors.Wrap(err, "NewResMapFromConfigMapArgs")
 		}
 		resources = append(resources, res)
 	}
@@ -103,10 +103,10 @@ func (rmF *Factory) FromConfigMapArgs(
 func (rmF *Factory) NewResMapFromSecretArgs(
 	kvLdr ifc.KvLoader, argsList []types.SecretArgs) (ResMap, error) {
 	var resources []*resource.Resource
-	for i := range argsList {
-		res, err := rmF.resF.MakeSecret(kvLdr, &argsList[i])
+	for _, args := range argsList {
+		res, err := rmF.resF.MakeSecret(kvLdr, &args)
 		if err != nil {
-			return nil, errors.WrapPrefixf(err, "NewResMapFromSecretArgs")
+			return nil, errors.Wrap(err, "NewResMapFromSecretArgs")
 		}
 		resources = append(resources, res)
 	}
