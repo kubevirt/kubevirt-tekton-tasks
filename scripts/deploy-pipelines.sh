@@ -10,6 +10,8 @@ USE_RESOLVER_IN_MANIFESTS=false make generate-pipelines
 visit "${REPO_DIR}/release/pipelines"
     for PIPELINE_NAME in "windows-efi-installer" "windows-customize" "windows-bios-installer"; do
         oc apply -f "${PIPELINE_NAME}/${PIPELINE_NAME}.yaml"
+        # uncomment accepting eula in autounattend.xml
+        sed -i "s/<!-- <AcceptEula>true<\/AcceptEula> -->/<AcceptEula>true<\/AcceptEula>/g" "${PIPELINE_NAME}/configmaps/${PIPELINE_NAME}-configmaps.yaml"
         oc apply -f "${PIPELINE_NAME}/configmaps"
     done
 leave
