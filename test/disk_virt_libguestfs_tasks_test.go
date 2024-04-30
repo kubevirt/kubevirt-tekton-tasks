@@ -114,8 +114,8 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 				},
 				TaskData: testconfigs.DiskVirtLibguestfsTaskData{
 					Datavolume: datavolume.NewBlankDataVolume("basic-functionality").
-						WithSize(5, resource.Giga).
-						WithRegistrySource("docker://kubevirt/fedora-cloud-registry-disk-demo").
+						WithSize(15, resource.Giga).
+						WithRegistrySource("docker://quay.io/containerdisks/centos-stream:9-latest").
 						Build(),
 					Commands:           customizeCommand,
 					LibguestfsTaskType: taskType,

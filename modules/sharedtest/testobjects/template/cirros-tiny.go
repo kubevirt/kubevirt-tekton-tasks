@@ -79,7 +79,7 @@ objects:
               rng: {}
             resources:
               requests:
-                memory: 64Mi
+                memory: 128Mi
           networks:
             - name: default
               pod: {}
@@ -87,7 +87,7 @@ objects:
           volumes:
             - name: containerdisk
               containerDisk:
-                image: 'kubevirt/cirros-container-disk-demo:latest'
+                image: 'quay.io/kubevirt/cirros-container-disk-demo:20240426_ca94b81c6'
             - name: cloudinitdisk
               cloudInitNoCloud:
                 userData: |
