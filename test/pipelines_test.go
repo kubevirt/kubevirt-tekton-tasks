@@ -9,15 +9,18 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/test/testconfigs"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/tektoncd/pipeline/pkg/apis/pipeline/pod"
 	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
+	cdi "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 )
 
 var _ = Describe("Pipelines tests", func() {
 	f := framework.NewFramework()
 	It("DV is created, disk-virt-sysprep, create dv, delete dvs", func() {
+		var qemuUser int64 = 107
 		config := &testconfigs.PipelineTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				Timeout: Timeouts.PipelineRunExtraWaitDelay,
@@ -134,6 +137,17 @@ spec:
 				PipelineRef: &pipev1.PipelineRef{
 					Name: "test-pipeline-dvs",
 				},
+				TaskRunSpecs: []pipev1.PipelineTaskRunSpec{
+					{
+						PipelineTaskName: "sysprep-dv",
+						PodTemplate: &pod.PodTemplate{
+							SecurityContext: &corev1.PodSecurityContext{
+								RunAsUser: &qemuUser,
+								FSGroup:   &qemuUser,
+							},
+						},
+					},
+				},
 			},
 		}
 
@@ -144,6 +158,8 @@ spec:
 
 		f.ManagePipelines(config.Pipeline)
 		f.ManagePipelineRuns(config.PipelineRun)
+		f.ManageDataVolumes(&cdi.DataVolume{ObjectMeta: metav1.ObjectMeta{Name: "test-dv", Namespace: f.DeployNamespace}})
+		f.ManageDataVolumes(&cdi.DataVolume{ObjectMeta: metav1.ObjectMeta{Name: "test-dv-updated", Namespace: f.DeployNamespace}})
 
 		runner.NewPipelineRunRunner(f, pipelineRun).
 			CreatePipelineRun().
