@@ -6,7 +6,7 @@ The Pipeline implements this by spinning up a new VirtualMachine which boots fro
 
 ## Prerequisites
 
-- {{ virt_project }} `>= {{ virt_project_version }}`
+- {{ virt_project }} `<= v1.1.0`
 - {{ tekton_project }} `>= {{ tekton_project_version }}`
 
 ### Obtain Windows ISO download URL

@@ -15,7 +15,7 @@ CDI_VERSION=$(curl -s https://api.github.com/repos/kubevirt/containerized-data-i
 TEKTON_VERSION=$(curl -s https://api.github.com/repos/tektoncd/operator/releases | \
             jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
 
-SSP_OPERATOR_VERSION=$(curl -s  https://api.github.com/repos/kubevirt/ssp-operator/releases | \
+INSTANCE_TYPES_VERSION=$(curl -s  https://api.github.com/repos/kubevirt/common-instancetypes/releases | \
             jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
 
 if kubectl get templates > /dev/null 2>&1; then
@@ -42,8 +42,9 @@ kubectl apply -f "https://github.com/kubevirt/containerized-data-importer/releas
 
 kubectl apply -f "https://github.com/kubevirt/containerized-data-importer/releases/download/${CDI_VERSION}/cdi-cr.yaml"
 
-# Deploy SSP
-kubectl apply -f "https://github.com/kubevirt/ssp-operator/releases/download/${SSP_OPERATOR_VERSION}/ssp-operator.yaml"
+# Deploy instance types
+kubectl apply -f "https://github.com/kubevirt/common-instancetypes/releases/download/${INSTANCE_TYPES_VERSION}/common-clusterpreferences-bundle-${INSTANCE_TYPES_VERSION}.yaml"
+kubectl apply -f "https://github.com/kubevirt/common-instancetypes/releases/download/${INSTANCE_TYPES_VERSION}/common-clusterinstancetypes-bundle-${INSTANCE_TYPES_VERSION}.yaml"
 
 # wait for tekton pipelines
 kubectl rollout status -n openshift-operators deployment/openshift-pipelines-operator --timeout 10m
@@ -69,18 +70,3 @@ kubectl wait -n openshift-pipelines deployment tekton-pipelines-webhook --for co
 kubectl rollout status -n cdi deployment/cdi-operator --timeout 10m
 kubectl wait -n kubevirt kv kubevirt --for condition=Available --timeout 10m
 kubectl wait -n kubevirt deployment ssp-operator --for condition=Available --timeout 10m
-
-kubectl create -f - <<EOF
-apiVersion: ssp.kubevirt.io/v1beta2
-kind: SSP
-metadata:
-  name: ssp-sample
-  namespace: kubevirt
-spec:
-  commonTemplates:
-    namespace: openshift
-  templateValidator:
-    replicas: 1
-EOF
-
-kubectl wait -n kubevirt ssp ssp-sample --for condition=Available --timeout 10m

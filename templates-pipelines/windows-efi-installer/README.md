@@ -1,9 +1,9 @@
 # Windows EFI Installer Pipeline
 
-This Pipeline installs Windows 11 or Server 2k22 into a new DataVolume. This DataVolume is suitable to be used as a default boot source
-or golden image for Windows 11 or Server 2k22 VirtualMachines.
+This Pipeline installs Windows 10, 11 or Server 2k22 into a new DataVolume. This DataVolume is suitable to be used as a default boot source
+or golden image for Windows 10, 11 or Server 2k22 VirtualMachines.
 
-This example Pipeline is suitable only for Windows 11 or Server 2k22 (or other Windows versions which require EFI - not tested!). When using this example Pipeline always adjust Pipeline parameters for Windows version you are currently using (e.g. different name, different autoattend config map, different base image name, etc.). Each Windows version requires change in autounattendConfigMapName parameter (e.g. using `windows2k22-autounattend` config map will not work with Windows 11 and vice versa - e.g. due to different storage drivers path).
+This example Pipeline is suitable only for Windows 10, 11 or Server 2k22 (or other Windows versions which require EFI - not tested!). When using this example Pipeline always adjust Pipeline parameters for Windows version you are currently using (e.g. different name, different autoattend config map, different base image name, etc.). Each Windows version requires change in autounattendConfigMapName parameter (e.g. using `windows2k22-autounattend` config map will not work with Windows 11 and vice versa - e.g. due to different storage drivers path).
 
 The Pipeline implements this by modifying the supplied Windows ISO. It extracts all files from the ISO, replaces the prompt bootloader with the no-prompt bootloader and creates a new bootable ISO.
 This helps with automated installation of Windows in EFI boot mode. By default Windows in EFI boot mode uses a prompt bootloader, which will not continue with the boot process until a key is pressed. By replacing it with the no-prompt bootloader no key press is required to boot into the Windows installer. Then Task packs updated packages to new ISO, converts it with qemu-img and replaces original ISO file in PVC.
@@ -21,6 +21,11 @@ After the ISO is modified it creates a new VirtualMachine which boots from the m
 - {{ tekton_project }} `>= {{ tekton_project_version }}`
 - Apply ConfigMaps with Windows sysprep (or select one which you will need) - examples can be found here: https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-efi-installer/configmaps
 
+### Obtain Windows 10 ISO download URL
+
+1. Go to https://www.microsoft.com/en-us/software-download/windows10ISO.
+2. Fill in the edition and `English` language (other languages need to be updated in `windows10-autounattend` ConfigMap) and go to the download page.
+3. Right-click on the 64-bit download button and copy the download link. The link should be valid for 24 hours.
 
 ### Obtain Windows 11 ISO download URL
 

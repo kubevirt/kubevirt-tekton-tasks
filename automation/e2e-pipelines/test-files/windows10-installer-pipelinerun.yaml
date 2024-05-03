@@ -9,5 +9,13 @@ spec:
   params:
     - name: winImageDownloadURL
       value: http://http-server/disk.img
+    - name: preferenceName
+      value: windows.10
+    - name: autounattendConfigMapName
+      value: windows10-efi-autounattend
+    - name: baseDvName
+      value: win10
+    - name: isoDVName
+      value: win10
   pipelineRef:
-    name: windows-bios-installer
+    name: windows-efi-installer
