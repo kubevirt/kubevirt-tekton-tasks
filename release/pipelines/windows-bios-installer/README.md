@@ -70,7 +70,7 @@ spec:
         -   name: name
             value: windows-bios-installer
         -   name: version
-            value: v0.19.0
+            value: v0.20.0
         resolver: hub
 EOF
 ```
