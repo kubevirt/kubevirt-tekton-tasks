@@ -124,7 +124,7 @@ func (d *dataObjectProvider) deleteOldObject(helper *resource.Helper, obj *unstr
 	}
 
 	_, err = helper.Delete(namespace, name)
-	if err != nil {
+	if err != nil && !errors.IsNotFound(err) {
 		return err
 	}
 
