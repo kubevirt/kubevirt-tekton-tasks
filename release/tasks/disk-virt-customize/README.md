@@ -34,7 +34,7 @@ spec:
         -   name: name
             value: disk-virt-customize
         -   name: version
-            value: v0.19.0
+            value: v0.20.0
         resolver: hub
 ```
 

@@ -90,7 +90,7 @@ spec:
         -   name: name
             value: windows-efi-installer
         -   name: version
-            value: v0.19.0
+            value: v0.20.0
         resolver: hub
     taskRunSpecs:
     -   pipelineTaskName: modify-windows-iso-file
@@ -130,7 +130,7 @@ spec:
         -   name: name
             value: windows-efi-installer
         -   name: version
-            value: v0.19.0
+            value: v0.20.0
         resolver: hub
     taskRunSpecs:
     -   pipelineTaskName: modify-windows-iso-file
