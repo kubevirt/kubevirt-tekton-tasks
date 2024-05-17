@@ -13,9 +13,10 @@ if [ -z "${RELEASE_VERSION}" ]; then
   exit 1
 fi
 
+make generate-yaml-tasks
+
 # run only for specified tasks in script arguments
 # or default to all if no arguments specified
-
 visit "${REPO_DIR}/release/tasks"
   if [[ $# -eq 0 ]]; then
     TASK_NAMES=(*)
@@ -34,12 +35,12 @@ visit "${REPO_DIR}/release/tasks"
       if [[ -z ${TEKTON_TASKS_IMAGE} ]]; then
         kubectl apply -n ${DEPLOY_NAMESPACE} -f "${TASK_NAME}.yaml"
       else
-        TASKS_IMAGE="quay.io/kubevirt/tekton-tasks:${RELEASE_VERSION}"
-        DISK_VIRT_IMAGE="quay.io/kubevirt/tekton-tasks-disk-virt:${RELEASE_VERSION}"
-
-        sed "s!${TASKS_IMAGE}!${TEKTON_TASKS_IMAGE}!g" "${TASK_NAME}.yaml" | \
-        sed "s!${DISK_VIRT_IMAGE}!${TEKTON_TASKS_DISK_VIRT_IMAGE}!g" "${TASK_NAME}.yaml"  | \
-        kubectl apply -n ${DEPLOY_NAMESPACE} -f -
+        TASKS_IMAGE="quay.io/kubevirt/tekton-tasks"
+        DISK_VIRT_IMAGE="quay.io/kubevirt/tekton-tasks-disk-virt"
+        
+        sed -i "s!\"${DISK_VIRT_IMAGE}.*!${TEKTON_TASKS_DISK_VIRT_IMAGE}!g" "${TASK_NAME}.yaml" 
+        sed -i "s!\"${TASKS_IMAGE}.*!${TEKTON_TASKS_IMAGE}!g" "${TASK_NAME}.yaml"
+        kubectl apply -n ${DEPLOY_NAMESPACE} -f "${TASK_NAME}.yaml"
       fi
     leave
   done
