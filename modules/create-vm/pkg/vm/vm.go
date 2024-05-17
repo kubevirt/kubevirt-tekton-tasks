@@ -10,7 +10,12 @@ import (
 )
 
 func AddMetadata(vm *kubevirtv1.VirtualMachine, template *templatev1.Template) {
-	tempLabels := k8s.EnsureLabels(&vm.Spec.Template.ObjectMeta)
+	var tempLabels map[string]string
+	if vm.Spec.Template == nil {
+		tempLabels = k8s.EnsureLabels(&vm.ObjectMeta)
+	} else {
+		tempLabels = k8s.EnsureLabels(&vm.Spec.Template.ObjectMeta)
+	}
 
 	if template != nil {
 		labels := k8s.EnsureLabels(&vm.ObjectMeta)
