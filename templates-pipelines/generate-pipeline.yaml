@@ -19,13 +19,10 @@
         path: "{{ item }}"
         state: directory
       with_items:
-        - "{{ bios_pipeline_dir }}"
         - "{{ customize_pipeline_dir }}"
         - "{{ efi_pipeline_dir }}"
-        - "{{ bios_pipeline_dir }}/configmaps"
         - "{{ customize_pipeline_dir }}/configmaps"
         - "{{ efi_pipeline_dir }}/configmaps"
-        - "{{ bios_pipeline_dir }}/pipelineruns"
         - "{{ customize_pipeline_dir }}/pipelineruns"
         - "{{ efi_pipeline_dir }}/pipelineruns"
 
@@ -36,7 +33,6 @@
         mode: "{{ default_file_mode }}"
       with_items:
         - "{{ efi_pipeline_name }}"
-        - "{{ bios_pipeline_name }}"
         - "{{ customize_pipeline_name }}"
 
     - name: "copy manifests"
@@ -46,7 +42,6 @@
         mode: "{{ default_file_mode }}"
       with_items:
         - "{{ efi_pipeline_name }}"
-        - "{{ bios_pipeline_name }}"
         - "{{ customize_pipeline_name }}"
 
     - name: "copy pipelineruns"
@@ -56,7 +51,6 @@
         mode: "{{ default_file_mode }}"
       with_items:
         - { pipeline_name: "{{ efi_pipeline_name }}" }
-        - { pipeline_name: "{{ bios_pipeline_name }}" }
         - { pipeline_name: "{{ customize_pipeline_name }}" }
     
     - name: "copy get iso URL script"
@@ -66,7 +60,6 @@
         mode: "{{ default_file_mode }}"
       with_items:
         - { pipeline_name: "{{ efi_pipeline_name }}" }
-        - { pipeline_name: "{{ bios_pipeline_name }}" }
     
     - name: Generate README
       template:
@@ -80,5 +73,4 @@
         pipeline_runs_yaml: "{{ lookup('file', pipeline_runs_path) | from_yaml_all }}"
       with_items:
         - { pipeline_name: "{{ efi_pipeline_name }}" }
-        - { pipeline_name: "{{ bios_pipeline_name }}" }
         - { pipeline_name: "{{ customize_pipeline_name }}" }

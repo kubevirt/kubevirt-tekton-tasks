@@ -63,11 +63,6 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 
 ## Examples
 
-#### [Windows BIOS Installer Pipeline](release/pipelines/windows-bios-installer)
-
-Downloads a Windows ISO file into a PVC and automatically installs Windows in BIOS mode by using a custom Answer file into a new base DataVolume.
-Supported Windows versions: Windows 10
-
 #### [Windows EFI Installer Pipeline](release/pipelines/windows-efi-installer)
 
 Downloads a Windows ISO file into a PVC and automatically installs Windows 11 or Server 2k22 with EFI enabled by using a custom Answer file into a new base DataVolume.

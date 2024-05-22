@@ -42,10 +42,6 @@ kubectl apply -f "https://github.com/kubevirt/containerized-data-importer/releas
 
 kubectl apply -f "https://github.com/kubevirt/containerized-data-importer/releases/download/${CDI_VERSION}/cdi-cr.yaml"
 
-# Deploy instance types
-kubectl apply -f "https://github.com/kubevirt/common-instancetypes/releases/download/${INSTANCE_TYPES_VERSION}/common-clusterpreferences-bundle-${INSTANCE_TYPES_VERSION}.yaml"
-kubectl apply -f "https://github.com/kubevirt/common-instancetypes/releases/download/${INSTANCE_TYPES_VERSION}/common-clusterinstancetypes-bundle-${INSTANCE_TYPES_VERSION}.yaml"
-
 # wait for tekton pipelines
 kubectl rollout status -n openshift-operators deployment/openshift-pipelines-operator --timeout 10m
 
@@ -69,4 +65,7 @@ kubectl wait -n openshift-pipelines deployment tekton-pipelines-webhook --for co
 # Wait for kubevirt to be available
 kubectl rollout status -n cdi deployment/cdi-operator --timeout 10m
 kubectl wait -n kubevirt kv kubevirt --for condition=Available --timeout 10m
-kubectl wait -n kubevirt deployment ssp-operator --for condition=Available --timeout 10m
+
+# Deploy instance types
+kubectl apply -f "https://github.com/kubevirt/common-instancetypes/releases/download/${INSTANCE_TYPES_VERSION}/common-clusterpreferences-bundle-${INSTANCE_TYPES_VERSION}.yaml"
+kubectl apply -f "https://github.com/kubevirt/common-instancetypes/releases/download/${INSTANCE_TYPES_VERSION}/common-clusterinstancetypes-bundle-${INSTANCE_TYPES_VERSION}.yaml"
