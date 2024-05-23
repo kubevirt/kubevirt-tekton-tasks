@@ -18,6 +18,9 @@ TEKTON_VERSION=$(curl -s https://api.github.com/repos/tektoncd/operator/releases
 SSP_OPERATOR_VERSION=$(curl -s  https://api.github.com/repos/kubevirt/ssp-operator/releases | \
             jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
 
+INSTANCE_TYPES_VERSION=$(curl -s  https://api.github.com/repos/kubevirt/common-instancetypes/releases | \
+            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+
 if kubectl get templates > /dev/null 2>&1; then
   # okd
   COMMON_TEMPLATES_VERSION=$(curl -s https://api.github.com/repos/kubevirt/common-templates/releases | \
@@ -48,6 +51,22 @@ kubectl apply -f "https://github.com/kubevirt/ssp-operator/releases/download/${S
 # wait for tekton pipelines
 kubectl rollout status -n openshift-operators deployment/openshift-pipelines-operator --timeout 10m
 
+kubectl wait -n kubevirt deployment ssp-operator --for condition=Available --timeout 10m
+kubectl create -f - <<EOF
+apiVersion: ssp.kubevirt.io/v1beta2
+kind: SSP
+metadata:
+  name: ssp-sample
+  namespace: kubevirt
+spec:
+  featureGates:
+    deployCommonInstancetypes: false
+  commonTemplates:
+    namespace: openshift
+  templateValidator:
+    replicas: 1
+EOF
+
 # wait until tasks tekton CRD is properly deployed
 timeout 10m bash <<- EOF
   until kubectl get crd tasks.tekton.dev; do
@@ -68,19 +87,7 @@ kubectl wait -n openshift-pipelines deployment tekton-pipelines-webhook --for co
 # Wait for kubevirt to be available
 kubectl rollout status -n cdi deployment/cdi-operator --timeout 10m
 kubectl wait -n kubevirt kv kubevirt --for condition=Available --timeout 10m
-kubectl wait -n kubevirt deployment ssp-operator --for condition=Available --timeout 10m
 
-kubectl create -f - <<EOF
-apiVersion: ssp.kubevirt.io/v1beta2
-kind: SSP
-metadata:
-  name: ssp-sample
-  namespace: kubevirt
-spec:
-  commonTemplates:
-    namespace: openshift
-  templateValidator:
-    replicas: 1
-EOF
-
-kubectl wait -n kubevirt ssp ssp-sample --for condition=Available --timeout 10m
+# Deploy instance types
+kubectl apply -f "https://github.com/kubevirt/common-instancetypes/releases/download/${INSTANCE_TYPES_VERSION}/common-clusterpreferences-bundle-${INSTANCE_TYPES_VERSION}.yaml"
+kubectl apply -f "https://github.com/kubevirt/common-instancetypes/releases/download/${INSTANCE_TYPES_VERSION}/common-clusterinstancetypes-bundle-${INSTANCE_TYPES_VERSION}.yaml"
