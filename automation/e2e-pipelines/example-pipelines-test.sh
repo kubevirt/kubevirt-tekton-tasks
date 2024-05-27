@@ -11,18 +11,29 @@ EOF
 }
 
 function wait_for_pipelinerun() {
-  oc wait -n ${namespace} --for=condition=Succeeded=True pipelinerun -l pipelinerun="$1"-run --timeout=60m &
-  success_pid=$!
+  local sample=10
+  local current_time=0
+  local timeout=2000
+  while  [ $current_time -lt $timeout ]; do
+    sleep $sample
+  
+    condition_reason=$(oc get pipelinerun -l pipelinerun="$1"-run -o json | jq -r '.items[0].status.conditions[]| select(.type=="Succeeded").reason')
+    if [ "$condition_reason" = "Succeeded" ]; then
+      echo "Pipelinerun $1 succeeded"
+      break
+    fi
 
-  oc wait -n ${namespace} --for=condition=Succeeded=False pipelinerun -l pipelinerun="$1"-run --timeout=60m && exit 1 &
-  failure_pid=$!
+    if [ "$condition_reason" = "Failed" ]; then
+      echo "Pipelinerun $1 failed"
+      exit 1
+    fi
 
-  if wait -n $success_pid $failure_pid ; then
-    echo "Pipelinerun $1 succeeded"
-  else
-    echo "Pipelinerun $1 failed"
-    exit 1
-  fi
+    (( current_time+=sample ))
+    if [ $current_time -ge $timeout ]; then
+      echo "Pipelinerun $1 timed out"
+      exit 1
+    fi
+  done
 }
 
 cp -L "$KUBECONFIG" /tmp/kubeconfig && export KUBECONFIG=/tmp/kubeconfig
