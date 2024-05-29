@@ -98,7 +98,7 @@ data:
             </OSImage>
           </ImageInstall>
           <UserData>
-            <!-- <AcceptEula>true</AcceptEula> -->
+            <AcceptEula>false</AcceptEula>
             <ProductKey>
               <Key/>
             </ProductKey>
@@ -250,7 +250,7 @@ data:
                     </OSImage>
                 </ImageInstall>
                 <UserData>
-                    <AcceptEula>true</AcceptEula>
+                    <AcceptEula>false</AcceptEula>
                     <FullName>AdminAccount</FullName>
                     <Organization>OrgName</Organization>
                 </UserData>
@@ -397,7 +397,7 @@ data:
             </OSImage>
           </ImageInstall>
           <UserData>
-            <!-- <AcceptEula>true</AcceptEula> -->
+            <AcceptEula>false</AcceptEula>
             <ProductKey>
               <Key/>
             </ProductKey>
