@@ -1,4 +1,4 @@
-# cloud.google.com/go/iam v1.1.7
+# cloud.google.com/go/iam v1.1.8
 ## explicit; go 1.19
 # contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d
 ## explicit; go 1.13
@@ -73,11 +73,11 @@ github.com/docker/distribution/registry/client/auth/challenge
 # github.com/docker/docker v26.1.3+incompatible
 ## explicit
 github.com/docker/docker/pkg/homedir
-# github.com/docker/docker-credential-helpers v0.8.1
+# github.com/docker/docker-credential-helpers v0.8.2
 ## explicit; go 1.19
 github.com/docker/docker-credential-helpers/client
 github.com/docker/docker-credential-helpers/credentials
-# github.com/emicklei/go-restful/v3 v3.12.0
+# github.com/emicklei/go-restful/v3 v3.12.1
 ## explicit; go 1.13
 github.com/emicklei/go-restful/v3
 github.com/emicklei/go-restful/v3/log
@@ -101,7 +101,7 @@ github.com/go-kit/log/level
 # github.com/go-logfmt/logfmt v0.6.0
 ## explicit; go 1.17
 github.com/go-logfmt/logfmt
-# github.com/go-logr/logr v1.4.1
+# github.com/go-logr/logr v1.4.2
 ## explicit; go 1.18
 github.com/go-logr/logr
 github.com/go-logr/logr/funcr
@@ -400,8 +400,8 @@ github.com/prometheus/statsd_exporter/pkg/mapper/fsm
 # github.com/secure-systems-lab/go-securesystemslib v0.8.0
 ## explicit; go 1.20
 github.com/secure-systems-lab/go-securesystemslib/encrypted
-# github.com/sigstore/sigstore v1.8.3
-## explicit; go 1.20
+# github.com/sigstore/sigstore v1.8.4
+## explicit; go 1.21
 github.com/sigstore/sigstore/pkg/cryptoutils
 github.com/sigstore/sigstore/pkg/signature
 github.com/sigstore/sigstore/pkg/signature/options
@@ -422,7 +422,7 @@ github.com/stoewer/go-strcase
 ## explicit; go 1.17
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# github.com/tektoncd/pipeline v0.59.0
+# github.com/tektoncd/pipeline v0.60.1
 ## explicit; go 1.21
 github.com/tektoncd/pipeline/internal/artifactref
 github.com/tektoncd/pipeline/pkg/apis/config
@@ -469,14 +469,14 @@ github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1/task
 github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1/task/fake
 github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1/taskrun
 github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1/taskrun/fake
-github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1alpha1/stepaction
-github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1alpha1/stepaction/fake
 github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1alpha1/verificationpolicy
 github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1alpha1/verificationpolicy/fake
 github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1beta1/clustertask
 github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1beta1/clustertask/fake
 github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1beta1/customrun
 github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1beta1/customrun/fake
+github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1beta1/stepaction
+github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1beta1/stepaction/fake
 github.com/tektoncd/pipeline/pkg/client/listers/pipeline/v1
 github.com/tektoncd/pipeline/pkg/client/listers/pipeline/v1alpha1
 github.com/tektoncd/pipeline/pkg/client/listers/pipeline/v1beta1
@@ -513,7 +513,6 @@ github.com/tektoncd/pipeline/pkg/result
 github.com/tektoncd/pipeline/pkg/spire/config
 github.com/tektoncd/pipeline/pkg/substitution
 github.com/tektoncd/pipeline/test
-github.com/tektoncd/pipeline/test/diff
 # github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399
 ## explicit
 github.com/titanous/rocacheck
@@ -647,17 +646,17 @@ golang.org/x/tools/go/ast/inspector
 # gomodules.xyz/jsonpatch/v2 v2.4.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2
-# google.golang.org/api v0.181.0
+# google.golang.org/api v0.182.0
 ## explicit; go 1.20
 google.golang.org/api/support/bundler
 # google.golang.org/genproto v0.0.0-20240401170217-c3f982113cda
 ## explicit; go 1.19
-# google.golang.org/genproto/googleapis/api v0.0.0-20240513163218-0867130af1f8
-## explicit; go 1.19
+# google.golang.org/genproto/googleapis/api v0.0.0-20240520151616-dc85e6b867a5
+## explicit; go 1.20
 google.golang.org/genproto/googleapis/api/expr/v1alpha1
 google.golang.org/genproto/googleapis/api/httpbody
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20240513163218-0867130af1f8
-## explicit; go 1.19
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20240521202816-d264139d666e
+## explicit; go 1.20
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.64.0
 ## explicit; go 1.19
