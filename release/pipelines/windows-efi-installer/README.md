@@ -111,6 +111,47 @@ oc create -f - <<EOF
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
+    generateName: windows10-installer-run-
+spec:
+    params:
+    -   name: winImageDownloadURL
+        value: ${WIN_IMAGE_DOWNLOAD_URL}
+    -   name: preferenceName
+        value: windows.10.virtio
+    -   name: autounattendConfigMapName
+        value: windows10-efi-autounattend
+    -   name: baseDvName
+        value: win10
+    -   name: isoDVName
+        value: win10
+    pipelineRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-pipelines
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: pipeline
+        -   name: name
+            value: windows-efi-installer
+        -   name: version
+            value: v0.20.0
+        resolver: hub
+    taskRunSpecs:
+    -   pipelineTaskName: modify-windows-iso-file
+        podTemplate:
+            securityContext:
+                fsGroup: 1001
+                runAsGroup: 1001
+                runAsUser: 1001
+    timeout: 1h0m0s
+EOF
+```
+```yaml
+oc create -f - <<EOF
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
     generateName: windows2k22-installer-run-
 spec:
     params:
