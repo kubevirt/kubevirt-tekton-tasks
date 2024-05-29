@@ -12,6 +12,6 @@ spec:
     - name: baseDvName
       value: win10-customized
     - name: preferenceName
-      value: windows.10
+      value: windows.10.virtio
   pipelineRef:
     name: windows-customize

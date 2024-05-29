@@ -72,7 +72,7 @@ spec:
     -   name: baseDvName
         value: win2k22-customized
     -   name: preferenceName
-        value: windows.2k22
+        value: windows.2k22.virtio
     -   name: customizeConfigMapName
         value: windows-sqlserver
     pipelineRef:
@@ -103,7 +103,7 @@ spec:
     -   name: baseDvName
         value: win10-customized
     -   name: preferenceName
-        value: windows.10
+        value: windows.10.virtio
     pipelineRef:
         params:
         -   name: catalog
