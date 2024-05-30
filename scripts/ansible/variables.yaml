@@ -1,4 +1,7 @@
 os_image_namespace: kubevirt-os-images
 catalog: kubevirt-tekton-tasks
+openshift_client_catalog: tekton-catalog-tasks
+openshift_client_task_version: 0.2.0
+openshift_client_oc_version: latest
 catalog_type: artifact
 pipelines_catalog: kubevirt-tekton-pipelines

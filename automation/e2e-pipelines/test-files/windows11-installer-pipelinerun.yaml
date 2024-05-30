@@ -11,5 +11,7 @@ spec:
       value: http://http-server/disk.img
     - name: baseDvNamespace
       value: kubevirt
+    - name: acceptEula
+      value: "true"
   pipelineRef:
     name: windows-efi-installer

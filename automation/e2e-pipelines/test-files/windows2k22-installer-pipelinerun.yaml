@@ -9,6 +9,8 @@ spec:
   params:
     - name: winImageDownloadURL
       value: http://http-server/disk.img
+    - name: acceptEula
+      value: "true"
     - name: preferenceName
       value: windows.2k22
     - name: autounattendConfigMapName

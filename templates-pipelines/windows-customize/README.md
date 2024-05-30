@@ -21,20 +21,20 @@ The provided reference ConfigMap (`windows-sqlserver`) boots Windows 10, 11 or W
 ## Pipeline Description
 
 ```
-  copy-vm-root-disk --- create-vm --- wait-for-vmi-status --- cleanup-vm
+  import-unattend-configmaps --- copy-vm-root-disk --- create-vm --- wait-for-vmi-status --- cleanup-vm --- delete-imported-configmaps
 ```
-
-1. `copy-vm-root-disk` Task copies PVC defined in `sourceDiskImageName` and `sourceDiskImageNamespace` parameters.
-2. `create-vm` Task creates a VirtualMachine called `windows-customize-*` from the base DataVolume and with the customize ConfigMap attached as a CD-ROM (Pipeline parameter `customizeConfigMapName`). The VirtualMachine has to be created in the same namespace as the source DataVolume.
-3. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
-4. `cleanup-vm` deletes the installer VirtualMachine (also in case of failure of the previous Tasks).
-5. The output artifact will be the `win*-customized` DataVolume with the customized Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used (depends on the applied customizations).
-6. The `windows11-unattend` ConfigMap can be used to boot the VirtualMachine into the Desktop (depends on the applied customizations).
+1. `import-unattend-configmaps` imports ConfigMap with `unattend.xml` needed for automated customization of Windows.
+2. `copy-vm-root-disk` Task copies PVC defined in `sourceDiskImageName` and `sourceDiskImageNamespace` parameters.
+3. `create-vm` Task creates a VirtualMachine called `windows-customize-*` from the base DataVolume and with the customize ConfigMap attached as a CD-ROM (Pipeline parameter `customizeConfigMapName`). The VirtualMachine has to be created in the same namespace as the source DataVolume.
+4. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
+5. `cleanup-vm` deletes the installer VirtualMachine (also in case of failure of the previous Tasks).
+6. The output artifact will be the `win*-customized` DataVolume with the customized Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used (depends on the applied customizations).
+7. The `windows11-unattend` ConfigMap can be used to boot the VirtualMachine into the Desktop (depends on the applied customizations).
+8. `delete-imported-configmaps` deletes imported ConfigMaps.
 
 ## How to run
 
-Before you create PipelineRuns, you must create ConfigMaps with an autounattend.xml in the same namespace in which the VirtualMachine will be created.
-Examples of ConfigMaps can be found [here](https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-customize/configmaps).
+The pipeline uses a ConfigMap containing an `unattend.xml` file for automated customization of Windows. Example ConfigMaps are deployed within the Pipeline. In case you would like to use a different ConfigMap, specify a different URL in the `unattendXMLConfigMapsURL` parameter and adjust `customizeConfigMapName` parameter with correct the `ConfigMap` name. Examples of ConfigMaps can be found [here](https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-customize/configmaps).
 
 Pipeline runs with resolvers:
 {% for item in pipeline_runs_yaml %}

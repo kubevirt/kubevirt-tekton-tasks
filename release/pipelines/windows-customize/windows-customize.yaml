@@ -25,6 +25,10 @@ spec:
     reused for customizing Windows 10, 11 or server 2k22. Different OS versions 
     requires different customizeConfigMapName parameter with unattend.xml.
   params:
+    - name: unattendXMLConfigMapsURL
+      description: Allows to specify a download URL to a file with ConfigMaps containing a Windows `unattend.xml` file. These ConfigMaps can be used for automated customization of Windows. Specify the desired ConfigMap name in `customizeConfigMapName` parameter.
+      type: string
+      default: https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/release/pipelines/windows-customize/configmaps/windows-customize-configmaps.yaml
     - name: instanceTypeName
       type: string
       description: Name of VirtualMachineClusterInstancetype object
@@ -54,7 +58,28 @@ spec:
       type: string
       default: win11-customized
   tasks:
+    - name: import-unattend-configmaps
+      params:
+        - name: SCRIPT
+          value: oc apply -f $(params.unattendXMLConfigMapsURL)
+        - name: VERSION
+          value: latest
+      taskRef:
+        resolver: hub
+        params:
+          - name: catalog
+            value: tekton-catalog-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: version
+            value: 0.2.0
     - name: copy-vm-root-disk
+      runAfter:
+        - import-unattend-configmaps
       taskRef:
         resolver: hub
         params:
@@ -187,6 +212,25 @@ spec:
             value: cleanup-vm
           - name: version
             value: v0.20.0
+    - name: delete-imported-configmaps
+      params:
+        - name: SCRIPT
+          value: oc delete -f $(params.unattendXMLConfigMapsURL)
+        - name: VERSION
+          value: latest
+      taskRef:
+        resolver: hub
+        params:
+          - name: catalog
+            value: tekton-catalog-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: version
+            value: 0.2.0
   results:
     - name: baseDvName
       description: Name of the created base DataVolume
