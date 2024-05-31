@@ -10,7 +10,7 @@ spec:
     - name: winImageDownloadURL
       value: http://http-server/disk.img
     - name: preferenceName
-      value: windows.10
+      value: windows.10.virtio
     - name: autounattendConfigMapName
       value: windows10-efi-autounattend
     - name: baseDvName

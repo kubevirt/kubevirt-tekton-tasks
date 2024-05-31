@@ -39,7 +39,7 @@ spec:
     - name: preferenceName
       type: string
       description: Name of VirtualMachineClusterPreference object
-      default: windows.11
+      default: windows.11.virtio
     - name: virtualMachinePreferenceKind
       type: string
       description: Kind of virtualMachinePreference object
