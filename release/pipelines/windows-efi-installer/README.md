@@ -66,7 +66,7 @@ After the ISO is modified it creates a new VirtualMachine which boots from the m
 
 ## How to run
 
-Pipeline uses ConfigMaps with `autounattend.xml` file for automated installation of Windows from ISO file. Example ConfigMaps are deployed within the Pipeline. In case you would like to use a different ConfigMap, specify a different URL in the `autounattendXMLConfigMapsURL` parameter and adjust `autounattendConfigMapName` parameter with the correct ConfigMap name. Examples of ConfigMaps can be found [here](https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-efi-installer/configmaps).
+Pipeline uses ConfigMaps with `autounattend.xml` file for automated installation of Windows from ISO file. Example ConfigMaps are deployed within the Pipeline. In case you would like to use a different ConfigMap, specify a different URL in the `autounattendXMLConfigMapsURL` parameter and adjust `autounattendConfigMapName` parameter with the correct ConfigMap name. Examples of ConfigMaps can be found [here](https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-efi-installer/configmaps). Pipeline automatically removes ConfigMaps at the end of the PipelineRun. If the content available in `autounattendXMLConfigMapsURL` changes during the Pipeline run, Pipeline may not remove all the objects it created.
 
 > [!IMPORTANT]
 > Example PipelineRuns have special parameter acceptEula. By setting this parameter, you are agreeing to the applicable 
