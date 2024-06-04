@@ -50,26 +50,28 @@ After the ISO is modified it creates a new VirtualMachine which boots from the m
 ## Pipeline Description
 
 ```
-  import-win-iso --- modify-windows-iso-file --- create-vm --- wait-for-vmi-status --- cleanup-vm
-                                              |
-                       create-vm-root-disk --- 
+  import-autounattend-configmaps --- import-win-iso --- modify-windows-iso-file --- create-vm --- wait-for-vmi-status --- cleanup-vm --- delete-imported-configmaps
+                                                     |
+                              create-vm-root-disk --- 
 ```
-
-1. `create-vm-root-disk` creates empty DataVolume which is used for Windows installation.
-2. `import-win-iso` creates new DataVolume with Windows ISO file with name defined in `isoDVName` parameter. The DataVolume needs to be in the same namespace as the PipelineRun (because the PVC is mounted into the PipelineRun pod).
-3. `modify-windows-iso-file` extracts imported ISO file, replaces prompt bootloader (which is used as a default one when EFI is used) with no-prompt bootloader, pack the updated files back to new ISO, convert the ISO and replaces original ISO with updated one.Replacement of bootloader is needed to be able to automate installation of Windows versions which require EFI.
-4. `create-vm` Task creates a VirtualMachine. A DataVolume with the Windows source ISO will be attached as CD-ROM and a second empty DataVolume will be used as installation destination. A third DataVolume with the virtio-win ISO will also be attached (Pipeline parameter `virtioContainerDiskName`). The VirtualMachine has to be created in the same namespace as the DataVolume with the ISO file. In case you would like to run the VirtualMachine in a different namespace, both Datavolumes have to be copied to the same namespace as the VirtualMachine.
-5. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
-6. `cleanup-vm` deletes the installer VirtualMachine and all of its DataVolumes.
-7. The output artifact will be the `baseDvName`/`baseDvNamespace` DataVolume with the basic Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used.
+1. `import-autounattend-configmaps` imports ConfigMap with `autounattend.xml` needed for automated installation of Windows.
+2. `create-vm-root-disk` creates empty DataVolume which is used for Windows installation.
+3. `import-win-iso` creates new DataVolume with Windows ISO file with name defined in `isoDVName` parameter. The DataVolume needs to be in the same namespace as the PipelineRun (because the PVC is mounted into the PipelineRun pod).
+4. `modify-windows-iso-file` extracts imported ISO file, replaces prompt bootloader (which is used as a default one when EFI is used) with no-prompt bootloader, pack the updated files back to new ISO, convert the ISO and replaces original ISO with updated one.Replacement of bootloader is needed to be able to automate installation of Windows versions which require EFI.
+5. `create-vm` Task creates a VirtualMachine. A DataVolume with the Windows source ISO will be attached as CD-ROM and a second empty DataVolume will be used as installation destination. A third DataVolume with the virtio-win ISO will also be attached (Pipeline parameter `virtioContainerDiskName`). The VirtualMachine has to be created in the same namespace as the DataVolume with the ISO file. In case you would like to run the VirtualMachine in a different namespace, both Datavolumes have to be copied to the same namespace as the VirtualMachine.
+6. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
+7. `cleanup-vm` deletes the installer VirtualMachine and all of its DataVolumes.
+8. The output artifact will be the `baseDvName`/`baseDvNamespace` DataVolume with the basic Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used.
+9. `delete-imported-configmaps` deletes imported ConfigMaps.
 
 ## How to run
 
-Before you create PipelineRuns, you must create ConfigMaps with an autounattend.xml in the same namespace in which the VirtualMachine will be created.
-Examples of ConfigMaps can be found [here](https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-efi-installer/configmaps). Before applying ConfigMap, replace the lines `<AcceptEula>false<\/AcceptEula>` with `<AcceptEula>true<\/AcceptEula>`, or run this command:
-```
-sed -i "s/<AcceptEula>false<\/AcceptEula>/<AcceptEula>true<\/AcceptEula>/g" "configmaps/windows-efi-installer-configmaps.yaml"
-```
+Pipeline uses ConfigMaps with `autounattend.xml` file for automated installation of Windows from ISO file. Example ConfigMaps are deployed within the Pipeline. In case you would like to use a different ConfigMap, specify a different URL in the `autounattendXMLConfigMapsURL` parameter and adjust `autounattendConfigMapName` parameter with the correct ConfigMap name. Examples of ConfigMaps can be found [here](https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-efi-installer/configmaps). Pipeline automatically removes ConfigMaps at the end of the PipelineRun. If the content available in `autounattendXMLConfigMapsURL` changes during the Pipeline run, Pipeline may not remove all the objects it created.
+
+> [!IMPORTANT]
+> Example PipelineRuns have special parameter acceptEula. By setting this parameter, you are agreeing to the applicable 
+> Microsoft end user license agreement(s) for each deployment or installation for the Microsoft product(s). In case you 
+> set it to false, the Pipeline will exit in first task.
 
 Pipeline runs with resolvers:
 ```yaml
@@ -84,6 +86,8 @@ spec:
     params:
     -   name: winImageDownloadURL
         value: ${WIN_IMAGE_DOWNLOAD_URL}
+    -   name: acceptEula
+        value: false
     pipelineRef:
         params:
         -   name: catalog
@@ -157,6 +161,8 @@ spec:
     params:
     -   name: winImageDownloadURL
         value: ${WIN_IMAGE_DOWNLOAD_URL}
+    -   name: acceptEula
+        value: false
     -   name: preferenceName
         value: windows.2k22.virtio
     -   name: autounattendConfigMapName

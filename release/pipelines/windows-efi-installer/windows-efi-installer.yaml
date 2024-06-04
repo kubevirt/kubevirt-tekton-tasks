@@ -28,6 +28,13 @@ spec:
     - description: Download URL to Windows 11 or server 2022 installation ISO (English United States x64 version is needed). You can follow https://www.microsoft.com/en-us/software-download/windows11 or https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022 to get one.
       name: winImageDownloadURL
       type: string
+    - name: acceptEula
+      description: By setting this parameter, you are agreeing to the applicable Microsoft end user license agreement(s) for each deployment or installation for the Microsoft product(s).
+      type: string
+    - name: autounattendXMLConfigMapsURL
+      description: Download URL to ConfigMaps with Windows autounattend.xml file. ConfigMap is used for automated installation of Windows from ISO file. Specify the correct ConfigMap name in `autounattendConfigMapName` parameter.
+      type: string
+      default: https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/release/pipelines/windows-efi-installer/configmaps/windows-efi-installer-configmaps.yaml
     - name: instanceTypeName
       type: string
       description: Name of VirtualMachineClusterInstancetype object
@@ -61,6 +68,34 @@ spec:
       name: isoDVName
       type: string
   tasks:
+    - name: import-autounattend-configmaps
+      params:
+        - name: SCRIPT
+          value: |-
+            if [ "$(params.acceptEula)" ]; then
+              curl $(params.autounattendXMLConfigMapsURL) | \
+              sed "s/<AcceptEula>false<\/AcceptEula>/<AcceptEula>true<\/AcceptEula>/g" | \
+              oc apply -f - 
+            else
+              echo "Microsoft Eula is not accepted"
+              echo "Exiting"
+              exit 1
+            fi
+        - name: VERSION
+          value: latest
+      taskRef:
+        resolver: hub
+        params:
+          - name: catalog
+            value: tekton-catalog-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: version
+            value: 0.2.0
     - name: import-win-iso
       params:
         - name: manifest
@@ -116,6 +151,8 @@ spec:
           - name: version
             value: v0.20.0
     - name: create-vm-root-disk
+      runAfter:
+        - import-autounattend-configmaps
       taskRef:
         resolver: hub
         params:
@@ -290,6 +327,25 @@ spec:
             value: modify-data-object
           - name: version
             value: v0.20.0
+    - name: delete-imported-configmaps
+      params:
+        - name: SCRIPT
+          value: oc delete -f $(params.autounattendXMLConfigMapsURL)
+        - name: VERSION
+          value: latest
+      taskRef:
+        resolver: hub
+        params:
+          - name: catalog
+            value: tekton-catalog-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: version
+            value: 0.2.0
   results:
     - description: Name of the created base DataVolume
       name: baseDvName
