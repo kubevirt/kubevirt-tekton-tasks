@@ -16,7 +16,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.20.0
+    app.kubernetes.io/version: v0.21.0
   name: execute-in-vm
 spec:
   description: >-
@@ -47,7 +47,7 @@ spec:
       default: ""
   steps:
     - name: execute-in-vm
-      image: "quay.io/kubevirt/tekton-tasks:v0.20.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.21.0"
       command:
         - entrypoint
       args:

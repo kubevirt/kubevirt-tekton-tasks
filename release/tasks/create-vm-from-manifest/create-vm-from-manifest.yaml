@@ -16,7 +16,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.20.0
+    app.kubernetes.io/version: v0.21.0
   name: create-vm-from-manifest
 spec:
   description: >-
@@ -51,7 +51,7 @@ spec:
       description: The namespace of a VM that was created.
   steps:
     - name: createvm
-      image: "quay.io/kubevirt/tekton-tasks:v0.20.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.21.0"
       command:
         - create-vm
       args:

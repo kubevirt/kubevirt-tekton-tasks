@@ -16,7 +16,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.20.0
+    app.kubernetes.io/version: v0.21.0
   name: modify-data-object
 spec:
   description: >-
@@ -57,7 +57,7 @@ spec:
       description: The namespace of the data object that was created.
   steps:
     - name: modify-data-object
-      image: "quay.io/kubevirt/tekton-tasks:v0.20.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.21.0"
       command:
         - modify-data-object
       args:

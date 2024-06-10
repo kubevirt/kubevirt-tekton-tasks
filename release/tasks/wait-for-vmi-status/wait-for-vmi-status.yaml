@@ -16,7 +16,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.20.0
+    app.kubernetes.io/version: v0.21.0
   name: wait-for-vmi-status
 spec:
   description: >-
@@ -39,7 +39,7 @@ spec:
       description: A label selector expression to decide if the VirtualMachineInstance (VMI) is in a failed state. Eg. "status.phase in (Failed, Unknown)". It is evaluated on each VMI update and will result in this task failing if true.
   steps:
     - name: wait-for-vmi-status
-      image: "quay.io/kubevirt/tekton-tasks:v0.20.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.21.0"
       command:
         - entrypoint
       env:
