@@ -17,7 +17,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.20.0
+    app.kubernetes.io/version: v0.21.0
   name: modify-vm-template
 spec:
   description: >-
@@ -108,7 +108,7 @@ spec:
       description: The namespace of a template that was updated.
   steps:
     - name: modifyvmtemplate
-      image: "quay.io/kubevirt/tekton-tasks:v0.20.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.21.0"
       command:
         - modify-vm-template
       args:

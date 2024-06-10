@@ -16,7 +16,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.20.0
+    app.kubernetes.io/version: v0.21.0
   name: modify-windows-iso-file
 spec:
   description: >-
@@ -39,7 +39,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.20.0"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.21.0"
       script: |
         #!/bin/bash
         set -x
@@ -86,7 +86,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-tasks:v0.20.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.21.0"
       script: |
         #!/bin/bash
         set -ex
@@ -113,7 +113,7 @@ spec:
         capabilities:
           drop:
           - "ALL"
-      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.20.0"
+      image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.21.0"
       script: |
         #!/bin/bash
         set -x

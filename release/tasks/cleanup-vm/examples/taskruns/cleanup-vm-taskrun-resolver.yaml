@@ -16,7 +16,7 @@ spec:
     - name: name
       value: cleanup-vm
     - name: version
-      value: v0.20.0
+      value: v0.21.0
   params:
     - name: vmName
       value: vm-example
