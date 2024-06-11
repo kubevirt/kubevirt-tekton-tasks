@@ -36,6 +36,11 @@ The provided reference ConfigMap (`windows-sqlserver`) boots Windows 10, 11 or W
 
 The pipeline uses a ConfigMap containing an `unattend.xml` file for automated customization of Windows. Example ConfigMaps are deployed within the Pipeline. In case you would like to use a different ConfigMap, specify a different URL in the `unattendXMLConfigMapsURL` parameter and adjust `customizeConfigMapName` parameter with correct the `ConfigMap` name. Examples of ConfigMaps can be found [here](https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-customize/configmaps).
 
+> [!NOTE]
+> By default, the Pipeline requires the ServiceAccount `pipeline` to exist. Tekton does not create this ServiceAccount 
+> in namespaces which name starts with `openshift` or `kube`. In case you would like to run this Pipeline in a namespace which 
+> starts with `openshift` or `kube`, you have to create the `pipeline` ServiceAccount manually or specify a different ServiceAccount in the PipelineRun.
+
 Pipeline runs with resolvers:
 ```yaml
 oc create -f - <<EOF
