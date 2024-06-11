@@ -73,6 +73,11 @@ Pipeline uses ConfigMaps with `autounattend.xml` file for automated installation
 > Microsoft end user license agreement(s) for each deployment or installation for the Microsoft product(s). In case you 
 > set it to false, the Pipeline will exit in first task.
 
+> [!NOTE]
+> By default, the Pipeline requires the ServiceAccount `pipeline` to exist. Tekton does not create this ServiceAccount 
+> in namespaces which name starts with `openshift` or `kube`. In case you would like to run this Pipeline in a namespace which 
+> starts with `openshift` or `kube`, you have to create the `pipeline` ServiceAccount manually or specify a different ServiceAccount in the PipelineRun.
+
 Pipeline runs with resolvers:
 {% for item in pipeline_runs_yaml %}
 ```yaml
