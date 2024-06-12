@@ -13,7 +13,7 @@ This helps with automated installation of Windows in EFI boot mode. By default W
 > inside ISO file, the `modify-windows-iso-file` task will exit and whole Pipeline will fail. In case your ISO file has 
 > different file structure, update `modify-windows-iso-file` task accordingly.
 
-After the ISO is modified it creates a new VirtualMachine which boots from the modified Windows installation image (ISO file). The installation of Windows is automatically executed and controlled by a Windows answer file. Then the Pipeline will wait for the installation to complete and will delete the created VirtualMachine while keeping the resulting DataVolume with the installed operating system. The Pipeline can be customized to support different installation requirements.
+After the ISO is modified it creates a new VirtualMachine which boots from the modified Windows installation image (ISO file). The installation of Windows is automatically executed and controlled by a Windows answer file. Then the Pipeline will wait for the installation to complete and will delete the created VirtualMachine while keeping the resulting DataSource/DataVolume with the installed operating system. The Pipeline can be customized to support different installation requirements.
 
 ## Prerequisites
 
@@ -50,9 +50,9 @@ After the ISO is modified it creates a new VirtualMachine which boots from the m
 ## Pipeline Description
 
 ```
-  import-autounattend-configmaps --- import-win-iso --- modify-windows-iso-file --- create-vm --- wait-for-vmi-status --- cleanup-vm --- delete-imported-configmaps
+  import-autounattend-configmaps --- import-win-iso --- modify-windows-iso-file --- create-vm --- wait-for-vmi-status --- create-datasource-root-disk --- cleanup-vm --- delete-imported-configmaps
                                                      |
-                              create-vm-root-disk --- 
+                              create-vm-root-disk ---
 ```
 1. `import-autounattend-configmaps` imports ConfigMap with `autounattend.xml` needed for automated installation of Windows.
 2. `create-vm-root-disk` creates empty DataVolume which is used for Windows installation.
@@ -60,9 +60,10 @@ After the ISO is modified it creates a new VirtualMachine which boots from the m
 4. `modify-windows-iso-file` extracts imported ISO file, replaces prompt bootloader (which is used as a default one when EFI is used) with no-prompt bootloader, pack the updated files back to new ISO, convert the ISO and replaces original ISO with updated one.Replacement of bootloader is needed to be able to automate installation of Windows versions which require EFI.
 5. `create-vm` Task creates a VirtualMachine. A DataVolume with the Windows source ISO will be attached as CD-ROM and a second empty DataVolume will be used as installation destination. A third DataVolume with the virtio-win ISO will also be attached (Pipeline parameter `virtioContainerDiskName`). The VirtualMachine has to be created in the same namespace as the DataVolume with the ISO file. In case you would like to run the VirtualMachine in a different namespace, both Datavolumes have to be copied to the same namespace as the VirtualMachine.
 6. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
-7. `cleanup-vm` deletes the installer VirtualMachine and all of its DataVolumes.
-8. The output artifact will be the `baseDvName`/`baseDvNamespace` DataVolume with the basic Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used.
-9. `delete-imported-configmaps` deletes imported ConfigMaps.
+7. `create-datasource-root-disk` Task creates a DataSource object, which is used by UI for discovering bootable volumes and links PVC created in `create-vm-root-disk` step.
+8. `cleanup-vm` deletes the installer VirtualMachine and all of its DataVolumes.
+9. The output artifact will be the `baseDvName`/`baseDvNamespace` DataVolume with the basic Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used.
+10. `delete-imported-configmaps` deletes imported ConfigMaps.
 
 ## How to run
 
@@ -92,7 +93,7 @@ oc create -f - <<EOF
 
 ## Cancelling/Deleting PipelineRuns
 
-When running the example Pipelines, they create temporary objects (DataVolumes, VirtualMachines, etc.). Each Pipeline has its own clean up system which should keep the cluster clean from leftovers. In case user hard deletes or cancels running PipelineRun, the PipelineRun will not clean temporary objects and objects will stay in the cluster and then they have to be deleted manually. To prevent this behaviour, cancel the [PipelineRun gracefully](https://tekton.dev/docs/pipelines/pipelineruns/#gracefully-cancelling-a-pipelinerun). It triggers special Tasks, which remove temporary objects and keep only result DataVolume/PVC.
+When running the example Pipelines, they create temporary objects (DataVolumes, VirtualMachines, etc.). Each Pipeline has its own clean up system which should keep the cluster clean from leftovers. In case user hard deletes or cancels running PipelineRun, the PipelineRun will not clean temporary objects and objects will stay in the cluster and then they have to be deleted manually. To prevent this behaviour, cancel the [PipelineRun gracefully](https://tekton.dev/docs/pipelines/pipelineruns/#gracefully-cancelling-a-pipelinerun). It triggers special Tasks, which remove temporary objects and keep only result DataSource/DataVolume/PVC.
 
 windows-efi-installer Pipeline generates for each PipelineRun new source DataVolume which contains imported ISO file. This DataVolume has generated name and is deleted after Pipeline succeeds. However, the created PVC will stay in cluster, but it will have terminating state. It will wait, until pipelinRun is deleted. This behaviour is caused by a fact, that PVC is mounted into modify-windows-iso TaskRun pod and PVC can be deleted only when the pod does not 
 exist.

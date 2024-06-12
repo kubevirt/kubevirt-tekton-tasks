@@ -21,16 +21,17 @@ The provided reference ConfigMap (`windows-sqlserver`) boots Windows 10, 11 or W
 ## Pipeline Description
 
 ```
-  import-unattend-configmaps --- copy-vm-root-disk --- create-vm --- wait-for-vmi-status --- cleanup-vm --- delete-imported-configmaps
+  import-unattend-configmaps --- copy-vm-root-disk --- create-vm --- wait-for-vmi-status --- create-datasource-root-disk --- cleanup-vm --- delete-imported-configmaps
 ```
 1. `import-unattend-configmaps` imports ConfigMap with `unattend.xml` needed for automated customization of Windows.
 2. `copy-vm-root-disk` Task copies PVC defined in `sourceDiskImageName` and `sourceDiskImageNamespace` parameters.
 3. `create-vm` Task creates a VirtualMachine called `windows-customize-*` from the base DataVolume and with the customize ConfigMap attached as a CD-ROM (Pipeline parameter `customizeConfigMapName`). The VirtualMachine has to be created in the same namespace as the source DataVolume.
 4. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
-5. `cleanup-vm` deletes the installer VirtualMachine (also in case of failure of the previous Tasks).
-6. The output artifact will be the `win*-customized` DataVolume with the customized Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used (depends on the applied customizations).
-7. The `windows11-unattend` ConfigMap can be used to boot the VirtualMachine into the Desktop (depends on the applied customizations).
-8. `delete-imported-configmaps` deletes imported ConfigMaps.
+5. `create-datasource-root-disk` Task creates a DataSource object, which is used by UI for discovering bootable volumes and links PVC created in `copy-vm-root-disk` step.
+6. `cleanup-vm` deletes the installer VirtualMachine (also in case of failure of the previous Tasks).
+7. The output artifact will be the `win*-customized` DataVolume with the customized Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used (depends on the applied customizations).
+8. The `windows11-unattend` ConfigMap can be used to boot the VirtualMachine into the Desktop (depends on the applied customizations).
+9. `delete-imported-configmaps` deletes imported ConfigMaps.
 
 ## How to run
 
@@ -127,4 +128,4 @@ EOF
 
 ## Cancelling/Deleting PipelineRuns
 
-When running the example Pipelines, they create temporary objects (DataVolumes, VirtualMachines, etc.). Each Pipeline has its own clean up system which should keep the cluster clean from leftovers. In case user hard deletes or cancels running PipelineRun, the PipelineRun will not clean temporary objects and objects will stay in the cluster and then they have to be deleted manually. To prevent this behaviour, cancel the [PipelineRun gracefully](https://tekton.dev/docs/pipelines/pipelineruns/#gracefully-cancelling-a-pipelinerun). It triggers special Tasks, which remove temporary objects and keep only result DataVolume/PVC.
+When running the example Pipelines, they create temporary objects (DataVolumes, VirtualMachines, etc.). Each Pipeline has its own clean up system which should keep the cluster clean from leftovers. In case user hard deletes or cancels running PipelineRun, the PipelineRun will not clean temporary objects and objects will stay in the cluster and then they have to be deleted manually. To prevent this behaviour, cancel the [PipelineRun gracefully](https://tekton.dev/docs/pipelines/pipelineruns/#gracefully-cancelling-a-pipelinerun). It triggers special Tasks, which remove temporary objects and keep only result DataSource/DataVolume/PVC.

@@ -204,6 +204,49 @@ spec:
         kind: Task
         name: wait-for-vmi-status
 {% endif %}
+    - name: create-datasource-root-disk
+      runAfter:
+        - wait-for-vmi-status
+      taskRef:
+{% if use_resolver_in_manifests %}
+        resolver: hub
+        params:
+          - name: catalog
+            value: {{ catalog }}
+          - name: type
+            value: {{ catalog_type }}
+          - name: kind
+            value: task
+          - name: name
+            value: modify-data-object
+          - name: version
+            value: {{ catalog_version }}
+{% else %}
+        kind: Task
+        name: modify-data-object
+{% endif %}
+      params:
+        - name: manifest
+          value: |-
+            apiVersion: cdi.kubevirt.io/v1beta1
+            kind: DataSource
+            metadata:
+              labels:
+                "instancetype.kubevirt.io/default-instancetype-kind": $(params.instanceTypeKind)
+                "instancetype.kubevirt.io/default-instancetype": $(params.instanceTypeName)
+                "instancetype.kubevirt.io/default-preference-kind": $(params.virtualMachinePreferenceKind)
+                "instancetype.kubevirt.io/default-preference": $(params.preferenceName)
+              name: $(tasks.copy-vm-root-disk.results.name)
+              namespace: $(tasks.copy-vm-root-disk.results.namespace)
+            spec:
+              source:
+                pvc:
+                  name: $(tasks.copy-vm-root-disk.results.name)
+                  namespace: $(tasks.copy-vm-root-disk.results.namespace)
+        - name: waitForSuccess
+          value: false
+        - name: allowReplace
+          value: true
   finally:
     - name: cleanup-vm
       params:
