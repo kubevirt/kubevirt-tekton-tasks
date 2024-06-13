@@ -23,3 +23,7 @@ spec:
     - name: customizeCommands
       value: |-
         install make,ansible
+  podTemplate:
+    securityContext:
+      fsGroup: 107
+      runAsUser: 107
