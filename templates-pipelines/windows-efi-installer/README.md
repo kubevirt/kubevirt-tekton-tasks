@@ -114,3 +114,15 @@ Run it as follows to initialize a WIN_URL variable.
 # Real URL can look differently
 WIN_IMAGE_DOWNLOAD_URL=$(./getisourl.py)
 ```
+
+### Common Errors
+- The `modify-windows-iso-file` task can end with error `guestfish: access: /tmp/target-pvc/disk.img: Permissions denied`. This error means, the guestfish cannot access the Windows ISO file due to wrong permissions set on the file. This issue can be fixed by adding `taskRunSpecs` to the spec of the PipelineRun:
+```
+spec:
+  taskRunSpecs:
+    - pipelineTaskName: modify-windows-iso-file
+      podTemplate:
+        securityContext:
+          fsGroup: 107
+          runAsUser: 107
+```

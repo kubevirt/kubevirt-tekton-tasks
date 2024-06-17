@@ -26,9 +26,8 @@ spec:
     - pipelineTaskName: "modify-windows-iso-file"
       podTemplate:
         securityContext:
-          runAsUser: 1001
-          runAsGroup: 1001
-          fsGroup: 1001   
+          runAsUser: 107
+          fsGroup: 107   
 ---
 apiVersion: tekton.dev/v1
 kind: PipelineRun
@@ -63,9 +62,8 @@ spec:
     - pipelineTaskName: "modify-windows-iso-file"
       podTemplate:
         securityContext:
-          runAsUser: 1001
-          runAsGroup: 1001
-          fsGroup: 1001     
+          runAsUser: 107
+          fsGroup: 107     
   timeout: 1h0m0s
 ---
 apiVersion: tekton.dev/v1
@@ -103,7 +101,6 @@ spec:
     - pipelineTaskName: "modify-windows-iso-file"
       podTemplate:
         securityContext:
-          runAsUser: 1001
-          runAsGroup: 1001
-          fsGroup: 1001     
+          runAsUser: 107
+          fsGroup: 107     
   timeout: 1h0m0s
