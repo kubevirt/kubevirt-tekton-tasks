@@ -49,7 +49,7 @@ spec:
         -   name: name
             value: create-vm-from-template
         -   name: version
-            value: v0.21.0
+            value: v0.22.0
         resolver: hub
 ```
 
