@@ -125,6 +125,8 @@ spec:
     params:
     -   name: winImageDownloadURL
         value: ${WIN_IMAGE_DOWNLOAD_URL}
+    -   name: acceptEula
+        value: false
     -   name: preferenceName
         value: windows.10.virtio
     -   name: autounattendConfigMapName
