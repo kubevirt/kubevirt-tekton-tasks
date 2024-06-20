@@ -32,7 +32,6 @@ type TektonV1beta1Interface interface {
 	CustomRunsGetter
 	PipelinesGetter
 	PipelineRunsGetter
-	StepActionsGetter
 	TasksGetter
 	TaskRunsGetter
 }
@@ -56,10 +55,6 @@ func (c *TektonV1beta1Client) Pipelines(namespace string) PipelineInterface {
 
 func (c *TektonV1beta1Client) PipelineRuns(namespace string) PipelineRunInterface {
 	return newPipelineRuns(c, namespace)
-}
-
-func (c *TektonV1beta1Client) StepActions(namespace string) StepActionInterface {
-	return newStepActions(c, namespace)
 }
 
 func (c *TektonV1beta1Client) Tasks(namespace string) TaskInterface {
