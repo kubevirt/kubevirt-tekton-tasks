@@ -50,7 +50,7 @@ spec:
         -   name: name
             value: generate-ssh-keys
         -   name: version
-            value: v0.21.0
+            value: v0.22.0
         resolver: hub
 ```
 

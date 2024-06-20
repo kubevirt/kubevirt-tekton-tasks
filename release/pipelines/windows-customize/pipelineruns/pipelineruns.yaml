@@ -16,7 +16,7 @@ spec:
       - name: name
         value: windows-customize
       - name: version
-        value: v0.21.0
+        value: v0.22.0
 ---
 apiVersion: tekton.dev/v1
 kind: PipelineRun
@@ -44,7 +44,7 @@ spec:
       - name: name
         value: windows-customize
       - name: version
-        value: v0.21.0
+        value: v0.22.0
 ---
 apiVersion: tekton.dev/v1
 kind: PipelineRun
@@ -70,4 +70,4 @@ spec:
       - name: name
         value: windows-customize
       - name: version
-        value: v0.21.0
+        value: v0.22.0
