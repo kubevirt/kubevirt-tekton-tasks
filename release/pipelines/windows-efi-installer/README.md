@@ -235,3 +235,6 @@ spec:
           fsGroup: 107
           runAsUser: 107
 ```
+- Windows preferences in older KubeVirt versions might still use Bios mode. In that case, set the `useBiosMode` parameter 
+to `true`. This will skip the `modify-windows-iso-file` task. In case the the Windows preference uses Bios and the 
+`useBiosMode` parameter is not set to true, the Windows VM will not work.
