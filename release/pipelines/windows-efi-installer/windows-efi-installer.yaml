@@ -67,6 +67,10 @@ spec:
       description: Name of Windows ISO datavolume
       name: isoDVName
       type: string
+    - default: false
+      description: In older preferences, Windows 10 preference might still use Bios. In that case the step modify-windows-iso-file should not run. If the preference uses Bios, set this parameter to true.
+      name: useBiosMode
+      type: string
   tasks:
     - name: import-autounattend-configmaps
       params:
@@ -131,6 +135,10 @@ spec:
           - name: version
             value: v0.22.0
     - name: modify-windows-iso-file
+      when:
+        - input: "$(params.useBiosMode)"
+          operator: in
+          values: ["false"]
       params:
         - name: pvcName
           value: $(tasks.import-win-iso.results.name)
