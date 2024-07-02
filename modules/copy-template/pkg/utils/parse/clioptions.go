@@ -22,6 +22,7 @@ type CLIOptions struct {
 	TargetTemplateName      string            `arg:"--target-template-name,env:TARGET_TEMPLATE_NAME" placeholder:"NAME" help:"Name of a target template"`
 	TargetTemplateNamespace string            `arg:"--target-template-namespace,env:TARGET_TEMPLATE_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace of a target template"`
 	AllowReplace            string            `arg:"--allow-replace,env:ALLOW_REPLACE" placeholder:"false" help:"Allow replacing already existing template (same combination name/namespace). Allowed values true/false"`
+	SetOwnerReference       string            `arg:"--set-owner-reference,env:SET_OWNER_REFERENCE" placeholder:"false" help:"Set owner reference to the new object created by the task run pod. Allowed values true/false"`
 	Output                  output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
 	Debug                   bool              `arg:"--debug" help:"Sets DEBUG log level"`
 }
@@ -51,6 +52,10 @@ func (c *CLIOptions) GetTargetTemplateName() string {
 
 func (c *CLIOptions) GetAllowReplaceValue() bool {
 	return c.AllowReplace == "true"
+}
+
+func (c *CLIOptions) GetSetOwnerReferenceValue() bool {
+	return c.SetOwnerReference == "true"
 }
 
 func (c *CLIOptions) Init() error {
