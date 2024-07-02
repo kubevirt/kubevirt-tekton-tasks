@@ -127,6 +127,7 @@ var _ = Describe("Copy template task", func() {
 					SourceTemplateName: testtemplate.RhelTemplateName,
 					TargetTemplateName: NewTemplateName,
 					Template:           testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					SetOwnerreference:  "true",
 				},
 			}
 			f.TestSetup(config)
@@ -153,6 +154,7 @@ var _ = Describe("Copy template task", func() {
 
 			checkRemovedRecordsTemplate(newTemplate.Labels)
 			checkRemovedRecordsTemplate(newTemplate.Annotations)
+			Expect(newTemplate.OwnerReferences).To(HaveLen(1), "template should has owner reference")
 
 			vm, _, err := zutils.DecodeVM(newTemplate)
 			Expect(err).ToNot(HaveOccurred())
@@ -203,6 +205,7 @@ var _ = Describe("Copy template task", func() {
 					TargetTemplateName: NewTemplateName,
 					AllowReplace:       "true",
 					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
+					SetOwnerreference:  "true",
 				},
 			}
 			f.TestSetup(config)
@@ -232,6 +235,7 @@ var _ = Describe("Copy template task", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(newTemplate).ToNot(BeNil(), " template should exists")
 			Expect(newTemplate.Objects).To(HaveLen(1), "template should be updated")
+			Expect(newTemplate.OwnerReferences).To(HaveLen(1), "template should has owner reference")
 
 			f.ManageTemplates(newTemplate)
 		})
