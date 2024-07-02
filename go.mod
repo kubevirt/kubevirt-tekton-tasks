@@ -59,6 +59,7 @@ require (
 	kubevirt.io/containerized-data-importer-api v1.58.1
 	kubevirt.io/kubevirt v1.2.0
 	kubevirt.io/qe-tools v0.1.8
+	sigs.k8s.io/controller-runtime v0.17.2
 	sigs.k8s.io/yaml v1.4.0
 )
 

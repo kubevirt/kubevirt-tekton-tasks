@@ -10,4 +10,5 @@ const (
 	TargetTemplateNameOptionName      = "targetTemplateName"
 	TargetTemplateNamespaceOptionName = "targetTemplateNamespace"
 	AllowReplaceOptionName            = "allowReplace"
+	SetOwnerreference                 = "setOwnerreference"
 )
