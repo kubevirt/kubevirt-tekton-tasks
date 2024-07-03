@@ -20,7 +20,7 @@ spec:
   params:
     - name: pvc
       value: example-pvc
-    - name: customizeCommands
+    - name: virtCommands
       value: |-
         install make,ansible
   podTemplate:

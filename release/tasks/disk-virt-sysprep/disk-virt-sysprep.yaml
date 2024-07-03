@@ -25,7 +25,7 @@ spec:
     - name: pvc
       description: PersistentVolumeClaim to run the the virt-sysprep script in. PVC should be in the same namespace as taskrun/pipelinerun.
       type: string
-    - name: sysprepCommands
+    - name: virtCommands
       description: virt-sysprep commands in "--commands-from-file" format.
       type: string
       default: ""
@@ -33,7 +33,7 @@ spec:
       description: Enable verbose mode and tracing of libguestfs API calls.
       type: string
       default: 'false'
-    - name: additionalOptions
+    - name: additionalVirtOptions
       description: Additional options to pass to virt-sysprep.
       type: string
       default: ""
@@ -48,10 +48,10 @@ spec:
       env:
         - name: COMMAND
           value: disk-virt-sysprep
-        - name: SYSPREP_COMMANDS
-          value: $(params.sysprepCommands)
-        - name: ADDITIONAL_VIRT_SYSPREP_OPTIONS
-          value: $(params.additionalOptions)
+        - name: VIRT_COMMANDS
+          value: $(params.virtCommands)
+        - name: ADDITIONAL_VIRT_OPTIONS
+          value: $(params.additionalVirtOptions)
         - name: LIBGUESTFS_BACKEND
           value: direct
       computeResources:

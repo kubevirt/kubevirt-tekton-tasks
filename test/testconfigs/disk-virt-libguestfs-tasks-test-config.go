@@ -80,24 +80,17 @@ func (c *DiskVirtLibguestfsTestConfig) GetTaskRunWithName(nameSuffix string) *pi
 				StringVal: c.TaskData.AdditionalOptions,
 			},
 		},
+		{
+			Name: DiskVirtLibguestfsTasksParams.VirtCommandsFileNameCommands,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
+				StringVal: c.TaskData.Commands,
+			},
+		},
 	}
 	if c.TaskData.LibguestfsTaskType == VirtSysPrepTaskType {
-		params = append(params, pipev1.Param{
-			Name: DiskVirtLibguestfsTasksParams.SysprepCommands,
-			Value: pipev1.ParamValue{
-				Type:      pipev1.ParamTypeString,
-				StringVal: c.TaskData.Commands,
-			},
-		})
 		taskName = DiskVirtSysprepTaskName
 	} else {
-		params = append(params, pipev1.Param{
-			Name: DiskVirtLibguestfsTasksParams.CustomizeCommands,
-			Value: pipev1.ParamValue{
-				Type:      pipev1.ParamTypeString,
-				StringVal: c.TaskData.Commands,
-			},
-		})
 		taskName = DiskVirtCustomizeTaskName
 	}
 	var qemuUser int64 = 107

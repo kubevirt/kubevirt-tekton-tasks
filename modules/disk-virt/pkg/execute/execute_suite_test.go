@@ -3,10 +3,10 @@ package execute_test
 import (
 	"testing"
 
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utilstest"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/utilstest"
 )
 
 func TestParse(t *testing.T) {

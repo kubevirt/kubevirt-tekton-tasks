@@ -42,7 +42,7 @@ spec:
       params:
         - name: pvc
           value: "$(tasks.modify-data-object.results.name)"
-        - name: customizeCommands
+        - name: virtCommands
           value: |
             install git,vim,pip
             run-command pip install flask

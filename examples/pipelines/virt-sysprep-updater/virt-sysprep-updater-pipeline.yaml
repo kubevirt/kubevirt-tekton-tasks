@@ -33,10 +33,10 @@ spec:
       params:
         - name: pvc
           value: "$(tasks.modify-data-object.results.name)"
-        - name: sysprepCommands
+        - name: virtCommands
           value: |
             run-command yum update -y
-        - name: additionalOptions
+        - name: additionalVirtOptions
           value: "--network"
       taskRef:
         kind: Task
