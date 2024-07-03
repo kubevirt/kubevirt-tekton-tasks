@@ -51,10 +51,11 @@ spec:
 
         guestfish -a ${TARGET_IMG_FILE_PATH} -m /dev/sda tar-out / - | tar xvf - -C ${ISO_FILES_PATH} -m --no-overwrite-dir --owner=$(id -u) --group=$(id -g) --no-same-permissions
 
+        echo "ISO file checksum:" $(sha256sum ${TARGET_IMG_FILE_PATH})
+        ls -la ${TARGET_IMG_FILE_PATH}
+
         if [ ! -f ${EFI_BOOT}/efisys_noprompt.bin ] || [ ! -f ${EFI_BOOT}/cdboot_noprompt.efi ]; then
           echo "${EFI_BOOT}/efisys_noprompt.bin or ${EFI_BOOT}/cdboot_noprompt.efi not found in the iso file! Task expects that ISO file contains bootloader without prompt. If the no prompt bootloader is not present, the installation might behave unexpectedly. Exiting"
-          echo "ISO file checksum:" $(sha256sum ${TARGET_IMG_FILE_PATH})
-          ls -la ${TARGET_IMG_FILE_PATH}
           exit 1
         fi
 
