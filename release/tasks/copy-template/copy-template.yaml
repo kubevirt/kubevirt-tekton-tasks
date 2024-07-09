@@ -44,6 +44,10 @@ spec:
       description: Allow replacing already existing template (same combination name/namespace). Allowed values true/false
       type: string
       default: "false"
+    - name: setOwnerReference
+      description: Set owner reference to the new object created by the task run pod. Allowed values true/false
+      type: string
+      default: "false"
   results:
     - name: name
       description: The name of a template that was created.
@@ -67,3 +71,13 @@ spec:
           value: $(params.targetTemplateNamespace)
         - name: ALLOW_REPLACE
           value: $(params.allowReplace)
+        - name: SET_OWNER_REFERENCE
+          value: $(params.setOwnerReference)
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name

@@ -8,19 +8,19 @@ import (
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/ownerreference"
 	templatev1 "github.com/openshift/api/template/v1"
-	v1 "github.com/openshift/api/template/v1"
-	tempclient "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	templateclientset "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/yaml"
+	k8sv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 )
 
 type templateProvider struct {
-	client tempclient.TemplateV1Interface
+	client templateclientset.TemplateV1Interface
 }
 
 type TemplateProvider interface {
@@ -29,7 +29,7 @@ type TemplateProvider interface {
 	Update(*templatev1.Template) (*templatev1.Template, error)
 }
 
-func NewTemplateProvider(client tempclient.TemplateV1Interface) TemplateProvider {
+func NewTemplateProvider(client *templateclientset.TemplateV1Client) TemplateProvider {
 	return &templateProvider{
 		client: client,
 	}
@@ -50,6 +50,7 @@ func (t *templateProvider) Update(template *templatev1.Template) (*templatev1.Te
 type TemplateCreator struct {
 	cliOptions       *parse.CLIOptions
 	templateProvider TemplateProvider
+	k8sClient        *k8sv1.CoreV1Client
 }
 
 func NewTemplateCreator(cliOptions *parse.CLIOptions) (*TemplateCreator, error) {
@@ -60,13 +61,16 @@ func NewTemplateCreator(cliOptions *parse.CLIOptions) (*TemplateCreator, error) 
 		return nil, err
 	}
 
+	k8sclient := k8sv1.NewForConfigOrDie(config)
+
 	return &TemplateCreator{
 		cliOptions:       cliOptions,
+		k8sClient:        k8sclient,
 		templateProvider: NewTemplateProvider(templateclientset.NewForConfigOrDie(config)),
 	}, nil
 }
 
-func (t *TemplateCreator) CopyTemplate() (*v1.Template, error) {
+func (t *TemplateCreator) CopyTemplate() (*templatev1.Template, error) {
 	log.Logger().Debug("retrieving template", zap.String("name", t.cliOptions.GetSourceTemplateName()), zap.String("namespace", t.cliOptions.GetSourceTemplateNamespace()))
 	template, err := t.templateProvider.Get(t.cliOptions.GetSourceTemplateNamespace(), t.cliOptions.GetSourceTemplateName())
 	if err != nil {
@@ -94,6 +98,12 @@ func (t *TemplateCreator) CopyTemplate() (*v1.Template, error) {
 	}
 
 	updatedTemplate := t.UpdateTemplateMetadata(template)
+
+	if t.cliOptions.GetSetOwnerReferenceValue() {
+		if err := ownerreference.SetPodOwnerReference(t.k8sClient, updatedTemplate); err != nil {
+			return nil, err
+		}
+	}
 
 	log.Logger().Debug("Updated template metadata", zap.Any("ObjectMeta", updatedTemplate.ObjectMeta))
 	existingTemplate, err := t.templateProvider.Get(t.cliOptions.GetTargetTemplateNamespace(), t.cliOptions.GetTargetTemplateName())
@@ -153,7 +163,7 @@ func (t *TemplateCreator) UpdateVMMetadata(unstructuredVM *unstructured.Unstruct
 	return nil
 }
 
-func (t *TemplateCreator) EncodeVMToTemplate(template *templatev1.Template, unstructuredVM *unstructured.Unstructured) (*v1.Template, error) {
+func (t *TemplateCreator) EncodeVMToTemplate(template *templatev1.Template, unstructuredVM *unstructured.Unstructured) (*templatev1.Template, error) {
 	raw, err := unstructuredVM.MarshalJSON()
 	if err != nil {
 		return nil, err
@@ -163,7 +173,7 @@ func (t *TemplateCreator) EncodeVMToTemplate(template *templatev1.Template, unst
 	return template, nil
 }
 
-func (t *TemplateCreator) UpdateTemplateMetadata(template *v1.Template) *v1.Template {
+func (t *TemplateCreator) UpdateTemplateMetadata(template *templatev1.Template) *templatev1.Template {
 	//set "template.kubevirt.io/type" label to VM so it is visible in UI
 	template.Labels[TemplateTypeLabel] = VMTypeLabelValue
 
@@ -183,7 +193,7 @@ func (t *TemplateCreator) UpdateTemplateMetadata(template *v1.Template) *v1.Temp
 	return template
 }
 
-func isCommonTemplate(template *v1.Template) bool {
+func isCommonTemplate(template *templatev1.Template) bool {
 	if val, ok := template.Labels[TemplateTypeLabel]; ok && val == templateTypeBaseValue {
 		return true
 	}

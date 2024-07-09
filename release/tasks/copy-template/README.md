@@ -12,6 +12,7 @@ A bundle of predefined templates to use can be found in [Common Templates](https
 - **targetTemplateName**: Name of an target OpenShift template.
 - **targetTemplateNamespace**: Namespace of an target OpenShift template to create in. (defaults to active namespace)
 - **allowReplace**: Allow replacing already existing template (same combination name/namespace). Allowed values true/false
+- **setOwnerReference**: Set owner reference to the new object created by the task run pod. Allowed values true/false
 
 ### Results
 

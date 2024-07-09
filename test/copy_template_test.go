@@ -78,6 +78,14 @@ var _ = Describe("Copy template task", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(newTemplate).ToNot(BeNil(), "new template should exists")
 
+			if config.TaskData.SetOwnerReference == "true" {
+				Expect(newTemplate.OwnerReferences).To(HaveLen(1), "template should has owner reference")
+				Expect(newTemplate.OwnerReferences[0].Kind).To(Equal("Pod"), "OwnerReference should have Kind Pod")
+				Expect(newTemplate.OwnerReferences[0].Name).To(HavePrefix("e2e-tests-taskrun-copy-template"), "OwnerReference should be binded to correct Pod")
+			} else {
+				Expect(newTemplate.OwnerReferences).To(BeEmpty(), "template OwnerReference should be empty")
+			}
+
 			f.ManageTemplates(newTemplate)
 		},
 			Entry("should create template in the same namespace", &testconfigs.CopyTemplateTestConfig{
@@ -86,6 +94,7 @@ var _ = Describe("Copy template task", func() {
 					SourceTemplateName: testtemplate.CirrosTemplateName,
 					TargetTemplateName: NewTemplateName,
 					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
+					SetOwnerReference:  "true",
 				},
 			}),
 			Entry("no target template name specified", &testconfigs.CopyTemplateTestConfig{
@@ -93,6 +102,7 @@ var _ = Describe("Copy template task", func() {
 				TaskData: testconfigs.CopyTemplateTaskData{
 					SourceTemplateName: testtemplate.CirrosTemplateName,
 					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
+					SetOwnerReference:  "false",
 				},
 			}),
 			Entry("no target namespaces specified", &testconfigs.CopyTemplateTestConfig{
@@ -127,6 +137,7 @@ var _ = Describe("Copy template task", func() {
 					SourceTemplateName: testtemplate.RhelTemplateName,
 					TargetTemplateName: NewTemplateName,
 					Template:           testtemplate.NewRhelDesktopTinyTemplate().Build(),
+					SetOwnerReference:  "true",
 				},
 			}
 			f.TestSetup(config)
@@ -153,6 +164,7 @@ var _ = Describe("Copy template task", func() {
 
 			checkRemovedRecordsTemplate(newTemplate.Labels)
 			checkRemovedRecordsTemplate(newTemplate.Annotations)
+			Expect(newTemplate.OwnerReferences).To(HaveLen(1), "template should has owner reference")
 
 			vm, _, err := zutils.DecodeVM(newTemplate)
 			Expect(err).ToNot(HaveOccurred())
@@ -203,6 +215,7 @@ var _ = Describe("Copy template task", func() {
 					TargetTemplateName: NewTemplateName,
 					AllowReplace:       "true",
 					Template:           testtemplate.NewCirrosServerTinyTemplate().Build(),
+					SetOwnerReference:  "true",
 				},
 			}
 			f.TestSetup(config)
@@ -232,7 +245,9 @@ var _ = Describe("Copy template task", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(newTemplate).ToNot(BeNil(), " template should exists")
 			Expect(newTemplate.Objects).To(HaveLen(1), "template should be updated")
-
+			Expect(newTemplate.OwnerReferences).To(HaveLen(1), "template should has owner reference")
+			Expect(newTemplate.OwnerReferences[0].Kind).To(Equal("Pod"), "OwnerReference should have Kind Pod")
+			Expect(newTemplate.OwnerReferences[0].Name).To(HavePrefix("e2e-tests-taskrun-copy-template"), "OwnerReference should be binded to correct Pod")
 			f.ManageTemplates(newTemplate)
 		})
 	})

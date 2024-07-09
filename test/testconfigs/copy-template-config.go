@@ -14,6 +14,7 @@ type CopyTemplateTaskData struct {
 	SourceTemplateName         string
 	TargetTemplateName         string
 	AllowReplace               string
+	SetOwnerReference          string
 	UsePlainTargetTemplateName bool
 }
 
@@ -74,6 +75,12 @@ func (c *CopyTemplateTestConfig) GetTaskRun() *pipev1.TaskRun {
 			Value: pipev1.ParamValue{
 				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.AllowReplace,
+			},
+		}, {
+			Name: SetOwnerReference,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
+				StringVal: c.TaskData.SetOwnerReference,
 			},
 		},
 	}
