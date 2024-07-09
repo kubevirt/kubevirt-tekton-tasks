@@ -69,6 +69,10 @@ spec:
       description: Set runStrategy to VM. If runStrategy is set, vm.spec.running attribute is set to nil.
       default: ""
       type: string
+    - name: setOwnerReference
+      description: Set owner reference to the new object created by the task run pod. Allowed values true/false
+      type: string
+      default: "false"
   results:
     - name: name
       description: The name of a VM that was created.
@@ -102,5 +106,15 @@ spec:
 {% endif %}
         - name: START_VM
           value: $(params.startVM)
+        - name: SET_OWNER_REFERENCE
+          value: $(params.setOwnerReference)
         - name: RUN_STRATEGY
           value: $(params.runStrategy)
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name

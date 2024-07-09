@@ -30,6 +30,7 @@ type CLIOptions struct {
 	VirtualMachineNamespace string            `arg:"--vm-namespace,env:VM_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace where to create the VM"`
 	StartVM                 string            `arg:"--start-vm,env:START_VM" help:"Start vm after creation"`
 	RunStrategy             string            `arg:"--run-strategy,env:RUN_STRATEGY" help:"Set run strategy to vm"`
+	SetOwnerReference       string            `arg:"--set-owner-reference,env:SET_OWNER_REFERENCE" placeholder:"false" help:"Set owner reference to the new object created by the task run pod. Allowed values true/false"`
 	Output                  output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
 	Debug                   bool              `arg:"--debug" help:"Sets DEBUG log level"`
 	Virtctl                 string            `arg:"--virtctl,env:VIRTCTL" placeholder:"VIRTCTL" help:"Specifies the parameters for virtctl create vm command that will be used to create VirtualMachine."`
@@ -45,6 +46,10 @@ func (c *CLIOptions) GetRunStrategy() string {
 
 func (c *CLIOptions) GetVirtctl() string {
 	return c.Virtctl
+}
+
+func (c *CLIOptions) GetSetOwnerReferenceValue() bool {
+	return c.SetOwnerReference == "true"
 }
 
 func (c *CLIOptions) GetTemplateParams() map[string]string {
