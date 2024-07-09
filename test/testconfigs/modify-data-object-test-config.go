@@ -23,6 +23,7 @@ type ModifyDataObjectTaskData struct {
 	DeleteObjectKind    string
 	Namespace           TargetNamespace
 	dataObjectNamespace string
+	SetOwnerReference   string
 }
 
 type ModifyDataObjectTestConfig struct {
@@ -165,6 +166,12 @@ func (c *ModifyDataObjectTestConfig) GetTaskRun() *pipev1.TaskRun {
 					Value: pipev1.ParamValue{
 						Type:      pipev1.ParamTypeString,
 						StringVal: c.TaskData.dataObjectNamespace,
+					},
+				}, {
+					Name: SetOwnerReference,
+					Value: pipev1.ParamValue{
+						Type:      pipev1.ParamTypeString,
+						StringVal: c.TaskData.SetOwnerReference,
 					},
 				},
 			},

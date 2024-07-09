@@ -6,6 +6,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/modify-data-object/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/modify-data-object/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/ownerreference"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
@@ -38,6 +39,7 @@ type DataObjectProvider interface {
 	DeleteDV(string, string) error
 	DeletePVC(string, string) error
 	CreateDo(*unstructured.Unstructured, bool) (*unstructured.Unstructured, error)
+	GetK8sClient() *k8sv1.CoreV1Client
 }
 
 func NewDataObjectProvider(client cdiclientv1beta1.CdiV1beta1Interface, k8sClient *k8sv1.CoreV1Client) DataObjectProvider {
@@ -49,6 +51,10 @@ func NewDataObjectProvider(client cdiclientv1beta1.CdiV1beta1Interface, k8sClien
 
 func (d *dataObjectProvider) GetDv(namespace string, name string) (*cdiv1beta1.DataVolume, error) {
 	return d.client.DataVolumes(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+}
+
+func (d *dataObjectProvider) GetK8sClient() *k8sv1.CoreV1Client {
+	return d.k8sClient
 }
 
 func (d *dataObjectProvider) GetDs(namespace string, name string) (*cdiv1beta1.DataSource, error) {
@@ -218,6 +224,12 @@ func (d *DataObjectCreator) CreateDataObject() (*unstructured.Unstructured, erro
 		waitForSuccess = d.waitForSuccessDs
 	default:
 		return nil, zerrors.NewSoftError("unsupported data object kind")
+	}
+
+	if d.cliOptions.GetSetOwnerReferenceValue() {
+		if err := ownerreference.SetPodOwnerReference(d.dataObjectProvider.GetK8sClient(), &do); err != nil {
+			return nil, err
+		}
 	}
 
 	createdDo, err := d.dataObjectProvider.CreateDo(&do, d.cliOptions.GetAllowReplace())
