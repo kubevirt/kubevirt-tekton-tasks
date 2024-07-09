@@ -50,6 +50,10 @@ spec:
       description: Name of the data object to delete. This parameter is used only for Delete operation.
       default: ""
       type: string
+    - name: setOwnerReference
+      description: Set owner reference to the new object created by the task run pod. Allowed values true/false
+      type: string
+      default: "false"
   results:
     - name: name
       description: The name of the data object that was created.
@@ -77,3 +81,13 @@ spec:
           value: $(params.deleteObjectKind)
         - name: DELETE_OBJECT_NAME
           value: $(params.deleteObjectName)
+        - name: SET_OWNER_REFERENCE
+          value: $(params.setOwnerReference)
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name

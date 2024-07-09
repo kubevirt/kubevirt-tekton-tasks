@@ -85,6 +85,18 @@ var _ = Describe("Modify data objects", func() {
 
 			err := dataobject.WaitForSuccessfulDataVolume(f.KubevirtClient, dv.Namespace, dv.Name, config.GetWaitForDataObjectTimeout())
 			Expect(err).ShouldNot(HaveOccurred())
+
+			dv, err = f.CdiClient.DataVolumes(dv.Namespace).Get(context.Background(), dv.Name, metav1.GetOptions{})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			if config.TaskData.SetOwnerReference == "true" {
+				Expect(dv.OwnerReferences).To(HaveLen(1), "dv should has owner reference")
+				Expect(dv.OwnerReferences[0].Kind).To(Equal("Pod"), "OwnerReference should have Kind Pod")
+				Expect(dv.OwnerReferences[0].Name).To(HavePrefix("e2e-tests-taskrun-modify-data-object"), "OwnerReference should be binded to correct Pod")
+			} else {
+				Expect(dv.OwnerReferences).To(BeEmpty(), "dv OwnerReference should be empty")
+			}
+
 		},
 			Entry("blank no wait", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
@@ -92,7 +104,8 @@ var _ = Describe("Modify data objects", func() {
 					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
-					DataVolume: datavolume.NewBlankDataVolume("blank").Build(),
+					DataVolume:        datavolume.NewBlankDataVolume("blank").Build(),
+					SetOwnerReference: "true",
 				},
 			}),
 			Entry("blank wait", &testconfigs.ModifyDataObjectTestConfig{
@@ -101,8 +114,9 @@ var _ = Describe("Modify data objects", func() {
 					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
-					DataVolume:     datavolume.NewBlankDataVolume("blank-wait").Build(),
-					WaitForSuccess: true,
+					DataVolume:        datavolume.NewBlankDataVolume("blank-wait").Build(),
+					WaitForSuccess:    true,
+					SetOwnerReference: "false",
 				},
 			}),
 			Entry("works also in the same namespace as deploy", &testconfigs.ModifyDataObjectTestConfig{
@@ -383,13 +397,22 @@ var _ = Describe("Modify data objects", func() {
 
 			err = dataobject.WaitForSuccessfulDataSource(f.CdiClient, ds.Namespace, ds.Name, config.GetWaitForDataObjectTimeout())
 			Expect(err).ShouldNot(HaveOccurred())
+
+			if config.TaskData.SetOwnerReference == "true" {
+				Expect(ds.OwnerReferences).To(HaveLen(1), "ds should has owner reference")
+				Expect(ds.OwnerReferences[0].Kind).To(Equal("Pod"), "OwnerReference should have Kind Pod")
+				Expect(ds.OwnerReferences[0].Name).To(HavePrefix("e2e-tests-taskrun-modify-data-object"), "OwnerReference should be binded to correct Pod")
+			} else {
+				Expect(ds.OwnerReferences).To(BeEmpty(), "ds OwnerReference should be empty")
+			}
 		},
 			Entry("blank no wait", &testconfigs.ModifyDataObjectTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
-					DataSource: datasource.NewDataSource("blank").Build(),
+					DataSource:        datasource.NewDataSource("blank").Build(),
+					SetOwnerReference: "true",
 				},
 			}),
 			Entry("blank wait", &testconfigs.ModifyDataObjectTestConfig{
@@ -398,8 +421,9 @@ var _ = Describe("Modify data objects", func() {
 					Timeout: Timeouts.SmallDVCreation,
 				},
 				TaskData: testconfigs.ModifyDataObjectTaskData{
-					DataSource:     datasource.NewDataSource("blank-wait").Build(),
-					WaitForSuccess: true,
+					DataSource:        datasource.NewDataSource("blank-wait").Build(),
+					WaitForSuccess:    true,
+					SetOwnerReference: "false",
 				},
 			}),
 			Entry("works also in the same namespace as deploy", &testconfigs.ModifyDataObjectTestConfig{

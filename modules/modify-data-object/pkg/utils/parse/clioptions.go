@@ -28,6 +28,7 @@ type CLIOptions struct {
 	DeleteObject        string            `arg:"--delete-object,env:DELETE_OBJECT" help:"Delete data object with given name. Parameters name, object-kind have to be defined."`
 	DeleteObjectKind    string            `arg:"--delete-object-kind,env:DELETE_OBJECT_KIND" help:"Kind of the data object to delete. This parameter is used only for Delete operation."`
 	AllowReplace        string            `arg:"--allow-replace,env:ALLOW_REPLACE" placeholder:"false" help:"Allow replacing an already existing data object (same combination name/namespace). Allowed values true/false (can be set by ALLOW_REPLACE env variable)."`
+	SetOwnerReference   string            `arg:"--set-owner-reference,env:SET_OWNER_REFERENCE" placeholder:"false" help:"Set owner reference to the new object created by the task run pod. Allowed values true/false"`
 	Output              output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
 	Debug               bool              `arg:"--debug" help:"Sets DEBUG log level"`
 
@@ -55,6 +56,10 @@ func (c *CLIOptions) GetWaitForSuccess() bool {
 
 func (c *CLIOptions) GetAllowReplace() bool {
 	return c.AllowReplace == "true"
+}
+
+func (c *CLIOptions) GetSetOwnerReferenceValue() bool {
+	return c.SetOwnerReference == "true"
 }
 
 func (c *CLIOptions) GetDeleteObject() bool {
