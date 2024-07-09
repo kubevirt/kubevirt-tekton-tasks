@@ -35,9 +35,10 @@ type CreateVMTaskData struct {
 	// this is set if VM is not nil
 	VMManifest string
 
-	TemplateParams []string
-	VMNamespace    string
-	Virtctl        string
+	SetOwnerReference string
+	TemplateParams    []string
+	VMNamespace       string
+	Virtctl           string
 }
 
 func (c *CreateVMTaskData) GetTemplateParam(key string) string {
@@ -154,6 +155,12 @@ func (c *CreateVMTestConfig) GetTaskRun() *pipev1.TaskRun {
 			Value: pipev1.ParamValue{
 				Type:      pipev1.ParamTypeString,
 				StringVal: c.TaskData.RunStrategy,
+			},
+		}, {
+			Name: SetOwnerReference,
+			Value: pipev1.ParamValue{
+				Type:      pipev1.ParamTypeString,
+				StringVal: c.TaskData.SetOwnerReference,
 			},
 		},
 	}

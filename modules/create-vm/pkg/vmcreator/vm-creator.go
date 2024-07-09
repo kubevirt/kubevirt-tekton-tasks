@@ -11,9 +11,12 @@ import (
 	virtualMachine "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/ownerreference"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
+	k8sv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"k8s.io/client-go/rest"
@@ -30,6 +33,7 @@ type VMCreator struct {
 	config                 *rest.Config
 	templateProvider       templates.TemplateProvider
 	virtualMachineProvider virtualMachine.VirtualMachineProvider
+	k8sClient              *k8sv1.CoreV1Client
 }
 
 func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
@@ -47,6 +51,8 @@ func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
 		return nil, fmt.Errorf("cannot create kubevirt client: %v", err.Error())
 	}
 
+	k8sclient := k8sv1.NewForConfigOrDie(config)
+
 	var templateProvider templates.TemplateProvider
 	virtualMachineProvider := virtualMachine.NewVirtualMachineProvider(kubevirtClient)
 
@@ -60,6 +66,7 @@ func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
 		config:                 config,
 		templateProvider:       templateProvider,
 		virtualMachineProvider: virtualMachineProvider,
+		k8sClient:              k8sclient,
 	}, nil
 }
 
@@ -95,6 +102,12 @@ func (v *VMCreator) createVMVirtctl() (*kubevirtv1.VirtualMachine, error) {
 	if namespace == "" {
 		if namespace, err = env.GetActiveNamespace(); err != nil {
 			return nil, zerrors.NewMissingRequiredError("can't get active namespace: %v", err.Error())
+		}
+	}
+
+	if v.cliOptions.GetSetOwnerReferenceValue() {
+		if err := ownerreference.SetPodOwnerReference(v.k8sClient, &vm); err != nil {
+			return nil, err
 		}
 	}
 
@@ -137,6 +150,12 @@ func (v *VMCreator) createVMFromManifest() (*kubevirtv1.VirtualMachine, error) {
 		vm.Spec.RunStrategy = &runStrategy
 	}
 
+	if v.cliOptions.GetSetOwnerReferenceValue() {
+		if err := ownerreference.SetPodOwnerReference(v.k8sClient, &vm); err != nil {
+			return nil, err
+		}
+	}
+
 	log.Logger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, &vm)
 }
@@ -164,6 +183,12 @@ func (v *VMCreator) createVMFromTemplate() (*kubevirtv1.VirtualMachine, error) {
 	if runStrategy != "" {
 		vm.Spec.Running = nil
 		vm.Spec.RunStrategy = &runStrategy
+	}
+
+	if v.cliOptions.GetSetOwnerReferenceValue() {
+		if err := ownerreference.SetPodOwnerReference(v.k8sClient, vm); err != nil {
+			return nil, err
+		}
 	}
 
 	log.Logger().Debug("creating VM", zap.Reflect("vm", vm))

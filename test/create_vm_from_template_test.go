@@ -136,9 +136,17 @@ var _ = Describe("Create VM from template", func() {
 				CreateVMResults.Namespace: expectedVM.Namespace,
 			})
 
-		_, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
+		vm, err := vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
 			"", config.GetTaskRunTimeout(), false)
 		Expect(err).ShouldNot(HaveOccurred())
+
+		if config.TaskData.SetOwnerReference == "true" {
+			Expect(vm.OwnerReferences).To(HaveLen(1), "vm should has owner reference")
+			Expect(vm.OwnerReferences[0].Kind).To(Equal("Pod"), "OwnerReference should have Kind Pod")
+			Expect(vm.OwnerReferences[0].Name).To(HavePrefix("e2e-tests-taskrun-vm-create"), "OwnerReference should be binded to correct Pod")
+		} else {
+			Expect(vm.OwnerReferences).To(BeEmpty(), "vm OwnerReference should be empty")
+		}
 	},
 		Entry("simple vm", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
@@ -149,6 +157,7 @@ var _ = Describe("Create VM from template", func() {
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("simple-vm")),
 				},
+				SetOwnerReference: "true",
 			},
 		}),
 		Entry("vm to deploy namespace by default", &testconfigs.CreateVMTestConfig{
@@ -160,6 +169,7 @@ var _ = Describe("Create VM from template", func() {
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-to-deploy-by-default")),
 				},
+				SetOwnerReference: "false",
 			},
 		}),
 		Entry("vm with template from deploy namespace by default", &testconfigs.CreateVMTestConfig{
