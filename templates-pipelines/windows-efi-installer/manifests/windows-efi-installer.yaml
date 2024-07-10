@@ -117,6 +117,8 @@ spec:
           value: false
         - name: allowReplace
           value: true
+        - name: setOwnerReference
+          value: true
       taskRef:
 {% if use_resolver_in_manifests %}
         resolver: hub
@@ -208,6 +210,8 @@ spec:
       params:
         - name: runStrategy
           value: RerunOnFailure
+        - name: setOwnerReference
+          value: true
         - name: manifest
           value: |-
             apiVersion: kubevirt.io/v1

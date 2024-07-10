@@ -114,6 +114,8 @@ spec:
       params:
         - name: runStrategy
           value: RerunOnFailure
+        - name: setOwnerReference
+          value: true
         - name: manifest
           value: |-          
             apiVersion: kubevirt.io/v1
