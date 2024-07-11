@@ -5,9 +5,9 @@ This task uses [virt-sysprep](https://libguestfs.org/virt-sysprep.1.html) to run
 ### Parameters
 
 - **pvc**: PersistentVolumeClaim to run the the virt-sysprep script in. PVC should be in the same namespace as taskrun/pipelinerun.
-- **sysprepCommands**: virt-sysprep commands in `--commands-from-file` format.
+- **virtCommands**: virt-sysprep commands in `--commands-from-file` format.
 - **verbose**: Enable verbose mode and tracing of libguestfs API calls.
-- **additionalOptions**: Additional options to pass to virt-sysprep.
+- **additionalVirtOptions**: Additional options to pass to virt-sysprep.
 
 ### Usage
 

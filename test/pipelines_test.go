@@ -77,7 +77,7 @@ spec:
 							},
 							Params: []pipev1.Param{
 								{
-									Name: "sysprepCommands",
+									Name: "virtCommands",
 									Value: pipev1.ParamValue{
 										Type:      pipev1.ParamTypeString,
 										StringVal: "run-command echo 'krtek' > new",

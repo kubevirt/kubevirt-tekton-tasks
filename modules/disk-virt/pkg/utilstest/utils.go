@@ -1,8 +1,9 @@
 package utilstest
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utils/log"
 	"go.uber.org/zap"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/utils/log"
 )
 
 func SetupTestSuite() {

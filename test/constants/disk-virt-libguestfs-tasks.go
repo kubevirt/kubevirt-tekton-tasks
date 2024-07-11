@@ -4,19 +4,17 @@ const DiskVirtCustomizeTaskName = "disk-virt-customize"
 const DiskVirtSysprepTaskName = "disk-virt-sysprep"
 
 type diskVirtLibguestfsTasksParams struct {
-	PVCName           string
-	CustomizeCommands string
-	SysprepCommands   string
-	AdditionalOptions string
-	Verbose           string
+	PVCName                      string
+	VirtCommandsFileNameCommands string
+	AdditionalOptions            string
+	Verbose                      string
 }
 
 var DiskVirtLibguestfsTasksParams = diskVirtLibguestfsTasksParams{
-	PVCName:           "pvc",
-	CustomizeCommands: "customizeCommands",
-	SysprepCommands:   "sysprepCommands",
-	AdditionalOptions: "additionalOptions",
-	Verbose:           "verbose",
+	PVCName:                      "pvc",
+	VirtCommandsFileNameCommands: "virtCommands",
+	AdditionalOptions:            "additionalVirtOptions",
+	Verbose:                      "verbose",
 }
 
 type LibguestfsTaskType string

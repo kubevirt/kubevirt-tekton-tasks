@@ -2,12 +2,13 @@ package main
 
 import (
 	goarg "github.com/alexflint/go-arg"
-	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/execute"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utils/log"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep/pkg/utils/parse"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	"go.uber.org/zap"
+
+	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/execute"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/utils/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 )
 
 func main() {
@@ -23,7 +24,7 @@ func main() {
 	if err := cliOptions.Init(); err != nil {
 		exit.ExitOrDieFromError(InvalidArguments, err)
 	}
-	executor := execute.NewExecutor(cliOptions, DiskImagePath)
+	executor := execute.NewExecutor(cliOptions, DiskImagePath, "virt-sysprep")
 
 	if err := executor.PrepareGuestFSAppliance(); err != nil {
 		exit.ExitOrDieFromError(PrepareGuestFSApplianceFailed, err)

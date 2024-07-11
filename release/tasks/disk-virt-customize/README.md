@@ -5,9 +5,9 @@ This task uses [virt-customize](https://libguestfs.org/virt-customize.1.html) to
 ### Parameters
 
 - **pvc**: PersistentVolumeClaim to run the the virt-customize script in. PVC should be in the same namespace as taskrun/pipelinerun.
-- **customizeCommands**: virt-customize commands in `--commands-from-file` format.
+- **virtCommands**: virt-customize commands in `--commands-from-file` format.
 - **verbose**: Enable verbose mode and tracing of libguestfs API calls.
-- **additionalOptions**: Additional options to pass to virt-customize.
+- **additionalVirtOptions**: Additional options to pass to virt-customize.
 
 ### Usage
 
@@ -21,7 +21,7 @@ spec:
     params:
     -   name: pvc
         value: example-pvc
-    -   name: customizeCommands
+    -   name: virtCommands
         value: install make,ansible
     podTemplate:
         securityContext:

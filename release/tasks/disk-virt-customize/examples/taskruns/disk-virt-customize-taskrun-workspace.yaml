@@ -17,7 +17,7 @@ spec:
   params:
     - name: pvc
       value: example-pvc
-    - name: customizeCommands
+    - name: virtCommands
       value: |-
         update
         install make,ansible

@@ -11,7 +11,7 @@ const (
 const (
 	DiskImagePath                  = "/mnt/targetpvc/disk.img"
 	GuestFSApplianceArchivePath    = "/usr/local/lib/guestfs/appliance"
-	VirtSysprepCommandsFileName    = "virt_sysprep_commands"
+	VirtCommandsFileName           = "virt_commands"
 	GuestFSApplianceArchivePathEnv = "LIBGUESTFS_APPLIANCE_ARCHIVE_PATH"
-	DiskVirtSysprepHome            = "/home/disk-virt-sysprep"
+	DiskVirtHome                   = "/home/disk-virt"
 )

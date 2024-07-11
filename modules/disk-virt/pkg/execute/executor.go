@@ -6,9 +6,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-customize/pkg/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-customize/pkg/utils/log"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-customize/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/utils/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
@@ -18,10 +18,11 @@ import (
 type Executor struct {
 	cliOptions    *parse.CLIOptions
 	diskImagePath string
+	command       string
 }
 
-func NewExecutor(clioptions *parse.CLIOptions, diskImagePath string) *Executor {
-	return &Executor{cliOptions: clioptions, diskImagePath: diskImagePath}
+func NewExecutor(clioptions *parse.CLIOptions, diskImagePath, command string) *Executor {
+	return &Executor{cliOptions: clioptions, diskImagePath: diskImagePath, command: command}
 }
 
 func (e *Executor) PrepareGuestFSAppliance() error {
@@ -37,7 +38,7 @@ func (e *Executor) PrepareGuestFSAppliance() error {
 }
 
 func (e *Executor) Execute() error {
-	virtCustomizeScriptFileName, err := writeToTmpFile(e.cliOptions.GetCustomizeCommands())
+	virtScriptFileName, err := writeToTmpFile(e.cliOptions.GetCommands())
 	if err != nil {
 		return err
 	}
@@ -46,18 +47,18 @@ func (e *Executor) Execute() error {
 		"--add",
 		e.diskImagePath,
 		"--commands-from-file",
-		virtCustomizeScriptFileName,
+		virtScriptFileName,
 	})
 
-	additionalVirtCustomizeOpts, err := options.NewCommandOptions(e.cliOptions.GetAdditionalVirtCustomizeOptions())
+	additionalVirtOpts, err := options.NewCommandOptions(e.cliOptions.GetAdditionalVirtOptions())
 	if err != nil {
 		return err
 	}
-	opts.AddOptions(additionalVirtCustomizeOpts.GetAll()...)
-	SetupVirtCustomizeOptions(opts, e.cliOptions)
+	opts.AddOptions(additionalVirtOpts.GetAll()...)
+	SetupVirtOptions(opts, e.cliOptions)
 
-	log.GetLogger().Debug("executing virt-customize command with options: " + strings.Join(opts.GetAll(), " "))
-	cmd := exec.Command("virt-customize", opts.GetAll()...)
+	log.GetLogger().Debug("executing virt command with options: " + strings.Join(opts.GetAll(), " "))
+	cmd := exec.Command(e.command, opts.GetAll()...)
 	cmd.Env = os.Environ()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -76,7 +77,7 @@ func (e *Executor) Execute() error {
 }
 
 func writeToTmpFile(content string) (string, error) {
-	f, err := ioutil.TempFile("", constants.VirtCustomizeCommandsFileName)
+	f, err := ioutil.TempFile("", constants.VirtCommandsFileName)
 	if err != nil {
 		return "", err
 	}
