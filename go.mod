@@ -4,60 +4,60 @@ go 1.21
 
 // Kubernetes
 replace (
-	k8s.io/api => k8s.io/api v0.26.11
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.26.11
-	k8s.io/apimachinery => k8s.io/apimachinery v0.26.11
-	k8s.io/cli-runtime => k8s.io/cli-runtime v0.24.2
-	k8s.io/client-go => k8s.io/client-go v0.26.11
-	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.26.11
-	k8s.io/kubectl => k8s.io/kubectl v0.26.11
+	k8s.io/api => k8s.io/api v0.30.3
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.30.3
+	k8s.io/apimachinery => k8s.io/apimachinery v0.30.3
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.30.3
+	k8s.io/client-go => k8s.io/client-go v0.30.3
+	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.30.3
+	k8s.io/kubectl => k8s.io/kubectl v0.30.3
 )
 
 // k8s.io/cli-runtime requires older versions of these packages
 replace (
-	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.11.4
-	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.13.6
+	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.17.2
+	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.17.1
 )
 
 replace (
-	kubevirt.io/api => kubevirt.io/api v1.2.0
-	kubevirt.io/client-go => kubevirt.io/client-go v1.2.0
-	kubevirt.io/kubevirt => kubevirt.io/kubevirt v1.2.0
+	kubevirt.io/api => kubevirt.io/api v1.3.0
+	kubevirt.io/client-go => kubevirt.io/client-go v1.3.0
+	kubevirt.io/kubevirt => kubevirt.io/kubevirt v1.3.0
 )
 
 // CDI
 replace (
-	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.58.1
-	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.58.1
+	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.59.0
+	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.59.0
 	kubevirt.io/controller-lifecycle-operator-sdk/api => kubevirt.io/controller-lifecycle-operator-sdk/api v0.0.0-20220329064328-f3cc58c6ed90
 )
 
 // Openshift
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20231118005202-0f638a8a4705
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
+	github.com/openshift/api => github.com/openshift/api 8da8de571496
+	github.com/openshift/client-go => github.com/openshift/client-go b054aa794d87
 )
 
 require (
-	github.com/alexflint/go-arg v1.5.0
+	github.com/alexflint/go-arg v1.5.1
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/onsi/ginkgo/v2 v2.17.1
-	github.com/onsi/gomega v1.32.0
+	github.com/onsi/ginkgo/v2 v2.19.0
+	github.com/onsi/gomega v1.33.1
 	github.com/openshift/api v3.9.0+incompatible
 	github.com/openshift/client-go v3.9.0+incompatible
-	github.com/spf13/cobra v1.8.0
-	github.com/tektoncd/pipeline v0.59.0
+	github.com/spf13/cobra v1.8.1
+	github.com/tektoncd/pipeline v0.61.1
 	go.uber.org/zap v1.27.0
-	k8s.io/api v0.29.3
-	k8s.io/apimachinery v0.29.3
-	k8s.io/cli-runtime v0.24.2
+	k8s.io/api v0.30.3
+	k8s.io/apimachinery v0.30.3
+	k8s.io/cli-runtime v0.30.3
 	k8s.io/client-go v12.0.0+incompatible
-	knative.dev/pkg v0.0.0-20240318073042-db6f3b074e8c
-	kubevirt.io/api v1.2.0
-	kubevirt.io/client-go v1.2.0
-	kubevirt.io/containerized-data-importer v1.58.1
-	kubevirt.io/containerized-data-importer-api v1.58.1
-	kubevirt.io/kubevirt v1.2.0
+	knative.dev/pkg 4355f0c73608
+	kubevirt.io/api v1.3.0
+	kubevirt.io/client-go v1.3.0
+	kubevirt.io/containerized-data-importer v1.59.0
+	kubevirt.io/containerized-data-importer-api v1.59.0
+	kubevirt.io/kubevirt v1.3.0
 	kubevirt.io/qe-tools v0.1.8
 	sigs.k8s.io/yaml v1.4.0
 )
