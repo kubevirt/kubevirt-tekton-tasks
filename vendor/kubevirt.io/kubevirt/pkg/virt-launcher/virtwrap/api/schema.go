@@ -101,6 +101,7 @@ const (
 	HostDeviceMDev = "mdev"
 	HostDeviceUSB  = "usb"
 	AddressPCI     = "pci"
+	AddressCCW     = "ccw"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -314,7 +315,10 @@ type Features struct {
 	PMU        *FeatureState      `xml:"pmu,omitempty"`
 }
 
+const HypervModePassthrough = "passthrough"
+
 type FeatureHyperv struct {
+	Mode            string            `xml:"mode,attr,omitempty"`
 	Relaxed         *FeatureState     `xml:"relaxed,omitempty"`
 	VAPIC           *FeatureState     `xml:"vapic,omitempty"`
 	Spinlocks       *FeatureSpinlocks `xml:"spinlocks,omitempty"`
@@ -354,6 +358,16 @@ type FeatureEnabled struct {
 }
 
 type Shareable struct{}
+
+type Slice struct {
+	Slice SliceType `xml:"slice,omitempty"`
+}
+
+type SliceType struct {
+	Type   string `xml:"type,attr"`
+	Offset int64  `xml:"offset,attr"`
+	Size   int64  `xml:"size,attr"`
+}
 
 type FeatureState struct {
 	State string `xml:"state,attr,omitempty"`
@@ -480,12 +494,17 @@ type MemoryBackingAccess struct {
 type NoSharePages struct {
 }
 
+type MemoryAddress struct {
+	Base string `xml:"base,attr"`
+}
+
 type MemoryTarget struct {
-	Size      Memory `xml:"size"`
-	Requested Memory `xml:"requested"`
-	Current   Memory `xml:"current"`
-	Node      string `xml:"node"`
-	Block     Memory `xml:"block"`
+	Size      Memory         `xml:"size"`
+	Requested Memory         `xml:"requested"`
+	Current   Memory         `xml:"current"`
+	Node      string         `xml:"node"`
+	Block     Memory         `xml:"block"`
+	Address   *MemoryAddress `xml:"address,omitempty"`
 }
 
 type MemoryDevice struct {
@@ -680,6 +699,7 @@ type DiskSource struct {
 	Name          string          `xml:"name,attr,omitempty"`
 	Host          *DiskSourceHost `xml:"host,omitempty"`
 	Reservations  *Reservations   `xml:"reservations,omitempty"`
+	Slices        []Slice         `xml:"slices,omitempty"`
 }
 
 type DiskTarget struct {
