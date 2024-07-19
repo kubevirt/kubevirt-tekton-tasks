@@ -11,6 +11,8 @@
       ]
     }
   ],
+  "labels": ["release-note-none"],
+  "extends": [":gitSignOff"],
   "vulnerabilityAlerts": {
     "enabled": true
   },
