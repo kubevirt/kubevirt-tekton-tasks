@@ -246,7 +246,7 @@ var _ = Describe("Modify data objects", func() {
 				},
 				Spec: k8sv1.PersistentVolumeClaimSpec{
 					AccessModes: []k8sv1.PersistentVolumeAccessMode{k8sv1.ReadWriteOnce},
-					Resources: k8sv1.ResourceRequirements{
+					Resources: k8sv1.VolumeResourceRequirements{
 						Requests: k8sv1.ResourceList{
 							k8sv1.ResourceStorage: *resource.NewScaledQuantity(100, resource.Mega),
 						},

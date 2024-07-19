@@ -426,7 +426,7 @@ var _ = Describe("Create VM from manifest", func() {
 					CreateVMResults.Namespace: expectedVMStub.Namespace,
 				})
 
-			vm, err := f.KubevirtClient.VirtualMachine(expectedVMStub.Namespace).Get(context.Background(), expectedVMStub.Name, &v1.GetOptions{})
+			vm, err := f.KubevirtClient.VirtualMachine(expectedVMStub.Namespace).Get(context.Background(), expectedVMStub.Name, v1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			Expect(*vm.Spec.RunStrategy).To(Equal(expectedRunStrategy), "vm should have correct run strategy")

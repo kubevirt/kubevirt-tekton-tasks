@@ -137,7 +137,7 @@ func (f *Framework) AfterEach() {
 		defer f.CdiClient.DataSources(ds.Namespace).Delete(context.Background(), ds.Name, metav1.DeleteOptions{})
 	}
 	for _, vm := range f.managedResources.vms {
-		defer f.KubevirtClient.VirtualMachine(vm.Namespace).Delete(context.Background(), vm.Name, &metav1.DeleteOptions{})
+		defer f.KubevirtClient.VirtualMachine(vm.Namespace).Delete(context.Background(), vm.Name, metav1.DeleteOptions{})
 	}
 	for _, t := range f.managedResources.templates {
 		defer f.TemplateClient.Templates(t.Namespace).Delete(context.Background(), t.Name, metav1.DeleteOptions{})

@@ -9,6 +9,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/test/testconfigs"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "kubevirt.io/api/core/v1"
 )
 
@@ -19,7 +20,7 @@ var _ = Describe("Wait for VMI Status", func() {
 		f.TestSetup(config)
 
 		if vm := config.TaskData.VM; vm != nil {
-			vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm)
+			vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageVMs(vm)
 			if config.TaskData.ShouldStartVM {
