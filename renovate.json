@@ -10,6 +10,8 @@
   "lockFileMaintenance": {
     "enabled": false
   },
+  "labels": ["release-note-none"],
+  "extends": [":gitSignOff"],
   "packageRules": [
     {
       "groupName": "all dependencies",
