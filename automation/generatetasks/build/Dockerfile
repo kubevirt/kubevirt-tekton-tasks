@@ -1,11 +1,11 @@
-FROM fedora:39
+FROM fedora:41
 
 ENV HOME=/go/src/github.com/kubevirt/kubevirt-tekton-tasks/ \
     USER_UID=1001 \
-    USER_NAME=generatetasks
+    USERNAME=generatetasks
 
 
-RUN curl -L https://go.dev/dl/go1.21.7.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+RUN curl -L https://go.dev/dl/go1.22.5.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 ENV PATH=$PATH:/usr/local/go/bin
 
 WORKDIR ${HOME}

@@ -87,7 +87,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 						}
 					}
 				}
-				vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm)
+				vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm, metav1.CreateOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
 				f.ManageVMs(vm)
 				if config.TaskData.ShouldStartVM {
@@ -414,7 +414,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}
 
 		if vm := config.TaskData.VM; vm != nil {
-			vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm)
+			vm, err := f.KubevirtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
 			f.ManageVMs(vm)
 			if config.TaskData.ShouldStartVM {
@@ -431,7 +431,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			ExpectTermination(config.ExpectedTermination).
 			ExpectResults(nil)
 
-		vm, err := f.KubevirtClient.VirtualMachine(config.TaskData.VMNamespace).Get(context.Background(), config.TaskData.VMName, &metav1.GetOptions{})
+		vm, err := f.KubevirtClient.VirtualMachine(config.TaskData.VMNamespace).Get(context.Background(), config.TaskData.VMName, metav1.GetOptions{})
 
 		if config.TaskData.Delete {
 			Expect(err).Should(HaveOccurred())

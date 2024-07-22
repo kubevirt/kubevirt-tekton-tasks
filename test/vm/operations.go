@@ -24,7 +24,7 @@ func WaitForVM(kubevirtClient kubevirtcliv1.KubevirtClient,
 
 	err := wait.PollImmediate(constants.PollInterval, timeout, func() (bool, error) {
 		var err error
-		vm, err = kubevirtClient.VirtualMachine(namespace).Get(context.Background(), name, &metav1.GetOptions{})
+		vm, err = kubevirtClient.VirtualMachine(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
 			if numOfVMPollsBeforeError == 0 {
 				return true, err
@@ -53,7 +53,7 @@ func WaitForVM(kubevirtClient kubevirtcliv1.KubevirtClient,
 		}
 
 		if vmiPhase != "" {
-			vmi, err := kubevirtClient.VirtualMachineInstance(namespace).Get(context.Background(), name, &metav1.GetOptions{})
+			vmi, err := kubevirtClient.VirtualMachineInstance(namespace).Get(context.Background(), name, metav1.GetOptions{})
 			if err != nil {
 				return false, nil
 			}

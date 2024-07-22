@@ -2,7 +2,7 @@ FROM quay.io/centos/centos:stream9 AS taskBuilder
 
 RUN dnf install -y tar gzip && dnf clean all
 
-ENV GO_VERSION="1.21.7"
+ENV GO_VERSION="1.22.5"
 RUN curl -L https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 ENV PATH=$PATH:/usr/local/go/bin
 

@@ -70,7 +70,7 @@ func (e *Executor) EnsureVMRunning(timeout time.Duration) error {
 	logFields := []zap.Field{zap.String("name", vmName), zap.String("namespace", vmNamespace)}
 
 	conditionFn := func() (done bool, err error) {
-		vmInstance, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(context.TODO(), vmName, &v1.GetOptions{})
+		vmInstance, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(context.TODO(), vmName, v1.GetOptions{})
 
 		if err != nil {
 			log.Logger().Debug("could not obtain a vm instance", logFields[0], logFields[1], zap.Error(err))
@@ -133,7 +133,7 @@ func (e *Executor) EnsureVMStopped() error {
 	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
 
 	return wait.PollImmediateInfinite(constants.PollVMItoStopInterval, func() (bool, error) {
-		vmi, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(context.TODO(), vmName, &v1.GetOptions{})
+		vmi, err := e.kubevirtClient.VirtualMachineInstance(vmNamespace).Get(context.TODO(), vmName, v1.GetOptions{})
 
 		if err == nil {
 			switch vmi.Status.Phase {
@@ -175,7 +175,7 @@ func (e *Executor) EnsureVMDeleted() error {
 	vmNamespace := e.clioptions.GetVirtualMachineNamespace()
 
 	return wait.PollImmediateInfinite(constants.PollVMtoDeleteInterval, func() (bool, error) {
-		_, err := e.kubevirtClient.VirtualMachine(vmNamespace).Get(context.TODO(), vmName, &v1.GetOptions{})
+		_, err := e.kubevirtClient.VirtualMachine(vmNamespace).Get(context.TODO(), vmName, v1.GetOptions{})
 
 		if err == nil {
 			if err := e.ensureVMDelete(); err != nil {
@@ -263,7 +263,7 @@ func (e *Executor) ensureVMDelete() error {
 		e.attemptedDelete = true
 
 		log.Logger().Debug("deleting a vm", zap.String("name", vmName), zap.String("namespace", vmNamespace))
-		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Delete(context.TODO(), vmName, &v1.DeleteOptions{}); err != nil {
+		if err := e.kubevirtClient.VirtualMachine(vmNamespace).Delete(context.TODO(), vmName, v1.DeleteOptions{}); err != nil {
 			return err
 		}
 	}
