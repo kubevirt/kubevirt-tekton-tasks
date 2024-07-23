@@ -1,0 +1,23 @@
+{
+    "$schema":"https://docs.renovatebot.com/renovate-schema.json",
+    "extends":[
+       "config:recommended"
+    ],
+    "packageRules":[
+       {
+          "enabled":false,
+          "matchPackagePatterns":[
+             "*"
+          ]
+       }
+    ],
+    "vulnerabilityAlerts":{
+       "enabled":true
+    },
+    "osvVulnerabilityAlerts":true,
+    "assigneesFromCodeOwners":true,
+    "constraints":{
+       "go":"1.19"
+    },
+    "prConcurrentLimit":3
+}
