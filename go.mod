@@ -5,13 +5,13 @@ go 1.22.5
 // Kubernetes
 replace (
 	k8s.io/client-go => k8s.io/client-go v0.30.3
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240709000822-3c01b740850f
 	k8s.io/kubectl => k8s.io/kubectl v0.30.3
 )
 
 // Openshift
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20240717221938-8da8de571496
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20240722135205-ae4f370f361f
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240528061634-b054aa794d87
 )
 

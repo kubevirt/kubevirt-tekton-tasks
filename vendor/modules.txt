@@ -325,7 +325,7 @@ github.com/opencontainers/go-digest
 ## explicit; go 1.18
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
-# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20240717221938-8da8de571496
+# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20240722135205-ae4f370f361f
 ## explicit; go 1.22.0
 github.com/openshift/api/config/v1
 github.com/openshift/api/pkg/serialization
@@ -1215,7 +1215,7 @@ k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset
 k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset/scheme
 k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset/typed/apiregistration/v1
 k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset/typed/apiregistration/v1beta1
-# k8s.io/kube-openapi v0.30.0 => k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340
+# k8s.io/kube-openapi v0.30.0 => k8s.io/kube-openapi v0.0.0-20240709000822-3c01b740850f
 ## explicit; go 1.20
 k8s.io/kube-openapi/pkg/cached
 k8s.io/kube-openapi/pkg/common
@@ -1482,7 +1482,7 @@ sigs.k8s.io/yaml
 sigs.k8s.io/yaml/goyaml.v2
 sigs.k8s.io/yaml/goyaml.v3
 # k8s.io/client-go => k8s.io/client-go v0.30.3
-# k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340
+# k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240709000822-3c01b740850f
 # k8s.io/kubectl => k8s.io/kubectl v0.30.3
-# github.com/openshift/api => github.com/openshift/api v0.0.0-20240717221938-8da8de571496
+# github.com/openshift/api => github.com/openshift/api v0.0.0-20240722135205-ae4f370f361f
 # github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240528061634-b054aa794d87
