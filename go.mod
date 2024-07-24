@@ -42,7 +42,7 @@ require (
 require (
 	cloud.google.com/go/iam v1.1.10 // indirect
 	cloud.google.com/go/kms v1.18.2 // indirect
-	cloud.google.com/go/longrunning v0.5.9 // indirect
+	cloud.google.com/go/longrunning v0.5.10 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2 // indirect
 	github.com/alexflint/go-scalar v1.2.0 // indirect
