@@ -40,8 +40,8 @@ require (
 )
 
 require (
-	cloud.google.com/go/iam v1.1.11 // indirect
-	cloud.google.com/go/kms v1.18.3 // indirect
+	cloud.google.com/go/iam v1.1.12 // indirect
+	cloud.google.com/go/kms v1.18.4 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2 // indirect
 	github.com/alexflint/go-scalar v1.2.0 // indirect
@@ -107,7 +107,7 @@ require (
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
 	github.com/openzipkin/zipkin-go v0.4.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.75.1 // indirect
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.75.2 // indirect
 	github.com/prometheus/client_golang v1.19.1 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
@@ -138,7 +138,7 @@ require (
 	golang.org/x/tools v0.23.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.189.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240701130421-f6361c86f094 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240722135656-d784300faade // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240722135656-d784300faade // indirect
 	google.golang.org/grpc v1.65.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
