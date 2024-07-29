@@ -31,14 +31,14 @@ github.com/openshift/custom-resource-status/conditions/v1
 # github.com/pborman/uuid v1.2.1
 ## explicit
 github.com/pborman/uuid
-# golang.org/x/net v0.17.0
-## explicit; go 1.17
+# golang.org/x/net v0.23.0
+## explicit; go 1.18
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-# golang.org/x/text v0.13.0
-## explicit; go 1.17
+# golang.org/x/text v0.14.0
+## explicit; go 1.18
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
