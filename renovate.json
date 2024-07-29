@@ -1,6 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "baseBranches": ["main", "release-v0.17", "release-v0.15", "release-v0.13", "release-v0.12"],
+  "baseBranches": [
+    "main",
+    "release-v0.17",
+    "release-v0.15",
+    "release-v0.13",
+    "release-v0.12"
+  ],
   "constraints": {
     "go": "1.22"
   },
@@ -10,16 +16,71 @@
   "lockFileMaintenance": {
     "enabled": false
   },
-  "labels": ["release-note-none"],
-  "extends": [":gitSignOff"],
+  "labels": [
+    "release-note-none"
+  ],
+  "extends": [
+    ":gitSignOff"
+  ],
   "packageRules": [
     {
       "groupName": "all dependencies",
       "groupSlug": "all",
+      "matchBaseBranches": [
+        "main"
+      ],
       "matchPackagePatterns": [
         "*"
       ]
+    },
+    {
+      "groupName": "all dependencies",
+      "groupSlug": "all",
+      "enabled": false,
+      "matchBaseBranches": [
+        "release-v0.20",
+        "release-v0.17",
+        "release-v0.15",
+        "release-v0.13",
+        "release-v0.12"
+      ],
+      "matchPackagePatterns": [
+        "*"
+      ]
+    },
+    {
+      "matchPackageNames": [
+        "golang"
+      ],
+      "allowedVersions": "<=1.21",
+      "matchBaseBranches": [
+        "release-v0.17"
+      ]
+    },
+    {
+      "matchPackageNames": [
+        "golang"
+      ],
+      "allowedVersions": "<=1.20",
+      "matchBaseBranches": [
+        "release-v0.15"
+      ]
+    },
+    {
+      "matchPackageNames": [
+        "golang"
+      ],
+      "allowedVersions": "<=1.19",
+      "matchBaseBranches": [
+        "release-v0.13",
+        "release-v0.12"
+      ]
     }
   ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true,
+  "assigneesFromCodeOwners": true,
   "separateMajorMinor": false
 }
