@@ -183,6 +183,13 @@ func (log *Logger) With(fields ...Field) *Logger {
 	return l
 }
 
+// Level reports the minimum enabled level for this logger.
+//
+// For NopLoggers, this is [zapcore.InvalidLevel].
+func (log *Logger) Level() zapcore.Level {
+	return zapcore.LevelOf(log.core)
+}
+
 // Check returns a CheckedEntry if logging a message at the specified level
 // is enabled. It's a completely optional optimization; in high-performance
 // applications, Check can help avoid allocating a slice to hold fields.
@@ -272,6 +279,12 @@ func (log *Logger) Sync() error {
 // Core returns the Logger's underlying zapcore.Core.
 func (log *Logger) Core() zapcore.Core {
 	return log.core
+}
+
+// Name returns the Logger's underlying name,
+// or an empty string if the logger is unnamed.
+func (log *Logger) Name() string {
+	return log.name
 }
 
 func (log *Logger) clone() *Logger {
