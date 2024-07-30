@@ -14,6 +14,24 @@ const (
 	paramTag = "param"
 )
 
+type NotFoundError struct {
+	Name string
+}
+
+func (e NotFoundError) Error() string {
+	return fmt.Sprintf("%s must be specified", e.Name)
+}
+
+func (e NotFoundError) Is(target error) bool {
+	switch x := target.(type) {
+	case NotFoundError:
+		return x.Name == e.Name
+	case *NotFoundError:
+		return x.Name == e.Name
+	}
+	return false
+}
+
 func FlagErr(flagName, format string, a ...any) error {
 	return fmt.Errorf("failed to parse \"--%s\" flag: %w", flagName, fmt.Errorf(format, a...))
 }
@@ -57,6 +75,8 @@ func Supported(obj interface{}) string {
 			t = structField.Type.Elem().String()
 		case structField.Type == reflect.TypeOf(&resource.Quantity{}):
 			t = structField.Type.Elem().String()
+		case structField.Type.Kind() == reflect.Slice && structField.Type.Elem().Kind() == reflect.String:
+			t = structField.Type.String()
 		default:
 			panic(fmt.Errorf("unsupported struct field \"%s\" with kind \"%s\"", structField.Name, structField.Type.Kind()))
 		}
@@ -183,4 +203,18 @@ func SplitPrefixedName(prefixedName string) (prefix string, name string, err err
 	}
 
 	return
+}
+
+func GetParamByName(paramName, paramsStr string) (string, error) {
+	paramsMap, err := split(paramsStr)
+	if err != nil {
+		return "", err
+	}
+
+	paramValue, exists := paramsMap[paramName]
+	if !exists {
+		return "", &NotFoundError{Name: paramName}
+	}
+
+	return paramValue, nil
 }
