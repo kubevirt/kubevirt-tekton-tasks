@@ -12,8 +12,7 @@ KUBEVIRT_VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt/releas
 CDI_VERSION=$(curl -s https://api.github.com/repos/kubevirt/containerized-data-importer/releases | \
             jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
 
-TEKTON_VERSION=$(curl -s https://api.github.com/repos/tektoncd/operator/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+TEKTON_VERSION="v0.67.0"
 
 SSP_OPERATOR_VERSION=$(curl -s  https://api.github.com/repos/kubevirt/ssp-operator/releases | \
             jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
