@@ -51,7 +51,8 @@
     },
     {
       "matchPackageNames": [
-        "golang"
+        "golang",
+        "go"
       ],
       "allowedVersions": "<=1.21",
       "matchBaseBranches": [
@@ -60,7 +61,8 @@
     },
     {
       "matchPackageNames": [
-        "golang"
+        "golang",
+        "go"
       ],
       "allowedVersions": "<=1.20",
       "matchBaseBranches": [
@@ -69,7 +71,8 @@
     },
     {
       "matchPackageNames": [
-        "golang"
+        "golang",
+        "go"
       ],
       "allowedVersions": "<=1.19",
       "matchBaseBranches": [
