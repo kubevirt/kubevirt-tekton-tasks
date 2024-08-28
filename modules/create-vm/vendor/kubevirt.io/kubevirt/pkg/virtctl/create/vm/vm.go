@@ -20,6 +20,7 @@
 package vm
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -189,10 +190,10 @@ type dataVolumeSourceImageIO struct {
 }
 
 type dataVolumeSourcePVC struct {
-	Name      string             `param:"name"`
-	Namespace string             `param:"namespace"`
-	Size      *resource.Quantity `param:"size"`
-	Type      string             `param:"type"`
+	Name   string             `param:"name"`
+	Source string             `param:"src"`
+	Size   *resource.Quantity `param:"size"`
+	Type   string             `param:"type"`
 }
 
 type dataVolumeSourceRegistry struct {
@@ -228,10 +229,10 @@ type dataVolumeSourceVDDK struct {
 }
 
 type dataVolumeSourceSnapshot struct {
-	Name      string             `param:"name"`
-	Namespace string             `param:"namespace"`
-	Size      *resource.Quantity `param:"size"`
-	Type      string             `param:"type"`
+	Name   string             `param:"name"`
+	Source string             `param:"src"`
+	Size   *resource.Quantity `param:"size"`
+	Type   string             `param:"type"`
 }
 
 type volumeImportFn func(string, *v1.VirtualMachine) (*cdiv1.DataVolumeSource, error)
@@ -245,6 +246,11 @@ var volumeImportOptions = map[string]volumeImportFn{
 	s3:       withVolumeSourceS3,
 	vddk:     withVolumeSourceVDDK,
 	snapshot: withVolumeSourceSnapshot,
+}
+
+var volumeImportSizeOptional = map[string]bool{
+	pvc:      true,
+	snapshot: true,
 }
 
 var runStrategies = []string{
@@ -1025,7 +1031,9 @@ func withImportedVolume(c *createVM, vm *v1.VirtualMachine) error {
 
 		size, err := params.GetParamByName("size", volume)
 		if err != nil {
-			return err
+			if !volumeImportSizeOptional[volumeSourceType] || !errors.Is(err, params.NotFoundError{Name: "size"}) {
+				return err
+			}
 		}
 
 		name, err := params.GetParamByName("name", volume)
@@ -1104,14 +1112,23 @@ func withVolumeSourcePVC(paramStr string, vm *v1.VirtualMachine) (*cdiv1.DataVol
 		return nil, err
 	}
 
-	if sourceStruct.Name == "" || sourceStruct.Namespace == "" {
-		return nil, params.FlagErr(VolumeImportFlag, "name and namespace are both required with PVC volume source")
+	if sourceStruct.Source == "" {
+		return nil, params.FlagErr(VolumeImportFlag, "src must be specified")
+	}
+
+	namespace, name, err := params.SplitPrefixedName(sourceStruct.Source)
+	if err != nil {
+		return nil, params.FlagErr(VolumeImportFlag, "src invalid: %w", err)
+	}
+
+	if namespace == "" {
+		return nil, params.FlagErr(VolumeImportFlag, "namespace of pvc '%s' must be specified", name)
 	}
 
 	source := cdiv1.DataVolumeSource{
 		PVC: &cdiv1.DataVolumeSourcePVC{
-			Name:      sourceStruct.Name,
-			Namespace: sourceStruct.Namespace,
+			Name:      name,
+			Namespace: namespace,
 		},
 	}
 
@@ -1206,14 +1223,23 @@ func withVolumeSourceSnapshot(paramStr string, vm *v1.VirtualMachine) (*cdiv1.Da
 		return nil, err
 	}
 
-	if sourceStruct.Name == "" || sourceStruct.Namespace == "" {
-		return nil, params.FlagErr(VolumeImportFlag, "name and namespace are both required with Snapshot volume source")
+	if sourceStruct.Source == "" {
+		return nil, params.FlagErr(VolumeImportFlag, "src must be specified")
+	}
+
+	namespace, name, err := params.SplitPrefixedName(sourceStruct.Source)
+	if err != nil {
+		return nil, params.FlagErr(VolumeImportFlag, "src invalid: %w", err)
+	}
+
+	if namespace == "" {
+		return nil, params.FlagErr(VolumeImportFlag, "namespace of snapshot '%s' must be specified", name)
 	}
 
 	source := cdiv1.DataVolumeSource{
 		Snapshot: &cdiv1.DataVolumeSourceSnapshot{
-			Name:      sourceStruct.Name,
-			Namespace: sourceStruct.Namespace,
+			Name:      name,
+			Namespace: namespace,
 		},
 	}
 
@@ -1225,22 +1251,26 @@ func createVolumeWithSource(source *cdiv1.DataVolumeSource, size string, name st
 		return err
 	}
 
-	vm.Spec.DataVolumeTemplates = append(vm.Spec.DataVolumeTemplates, v1.DataVolumeTemplateSpec{
+	dvt := v1.DataVolumeTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
 		Spec: cdiv1.DataVolumeSpec{
 			Source: source,
-			Storage: &cdiv1.StorageSpec{
-				Resources: k8sv1.ResourceRequirements{
-					Requests: k8sv1.ResourceList{
-						k8sv1.ResourceStorage: resource.MustParse(size),
-					},
+		},
+	}
+
+	if size != "" {
+		dvt.Spec.Storage = &cdiv1.StorageSpec{
+			Resources: k8sv1.ResourceRequirements{
+				Requests: k8sv1.ResourceList{
+					k8sv1.ResourceStorage: resource.MustParse(size),
 				},
 			},
-		},
-	})
+		}
+	}
 
+	vm.Spec.DataVolumeTemplates = append(vm.Spec.DataVolumeTemplates, dvt)
 	vm.Spec.Template.Spec.Volumes = append(vm.Spec.Template.Spec.Volumes, v1.Volume{
 		Name: name,
 		VolumeSource: v1.VolumeSource{
