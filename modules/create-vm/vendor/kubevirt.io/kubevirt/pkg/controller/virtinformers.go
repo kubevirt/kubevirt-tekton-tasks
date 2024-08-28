@@ -31,10 +31,10 @@ import (
 	"kubevirt.io/api/clone"
 	clonev1alpha1 "kubevirt.io/api/clone/v1alpha1"
 
-	promv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	vsv1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	secv1 "github.com/openshift/api/security/v1"
+	promv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -58,7 +58,7 @@ import (
 	kubev1 "kubevirt.io/api/core/v1"
 	exportv1 "kubevirt.io/api/export/v1alpha1"
 	instancetypeapi "kubevirt.io/api/instancetype"
-	instancetypev1alpha2 "kubevirt.io/api/instancetype/v1alpha2"
+	instancetypev1beta1 "kubevirt.io/api/instancetype/v1beta1"
 	"kubevirt.io/api/migrations"
 	migrationsv1 "kubevirt.io/api/migrations/v1alpha1"
 	poolv1 "kubevirt.io/api/pool/v1alpha1"
@@ -296,6 +296,8 @@ type KubeInformerFactory interface {
 
 	// Pod returns an informer for ALL Pods in the system
 	Pod() cache.SharedIndexInformer
+
+	ResourceQuota() cache.SharedIndexInformer
 
 	K8SInformerFactory() informers.SharedInformerFactory
 }
@@ -697,7 +699,13 @@ func (f *kubeInformerFactory) MigrationPolicy() cache.SharedIndexInformer {
 }
 
 func GetVirtualMachineCloneInformerIndexers() cache.Indexers {
+	getkey := func(vmClone *clonev1alpha1.VirtualMachineClone, resourceName string) string {
+		return fmt.Sprintf("%s/%s", vmClone.Namespace, resourceName)
+	}
+
 	return cache.Indexers{
+		cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
+		// Gets: snapshot key. Returns: clones that their source is the specified snapshot
 		"snapshotSource": func(obj interface{}) ([]string, error) {
 			vmClone, ok := obj.(*clonev1alpha1.VirtualMachineClone)
 			if !ok {
@@ -706,8 +714,46 @@ func GetVirtualMachineCloneInformerIndexers() cache.Indexers {
 
 			source := vmClone.Spec.Source
 			if source != nil && *source.APIGroup == snapshot.GroupName && source.Kind == "VirtualMachineSnapshot" {
-				snapshotSourceKey := fmt.Sprintf("%s/%s", vmClone.Namespace, source.Name)
-				return []string{snapshotSourceKey}, nil
+				return []string{getkey(vmClone, source.Name)}, nil
+			}
+
+			return nil, nil
+		},
+		// Gets: snapshot key. Returns: clones in phase SnapshotInProgress that wait for the specified snapshot
+		string(clonev1alpha1.SnapshotInProgress): func(obj interface{}) ([]string, error) {
+			vmClone, ok := obj.(*clonev1alpha1.VirtualMachineClone)
+			if !ok {
+				return nil, unexpectedObjectError
+			}
+
+			if vmClone.Status.Phase == clonev1alpha1.SnapshotInProgress && vmClone.Status.SnapshotName != nil {
+				return []string{getkey(vmClone, *vmClone.Status.SnapshotName)}, nil
+			}
+
+			return nil, nil
+		},
+		// Gets: restore key. Returns: clones in phase RestoreInProgress that wait for the specified restore
+		string(clonev1alpha1.RestoreInProgress): func(obj interface{}) ([]string, error) {
+			vmClone, ok := obj.(*clonev1alpha1.VirtualMachineClone)
+			if !ok {
+				return nil, unexpectedObjectError
+			}
+
+			if vmClone.Status.Phase == clonev1alpha1.RestoreInProgress && vmClone.Status.RestoreName != nil {
+				return []string{getkey(vmClone, *vmClone.Status.RestoreName)}, nil
+			}
+
+			return nil, nil
+		},
+		// Gets: restore key. Returns: clones in phase Succeeded
+		string(clonev1alpha1.Succeeded): func(obj interface{}) ([]string, error) {
+			vmClone, ok := obj.(*clonev1alpha1.VirtualMachineClone)
+			if !ok {
+				return nil, unexpectedObjectError
+			}
+
+			if vmClone.Status.Phase == clonev1alpha1.Succeeded && vmClone.Status.RestoreName != nil {
+				return []string{getkey(vmClone, *vmClone.Status.RestoreName)}, nil
 			}
 
 			return nil, nil
@@ -724,29 +770,29 @@ func (f *kubeInformerFactory) VirtualMachineClone() cache.SharedIndexInformer {
 
 func (f *kubeInformerFactory) VirtualMachineInstancetype() cache.SharedIndexInformer {
 	return f.getInformer("vmInstancetypeInformer", func() cache.SharedIndexInformer {
-		lw := cache.NewListWatchFromClient(f.clientSet.GeneratedKubeVirtClient().InstancetypeV1alpha2().RESTClient(), instancetypeapi.PluralResourceName, k8sv1.NamespaceAll, fields.Everything())
-		return cache.NewSharedIndexInformer(lw, &instancetypev1alpha2.VirtualMachineInstancetype{}, f.defaultResync, cache.Indexers{})
+		lw := cache.NewListWatchFromClient(f.clientSet.GeneratedKubeVirtClient().InstancetypeV1beta1().RESTClient(), instancetypeapi.PluralResourceName, k8sv1.NamespaceAll, fields.Everything())
+		return cache.NewSharedIndexInformer(lw, &instancetypev1beta1.VirtualMachineInstancetype{}, f.defaultResync, cache.Indexers{})
 	})
 }
 
 func (f *kubeInformerFactory) VirtualMachineClusterInstancetype() cache.SharedIndexInformer {
 	return f.getInformer("vmClusterInstancetypeInformer", func() cache.SharedIndexInformer {
-		lw := cache.NewListWatchFromClient(f.clientSet.GeneratedKubeVirtClient().InstancetypeV1alpha2().RESTClient(), instancetypeapi.ClusterPluralResourceName, k8sv1.NamespaceAll, fields.Everything())
-		return cache.NewSharedIndexInformer(lw, &instancetypev1alpha2.VirtualMachineClusterInstancetype{}, f.defaultResync, cache.Indexers{})
+		lw := cache.NewListWatchFromClient(f.clientSet.GeneratedKubeVirtClient().InstancetypeV1beta1().RESTClient(), instancetypeapi.ClusterPluralResourceName, k8sv1.NamespaceAll, fields.Everything())
+		return cache.NewSharedIndexInformer(lw, &instancetypev1beta1.VirtualMachineClusterInstancetype{}, f.defaultResync, cache.Indexers{})
 	})
 }
 
 func (f *kubeInformerFactory) VirtualMachinePreference() cache.SharedIndexInformer {
 	return f.getInformer("vmPreferenceInformer", func() cache.SharedIndexInformer {
-		lw := cache.NewListWatchFromClient(f.clientSet.GeneratedKubeVirtClient().InstancetypeV1alpha2().RESTClient(), instancetypeapi.PluralPreferenceResourceName, k8sv1.NamespaceAll, fields.Everything())
-		return cache.NewSharedIndexInformer(lw, &instancetypev1alpha2.VirtualMachinePreference{}, f.defaultResync, cache.Indexers{})
+		lw := cache.NewListWatchFromClient(f.clientSet.GeneratedKubeVirtClient().InstancetypeV1beta1().RESTClient(), instancetypeapi.PluralPreferenceResourceName, k8sv1.NamespaceAll, fields.Everything())
+		return cache.NewSharedIndexInformer(lw, &instancetypev1beta1.VirtualMachinePreference{}, f.defaultResync, cache.Indexers{})
 	})
 }
 
 func (f *kubeInformerFactory) VirtualMachineClusterPreference() cache.SharedIndexInformer {
 	return f.getInformer("vmClusterPreferenceInformer", func() cache.SharedIndexInformer {
-		lw := cache.NewListWatchFromClient(f.clientSet.GeneratedKubeVirtClient().InstancetypeV1alpha2().RESTClient(), instancetypeapi.ClusterPluralPreferenceResourceName, k8sv1.NamespaceAll, fields.Everything())
-		return cache.NewSharedIndexInformer(lw, &instancetypev1alpha2.VirtualMachineClusterPreference{}, f.defaultResync, cache.Indexers{})
+		lw := cache.NewListWatchFromClient(f.clientSet.GeneratedKubeVirtClient().InstancetypeV1beta1().RESTClient(), instancetypeapi.ClusterPluralPreferenceResourceName, k8sv1.NamespaceAll, fields.Everything())
+		return cache.NewSharedIndexInformer(lw, &instancetypev1beta1.VirtualMachineClusterPreference{}, f.defaultResync, cache.Indexers{})
 	})
 }
 
@@ -1268,6 +1314,13 @@ func (f *kubeInformerFactory) Pod() cache.SharedIndexInformer {
 	return f.getInformer("podInformer", func() cache.SharedIndexInformer {
 		lw := cache.NewListWatchFromClient(f.clientSet.CoreV1().RESTClient(), "pods", k8sv1.NamespaceAll, fields.Everything())
 		return cache.NewSharedIndexInformer(lw, &k8sv1.Pod{}, f.defaultResync, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	})
+}
+
+func (f *kubeInformerFactory) ResourceQuota() cache.SharedIndexInformer {
+	return f.getInformer("resourceQuotaInformer", func() cache.SharedIndexInformer {
+		lw := cache.NewListWatchFromClient(f.clientSet.CoreV1().RESTClient(), "resourcequotas", k8sv1.NamespaceAll, fields.Everything())
+		return cache.NewSharedIndexInformer(lw, &k8sv1.ResourceQuota{}, f.defaultResync, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	})
 }
 

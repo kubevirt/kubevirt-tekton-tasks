@@ -19,39 +19,33 @@
 
 package virtconfig
 
+import "kubevirt.io/kubevirt/pkg/virt-config/deprecation"
+
 /*
  This module is intended for determining whether an optional feature is enabled or not at the cluster-level.
 */
 
 const (
-	ExpandDisksGate   = "ExpandDisks"
-	CPUManager        = "CPUManager"
-	NUMAFeatureGate   = "NUMA"
-	IgnitionGate      = "ExperimentalIgnitionSupport"
-	LiveMigrationGate = "LiveMigration"
-	// SRIOVLiveMigrationGate enables Live Migration for VM's with network SR-IOV interfaces.
-	SRIOVLiveMigrationGate     = "SRIOVLiveMigration"
-	CPUNodeDiscoveryGate       = "CPUNodeDiscovery"
-	HypervStrictCheckGate      = "HypervStrictCheck"
-	SidecarGate                = "Sidecar"
-	GPUGate                    = "GPU"
-	HostDevicesGate            = "HostDevices"
-	SnapshotGate               = "Snapshot"
-	VMExportGate               = "VMExport"
-	HotplugVolumesGate         = "HotplugVolumes"
-	HostDiskGate               = "HostDisk"
-	VirtIOFSGate               = "ExperimentalVirtiofsSupport"
-	MacvtapGate                = "Macvtap"
-	PasstGate                  = "Passt"
+	ExpandDisksGate       = "ExpandDisks"
+	CPUManager            = "CPUManager"
+	NUMAFeatureGate       = "NUMA"
+	IgnitionGate          = "ExperimentalIgnitionSupport"
+	HypervStrictCheckGate = "HypervStrictCheck"
+	SidecarGate           = "Sidecar"
+	GPUGate               = "GPU"
+	HostDevicesGate       = "HostDevices"
+	SnapshotGate          = "Snapshot"
+	VMExportGate          = "VMExport"
+	HotplugVolumesGate    = "HotplugVolumes"
+	HostDiskGate          = "HostDisk"
+	VirtIOFSGate          = "ExperimentalVirtiofsSupport"
+
 	DownwardMetricsFeatureGate = "DownwardMetrics"
-	NonRootDeprecated          = "NonRootExperimental"
-	NonRoot                    = "NonRoot"
 	Root                       = "Root"
 	ClusterProfiler            = "ClusterProfiler"
 	WorkloadEncryptionSEV      = "WorkloadEncryptionSEV"
 	// DockerSELinuxMCSWorkaround sets the SELinux level of all the non-compute virt-launcher containers to "s0".
 	DockerSELinuxMCSWorkaround = "DockerSELinuxMCSWorkaround"
-	PSA                        = "PSA"
 	VSOCKGate                  = "VSOCK"
 	// DisableCustomSELinuxPolicy disables the installation of the custom SELinux policy for virt-launcher
 	DisableCustomSELinuxPolicy = "DisableCustomSELinuxPolicy"
@@ -67,21 +61,34 @@ const (
 	PersistentReservation = "PersistentReservation"
 	// VMPersistentState enables persisting backend state files of VMs, such as the contents of the vTPM
 	VMPersistentState = "VMPersistentState"
+	Multiarchitecture = "MultiArchitecture"
+	// VMLiveUpdateFeaturesGate allows updating certain VM fields, such as CPU sockets to enable hot-plug functionality.
+	VMLiveUpdateFeaturesGate = "VMLiveUpdateFeatures"
+	// When BochsDisplayForEFIGuests is enabled, EFI guests will be started with Bochs display instead of VGA
+	BochsDisplayForEFIGuests = "BochsDisplayForEFIGuests"
+	// NetworkBindingPlugingsGate enables using a plugin to bind the pod and the VM network
+	NetworkBindingPlugingsGate = "NetworkBindingPlugins"
+	// AutoResourceLimitsGate enables automatic setting of vmi limits if there is a ResourceQuota with limits associated with the vmi namespace.
+	AutoResourceLimitsGate = "AutoResourceLimitsGate"
+
+	// Owner: @lyarwood
+	// Alpha: v1.1.0
+	//
+	// CommonInstancetypesDeploymentGate enables the deployment of common-instancetypes by virt-operator
+	CommonInstancetypesDeploymentGate = "CommonInstancetypesDeploymentGate"
+	// AlignCPUsGate allows emulator thread to assign two extra CPUs if needed to complete even parity.
+	AlignCPUsGate = "AlignCPUs"
 )
 
-var deprecatedFeatureGates = [...]string{
-	LiveMigrationGate,
-	SRIOVLiveMigrationGate,
-	NonRoot,
-	NonRootDeprecated,
-	PSA,
-}
-
 func (config *ClusterConfig) isFeatureGateEnabled(featureGate string) bool {
-	if config.IsFeatureGateDeprecated(featureGate) {
-		// Deprecated feature gates are considered enabled and no-op.
-		// For more info about deprecation policy: https://github.com/kubevirt/kubevirt/blob/main/docs/deprecation.md
-		return true
+	deprecatedFeature := deprecation.FeatureGateInfo(featureGate)
+	if deprecatedFeature != nil {
+		switch state := deprecatedFeature.State; state {
+		case deprecation.GA:
+			return true
+		case deprecation.Discontinued:
+			return false
+		}
 	}
 
 	for _, fg := range config.GetConfig().DeveloperConfiguration.FeatureGates {
@@ -89,16 +96,6 @@ func (config *ClusterConfig) isFeatureGateEnabled(featureGate string) bool {
 			return true
 		}
 	}
-	return false
-}
-
-func (config *ClusterConfig) IsFeatureGateDeprecated(featureGate string) bool {
-	for _, deprecatedFeatureGate := range deprecatedFeatureGates {
-		if featureGate == deprecatedFeatureGate {
-			return true
-		}
-	}
-
 	return false
 }
 
@@ -123,11 +120,11 @@ func (config *ClusterConfig) IgnitionEnabled() bool {
 }
 
 func (config *ClusterConfig) LiveMigrationEnabled() bool {
-	return config.isFeatureGateEnabled(LiveMigrationGate)
+	return config.isFeatureGateEnabled(deprecation.LiveMigrationGate)
 }
 
 func (config *ClusterConfig) SRIOVLiveMigrationEnabled() bool {
-	return config.isFeatureGateEnabled(SRIOVLiveMigrationGate)
+	return config.isFeatureGateEnabled(deprecation.SRIOVLiveMigrationGate)
 }
 
 func (config *ClusterConfig) HypervStrictCheckEnabled() bool {
@@ -135,7 +132,7 @@ func (config *ClusterConfig) HypervStrictCheckEnabled() bool {
 }
 
 func (config *ClusterConfig) CPUNodeDiscoveryEnabled() bool {
-	return config.isFeatureGateEnabled(CPUNodeDiscoveryGate)
+	return config.isFeatureGateEnabled(deprecation.CPUNodeDiscoveryGate)
 }
 
 func (config *ClusterConfig) SidecarEnabled() bool {
@@ -167,11 +164,11 @@ func (config *ClusterConfig) VirtiofsEnabled() bool {
 }
 
 func (config *ClusterConfig) MacvtapEnabled() bool {
-	return config.isFeatureGateEnabled(MacvtapGate)
+	return config.isFeatureGateEnabled(deprecation.MacvtapGate)
 }
 
 func (config *ClusterConfig) PasstEnabled() bool {
-	return config.isFeatureGateEnabled(PasstGate)
+	return config.isFeatureGateEnabled(deprecation.PasstGate)
 }
 
 func (config *ClusterConfig) HostDevicesPassthroughEnabled() bool {
@@ -220,4 +217,32 @@ func (config *ClusterConfig) PersistentReservationEnabled() bool {
 
 func (config *ClusterConfig) VMPersistentStateEnabled() bool {
 	return config.isFeatureGateEnabled(VMPersistentState)
+}
+
+func (config *ClusterConfig) MultiArchitectureEnabled() bool {
+	return config.isFeatureGateEnabled(Multiarchitecture)
+}
+
+func (config *ClusterConfig) VMLiveUpdateFeaturesEnabled() bool {
+	return config.isFeatureGateEnabled(VMLiveUpdateFeaturesGate)
+}
+
+func (config *ClusterConfig) BochsDisplayForEFIGuestsEnabled() bool {
+	return config.isFeatureGateEnabled(BochsDisplayForEFIGuests)
+}
+
+func (config *ClusterConfig) NetworkBindingPlugingsEnabled() bool {
+	return config.isFeatureGateEnabled(NetworkBindingPlugingsGate)
+}
+
+func (config *ClusterConfig) AutoResourceLimitsEnabled() bool {
+	return config.isFeatureGateEnabled(AutoResourceLimitsGate)
+}
+
+func (config *ClusterConfig) CommonInstancetypesDeploymentEnabled() bool {
+	return config.isFeatureGateEnabled(CommonInstancetypesDeploymentGate)
+}
+
+func (config *ClusterConfig) AlignCPUsEnabled() bool {
+	return config.isFeatureGateEnabled(AlignCPUsGate)
 }

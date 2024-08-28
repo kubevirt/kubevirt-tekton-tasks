@@ -38,8 +38,6 @@ import (
 	v1 "kubevirt.io/api/core/v1"
 	"kubevirt.io/client-go/log"
 	cdiv1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
-
-	"kubevirt.io/kubevirt/pkg/network/vmispec"
 )
 
 const (
@@ -348,6 +346,23 @@ func SetVMIMigrationPhaseTransitionTimestamp(oldVMIMigration *v1.VirtualMachineI
 	}
 }
 
+func SetSourcePod(migration *v1.VirtualMachineInstanceMigration, vmi *v1.VirtualMachineInstance, podInformer cache.SharedIndexInformer) {
+	if migration.Status.Phase != v1.MigrationPending {
+		return
+	}
+	sourcePod, err := CurrentVMIPod(vmi, podInformer)
+	if err != nil {
+		log.Log.Object(vmi).Reason(err).Warning("migration source pod not found")
+	}
+	if sourcePod != nil {
+		if migration.Status.MigrationState == nil {
+			migration.Status.MigrationState = &v1.VirtualMachineInstanceMigrationState{}
+		}
+		migration.Status.MigrationState.SourcePod = sourcePod.Name
+	}
+
+}
+
 func VMIHasHotplugVolumes(vmi *v1.VirtualMachineInstance) bool {
 	for _, volumeStatus := range vmi.Status.VolumeStatus {
 		if volumeStatus.HotplugVolume != nil {
@@ -365,6 +380,19 @@ func VMIHasHotplugVolumes(vmi *v1.VirtualMachineInstance) bool {
 	return false
 }
 
+func vmiHasCondition(vmi *v1.VirtualMachineInstance, conditionType v1.VirtualMachineInstanceConditionType) bool {
+	vmiConditionManager := NewVirtualMachineInstanceConditionManager()
+	return vmiConditionManager.HasCondition(vmi, conditionType)
+}
+
+func VMIHasHotplugCPU(vmi *v1.VirtualMachineInstance) bool {
+	return vmiHasCondition(vmi, v1.VirtualMachineInstanceVCPUChange)
+}
+
+func VMIHasHotplugMemory(vmi *v1.VirtualMachineInstance) bool {
+	return vmiHasCondition(vmi, v1.VirtualMachineInstanceMemoryChange)
+}
+
 func AttachmentPods(ownerPod *k8sv1.Pod, podInformer cache.SharedIndexInformer) ([]*k8sv1.Pod, error) {
 	objs, err := podInformer.GetIndexer().ByIndex(cache.NamespaceIndex, ownerPod.Namespace)
 	if err != nil {
@@ -380,31 +408,4 @@ func AttachmentPods(ownerPod *k8sv1.Pod, podInformer cache.SharedIndexInformer) 
 		attachmentPods = append(attachmentPods, pod)
 	}
 	return attachmentPods, nil
-}
-
-func ApplyNetworkInterfaceRequestOnVMISpec(vmiSpec *v1.VirtualMachineInstanceSpec, request *v1.VirtualMachineInterfaceRequest) *v1.VirtualMachineInstanceSpec {
-	existingIface := vmispec.FilterInterfacesSpec(vmiSpec.Domain.Devices.Interfaces, func(iface v1.Interface) bool {
-		return iface.Name == request.AddInterfaceOptions.Name
-	})
-
-	if len(existingIface) == 0 {
-		newNetwork := v1.Network{
-			Name: request.AddInterfaceOptions.Name,
-			NetworkSource: v1.NetworkSource{
-				Multus: &v1.MultusNetwork{
-					NetworkName: request.AddInterfaceOptions.NetworkAttachmentDefinitionName,
-				},
-			},
-		}
-
-		newIface := v1.Interface{
-			Name:                   request.AddInterfaceOptions.Name,
-			InterfaceBindingMethod: v1.InterfaceBindingMethod{Bridge: &v1.InterfaceBridge{}},
-		}
-
-		vmiSpec.Networks = append(vmiSpec.Networks, newNetwork)
-		vmiSpec.Domain.Devices.Interfaces = append(vmiSpec.Domain.Devices.Interfaces, newIface)
-	}
-
-	return vmiSpec
 }

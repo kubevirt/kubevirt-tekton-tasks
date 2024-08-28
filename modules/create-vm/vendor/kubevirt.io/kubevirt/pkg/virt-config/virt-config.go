@@ -37,7 +37,7 @@ import (
 const (
 	ParallelOutboundMigrationsPerNodeDefault uint32 = 2
 	ParallelMigrationsPerClusterDefault      uint32 = 5
-	BandwithPerMigrationDefault                     = "0Mi"
+	BandwidthPerMigrationDefault                    = "0Mi"
 	MigrationAllowAutoConverge               bool   = false
 	MigrationAllowPostCopy                   bool   = false
 	MigrationProgressTimeout                 int64  = 150
@@ -84,27 +84,21 @@ const (
 	DefaultVirtAPIBurst                   = 10
 	DefaultVirtWebhookClientQPS           = 200
 	DefaultVirtWebhookClientBurst         = 400
+
+	DefaultMaxHotplugRatio   = 4
+	DefaultVMRolloutStrategy = v1.VMRolloutStrategyStage
 )
 
 func IsAMD64(arch string) bool {
-	if arch == "amd64" {
-		return true
-	}
-	return false
+	return arch == "amd64"
 }
 
 func IsARM64(arch string) bool {
-	if arch == "arm64" {
-		return true
-	}
-	return false
+	return arch == "arm64"
 }
 
 func IsPPC64(arch string) bool {
-	if arch == "ppc64le" {
-		return true
-	}
-	return false
+	return arch == "ppc64le"
 }
 
 func (c *ClusterConfig) GetMemBalloonStatsPeriod() uint32 {
@@ -129,8 +123,19 @@ func (c *ClusterConfig) GetResourceVersion() string {
 	return c.lastValidConfigResourceVersion
 }
 
-func (c *ClusterConfig) GetMachineType() string {
-	return c.GetConfig().MachineType
+func (c *ClusterConfig) GetMachineType(arch string) string {
+	if c.GetConfig().MachineType != "" {
+		return c.GetConfig().MachineType
+	}
+
+	switch arch {
+	case "arm64":
+		return c.GetConfig().ArchitectureConfiguration.Arm64.MachineType
+	case "ppc64le":
+		return c.GetConfig().ArchitectureConfiguration.Ppc64le.MachineType
+	default:
+		return c.GetConfig().ArchitectureConfiguration.Amd64.MachineType
+	}
 }
 
 func (c *ClusterConfig) GetCPUModel() string {
@@ -149,8 +154,20 @@ func (c *ClusterConfig) GetMemoryOvercommit() int {
 	return c.GetConfig().DeveloperConfiguration.MemoryOvercommit
 }
 
-func (c *ClusterConfig) GetEmulatedMachines() []string {
-	return c.GetConfig().EmulatedMachines
+func (c *ClusterConfig) GetEmulatedMachines(arch string) []string {
+	oldEmulatedMachines := c.GetConfig().EmulatedMachines
+	if oldEmulatedMachines != nil {
+		return oldEmulatedMachines
+	}
+
+	switch arch {
+	case "arm64":
+		return c.GetConfig().ArchitectureConfiguration.Arm64.EmulatedMachines
+	case "ppc64le":
+		return c.GetConfig().ArchitectureConfiguration.Ppc64le.EmulatedMachines
+	default:
+		return c.GetConfig().ArchitectureConfiguration.Amd64.EmulatedMachines
+	}
 }
 
 func (c *ClusterConfig) GetLessPVCSpaceToleration() int {
@@ -167,6 +184,10 @@ func (c *ClusterConfig) GetNodeSelectors() map[string]string {
 
 func (c *ClusterConfig) GetDefaultNetworkInterface() string {
 	return c.GetConfig().NetworkConfiguration.NetworkInterface
+}
+
+func (c *ClusterConfig) GetDefaultArchitecture() string {
+	return c.GetConfig().ArchitectureConfiguration.DefaultArchitecture
 }
 
 func (c *ClusterConfig) SetVMISpecDefaultNetworkInterface(spec *v1.VirtualMachineInstanceSpec) error {
@@ -227,8 +248,20 @@ func (c *ClusterConfig) GetSupportedAgentVersions() []string {
 	return c.GetConfig().SupportedGuestAgentVersions
 }
 
-func (c *ClusterConfig) GetOVMFPath() string {
-	return c.GetConfig().OVMFPath
+func (c *ClusterConfig) GetOVMFPath(arch string) string {
+	oldOvmfPath := c.GetConfig().OVMFPath
+	if oldOvmfPath != "" {
+		return oldOvmfPath
+	}
+
+	switch arch {
+	case "arm64":
+		return c.GetConfig().ArchitectureConfiguration.Arm64.OVMFPath
+	case "ppc64le":
+		return c.GetConfig().ArchitectureConfiguration.Ppc64le.OVMFPath
+	default:
+		return c.GetConfig().ArchitectureConfiguration.Amd64.OVMFPath
+	}
 }
 
 func (c *ClusterConfig) GetCPUAllocationRatio() int {
@@ -397,4 +430,59 @@ func (c *ClusterConfig) GetDeveloperConfigurationUseEmulation() bool {
 
 func (c *ClusterConfig) GetVMStateStorageClass() string {
 	return c.GetConfig().VMStateStorageClass
+}
+
+func (c *ClusterConfig) IsFreePageReportingDisabled() bool {
+	return c.GetConfig().VirtualMachineOptions != nil && c.GetConfig().VirtualMachineOptions.DisableFreePageReporting != nil
+}
+
+func (c *ClusterConfig) IsSerialConsoleLogDisabled() bool {
+	return c.GetConfig().VirtualMachineOptions != nil && c.GetConfig().VirtualMachineOptions.DisableSerialConsoleLog != nil
+}
+
+func (c *ClusterConfig) GetKSMConfiguration() *v1.KSMConfiguration {
+	return c.GetConfig().KSMConfiguration
+}
+
+func (c *ClusterConfig) GetMaximumCpuSockets() (numOfSockets uint32) {
+	liveConfig := c.GetConfig().LiveUpdateConfiguration
+	if liveConfig != nil && liveConfig.MaxCpuSockets != nil {
+		numOfSockets = *liveConfig.MaxCpuSockets
+	}
+
+	return
+}
+
+func (c *ClusterConfig) GetMaximumGuestMemory() *resource.Quantity {
+	liveConfig := c.GetConfig().LiveUpdateConfiguration
+	if liveConfig != nil {
+		return liveConfig.MaxGuest
+	}
+	return nil
+}
+
+func (c *ClusterConfig) GetMaxHotplugRatio() uint32 {
+	liveConfig := c.GetConfig().LiveUpdateConfiguration
+	if liveConfig == nil {
+		return 1
+	}
+
+	return liveConfig.MaxHotplugRatio
+}
+
+func (c *ClusterConfig) IsVMRolloutStrategyLiveUpdate() bool {
+	if !c.VMLiveUpdateFeaturesEnabled() {
+		return false
+	}
+	liveConfig := c.GetConfig().VMRolloutStrategy
+
+	return liveConfig != nil && *liveConfig == v1.VMRolloutStrategyLiveUpdate
+}
+
+func (c *ClusterConfig) GetNetworkBindings() map[string]v1.InterfaceBindingPlugin {
+	networkConfig := c.GetConfig().NetworkConfiguration
+	if networkConfig != nil {
+		return networkConfig.Binding
+	}
+	return nil
 }
