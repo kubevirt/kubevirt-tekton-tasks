@@ -39,7 +39,7 @@ func newRandomVMIWithNS(namespace string) *v1.VirtualMachineInstance {
 	return vmi
 }
 
-func newRandomVirtualMachine(vmi *v1.VirtualMachineInstance, running bool) *v1.VirtualMachine {
+func newRandomVirtualMachine(vmi *v1.VirtualMachineInstance, runStrategy v1.VirtualMachineRunStrategy) *v1.VirtualMachine {
 	name := vmi.Name
 	namespace := vmi.Namespace
 	labels := map[string]string{"name": name}
@@ -52,7 +52,7 @@ func newRandomVirtualMachine(vmi *v1.VirtualMachineInstance, running bool) *v1.V
 			Namespace: namespace,
 		},
 		Spec: v1.VirtualMachineSpec{
-			Running: &running,
+			RunStrategy: &runStrategy,
 			Template: &v1.VirtualMachineInstanceTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:    labels,
@@ -69,7 +69,7 @@ func newRandomVirtualMachine(vmi *v1.VirtualMachineInstance, running bool) *v1.V
 
 func NewTestVM() *TestVM {
 	return &TestVM{
-		Data: newRandomVirtualMachine(newRandomVMI(), false),
+		Data: newRandomVirtualMachine(newRandomVMI(), v1.RunStrategyHalted),
 	}
 }
 

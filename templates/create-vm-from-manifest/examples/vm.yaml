@@ -5,7 +5,7 @@ metadata:
     kubevirt.io/vm: vm-fedora
   generateName: vm-fedora-
 spec:
-  running: false
+  runStrategy: Halted
   template:
     metadata:
       labels:

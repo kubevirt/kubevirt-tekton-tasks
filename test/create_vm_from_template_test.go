@@ -310,7 +310,7 @@ var _ = Describe("Create VM from template", func() {
 	})
 
 	Context("with StartVM", func() {
-		DescribeTable("VM is created from template with StartVM attribute", func(config *testconfigs.CreateVMTestConfig, phase kubevirtv1.VirtualMachineInstancePhase, running bool) {
+		DescribeTable("VM is created from template with StartVM attribute", func(config *testconfigs.CreateVMTestConfig, phase kubevirtv1.VirtualMachineInstancePhase, runStrategy kubevirtv1.VirtualMachineRunStrategy) {
 			f.TestSetup(config)
 			template, err := f.TemplateClient.Templates(config.TaskData.Template.Namespace).Create(context.Background(), config.TaskData.Template, v1.CreateOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
@@ -331,7 +331,7 @@ var _ = Describe("Create VM from template", func() {
 			vm, err := vm.WaitForVM(f.KubevirtClient, expectedVMStub.Namespace, expectedVMStub.Name,
 				phase, config.GetTaskRunTimeout(), false)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(*vm.Spec.Running).To(Equal(running), "vm should be in correct running phase")
+			Expect(*vm.Spec.RunStrategy).To(Equal(runStrategy), "vm should be in correct running phase")
 		},
 			Entry("with invalid StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
@@ -344,7 +344,7 @@ var _ = Describe("Create VM from template", func() {
 					},
 					StartVM: "invalid_value",
 				},
-			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
+			}, kubevirtv1.VirtualMachineInstancePhase(""), kubevirtv1.RunStrategyHalted),
 			Entry("with false StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: ExpectedSuccessfulVMCreation,
@@ -356,7 +356,7 @@ var _ = Describe("Create VM from template", func() {
 					},
 					StartVM: "false",
 				},
-			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
+			}, kubevirtv1.VirtualMachineInstancePhase(""), kubevirtv1.RunStrategyHalted),
 			Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: ExpectedSuccessfulVMCreation,
@@ -368,7 +368,7 @@ var _ = Describe("Create VM from template", func() {
 					},
 					StartVM: "true",
 				},
-			}, kubevirtv1.Running, true),
+			}, kubevirtv1.Running, kubevirtv1.RunStrategyAlways),
 		)
 	})
 

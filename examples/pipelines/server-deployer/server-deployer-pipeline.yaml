@@ -64,7 +64,7 @@ spec:
               labels:
                 app: flasker-vm
             spec:
-              running: true
+              runStrategy: Always
               template:
                 metadata:
                   labels:

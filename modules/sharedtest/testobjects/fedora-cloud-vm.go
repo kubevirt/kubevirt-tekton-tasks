@@ -1,6 +1,8 @@
 package testobjects
 
-import v1 "kubevirt.io/api/core/v1"
+import (
+	v1 "kubevirt.io/api/core/v1"
+)
 
 func NewTestFedoraCloudVM(name string) *TestVM {
 	cloudConfig := &CloudConfig{
@@ -49,6 +51,6 @@ func NewTestFedoraCloudVM(name string) *TestVM {
 		},
 	}
 	return (&TestVM{
-		Data: newRandomVirtualMachine(vmi, false),
+		Data: newRandomVirtualMachine(vmi, v1.RunStrategyHalted),
 	}).WithMemory("1Gi")
 }

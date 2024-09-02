@@ -347,7 +347,7 @@ var _ = Describe("Create VM from manifest", func() {
 	})
 
 	Context("with StartVM", func() {
-		DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig, phase kubevirtv1.VirtualMachineInstancePhase, running bool) {
+		DescribeTable("VM is created successfully", func(config *testconfigs.CreateVMTestConfig, phase kubevirtv1.VirtualMachineInstancePhase, runStrategy kubevirtv1.VirtualMachineRunStrategy) {
 			f.TestSetup(config)
 
 			expectedVMStub := config.TaskData.GetExpectedVMStubMeta()
@@ -366,7 +366,7 @@ var _ = Describe("Create VM from manifest", func() {
 				phase, config.GetTaskRunTimeout(), false)
 			Expect(err).ShouldNot(HaveOccurred())
 
-			Expect(*vm.Spec.Running).To(Equal(running), "vm should be in correct running phase")
+			Expect(*vm.Spec.RunStrategy).To(Equal(runStrategy), "vm should be in correct running phase")
 		},
 			Entry("with false StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
@@ -380,7 +380,7 @@ var _ = Describe("Create VM from manifest", func() {
 						Build(),
 					StartVM: "false",
 				},
-			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
+			}, kubevirtv1.VirtualMachineInstancePhase(""), kubevirtv1.RunStrategyHalted),
 			Entry("with invalid StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: ExpectedSuccessfulVMCreation,
@@ -393,7 +393,7 @@ var _ = Describe("Create VM from manifest", func() {
 						Build(),
 					StartVM: "invalid_value",
 				},
-			}, kubevirtv1.VirtualMachineInstancePhase(""), false),
+			}, kubevirtv1.VirtualMachineInstancePhase(""), kubevirtv1.RunStrategyHalted),
 			Entry("with true StartVM value", &testconfigs.CreateVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 					ExpectedLogs: ExpectedSuccessfulVMCreation,
@@ -406,7 +406,7 @@ var _ = Describe("Create VM from manifest", func() {
 						Build(),
 					StartVM: "true",
 				},
-			}, kubevirtv1.Running, true),
+			}, kubevirtv1.Running, kubevirtv1.RunStrategyAlways),
 		)
 	})
 
