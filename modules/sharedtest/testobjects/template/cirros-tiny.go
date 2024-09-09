@@ -50,7 +50,7 @@ objects:
         vm.kubevirt.io/template.version: 0.3.2
       name: '${NAME}'
     spec:
-      running: false
+      runStrategy: Halted
       template:
         metadata:
           labels:

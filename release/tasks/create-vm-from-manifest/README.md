@@ -52,7 +52,7 @@ metadata:
     labels:
         kubevirt.io/vm: vm-fedora
 spec:
-    running: false
+    runStrategy: Halted
     template:
         metadata:
             labels:

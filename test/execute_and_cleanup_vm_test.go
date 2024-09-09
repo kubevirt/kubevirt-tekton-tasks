@@ -437,7 +437,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			Expect(err).Should(HaveOccurred())
 		} else if config.TaskData.Stop {
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(*vm.Spec.Running).To(BeFalse())
+			Expect(*vm.Spec.RunStrategy).To(Equal(kubevirtv1.RunStrategyHalted))
 		}
 	},
 		// negative cases

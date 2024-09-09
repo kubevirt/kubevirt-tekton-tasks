@@ -1,6 +1,8 @@
 package testobjects
 
-import v1 "kubevirt.io/api/core/v1"
+import (
+	v1 "kubevirt.io/api/core/v1"
+)
 
 func NewTestAlpineVM(name string) *TestVM {
 	containerDiskName := "containerdisk"
@@ -30,6 +32,6 @@ func NewTestAlpineVM(name string) *TestVM {
 		},
 	}
 	return (&TestVM{
-		Data: newRandomVirtualMachine(vmi, false),
+		Data: newRandomVirtualMachine(vmi, v1.RunStrategyHalted),
 	}).WithMemory("128Mi")
 }
