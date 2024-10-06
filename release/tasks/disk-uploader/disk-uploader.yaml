@@ -1,0 +1,79 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt, containerdisks
+    tekton.dev/displayName: "KubeVirt disk uploader"
+    tekton.dev/platforms: "linux/amd64"
+    artifacthub.io/maintainers: |
+      - name: KubeVirt Tekton tasks maintainers
+        email: kubevirt-tekton-tasks@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
+  labels:
+    app.kubernetes.io/version: v0.22.0
+  name: disk-uploader
+spec:
+  description: >-
+    Automates the extraction of disk and uploads it to a container registry,
+    to be used in multiple Kubernetes clusters.
+  params:
+  - name: EXPORT_SOURCE_KIND
+    description: The name of the export source kind
+    type: string
+  - name: EXPORT_SOURCE_NAME
+    description: The name of the export source
+    type: string
+  - name: VOLUME_NAME
+    description: The volume name (If source kind is PVC, then volume name is equal to source name)
+    type: string
+  - name: IMAGE_DESTINATION
+    description: Destination of the image in container registry
+    type: string
+  - name: PUSH_TIMEOUT
+    description: ContainerDisk push timeout in minutes
+    type: string
+  steps:
+  - name: disk-uploader-step
+    image: "quay.io/kubevirt/tekton-tasks:v0.22.0"
+    env:
+    - name: ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: disk-uploader-credentials
+          key: accessKeyId
+    - name: SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: disk-uploader-credentials
+          key: secretKey
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    command: ["/usr/local/bin/disk-uploader"]
+    args:
+    - "--export-source-kind"
+    - $(params.EXPORT_SOURCE_KIND)
+    - "--export-source-name"
+    - $(params.EXPORT_SOURCE_NAME)
+    - "--volumename"
+    - $(params.VOLUME_NAME)
+    - "--imagedestination"
+    - $(params.IMAGE_DESTINATION)
+    - "--pushtimeout"
+    - $(params.PUSH_TIMEOUT)
+    computeResources:
+      requests:
+        memory: "3Gi"
+      limits:
+        memory: "5Gi"

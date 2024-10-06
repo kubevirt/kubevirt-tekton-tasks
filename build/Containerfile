@@ -15,13 +15,14 @@ RUN task_names=("copy-template" "create-vm" "execute-in-vm" "generate-ssh-keys" 
         echo "compiling $TASK_NAME"; \
         CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o /out/${TASK_NAME} ./cmd/${TASK_NAME} || exit 1; \
     done
+RUN CGO_ENABLED=0 GOOS=linux GODEBUG=http2client=0 go build -mod=vendor -o /out/disk-uploader ./cmd/disk-uploader
 
 FROM quay.io/centos/centos:stream9
 ENV USER_UID=1001 \
     USER_NAME=tekton-tasks \
     HOME=/home/${USER_NAME}
 
-RUN dnf install -y xorriso openssh-clients && dnf clean all
+RUN dnf install -y xorriso openssh-clients nbdkit nbdkit-curl-plugin qemu-img && dnf clean all
 
 # install task binaries
 COPY --from=taskBuilder /out/. /usr/local/bin/

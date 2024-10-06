@@ -1,0 +1,137 @@
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: disk-uploader-pipeline
+spec:
+  params:
+  - name: EXPORT_SOURCE_KIND
+    description: "Kind of the export source"
+    type: string
+  - name: EXPORT_SOURCE_NAME
+    description: "Name of the export source"
+    type: string
+  - name: VOLUME_NAME
+    description: "Volume name (If source kind is PVC, then volume name is equal to source name)"
+    type: string
+  - name: IMAGE_DESTINATION
+    description: "Destination of the image in container registry"
+    type: string
+  - name: PUSH_TIMEOUT
+    description: "Push timeout of container disk to registry"
+    type: string
+  tasks:
+  - name: create-example-vm-from-manifest
+    taskRef:
+      kind: Task
+      name: create-vm-from-manifest
+    params:
+      - name: manifest
+        value: |
+          apiVersion: kubevirt.io/v1
+          kind: VirtualMachine
+          metadata:
+            labels:
+              kubevirt.io/vm: example-vm-datavolume
+            name: example-vm
+          spec:
+            dataVolumeTemplates:
+            - metadata:
+                creationTimestamp: null
+                name: example-dv
+                annotations:
+                  # ContainerDisk will be imported without starting the
+                  # Virtual Machine (VM). Otherwise, VM should be started
+                  # to import the ContainerDisk.
+                  cdi.kubevirt.io/storage.bind.immediate.requested: "true"
+                  cdi.kubevirt.io/storage.deleteAfterCompletion: "false"
+              spec:
+                storage:
+                  accessModes:
+                  - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: 5Gi
+                source:
+                  registry:
+                    url: docker://quay.io/containerdisks/fedora:39
+            running: false
+            template:
+              metadata:
+                labels:
+                  kubevirt.io/vm: example-vm-datavolume
+              spec:
+                domain:
+                  devices:
+                    disks:
+                    - disk:
+                        bus: virtio
+                      name: datavolumedisk
+                  resources:
+                    requests:
+                      memory: 2Gi
+                terminationGracePeriodSeconds: 0
+                volumes:
+                - dataVolume:
+                    name: example-dv
+                  name: datavolumedisk
+  - name: disk-uploader
+    taskRef:
+      kind: Task
+      name: disk-uploader
+    runAfter:
+      - create-example-vm-from-manifest
+    params:
+    - name: EXPORT_SOURCE_KIND
+      value: "$(params.EXPORT_SOURCE_KIND)"
+    - name: EXPORT_SOURCE_NAME
+      value: "$(params.EXPORT_SOURCE_NAME)"
+    - name: VOLUME_NAME
+      value: "$(params.VOLUME_NAME)"
+    - name: IMAGE_DESTINATION
+      value: "$(params.IMAGE_DESTINATION)"
+    - name: PUSH_TIMEOUT
+      value: "$(params.PUSH_TIMEOUT)"
+  - name: create-example-vm-exported-from-manifest
+    taskRef:
+      kind: Task
+      name: create-vm-from-manifest
+    runAfter:
+      - disk-uploader
+    params:
+      - name: manifest
+        value: |
+          apiVersion: kubevirt.io/v1
+          kind: VirtualMachine
+          metadata:
+            creationTimestamp: null
+            name: example-vm-exported
+          spec:
+            runStrategy: Always
+            template:
+              metadata:
+                creationTimestamp: null
+              spec:
+                domain:
+                  devices:
+                    disks:
+                    - disk:
+                        bus: virtio
+                      name: containerdisk
+                    rng: {}
+                  features:
+                    acpi: {}
+                    smm:
+                      enabled: true
+                  firmware:
+                    bootloader:
+                      efi:
+                        secureBoot: true
+                  resources:
+                    requests:
+                      memory: 1Gi
+                terminationGracePeriodSeconds: 180
+                volumes:
+                - containerDisk:
+                    image: $(params.IMAGE_DESTINATION)
+                  name: containerdisk

@@ -1,0 +1,21 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: disk-uploader-pipeline-run
+spec:
+  pipelineRef:
+    name: disk-uploader-pipeline
+  params:
+  - name: EXPORT_SOURCE_KIND
+    value: vm
+  - name: EXPORT_SOURCE_NAME
+    value: example-vm
+  - name: VOLUME_NAME
+    value: example-dv
+  - name: IMAGE_DESTINATION
+    value: quay.io/kubevirt/example-vm-exported:latest
+  - name: PUSH_TIMEOUT
+    value: 120
+  taskRunTemplate:
+    serviceAccountName: disk-uploader
