@@ -7,6 +7,7 @@ This repository provides KubeVirt-specific Tekton tasks, which focus on:
 - Creating and managing resources (VMs, DataVolumes, DataSources)
 - Executing commands in VMs
 - Manipulating disk images with libguestfs tools
+- Extracting and uploading disk images from multiple sources (VM, VMSnapshot, PVC)
 
 ## Deployment
 
@@ -61,6 +62,10 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 - [modify-windows-iso-file](release/tasks/modify-windows-iso-file) - modifies windows iso (replaces prompt bootloader with no-promt 
    bootloader) and replaces original iso in PVC with updated one.
 
+#### Disk Uploader
+
+- [disk-uploader](release/tasks/disk-uploader) - Extracts disk image and uploads it to a container registry.
+
 ## Examples
 
 #### [Windows EFI Installer Pipeline](release/pipelines/windows-efi-installer)
@@ -72,6 +77,10 @@ Supported Windows versions: Windows 10, 11, Server 2k22
 
 Applies customizations to an existing Windows 10, 11, Server 2k22 installation by using a custom Answer file and creates a new base DataVolume.
 Supported Windows versions: Windows 10, 11, Server 2k22
+
+#### [Disk Uploader Pipeline](release/pipelines/disk-uploader)
+
+Extracts disk image from one of the sources (VM, VMSnapshot, PVC) and uploads to the container registry.
 
 #### [Unit Tester Pipeline](examples/pipelines/unit-tester) - Unmaintained
 

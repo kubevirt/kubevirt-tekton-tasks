@@ -1,0 +1,29 @@
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: disk-uploader-taskrun-resolver-
+spec:
+  taskRef:
+    resolver: hub
+    params:
+    - name: catalog
+      value: kubevirt-tekton-tasks
+    - name: type
+      value: artifact
+    - name: kind
+      value: task
+    - name: name
+      value: disk-uploader
+    - name: version
+      value: v0.22.0
+  params:
+  - name: EXPORT_SOURCE_KIND
+    value: vm
+  - name: EXPORT_SOURCE_NAME
+    value: example-vm
+  - name: VOLUME_NAME
+    value: example-dv
+  - name: IMAGE_DESTINATION
+    value: quay.io/kubevirt/example-vm-exported:latest
+  - name: PUSH_TIMEOUT
+    value: 120

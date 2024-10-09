@@ -1,0 +1,12 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: disk-uploader
+subjects:
+- kind: ServiceAccount
+  name: disk-uploader
+roleRef:
+  kind: Role
+  name: disk-uploader
+  apiGroup: rbac.authorization.k8s.io

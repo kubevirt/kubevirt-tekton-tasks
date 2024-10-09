@@ -1,0 +1,4 @@
+task_name: disk-uploader
+task_category: disk-uploader
+main_image: quay.io/kubevirt/tekton-tasks
+nice_name: disk uploader
