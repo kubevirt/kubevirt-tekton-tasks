@@ -4,41 +4,41 @@ go 1.22.6
 
 // Kubernetes
 replace (
-	k8s.io/client-go => k8s.io/client-go v0.30.3
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240709000822-3c01b740850f
-	k8s.io/kubectl => k8s.io/kubectl v0.30.3
-	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.59.0
-	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.59.0
+	k8s.io/client-go => k8s.io/client-go v0.31.2
+	k8s.io/kube-openapi => k8s.io/kube-openapi 67ed5848f094
+	k8s.io/kubectl => k8s.io/kubectl v0.31.2
+	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.60.3
+	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.60.3
 )
 
 // Openshift
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20240722135205-ae4f370f361f
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240528061634-b054aa794d87
+	github.com/openshift/api => github.com/openshift/api 684b2b1679ba
+	github.com/openshift/client-go => github.com/openshift/client-go da6d55e4611f
 )
 
 require (
 	github.com/alexflint/go-arg v1.5.1
 	github.com/google/go-containerregistry v0.20.2
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/onsi/ginkgo/v2 v2.20.1
+	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
 	github.com/openshift/api v3.9.0+incompatible
 	github.com/openshift/client-go v3.9.0+incompatible
 	github.com/spf13/cobra v1.8.1
-	github.com/tektoncd/pipeline v0.61.1
+	github.com/tektoncd/pipeline v0.64.0
 	go.uber.org/zap v1.27.0
-	k8s.io/api v0.30.4
-	k8s.io/apimachinery v0.31.1
-	k8s.io/cli-runtime v0.30.3
+	k8s.io/api v0.31.2
+	k8s.io/apimachinery v0.31.2
+	k8s.io/cli-runtime v0.31.2
 	k8s.io/client-go v12.0.0+incompatible
-	knative.dev/pkg v0.0.0-20240716082220-4355f0c73608
+	knative.dev/pkg 6af2bf9747e9
 	kubevirt.io/api v1.3.1
 	kubevirt.io/client-go v1.3.1
-	kubevirt.io/containerdisks v0.0.0-20241001085853-ea2e8bf50322
-	kubevirt.io/containerized-data-importer v1.59.0
+	kubevirt.io/containerdisks 91d778989aa3
+	kubevirt.io/containerized-data-importer v1.60.3
 	kubevirt.io/containerized-data-importer-api v1.60.3
-	kubevirt.io/kubevirt v1.3.0
+	kubevirt.io/kubevirt v1.3.1
 	kubevirt.io/qe-tools v0.1.8
 	sigs.k8s.io/yaml v1.4.0
 )
