@@ -10,7 +10,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	k8sv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	kvcorev1 "kubevirt.io/api/core/v1"
 	v1beta1 "kubevirt.io/api/export/v1beta1"
@@ -24,15 +23,7 @@ const (
 	sourcePVC        string = "pvc"
 )
 
-var (
-	exportSources = map[string]struct{}{sourceVM: {}, sourceVMSnapshot: {}, sourcePVC: {}}
-)
-
-func CreateVirtualMachineExport(k8sClient *k8sv1.CoreV1Client, virtClient kubecli.KubevirtClient, exportSourceKind, exportSourceNamespace, exportSourceName string) error {
-	if !isValidExportSource(exportSourceKind) {
-		return fmt.Errorf("invalid export-source-kind: %s, must be one of vm, vmsnapshot, pvc", exportSourceKind)
-	}
-
+func CreateVirtualMachineExport(virtClient kubecli.KubevirtClient, exportSourceKind, exportSourceNamespace, exportSourceName string) error {
 	source, err := getExportSource(exportSourceKind, exportSourceName)
 	if err != nil {
 		return err
@@ -49,7 +40,7 @@ func CreateVirtualMachineExport(k8sClient *k8sv1.CoreV1Client, virtClient kubecl
 		},
 	}
 
-	if err := ownerreference.SetPodOwnerReference(k8sClient, v1VmExport); err != nil {
+	if err := ownerreference.SetPodOwnerReference(virtClient, v1VmExport); err != nil {
 		return err
 	}
 
@@ -81,7 +72,7 @@ func GetRawDiskUrlFromVolumes(client kubecli.KubevirtClient, namespace, name, vo
 		return "", err
 	}
 
-	if vmExport.Status.Links == nil && vmExport.Status.Links.Internal == nil {
+	if vmExport.Status.Links == nil || vmExport.Status.Links.Internal == nil {
 		return "", fmt.Errorf("no links found in VirtualMachineExport status")
 	}
 
@@ -120,13 +111,6 @@ func getExportSource(exportSourceKind, exportSourceName string) (corev1.TypedLoc
 			Name:     exportSourceName,
 		}, nil
 	default:
-		return corev1.TypedLocalObjectReference{}, fmt.Errorf("invalid export-source-kind: %s", exportSourceKind)
+		return corev1.TypedLocalObjectReference{}, fmt.Errorf("invalid export-source-kind: %s, must be one of vm, vmsnapshot, pvc", exportSourceKind)
 	}
-}
-
-func isValidExportSource(exportSourceKind string) bool {
-	if _, ok := exportSources[exportSourceKind]; ok {
-		return true
-	}
-	return false
 }

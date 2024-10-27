@@ -15,7 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/yaml"
-	k8sv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
@@ -50,7 +50,7 @@ func (t *templateProvider) Update(template *templatev1.Template) (*templatev1.Te
 type TemplateCreator struct {
 	cliOptions       *parse.CLIOptions
 	templateProvider TemplateProvider
-	k8sClient        *k8sv1.CoreV1Client
+	k8sClient        kubernetes.Interface
 }
 
 func NewTemplateCreator(cliOptions *parse.CLIOptions) (*TemplateCreator, error) {
@@ -61,7 +61,7 @@ func NewTemplateCreator(cliOptions *parse.CLIOptions) (*TemplateCreator, error) 
 		return nil, err
 	}
 
-	k8sclient := k8sv1.NewForConfigOrDie(config)
+	k8sclient := kubernetes.NewForConfigOrDie(config)
 
 	return &TemplateCreator{
 		cliOptions:       cliOptions,

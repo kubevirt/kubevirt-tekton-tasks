@@ -10,14 +10,12 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	k8sv1 "k8s.io/client-go/kubernetes/typed/core/v1"
-
-	kubecli "kubevirt.io/client-go/kubecli"
+	"k8s.io/client-go/kubernetes"
 )
 
-func CreateVirtualMachineExportSecret(k8sClient *k8sv1.CoreV1Client, virtClient kubecli.KubevirtClient, namespace, name string) error {
+func CreateVirtualMachineExportSecret(k8sClient kubernetes.Interface, namespace, name string) error {
 	length := 20
-	token, err := GenerateSecureRandomString(length)
+	token, err := generateSecureRandomString(length)
 	if err != nil {
 		return err
 	}
@@ -36,12 +34,12 @@ func CreateVirtualMachineExportSecret(k8sClient *k8sv1.CoreV1Client, virtClient 
 		return err
 	}
 
-	_, err = virtClient.CoreV1().Secrets(namespace).Create(context.Background(), v1Secret, metav1.CreateOptions{})
+	_, err = k8sClient.CoreV1().Secrets(namespace).Create(context.Background(), v1Secret, metav1.CreateOptions{})
 	return err
 }
 
-func GetTokenFromVirtualMachineExportSecret(client kubecli.KubevirtClient, namespace, name string) (string, error) {
-	secret, err := client.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
+func GetTokenFromVirtualMachineExportSecret(k8sClient kubernetes.Interface, namespace, name string) (string, error) {
+	secret, err := k8sClient.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -53,7 +51,7 @@ func GetTokenFromVirtualMachineExportSecret(client kubecli.KubevirtClient, names
 	return string(data), nil
 }
 
-func GenerateSecureRandomString(n int) (string, error) {
+func generateSecureRandomString(n int) (string, error) {
 	// Alphanums is the list of alphanumeric characters used to create a securely generated random string
 	alphanums := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
