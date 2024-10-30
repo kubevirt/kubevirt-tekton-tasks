@@ -17,6 +17,7 @@ When user runs [KubeVirt Tekton Tasks](https://github.com/kubevirt/kubevirt-tekt
 - **VOLUME_NAME**: The volume name (If source kind is PVC, then volume name is equal to source name)
 - **IMAGE_DESTINATION**: Destination of the image in container registry
 - **PUSH_TIMEOUT**: ContainerDisk push timeout in minutes
+- **SECRET_NAME**: Name of the secret which holds credential for container registry
 
 ### Usage
 

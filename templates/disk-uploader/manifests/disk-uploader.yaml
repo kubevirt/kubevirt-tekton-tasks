@@ -38,6 +38,9 @@ spec:
   - name: PUSH_TIMEOUT
     description: ContainerDisk push timeout in minutes
     type: string
+  - name: SECRET_NAME
+    description: Name of the secret which holds credential for container registry
+    type: string
   steps:
   - name: disk-uploader-step
     image: "{{ main_image }}:{{ version }}"
@@ -45,12 +48,12 @@ spec:
     - name: ACCESS_KEY_ID
       valueFrom:
         secretKeyRef:
-          name: disk-uploader-credentials
+          name: $(params.SECRET_NAME)
           key: accessKeyId
     - name: SECRET_KEY
       valueFrom:
         secretKeyRef:
-          name: disk-uploader-credentials
+          name: $(params.SECRET_NAME)
           key: secretKey
     - name: POD_NAMESPACE
       valueFrom:
