@@ -18,8 +18,10 @@ TEKTON_VERSION=$(curl -s https://api.github.com/repos/tektoncd/operator/releases
 SSP_OPERATOR_VERSION=$(curl -s  https://api.github.com/repos/kubevirt/ssp-operator/releases | \
             jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
 
-INSTANCE_TYPES_VERSION=$(curl -s  https://api.github.com/repos/kubevirt/common-instancetypes/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+INSTANCE_TYPES_VERSION="v1.1.0"
+            # uncomment these lines when kubevirt 1.4 is released
+            #$(curl -s  https://api.github.com/repos/kubevirt/common-instancetypes/releases | \
+            #jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
 
 if kubectl get templates > /dev/null 2>&1; then
   # okd
