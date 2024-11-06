@@ -50,6 +50,10 @@ spec:
       description: Name of the data object to delete. This parameter is used only for Delete operation.
       default: ""
       type: string
+    - description: When waitForSuccess parameter is set to true, this parameter defines how long the task will wait until it timeouts. Should be in a 3h2m1s format.
+      name: timeout
+      type: string
+      default: "1h"
     - name: setOwnerReference
       description: Set owner reference to the new object created by the task run pod. Allowed values true/false
       type: string
@@ -83,6 +87,8 @@ spec:
           value: $(params.deleteObjectName)
         - name: SET_OWNER_REFERENCE
           value: $(params.setOwnerReference)
+        - name: TIMEOUT
+          value: $(params.timeout)
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
