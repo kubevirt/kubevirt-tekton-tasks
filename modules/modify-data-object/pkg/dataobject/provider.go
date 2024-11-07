@@ -18,7 +18,7 @@ import (
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/discovery/cached/memory"
-	k8sv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/kubernetes"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
@@ -28,7 +28,7 @@ import (
 
 type dataObjectProvider struct {
 	client    cdiclientv1beta1.CdiV1beta1Interface
-	k8sClient *k8sv1.CoreV1Client
+	k8sClient kubernetes.Interface
 }
 
 type DataObjectProvider interface {
@@ -39,10 +39,10 @@ type DataObjectProvider interface {
 	DeleteDV(string, string) error
 	DeletePVC(string, string) error
 	CreateDo(*unstructured.Unstructured, bool) (*unstructured.Unstructured, error)
-	GetK8sClient() *k8sv1.CoreV1Client
+	GetK8sClient() kubernetes.Interface
 }
 
-func NewDataObjectProvider(client cdiclientv1beta1.CdiV1beta1Interface, k8sClient *k8sv1.CoreV1Client) DataObjectProvider {
+func NewDataObjectProvider(client cdiclientv1beta1.CdiV1beta1Interface, k8sClient kubernetes.Interface) DataObjectProvider {
 	return &dataObjectProvider{
 		client:    client,
 		k8sClient: k8sClient,
@@ -53,7 +53,7 @@ func (d *dataObjectProvider) GetDv(namespace string, name string) (*cdiv1beta1.D
 	return d.client.DataVolumes(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 }
 
-func (d *dataObjectProvider) GetK8sClient() *k8sv1.CoreV1Client {
+func (d *dataObjectProvider) GetK8sClient() kubernetes.Interface {
 	return d.k8sClient
 }
 
@@ -62,7 +62,7 @@ func (d *dataObjectProvider) GetDs(namespace string, name string) (*cdiv1beta1.D
 }
 
 func (d *dataObjectProvider) GetPVC(namespace string, name string) (*v1.PersistentVolumeClaim, error) {
-	return d.k8sClient.PersistentVolumeClaims(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	return d.k8sClient.CoreV1().PersistentVolumeClaims(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 }
 
 func (d *dataObjectProvider) DeleteDV(namespace string, name string) error {
@@ -74,7 +74,7 @@ func (d *dataObjectProvider) DeleteDS(namespace string, name string) error {
 }
 
 func (d *dataObjectProvider) DeletePVC(namespace string, name string) error {
-	return d.k8sClient.PersistentVolumeClaims(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
+	return d.k8sClient.CoreV1().PersistentVolumeClaims(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 }
 
 func waitUntilDataObjectIsDeleted(helper *resource.Helper, namespace, name string) {
@@ -183,7 +183,7 @@ func NewDataObjectCreator(cliOptions *parse.CLIOptions) (*DataObjectCreator, err
 		return nil, err
 	}
 
-	k8sClient, err := k8sv1.NewForConfig(config)
+	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}

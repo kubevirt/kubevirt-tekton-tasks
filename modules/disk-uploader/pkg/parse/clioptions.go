@@ -68,19 +68,19 @@ func (c *CLIOptions) trimSpaces() {
 
 func (c *CLIOptions) assertValidParams() error {
 	if c.ExportSourceKind == "" {
-		return zerrors.NewMissingRequiredError("%s param has to be specified", c.ExportSourceKind)
+		return zerrors.NewMissingRequiredError("%s param has to be specified", "export-source-kind")
 	}
 
 	if c.ExportSourceName == "" {
-		return zerrors.NewMissingRequiredError("%s param has to be specified", c.ExportSourceName)
+		return zerrors.NewMissingRequiredError("%s param has to be specified", "export-source-name")
 	}
 
 	if c.VolumeName == "" {
-		return zerrors.NewMissingRequiredError("%s param has to be specified", c.VolumeName)
+		return zerrors.NewMissingRequiredError("%s param has to be specified", "volume-name")
 	}
 
 	if c.ImageDestination == "" {
-		return zerrors.NewMissingRequiredError("%s param has to be specified", c.ImageDestination)
+		return zerrors.NewMissingRequiredError("%s param has to be specified", "image-destination")
 	}
 	return nil
 }

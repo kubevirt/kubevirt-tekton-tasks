@@ -8,7 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	k8sv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -16,7 +16,7 @@ const (
 	podNamespaceEnv = "POD_NAMESPACE"
 )
 
-func getTaskRunPod(k8sClient *k8sv1.CoreV1Client) (*corev1.Pod, error) {
+func getTaskRunPod(k8sClient kubernetes.Interface) (*corev1.Pod, error) {
 	podName, isSet := os.LookupEnv(podNameEnv)
 	if !isSet {
 		return nil, fmt.Errorf("pod name env variable is not set")
@@ -28,11 +28,11 @@ func getTaskRunPod(k8sClient *k8sv1.CoreV1Client) (*corev1.Pod, error) {
 	}
 
 	pod := &corev1.Pod{}
-	pod, err := k8sClient.Pods(podNamespace).Get(context.Background(), podName, metav1.GetOptions{})
+	pod, err := k8sClient.CoreV1().Pods(podNamespace).Get(context.Background(), podName, metav1.GetOptions{})
 	return pod, err
 }
 
-func SetPodOwnerReference(k8sClient *k8sv1.CoreV1Client, object metav1.Object) error {
+func SetPodOwnerReference(k8sClient kubernetes.Interface, object metav1.Object) error {
 	pod, err := getTaskRunPod(k8sClient)
 	if err != nil {
 		return err

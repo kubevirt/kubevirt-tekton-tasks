@@ -15,7 +15,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
-	k8sv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -33,7 +33,7 @@ type VMCreator struct {
 	config                 *rest.Config
 	templateProvider       templates.TemplateProvider
 	virtualMachineProvider virtualMachine.VirtualMachineProvider
-	k8sClient              *k8sv1.CoreV1Client
+	k8sClient              kubernetes.Interface
 }
 
 func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
@@ -51,7 +51,7 @@ func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
 		return nil, fmt.Errorf("cannot create kubevirt client: %v", err.Error())
 	}
 
-	k8sclient := k8sv1.NewForConfigOrDie(config)
+	k8sclient := kubernetes.NewForConfigOrDie(config)
 
 	var templateProvider templates.TemplateProvider
 	virtualMachineProvider := virtualMachine.NewVirtualMachineProvider(kubevirtClient)

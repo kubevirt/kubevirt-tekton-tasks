@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/certificate"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/disk"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/image"
@@ -10,7 +12,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 
-	k8sv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
 	goarg "github.com/alexflint/go-arg"
@@ -28,7 +30,7 @@ const (
 	kvExportTokenHeader string = "x-kubevirt-export-token"
 )
 
-func run(opts parse.CLIOptions, k8sClient *k8sv1.CoreV1Client, virtClient kubecli.KubevirtClient) error {
+func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubecli.KubevirtClient) error {
 	kind := opts.GetExportSourceKind()
 	name := opts.GetExportSourceName()
 	namespace := opts.GetExportSourceNamespace()
@@ -38,13 +40,13 @@ func run(opts parse.CLIOptions, k8sClient *k8sv1.CoreV1Client, virtClient kubecl
 
 	log.Logger().Info("Creating a new Secret object...", zap.String("namespace", namespace), zap.String("name", name))
 
-	if err := secrets.CreateVirtualMachineExportSecret(k8sClient, virtClient, namespace, name); err != nil {
+	if err := secrets.CreateVirtualMachineExportSecret(k8sClient, namespace, name); err != nil {
 		return err
 	}
 
 	log.Logger().Info("Creating a new VirtualMachineExport object...", zap.String("namespace", namespace), zap.String("name", name))
 
-	if err := vmexport.CreateVirtualMachineExport(k8sClient, virtClient, kind, namespace, name); err != nil {
+	if err := vmexport.CreateVirtualMachineExport(virtClient, kind, namespace, name); err != nil {
 		return err
 	}
 
@@ -68,7 +70,7 @@ func run(opts parse.CLIOptions, k8sClient *k8sv1.CoreV1Client, virtClient kubecl
 		return err
 	}
 
-	if err := certificate.CreateCertificateFile(certificatePath, certificateData); err != nil {
+	if err := os.WriteFile(certificatePath, []byte(certificateData), 0644); err != nil {
 		return err
 	}
 
@@ -121,7 +123,7 @@ func main() {
 		exit.ExitOrDieFromError(genericExitCode, err)
 	}
 
-	k8sClient, err := k8sv1.NewForConfig(config)
+	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		exit.ExitOrDieFromError(genericExitCode, err)
 	}
