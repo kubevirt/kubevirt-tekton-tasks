@@ -2,7 +2,9 @@ package parse
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/modify-data-object/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
@@ -24,6 +26,7 @@ type CLIOptions struct {
 	DataObjectManifest  string            `arg:"--data-object-manifest,env:DATA_OBJECT_MANIFEST" placeholder:"MANIFEST" help:"YAML manifest of a data object to be created (can be set by DATA_OBJECT_MANIFEST env variable)."`
 	DataObjectNamespace string            `arg:"--data-object-namespace,env:DATA_OBJECT_NAMESPACE" placeholder:"NAMESPACE" help:"Namespace where to create the data object (can be set by DATA_OBJECT_NAMESPACE env variable)."`
 	WaitForSuccess      string            `arg:"--wait-for-success,env:WAIT_FOR_SUCCESS" help:"Set to \"true\" or \"false\" if container should wait for Ready condition of a DataVolume (can be set by WAIT_FOR_SUCCESS env variable)."`
+	Timeout             string            `arg:"--timeout,env:TIMEOUT" placeholder:"1h" help:"When waitForSuccess parameter is set to true, this parameter defines how long the task will wait until it timeouts. Should be in a 3h2m1s format"`
 	DeleteObjectName    string            `arg:"--delete-object-name,env:DELETE_OBJECT_NAME" help:"Name of the data object to delete. This parameter is used only for Delete operation."`
 	DeleteObject        string            `arg:"--delete-object,env:DELETE_OBJECT" help:"Delete data object with given name. Parameters name, object-kind have to be defined."`
 	DeleteObjectKind    string            `arg:"--delete-object-kind,env:DELETE_OBJECT_KIND" help:"Kind of the data object to delete. This parameter is used only for Delete operation."`
@@ -32,6 +35,7 @@ type CLIOptions struct {
 	Output              output.OutputType `arg:"-o" placeholder:"FORMAT" help:"Output format. One of: yaml|json"`
 	Debug               bool              `arg:"--debug" help:"Sets DEBUG log level"`
 
+	timeout                time.Duration
 	unstructuredDataObject unstructured.Unstructured
 }
 
@@ -40,6 +44,10 @@ func (c *CLIOptions) GetDebugLevel() zapcore.Level {
 		return zapcore.DebugLevel
 	}
 	return zapcore.InfoLevel
+}
+
+func (c *CLIOptions) GetScriptTimeout() time.Duration {
+	return c.timeout
 }
 
 func (c *CLIOptions) GetDataObjectManifest() string {
@@ -135,6 +143,14 @@ func (c *CLIOptions) assertValidParams() error {
 			return zerrors.NewMissingRequiredError("%s param has to have values %s or %s", objectKindOptionName, constants.DataVolumeKind, constants.DataSourceKind)
 		}
 		return nil
+	}
+
+	if c.Timeout != "" {
+		var err error
+		c.timeout, err = time.ParseDuration(c.Timeout)
+		if err != nil {
+			return fmt.Errorf("error during parsing timeout: %w", err)
+		}
 	}
 
 	if c.DataObjectManifest == "" {

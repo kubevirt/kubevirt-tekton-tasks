@@ -41,6 +41,11 @@ var _ = Describe("CLIOptions", func() {
 					DataObjectManifest: testDvManifest1,
 					Output:             "non-existing",
 				}),
+			Entry("wrong timeout", "invalid duration \"wrong timeout\"",
+				&parse.CLIOptions{
+					DataObjectManifest: testDvManifest1,
+					Timeout:            "wrong timeout",
+				}),
 		)
 	})
 
@@ -51,6 +56,7 @@ var _ = Describe("CLIOptions", func() {
 			Entry("with yaml output", &parse.CLIOptions{
 				DataObjectManifest:  testDvManifest1,
 				DataObjectNamespace: testStrDataObjectNamespace1,
+				Timeout:             "1h1m1s",
 				Output:              "yaml",
 			}),
 			Entry("with json output", &parse.CLIOptions{
@@ -81,6 +87,7 @@ var _ = Describe("CLIOptions", func() {
 			Entry("with yaml output", &parse.CLIOptions{
 				DataObjectManifest:  testDsManifest,
 				DataObjectNamespace: testStrDataObjectNamespace1,
+				Timeout:             "1h1m1s",
 				Output:              "yaml",
 			}),
 			Entry("with json output", &parse.CLIOptions{

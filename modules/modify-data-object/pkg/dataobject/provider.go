@@ -248,7 +248,7 @@ func (d *DataObjectCreator) CreateDataObject() (*unstructured.Unstructured, erro
 }
 
 func (d *DataObjectCreator) waitForSuccessDv(namespace, name string) error {
-	return wait.PollImmediate(constants.PollInterval, constants.PollTimeout, func() (bool, error) {
+	return wait.PollImmediate(constants.PollInterval, d.cliOptions.GetScriptTimeout(), func() (bool, error) {
 		dv, err := d.dataObjectProvider.GetDv(namespace, name)
 
 		if errors.IsNotFound(err) {
@@ -285,7 +285,7 @@ func (d *DataObjectCreator) waitForSuccessDv(namespace, name string) error {
 }
 
 func (d *DataObjectCreator) waitForSuccessDs(namespace, name string) error {
-	return wait.PollImmediate(constants.PollInterval, constants.PollTimeout, func() (bool, error) {
+	return wait.PollImmediate(constants.PollInterval, d.cliOptions.GetScriptTimeout(), func() (bool, error) {
 		ds, err := d.dataObjectProvider.GetDs(namespace, name)
 		if err != nil {
 			return false, err
