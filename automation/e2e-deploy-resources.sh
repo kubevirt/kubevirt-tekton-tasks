@@ -18,11 +18,6 @@ TEKTON_VERSION=$(curl -s https://api.github.com/repos/tektoncd/operator/releases
 SSP_OPERATOR_VERSION=$(curl -s  https://api.github.com/repos/kubevirt/ssp-operator/releases | \
             jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
 
-INSTANCE_TYPES_VERSION="v1.1.0"
-            # uncomment these lines when kubevirt 1.4 is released
-            #$(curl -s  https://api.github.com/repos/kubevirt/common-instancetypes/releases | \
-            #jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
-
 if kubectl get templates > /dev/null 2>&1; then
   # okd
   COMMON_TEMPLATES_VERSION=$(curl -s https://api.github.com/repos/kubevirt/common-templates/releases | \
@@ -89,7 +84,3 @@ kubectl wait -n openshift-pipelines deployment tekton-pipelines-webhook --for co
 # Wait for kubevirt to be available
 kubectl rollout status -n cdi deployment/cdi-operator --timeout 10m
 kubectl wait -n kubevirt kv kubevirt --for condition=Available --timeout 10m
-
-# Deploy instance types
-kubectl apply -f "https://github.com/kubevirt/common-instancetypes/releases/download/${INSTANCE_TYPES_VERSION}/common-clusterpreferences-bundle-${INSTANCE_TYPES_VERSION}.yaml"
-kubectl apply -f "https://github.com/kubevirt/common-instancetypes/releases/download/${INSTANCE_TYPES_VERSION}/common-clusterinstancetypes-bundle-${INSTANCE_TYPES_VERSION}.yaml"
