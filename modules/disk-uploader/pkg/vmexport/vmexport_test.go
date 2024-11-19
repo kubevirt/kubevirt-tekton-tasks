@@ -15,8 +15,10 @@ import (
 	fakek8sclient "k8s.io/client-go/kubernetes/fake"
 
 	v1beta1 "kubevirt.io/api/export/v1beta1"
+	fakecdiclient "kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/fake"
 	kubevirtfake "kubevirt.io/client-go/generated/kubevirt/clientset/versioned/fake"
 	"kubevirt.io/client-go/kubecli"
+	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/vmexport"
 )
@@ -29,6 +31,7 @@ var _ = Describe("VMExport", func() {
 
 	var (
 		kubeClient     *fakek8sclient.Clientset
+		cdiClient      *fakecdiclient.Clientset
 		vmExportClient *kubevirtfake.Clientset
 		virtClient     kubecli.KubevirtClient
 	)
@@ -37,11 +40,13 @@ var _ = Describe("VMExport", func() {
 		ctrl := gomock.NewController(GinkgoT())
 		kubeClient = fakek8sclient.NewSimpleClientset()
 		vmExportClient = kubevirtfake.NewSimpleClientset()
+		cdiClient = fakecdiclient.NewSimpleClientset()
 
 		kubecli.GetKubevirtClientFromClientConfig = kubecli.GetMockKubevirtClientFromClientConfig
 		kubecli.MockKubevirtClientInstance = kubecli.NewMockKubevirtClient(ctrl)
 		kubecli.MockKubevirtClientInstance.EXPECT().CoreV1().Return(kubeClient.CoreV1()).AnyTimes()
 		kubecli.MockKubevirtClientInstance.EXPECT().VirtualMachineExport(namespace).Return(vmExportClient.ExportV1beta1().VirtualMachineExports(namespace)).AnyTimes()
+		kubecli.MockKubevirtClientInstance.EXPECT().CdiClient().Return(cdiClient).AnyTimes()
 
 		virtClient, _ = kubecli.GetKubevirtClientFromClientConfig(nil)
 
@@ -185,5 +190,91 @@ var _ = Describe("VMExport", func() {
 			_, err = vmexport.GetRawDiskUrlFromVolumes(virtClient, namespace, name, "disk-volume-1")
 			Expect(err).To(MatchError("no links found in VirtualMachineExport status"))
 		})
+	})
+
+	Describe("GetLabelsFromExportSource", func() {
+		var (
+			defaultInstanceType = "instancetype.kubevirt.io/default-instancetype"
+			defaultPreference   = "instancetype.kubevirt.io/default-preference"
+		)
+
+		DescribeTable("should return labels from datavolume", func(resourceType string) {
+			_, err := virtClient.CdiClient().CdiV1beta1().DataVolumes(namespace).Create(context.Background(), &cdiv1beta1.DataVolume{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "example-volume",
+					Namespace: namespace,
+					Labels: map[string]string{
+						defaultInstanceType: "cx1.2xlarge",
+						defaultPreference:   "fedora",
+					},
+				},
+			}, metav1.CreateOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			labels, err := vmexport.GetLabelsFromExportSource(virtClient, resourceType, namespace, name, "example-volume")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(labels).To(HaveKeyWithValue(defaultInstanceType, "cx1.2xlarge"))
+			Expect(labels).To(HaveKeyWithValue(defaultPreference, "fedora"))
+		},
+			Entry("for VirtualMachine", "VirtualMachine"),
+			Entry("for VirtualMachineSnapshot", "VirtualMachineSnapshot"),
+		)
+
+		DescribeTable("should return labels from pvc if there is no datavolume", func(resourceType string) {
+			_, err := kubeClient.CoreV1().PersistentVolumeClaims(namespace).Create(context.Background(), &corev1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "example-pvc",
+					Namespace: namespace,
+					Labels: map[string]string{
+						defaultInstanceType: "cx1.2xlarge",
+						defaultPreference:   "fedora",
+					},
+				},
+			}, metav1.CreateOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			labels, err := vmexport.GetLabelsFromExportSource(virtClient, resourceType, namespace, name, "example-pvc")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(labels).To(HaveKeyWithValue(defaultInstanceType, "cx1.2xlarge"))
+			Expect(labels).To(HaveKeyWithValue(defaultPreference, "fedora"))
+		},
+			Entry("for VirtualMachine", "VirtualMachine"),
+			Entry("for VirtualMachineSnapshot", "VirtualMachineSnapshot"),
+		)
+
+		It("should return labels directly from pvc", func() {
+			_, err := kubeClient.CoreV1().PersistentVolumeClaims(namespace).Create(context.Background(), &corev1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "example-pvc",
+					Namespace: namespace,
+					Labels: map[string]string{
+						defaultInstanceType: "cx1.2xlarge",
+						defaultPreference:   "fedora",
+					},
+				},
+			}, metav1.CreateOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			labels, err := vmexport.GetLabelsFromExportSource(virtClient, "PersistentVolumeClaim", namespace, "example-pvc", "")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(labels).To(HaveKeyWithValue(defaultInstanceType, "cx1.2xlarge"))
+			Expect(labels).To(HaveKeyWithValue(defaultPreference, "fedora"))
+		})
+
+		It("should return unsupported source kind error", func() {
+			labels, err := vmexport.GetLabelsFromExportSource(virtClient, "VirtualMachineInstance", namespace, name, "disk-volume-1")
+			Expect(err).To(MatchError("unsupported source kind: VirtualMachineInstance"))
+			Expect(labels).To(BeNil())
+		})
+
+		DescribeTable("should return an error when DV or PVC is not found", func(exportSourceKind string, volumeName string) {
+			labels, err := vmexport.GetLabelsFromExportSource(virtClient, exportSourceKind, namespace, name, volumeName)
+			Expect(err).To(MatchError(errors.IsNotFound, "errors.IsNotFound"))
+			Expect(labels).To(BeNil())
+		},
+			Entry("for VirtualMachine with missing DV and PVC", "VirtualMachine", "example-volume"),
+			Entry("for VirtualMachineSnapshot with missing DV and PVC", "VirtualMachineSnapshot", "example-volume"),
+			Entry("for PersistentVolumeClaim with missing PVC", "PersistentVolumeClaim", ""),
+		)
 	})
 })

@@ -89,7 +89,13 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 
 	log.Logger().Info("Building a new container image...")
 
-	containerImage, err := image.Build(diskPath)
+	labels, err := vmexport.GetLabelsFromExportSource(virtClient, kind, namespace, name, volumeName)
+	if err != nil {
+		return err
+	}
+
+	config := image.DefaultConfig(labels)
+	containerImage, err := image.Build(diskPath, config)
 	if err != nil {
 		return err
 	}

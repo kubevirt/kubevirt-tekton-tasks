@@ -1329,9 +1329,12 @@ kubevirt.io/api/snapshot/v1beta1
 # kubevirt.io/client-go v1.3.1
 ## explicit; go 1.22.0
 kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned
+kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/fake
 kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/scheme
 kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/typed/core/v1beta1
+kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/typed/core/v1beta1/fake
 kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/typed/upload/v1beta1
+kubevirt.io/client-go/generated/containerized-data-importer/clientset/versioned/typed/upload/v1beta1/fake
 kubevirt.io/client-go/generated/external-snapshotter/clientset/versioned
 kubevirt.io/client-go/generated/external-snapshotter/clientset/versioned/scheme
 kubevirt.io/client-go/generated/external-snapshotter/clientset/versioned/typed/volumesnapshot/v1
