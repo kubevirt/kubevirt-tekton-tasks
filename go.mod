@@ -24,6 +24,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/onsi/ginkgo/v2 v2.20.1
 	github.com/onsi/gomega v1.34.2
+	github.com/openshift/client-go v3.9.0+incompatible
 	github.com/spf13/cobra v1.8.1
 	github.com/tektoncd/pipeline v0.65.2
 	go.uber.org/zap v1.27.0
@@ -31,6 +32,7 @@ require (
 	k8s.io/apimachinery v0.31.2
 	k8s.io/cli-runtime v0.31.2
 	k8s.io/client-go v12.0.0+incompatible
+	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8
 	knative.dev/pkg v0.0.0-20240716082220-4355f0c73608
 	kubevirt.io/api v1.4.0
 	kubevirt.io/client-go v1.4.0
@@ -107,7 +109,6 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0 // indirect
 	github.com/openshift/api v3.9.0+incompatible // indirect
-	github.com/openshift/client-go v3.9.0+incompatible // indirect
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
 	github.com/openzipkin/zipkin-go v0.4.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -154,7 +155,6 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-aggregator v0.31.2 // indirect
 	k8s.io/kube-openapi v0.31.2 // indirect
-	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.17.3 // indirect

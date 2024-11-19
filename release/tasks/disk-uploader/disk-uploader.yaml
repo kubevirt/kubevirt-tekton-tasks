@@ -41,6 +41,9 @@ spec:
   - name: SECRET_NAME
     description: Name of the secret which holds credential for container registry
     type: string
+  results:
+    - name: digest
+      description: The digest from the build of the containerDisk.
   steps:
   - name: disk-uploader-step
     image: "quay.io/kubevirt/tekton-tasks:v0.22.0"
