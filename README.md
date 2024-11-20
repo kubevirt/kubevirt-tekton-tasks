@@ -70,13 +70,13 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 
 #### [Windows EFI Installer Pipeline](release/pipelines/windows-efi-installer)
 
-Downloads a Windows ISO file into a PVC and automatically installs Windows 10, 11 or Server 2k22 with EFI enabled by using a custom Answer file into a new base DataVolume.
-Supported Windows versions: Windows 10, 11, Server 2k22
+Downloads a Windows ISO file into a PVC and automatically installs Windows 10, 11 or Server 2k22, 2k25 with EFI enabled by using a custom Answer file into a new base DataVolume.
+Supported Windows versions: Windows 10, 11, Server 2k22, 2k25
 
 #### [Windows Customize Pipeline](release/pipelines/windows-customize)
 
-Applies customizations to an existing Windows 10, 11, Server 2k22 installation by using a custom Answer file and creates a new base DataVolume.
-Supported Windows versions: Windows 10, 11, Server 2k22
+Applies customizations to an existing Windows 10, 11, Server 2k22, 2k25 installation by using a custom Answer file and creates a new base DataVolume.
+Supported Windows versions: Windows 10, 11, Server 2k22, 2k25
 
 #### [Disk Uploader Pipeline](release/pipelines/disk-uploader)
 

@@ -1,0 +1,19 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: windows2k25-customize-run-
+  labels:
+    pipelinerun: windows2k25-customize-run
+spec:
+  params:
+    - name: sourceDiskImageName
+      value: win2k25
+    - name: baseDvName
+      value: win2k25-customized
+    - name: preferenceName
+      value: windows.2k25.virtio
+    - name: customizeConfigMapName
+      value: windows-sqlserver
+  pipelineRef:
+    name: windows-customize

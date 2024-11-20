@@ -106,3 +106,43 @@ spec:
           runAsUser: 107
           fsGroup: 107     
   timeout: 1h0m0s
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: windows2k25-installer-run-
+spec:
+  params:
+    - name: winImageDownloadURL
+      value: ${WIN_IMAGE_DOWNLOAD_URL}
+    - name: acceptEula
+      value: false
+    - name: preferenceName
+      value: windows.2k25.virtio
+    - name: autounattendConfigMapName
+      value: windows2k25-autounattend
+    - name: baseDvName
+      value: win2k25
+    - name: isoDVName
+      value: win2k25
+  pipelineRef:
+    resolver: hub
+    params:
+      - name: catalog
+        value: kubevirt-tekton-pipelines
+      - name: type
+        value: artifact
+      - name: kind
+        value: pipeline
+      - name: name
+        value: windows-efi-installer
+      - name: version
+        value: v0.22.0
+  taskRunSpecs:
+    - pipelineTaskName: "modify-windows-iso-file"
+      podTemplate:
+        securityContext:
+          runAsUser: 107
+          fsGroup: 107     
+  timeout: 1h0m0s
+
