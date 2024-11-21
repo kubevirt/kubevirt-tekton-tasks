@@ -93,9 +93,9 @@ func GetRawDiskUrlFromVolumes(client kubecli.KubevirtClient, namespace, name, vo
 
 func GetLabelsFromExportSource(virtClient kubecli.KubevirtClient, exportSourceKind, exportSourceNamespace, exportSourceName, volumeName string) (map[string]string, error) {
 	switch exportSourceKind {
-	case "VirtualMachine", "VirtualMachineSnapshot":
+	case sourceVM, sourceVMSnapshot:
 		return getLabelsFromVirtualMachineOrSnapshot(virtClient, exportSourceNamespace, volumeName)
-	case "PersistentVolumeClaim":
+	case sourcePVC:
 		return getLabelsFromPVC(virtClient, exportSourceNamespace, exportSourceName)
 	default:
 		return nil, fmt.Errorf("unsupported source kind: %s", exportSourceKind)

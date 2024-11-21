@@ -216,8 +216,8 @@ var _ = Describe("VMExport", func() {
 			Expect(labels).To(HaveKeyWithValue(defaultInstanceType, "cx1.2xlarge"))
 			Expect(labels).To(HaveKeyWithValue(defaultPreference, "fedora"))
 		},
-			Entry("for VirtualMachine", "VirtualMachine"),
-			Entry("for VirtualMachineSnapshot", "VirtualMachineSnapshot"),
+			Entry("for VirtualMachine", "vm"),
+			Entry("for VirtualMachineSnapshot", "vmsnapshot"),
 		)
 
 		DescribeTable("should return labels from pvc if there is no datavolume", func(resourceType string) {
@@ -238,8 +238,8 @@ var _ = Describe("VMExport", func() {
 			Expect(labels).To(HaveKeyWithValue(defaultInstanceType, "cx1.2xlarge"))
 			Expect(labels).To(HaveKeyWithValue(defaultPreference, "fedora"))
 		},
-			Entry("for VirtualMachine", "VirtualMachine"),
-			Entry("for VirtualMachineSnapshot", "VirtualMachineSnapshot"),
+			Entry("for VirtualMachine", "vm"),
+			Entry("for VirtualMachineSnapshot", "vmsnapshot"),
 		)
 
 		It("should return labels directly from pvc", func() {
@@ -255,15 +255,15 @@ var _ = Describe("VMExport", func() {
 			}, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
-			labels, err := vmexport.GetLabelsFromExportSource(virtClient, "PersistentVolumeClaim", namespace, "example-pvc", "")
+			labels, err := vmexport.GetLabelsFromExportSource(virtClient, "pvc", namespace, "example-pvc", "")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(labels).To(HaveKeyWithValue(defaultInstanceType, "cx1.2xlarge"))
 			Expect(labels).To(HaveKeyWithValue(defaultPreference, "fedora"))
 		})
 
 		It("should return unsupported source kind error", func() {
-			labels, err := vmexport.GetLabelsFromExportSource(virtClient, "VirtualMachineInstance", namespace, name, "disk-volume-1")
-			Expect(err).To(MatchError("unsupported source kind: VirtualMachineInstance"))
+			labels, err := vmexport.GetLabelsFromExportSource(virtClient, "vmi", namespace, name, "disk-volume-1")
+			Expect(err).To(MatchError("unsupported source kind: vmi"))
 			Expect(labels).To(BeNil())
 		})
 
@@ -272,9 +272,9 @@ var _ = Describe("VMExport", func() {
 			Expect(err).To(MatchError(errors.IsNotFound, "errors.IsNotFound"))
 			Expect(labels).To(BeNil())
 		},
-			Entry("for VirtualMachine with missing DV and PVC", "VirtualMachine", "example-volume"),
-			Entry("for VirtualMachineSnapshot with missing DV and PVC", "VirtualMachineSnapshot", "example-volume"),
-			Entry("for PersistentVolumeClaim with missing PVC", "PersistentVolumeClaim", ""),
+			Entry("for VirtualMachine with missing DV and PVC", "vm", "example-volume"),
+			Entry("for VirtualMachineSnapshot with missing DV and PVC", "vmsnapshot", "example-volume"),
+			Entry("for PersistentVolumeClaim with missing PVC", "pvc", ""),
 		)
 	})
 })
