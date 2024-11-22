@@ -72,6 +72,7 @@ spec:
       name: useBiosMode
       type: string
   tasks:
+{% if download_configmaps %}
     - name: import-autounattend-configmaps
       params:
         - name: SCRIPT
@@ -100,6 +101,7 @@ spec:
             value: openshift-client
           - name: version
             value: {{ openshift_client_task_version }}
+{% endif %}
     - name: import-win-iso
       params:
         - name: manifest
@@ -171,8 +173,10 @@ spec:
         name: modify-windows-iso-file
 {% endif %}
     - name: create-vm-root-disk
+{% if download_configmaps %}
       runAfter:
         - import-autounattend-configmaps
+{% endif %}
       taskRef:
 {% if use_resolver_in_manifests %}
         resolver: hub
@@ -417,6 +421,7 @@ spec:
         kind: Task
         name: modify-data-object
 {% endif %}
+{% if download_configmaps %}
     - name: delete-imported-configmaps
       params:
         - name: SCRIPT
@@ -436,6 +441,7 @@ spec:
             value: openshift-client
           - name: version
             value: {{ openshift_client_task_version }}
+{% endif %}
   results:
     - description: Name of the created base DataVolume
       name: baseDvName

@@ -111,6 +111,12 @@ fi
 
 ./scripts/deploy-pipelines.sh
 
+for PIPELINE_NAME in "windows-efi-installer" "windows-customize"; do
+  ls -l release/pipelines/${PIPELINE_NAME}/configmaps/${PIPELINE_NAME}-configmaps.yaml
+  sed "s/<AcceptEula>false<\/AcceptEula>/<AcceptEula>true<\/AcceptEula>/g" < "release/pipelines/${PIPELINE_NAME}/configmaps/${PIPELINE_NAME}-configmaps.yaml"  | \
+  oc apply -f -
+done
+
 wait_until_exists "pipeline windows-efi-installer -n ${namespace}"
 wait_until_exists "pipeline windows-customize -n ${namespace}"
 
