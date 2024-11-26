@@ -2,14 +2,11 @@ package framework
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/kubevirt/kubevirt-tekton-tasks/test/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/test/framework/clients"
 	"github.com/kubevirt/kubevirt-tekton-tasks/test/framework/testoptions"
 	"github.com/kubevirt/kubevirt-tekton-tasks/test/tekton"
 	. "github.com/onsi/ginkgo/v2"
-	templatev1 "github.com/openshift/api/template/v1"
 	pipev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +25,6 @@ type ManagedResources struct {
 	dataVolumes          []*cdiv1beta1.DataVolume
 	dataSources          []*cdiv1beta1.DataSource
 	vms                  []*kubevirtv1.VirtualMachine
-	templates            []*templatev1.Template
 	secrets              []*corev1.Secret
 	clusterInstancetypes []*instancetype.VirtualMachineClusterInstancetype
 }
@@ -38,12 +34,10 @@ type Framework struct {
 	*clients.Clients
 
 	managedResources  ManagedResources
-	limitEnvScope     constants.EnvScope
 	onBeforeTestSetup func(config TestConfig)
 }
 
 type TestConfig interface {
-	GetLimitEnvScope() constants.EnvScope
 	Init(options *testoptions.TestOptions)
 }
 
@@ -57,33 +51,12 @@ func NewFramework() *Framework {
 	return f
 }
 
-func (f *Framework) LimitEnvScope(limitEnvScope constants.EnvScope) *Framework {
-	if f.limitEnvScope != "" {
-		Fail("limitEnvScope was already set")
-	}
-	f.limitEnvScope = limitEnvScope
-
-	return f
-}
-
 func (f *Framework) OnBeforeTestSetup(callback func(config TestConfig)) *Framework {
 	f.onBeforeTestSetup = callback
 	return f
 }
 
 func (f *Framework) TestSetup(config TestConfig) {
-	limitEnvScope := config.GetLimitEnvScope()
-
-	// check global env limit first
-	if f.limitEnvScope != "" && f.limitEnvScope != f.EnvScope {
-		Skip(fmt.Sprintf("runs only in %v", f.limitEnvScope))
-	}
-
-	// check test case env limit
-	if limitEnvScope != "" && limitEnvScope != f.EnvScope {
-		Skip(fmt.Sprintf("runs only in %v", limitEnvScope))
-	}
-
 	if f.onBeforeTestSetup != nil {
 		f.onBeforeTestSetup(config)
 	}
@@ -139,9 +112,6 @@ func (f *Framework) AfterEach() {
 	for _, vm := range f.managedResources.vms {
 		defer f.KubevirtClient.VirtualMachine(vm.Namespace).Delete(context.Background(), vm.Name, metav1.DeleteOptions{})
 	}
-	for _, t := range f.managedResources.templates {
-		defer f.TemplateClient.Templates(t.Namespace).Delete(context.Background(), t.Name, metav1.DeleteOptions{})
-	}
 	for _, s := range f.managedResources.secrets {
 		defer f.KubevirtClient.CoreV1().Secrets(s.Namespace).Delete(context.Background(), s.Name, metav1.DeleteOptions{})
 	}
@@ -187,15 +157,6 @@ func (f *Framework) ManageVMs(vms ...*kubevirtv1.VirtualMachine) *Framework {
 	for _, vm := range vms {
 		if vm != nil && vm.Name != "" && vm.Namespace != "" {
 			f.managedResources.vms = append(f.managedResources.vms, vm)
-		}
-	}
-	return f
-}
-
-func (f *Framework) ManageTemplates(templates ...*templatev1.Template) *Framework {
-	for _, t := range templates {
-		if t != nil && t.Name != "" && t.Namespace != "" {
-			f.managedResources.templates = append(f.managedResources.templates, t)
 		}
 	}
 	return f
