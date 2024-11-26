@@ -1,9 +1,9 @@
 package parse
 
 import (
-	"go.uber.org/zap/zapcore"
+	"strings"
 
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
+	"go.uber.org/zap/zapcore"
 )
 
 const (
@@ -25,7 +25,7 @@ func (c *CLIOptions) GetDebugLevel() zapcore.Level {
 }
 
 func (c *CLIOptions) IsVerbose() bool {
-	return zutils.IsTrue(c.Verbose)
+	return strings.ToLower(c.Verbose) == "true"
 }
 
 func (c *CLIOptions) GetCommands() string {

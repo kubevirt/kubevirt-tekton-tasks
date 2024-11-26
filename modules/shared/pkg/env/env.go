@@ -4,8 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
-
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
+	"strings"
 )
 
 const (
@@ -14,7 +13,7 @@ const (
 )
 
 func IsEnvVarTrue(envVarName string) bool {
-	return zutils.IsTrue(os.Getenv(envVarName))
+	return strings.ToLower(os.Getenv(envVarName)) == "true"
 }
 
 func GetActiveNamespace() (string, error) {

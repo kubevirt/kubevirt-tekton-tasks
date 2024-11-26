@@ -1,9 +1,10 @@
 package parse
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
-	"go.uber.org/zap/zapcore"
+	"strings"
 	"time"
+
+	"go.uber.org/zap/zapcore"
 )
 
 const (
@@ -55,11 +56,11 @@ func (c *CLIOptions) GetScriptTimeout() time.Duration {
 }
 
 func (c *CLIOptions) ShouldStop() bool {
-	return zutils.IsTrue(c.Stop)
+	return strings.ToLower(c.Stop) == "true"
 }
 
 func (c *CLIOptions) ShouldDelete() bool {
-	return zutils.IsTrue(c.Delete)
+	return strings.ToLower(c.Delete) == "true"
 }
 
 func (c *CLIOptions) Init() error {

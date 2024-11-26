@@ -23,33 +23,17 @@ var _ = Describe("CLIOptions", func() {
 		Expect(err).Should(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring(expectedErrMessage))
 	},
-		Entry("no mode", "only one of vm-manifest, template-name or virtctl should be specified", &parse.CLIOptions{}),
-		Entry("multiple modes", "only one of vm-manifest, template-name or virtctl should be specified", &parse.CLIOptions{
-			TemplateName:           "test",
+		Entry("no mode", "only one of vm-manifest or virtctl should be specified", &parse.CLIOptions{}),
+		Entry("useless virtctl param", "only one of vm-manifest or virtctl should be specified", &parse.CLIOptions{
 			VirtualMachineManifest: testVMManifest,
-		}),
-		Entry("useless template ns", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
-			VirtualMachineManifest: testVMManifest,
-			TemplateNamespace:      defaultNS,
-		}),
-		Entry("useless template params", "template-namespace, template-params options are not applicable for vm-manifest", &parse.CLIOptions{
-			VirtualMachineManifest: testVMManifest,
-			TemplateParams:         []string{"K1:V1"},
+			Virtctl:                "K1:V1",
 		}),
 		Entry("invalidManifest", "could not read VM manifest", &parse.CLIOptions{
 			VirtualMachineManifest: "blabla",
 		}),
 		Entry("invalid output", "not a valid output type", &parse.CLIOptions{
-			TemplateName: "test",
-			Output:       "incorrect-fmt",
-		}),
-		Entry("invalid template params 1", "invalid template-params: no key found before \"V1\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
-			TemplateName:   "test",
-			TemplateParams: []string{"V1", "K2=V2"},
-		}),
-		Entry("invalid template params 2", "invalid template-params: no key found before \":V1\"; pair should be in \"KEY:VAL\" format", &parse.CLIOptions{
-			TemplateName:   "test",
-			TemplateParams: []string{":V1"},
+			VirtualMachineManifest: testVMManifest,
+			Output:                 "incorrect-fmt",
 		}),
 	)
 
@@ -61,41 +45,16 @@ var _ = Describe("CLIOptions", func() {
 			Expect(results[0].Interface()).To(Equal(expectedValue))
 		}
 	},
-		Entry("returns valid defaults", &parse.CLIOptions{
-			TemplateName:            "test",
-			TemplateNamespace:       defaultNS,
+		Entry("handles virtctl cli arguments", &parse.CLIOptions{
+			Virtctl:                 "test",
 			VirtualMachineNamespace: defaultNS,
 		}, map[string]interface{}{
-			"GetTemplateNamespace":       defaultNS,
 			"GetVirtualMachineNamespace": defaultNS,
-			"GetVirtualMachineManifest":  "",
-			"GetTemplateParams":          map[string]string{},
+			"GetVirtctl":                 "test",
 			"GetDebugLevel":              zapcore.InfoLevel,
-			"GetCreationMode":            constants.TemplateCreationMode,
+			"GetCreationMode":            constants.VirtctlCreatingMode,
 			"GetStartVMFlag":             false,
 			"GetRunStrategy":             "",
-		}),
-		Entry("handles template cli arguments", &parse.CLIOptions{
-			TemplateName:            "test",
-			TemplateNamespace:       defaultNS,
-			TemplateParams:          []string{"K1:V1", "with", "space", "K2:V2"},
-			VirtualMachineNamespace: defaultNS,
-			Output:                  output.YamlOutput, // check if passes validation
-			Debug:                   true,
-			StartVM:                 "true",
-			RunStrategy:             "Always",
-		}, map[string]interface{}{
-			"GetTemplateNamespace":       defaultNS,
-			"GetVirtualMachineNamespace": defaultNS,
-			"GetVirtualMachineManifest":  "",
-			"GetTemplateParams": map[string]string{
-				"K1": "V1 with space",
-				"K2": "V2",
-			},
-			"GetDebugLevel":   zapcore.DebugLevel,
-			"GetCreationMode": constants.TemplateCreationMode,
-			"GetStartVMFlag":  true,
-			"GetRunStrategy":  "Always",
 		}),
 		Entry("handles vm cli arguments", &parse.CLIOptions{
 			VirtualMachineManifest:  testVMManifest,
@@ -105,21 +64,17 @@ var _ = Describe("CLIOptions", func() {
 			StartVM:                 "false",
 			RunStrategy:             "Always",
 		}, map[string]interface{}{
-			"GetTemplateNamespace":       "",
 			"GetVirtualMachineNamespace": defaultNS,
 			"GetVirtualMachineManifest":  testVMManifest,
-			"GetTemplateParams":          map[string]string{},
 			"GetDebugLevel":              zapcore.DebugLevel,
 			"GetCreationMode":            constants.VMManifestCreationMode,
 			"GetStartVMFlag":             false,
 			"GetRunStrategy":             "Always",
 		}),
 		Entry("handles trim", &parse.CLIOptions{
-			TemplateName:            "test",
-			TemplateNamespace:       "  " + defaultNS + " ",
+			VirtualMachineManifest:  testVMManifest,
 			VirtualMachineNamespace: defaultNS + "  ",
 		}, map[string]interface{}{
-			"GetTemplateNamespace":       defaultNS,
 			"GetVirtualMachineNamespace": defaultNS,
 		}),
 	)
