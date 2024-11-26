@@ -8,6 +8,7 @@
   - ../scripts/ansible/variables.yaml
   vars:
     use_resolver_in_manifests: "{{ lookup('ansible.builtin.env', 'USE_RESOLVER_IN_MANIFESTS', default=true) | bool }}"
+    download_configmaps: "{{ lookup('ansible.builtin.env', 'DOWNLOAD_CONFIGMAPS', default=true) | bool }}"
   tasks:
     - name: Clean dist directory
       file:

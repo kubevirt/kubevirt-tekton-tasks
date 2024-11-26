@@ -20,9 +20,9 @@ metadata:
   name: windows-efi-installer
 spec:
   description: >-
-    This pipeline installs Windows 10/11/2k22 into a new DataVolume. Then the 
+    This pipeline installs Windows 10/11/2k22/2k25 into a new DataVolume. Then the 
     DataVolume is suitable to be used as a default boot source or golden image 
-    for Windows 10/11/2k22 VMs. Different OS versions requires different 
+    for Windows 10/11/2k22/2k25 VMs. Different OS versions requires different 
     customizeConfigMapName parameter with unattend.xml.
   params:
     - description: Download URL to Windows 10, 11 or server 2022 installation ISO (English United States x64 version is needed). You can follow https://www.microsoft.com/en-us/software-download/windows11 or https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022 to get one.

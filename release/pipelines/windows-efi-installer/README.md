@@ -1,9 +1,9 @@
 # Windows EFI Installer Pipeline
 
-This Pipeline installs Windows 10, 11 or Server 2k22 into a new DataVolume. This DataVolume is suitable to be used as a default boot source
-or golden image for Windows 10, 11 or Server 2k22 VirtualMachines.
+This Pipeline installs Windows 10, 11 or Server 2k22, 2k25 into a new DataVolume. This DataVolume is suitable to be used as a default boot source
+or golden image for Windows 10, 11 or Server 2k22, 2k25 VirtualMachines.
 
-This example Pipeline is suitable only for Windows 10, 11 or Server 2k22 (or other Windows versions which require EFI - not tested!). When using this example Pipeline always adjust Pipeline parameters for Windows version you are currently using (e.g. different name, different autoattend config map, different base image name, etc.). Each Windows version requires change in autounattendConfigMapName parameter (e.g. using `windows2k22-autounattend` config map will not work with Windows 11 and vice versa - e.g. due to different storage drivers path).
+This example Pipeline is suitable only for Windows 10, 11 or Server 2k22, 2k25 (or other Windows versions which require EFI - not tested!). When using this example Pipeline always adjust Pipeline parameters for Windows version you are currently using (e.g. different name, different autoattend config map, different base image name, etc.). Each Windows version requires change in autounattendConfigMapName parameter (e.g. using `windows2k22-autounattend` config map will not work with Windows 11 and vice versa - e.g. due to different storage drivers path).
 
 The Pipeline implements this by modifying the supplied Windows ISO. It extracts all files from the ISO, replaces the prompt bootloader with the no-prompt bootloader and creates a new bootable ISO.
 This helps with automated installation of Windows in EFI boot mode. By default Windows in EFI boot mode uses a prompt bootloader, which will not continue with the boot process until a key is pressed. By replacing it with the no-prompt bootloader no key press is required to boot into the Windows installer. Then Task packs updated packages to new ISO, converts it with qemu-img and replaces original ISO file in PVC.
@@ -177,6 +177,48 @@ spec:
         value: win2k22
     -   name: isoDVName
         value: win2k22
+    pipelineRef:
+        params:
+        -   name: catalog
+            value: kubevirt-tekton-pipelines
+        -   name: type
+            value: artifact
+        -   name: kind
+            value: pipeline
+        -   name: name
+            value: windows-efi-installer
+        -   name: version
+            value: v0.22.0
+        resolver: hub
+    taskRunSpecs:
+    -   pipelineTaskName: modify-windows-iso-file
+        podTemplate:
+            securityContext:
+                fsGroup: 107
+                runAsUser: 107
+    timeout: 1h0m0s
+EOF
+```
+```yaml
+oc create -f - <<EOF
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+    generateName: windows2k25-installer-run-
+spec:
+    params:
+    -   name: winImageDownloadURL
+        value: ${WIN_IMAGE_DOWNLOAD_URL}
+    -   name: acceptEula
+        value: false
+    -   name: preferenceName
+        value: windows.2k25.virtio
+    -   name: autounattendConfigMapName
+        value: windows2k25-autounattend
+    -   name: baseDvName
+        value: win2k25
+    -   name: isoDVName
+        value: win2k25
     pipelineRef:
         params:
         -   name: catalog
