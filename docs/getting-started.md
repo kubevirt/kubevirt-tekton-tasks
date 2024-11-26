@@ -18,7 +18,7 @@ Cluster oriented dev scripts are optimized for these environments:
 
 ### Deploying Dependencies
 
-To deploy `KubeVirt`, `Tekton Pipelines`, `Containerized Data Importer (CDI)` and `Common Templates` (OKD only):
+To deploy `KubeVirt`, `Tekton Pipelines`, `Containerized Data Importer (CDI)`:
 
 ```bash
 ./automation/e2e-deploy-resources.sh
