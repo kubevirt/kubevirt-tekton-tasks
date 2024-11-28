@@ -24,11 +24,6 @@ const (
 
 type EnvScope string
 
-const (
-	OKDEnvScope        EnvScope = "okd"
-	KubernetesEnvScope EnvScope = "kubernetes"
-)
-
 func E2ETestsRandomName(name string) string {
 	return strings.Join([]string{e2eNamespacePrefix, testconstants.TestRandomName(name)}, "-")
 }

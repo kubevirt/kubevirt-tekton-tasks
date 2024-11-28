@@ -6,15 +6,12 @@ import (
 	"strings"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/templates"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/utils/parse"
 	virtualMachine "github.com/kubevirt/kubevirt-tekton-tasks/modules/create-vm/pkg/vm"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/ownerreference"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
-	templatev1 "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/spf13/cobra"
@@ -31,7 +28,6 @@ type VMCreator struct {
 	targetNamespace        string
 	cliOptions             *parse.CLIOptions
 	config                 *rest.Config
-	templateProvider       templates.TemplateProvider
 	virtualMachineProvider virtualMachine.VirtualMachineProvider
 	k8sClient              kubernetes.Interface
 }
@@ -53,18 +49,12 @@ func NewVMCreator(cliOptions *parse.CLIOptions) (*VMCreator, error) {
 
 	k8sclient := kubernetes.NewForConfigOrDie(config)
 
-	var templateProvider templates.TemplateProvider
 	virtualMachineProvider := virtualMachine.NewVirtualMachineProvider(kubevirtClient)
-
-	if cliOptions.GetCreationMode() == constants.TemplateCreationMode {
-		templateProvider = templates.NewTemplateProvider(templatev1.NewForConfigOrDie(config))
-	}
 
 	return &VMCreator{
 		targetNamespace:        targetNS,
 		cliOptions:             cliOptions,
 		config:                 config,
-		templateProvider:       templateProvider,
 		virtualMachineProvider: virtualMachineProvider,
 		k8sClient:              k8sclient,
 	}, nil
@@ -76,8 +66,6 @@ func (v *VMCreator) StartVM(namespace, name string) error {
 
 func (v *VMCreator) CreateVM() (*kubevirtv1.VirtualMachine, error) {
 	switch v.cliOptions.GetCreationMode() {
-	case constants.TemplateCreationMode:
-		return v.createVMFromTemplate()
 	case constants.VMManifestCreationMode:
 		return v.createVMFromManifest()
 	case constants.VirtctlCreatingMode:
@@ -142,7 +130,7 @@ func (v *VMCreator) createVMFromManifest() (*kubevirtv1.VirtualMachine, error) {
 	}
 
 	vm.Namespace = v.targetNamespace
-	virtualMachine.AddMetadata(&vm, nil)
+	virtualMachine.AddMetadata(&vm)
 
 	runStrategy := kubevirtv1.VirtualMachineRunStrategy(v.cliOptions.GetRunStrategy())
 	if runStrategy != "" {
@@ -158,39 +146,4 @@ func (v *VMCreator) createVMFromManifest() (*kubevirtv1.VirtualMachine, error) {
 
 	log.Logger().Debug("creating VM", zap.Reflect("vm", vm))
 	return v.virtualMachineProvider.Create(v.targetNamespace, &vm)
-}
-
-func (v *VMCreator) createVMFromTemplate() (*kubevirtv1.VirtualMachine, error) {
-	log.Logger().Debug("retrieving template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.cliOptions.GetTemplateNamespace()))
-	template, err := v.templateProvider.Get(v.cliOptions.GetTemplateNamespace(), v.cliOptions.TemplateName)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Logger().Debug("processing template", zap.String("name", v.cliOptions.TemplateName), zap.String("namespace", v.cliOptions.GetTemplateNamespace()))
-	processedTemplate, err := v.templateProvider.Process(v.targetNamespace, template, v.cliOptions.GetTemplateParams())
-	if err != nil {
-		return nil, err
-	}
-	vm, _, err := zutils.DecodeVM(processedTemplate)
-	if err != nil {
-		return nil, err
-	}
-
-	vm.Namespace = v.targetNamespace
-
-	runStrategy := kubevirtv1.VirtualMachineRunStrategy(v.cliOptions.GetRunStrategy())
-	if runStrategy != "" {
-		vm.Spec.Running = nil
-		vm.Spec.RunStrategy = &runStrategy
-	}
-
-	if v.cliOptions.GetSetOwnerReferenceValue() {
-		if err := ownerreference.SetPodOwnerReference(v.k8sClient, vm); err != nil {
-			return nil, err
-		}
-	}
-
-	log.Logger().Debug("creating VM", zap.Reflect("vm", vm))
-	return v.virtualMachineProvider.Create(v.targetNamespace, vm)
 }

@@ -1,37 +1,24 @@
 package constants
 
-const CreateVMFromTemplateTaskName = "create-vm-from-template"
-
-const CreateVMFromManifestTaskName = "create-vm-from-manifest"
+const (
+	CreateVMFromManifestTaskName = "create-vm-from-manifest"
+	SetOwnerReference            = "setOwnerReference"
+)
 
 type createVMFromManifestParams struct {
-	Namespace string
-	Manifest  string
-	Virtctl   string
-}
-
-type createVMFromTemplateParams struct {
-	TemplateName      string
-	TemplateNamespace string
-	TemplateParams    string
-	VmNamespace       string
-	StartVM           string
-	RunStrategy       string
+	Namespace   string
+	Manifest    string
+	Virtctl     string
+	StartVM     string
+	RunStrategy string
 }
 
 var CreateVMFromManifestParams = createVMFromManifestParams{
-	Namespace: "namespace",
-	Manifest:  "manifest",
-	Virtctl:   "virtctl",
-}
-
-var CreateVMFromTemplateParams = createVMFromTemplateParams{
-	TemplateName:      "templateName",
-	TemplateNamespace: "templateNamespace",
-	TemplateParams:    "templateParams",
-	VmNamespace:       "vmNamespace",
-	StartVM:           "startVM",
-	RunStrategy:       "runStrategy",
+	Namespace:   "namespace",
+	Manifest:    "manifest",
+	Virtctl:     "virtctl",
+	StartVM:     "startVM",
+	RunStrategy: "runStrategy",
 }
 
 type createVMResults struct {
@@ -47,7 +34,6 @@ var CreateVMResults = createVMResults{
 type CreateVMMode string
 
 const (
-	CreateVMTemplateMode   CreateVMMode = "CreateVMTemplateMode"
 	CreateVMVMManifestMode CreateVMMode = "CreateVMVMManifestMode"
 	CreateVMVirtctlMode    CreateVMMode = "CreateVMVirtctlMode"
 )

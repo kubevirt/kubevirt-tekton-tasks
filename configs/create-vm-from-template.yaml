@@ -1,5 +1,0 @@
-task_name: create-vm-from-template
-task_category: create-vm
-# create-vm-from-manifest.yaml main_image should be also updated to match this one!
-main_image: quay.io/kubevirt/tekton-tasks
-nice_name: create VM from template

@@ -1,4 +1,0 @@
-task_name: modify-vm-template
-task_category: modify-vm-template
-main_image: quay.io/kubevirt/tekton-tasks
-nice_name: modify VM template

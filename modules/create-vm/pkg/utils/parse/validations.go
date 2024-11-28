@@ -12,19 +12,11 @@ import (
 )
 
 func (c *CLIOptions) assertValidMode() error {
-	if c.VirtualMachineManifest != "" && c.TemplateName == "" && c.Virtctl == "" {
-		if len(c.GetTemplateParams()) > 0 || c.GetTemplateNamespace() != "" {
-			return zerrors.NewSoftError("%v, %v options are not applicable for %v", templateNamespaceOptionName, templateParamsOptionName, vmManifestOptionName)
-		}
+	if (c.VirtualMachineManifest == "" && c.Virtctl != "") || (c.VirtualMachineManifest != "" && c.Virtctl == "") {
 		return nil
 	}
 
-	if (c.VirtualMachineManifest == "" && c.TemplateName != "" && c.Virtctl == "") ||
-		(c.VirtualMachineManifest == "" && c.TemplateName == "" && c.Virtctl != "") {
-		return nil
-	}
-
-	return zerrors.NewSoftError("only one of %v, %v or %v should be specified", vmManifestOptionName, templateNameOptionName, virtctlOptionName)
+	return zerrors.NewSoftError("only one of %v or %v should be specified", vmManifestOptionName, virtctlOptionName)
 }
 
 func (c *CLIOptions) assertValidTypes() error {
@@ -35,28 +27,11 @@ func (c *CLIOptions) assertValidTypes() error {
 }
 
 func (c *CLIOptions) trimSpaces() {
-	for _, strVariablePtr := range []*string{&c.TemplateName, &c.TemplateNamespace, &c.VirtualMachineNamespace} {
-		*strVariablePtr = strings.TrimSpace(*strVariablePtr)
-	}
+	c.VirtualMachineNamespace = strings.TrimSpace(c.VirtualMachineNamespace)
 }
 
 func (c *CLIOptions) resolveDefaultNamespacesAndManifests() error {
-	if c.GetCreationMode() == constants.TemplateCreationMode {
-		vmNamespace := c.GetVirtualMachineNamespace()
-		tempNamespace := c.GetTemplateNamespace()
-		if vmNamespace == "" || tempNamespace == "" {
-			activeNamespace, err := env.GetActiveNamespace()
-			if err != nil {
-				return zerrors.NewMissingRequiredError("%v: %v option is empty", err.Error(), c.getMissingNamespaceOptionNames())
-			}
-			if tempNamespace == "" {
-				c.TemplateNamespace = activeNamespace
-			}
-			if vmNamespace == "" {
-				c.VirtualMachineNamespace = activeNamespace
-			}
-		}
-	} else if c.GetCreationMode() == constants.VMManifestCreationMode {
+	if c.GetCreationMode() == constants.VMManifestCreationMode {
 		vmNamespace := c.GetVirtualMachineNamespace()
 		if vmNamespace == "" {
 			var vm kubevirtv1.VirtualMachine

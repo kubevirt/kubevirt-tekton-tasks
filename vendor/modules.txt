@@ -340,10 +340,8 @@ github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
 # github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20240722135205-ae4f370f361f
 ## explicit; go 1.22.0
-github.com/openshift/api/pkg/serialization
 github.com/openshift/api/route/v1
 github.com/openshift/api/security/v1
-github.com/openshift/api/template/v1
 # github.com/openshift/client-go v3.9.0+incompatible => github.com/openshift/client-go v0.0.0-20240528061634-b054aa794d87
 ## explicit; go 1.22.0
 github.com/openshift/client-go/route/applyconfigurations/internal
@@ -354,10 +352,6 @@ github.com/openshift/client-go/security/applyconfigurations/internal
 github.com/openshift/client-go/security/applyconfigurations/security/v1
 github.com/openshift/client-go/security/clientset/versioned/scheme
 github.com/openshift/client-go/security/clientset/versioned/typed/security/v1
-github.com/openshift/client-go/template/applyconfigurations/internal
-github.com/openshift/client-go/template/applyconfigurations/template/v1
-github.com/openshift/client-go/template/clientset/versioned/scheme
-github.com/openshift/client-go/template/clientset/versioned/typed/template/v1
 # github.com/openshift/custom-resource-status v1.1.2
 ## explicit; go 1.12
 github.com/openshift/custom-resource-status/conditions/v1

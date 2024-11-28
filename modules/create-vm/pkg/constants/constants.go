@@ -20,7 +20,6 @@ const (
 type CreationMode string
 
 const (
-	TemplateCreationMode   CreationMode = "TemplateCreationMode"
 	VMManifestCreationMode CreationMode = "VMManifestCreationMode"
 	VirtctlCreatingMode    CreationMode = "VirtctlCreatingMode"
 )

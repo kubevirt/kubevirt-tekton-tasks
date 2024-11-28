@@ -1,10 +1,10 @@
 package fileoptions
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zutils"
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 )
 
 func ReadFileOption(output *string, optionPath string) error {
@@ -30,7 +30,7 @@ func ReadFileOptionBool(output *bool, optionPath string) error {
 		return err
 	}
 
-	*output = zutils.IsTrue(tmp)
+	*output = strings.ToLower(tmp) == "true"
 
 	return nil
 }

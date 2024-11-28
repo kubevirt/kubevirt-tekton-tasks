@@ -34,7 +34,6 @@ pushd test || exit
   ginkgo -r -p --randomize-all --randomize-suites --fail-on-pending --trace --race --nodes="${NUM_NODES}" -- \
     --deploy-namespace="${DEPLOY_NAMESPACE}" \
     --kubeconfig-path="${KUBECONFIG}" \
-    --is-okd="${IS_OKD}" \
     --ginkgo.junit-report="${ARTIFACT_DIR}/xunit_results.xml" \
     --storage-class="${STORAGE_CLASS}" \
     --debug="${DEBUG}" | tee "${TEST_OUT}"

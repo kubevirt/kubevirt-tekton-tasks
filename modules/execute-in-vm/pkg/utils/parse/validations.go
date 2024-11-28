@@ -1,13 +1,13 @@
 package parse
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zconstants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
-	"k8s.io/apimachinery/pkg/util/validation"
 	"strings"
 	"time"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/execute-in-vm/pkg/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
+	"k8s.io/apimachinery/pkg/util/validation"
 )
 
 func (c *CLIOptions) trimSpaces() {
@@ -92,9 +92,9 @@ func (c *CLIOptions) validateTimeout() error {
 
 func (c *CLIOptions) validateValues() error {
 	allowedValues := map[string]bool{
-		"":               true,
-		zconstants.False: true,
-		zconstants.True:  true,
+		"":      true,
+		"false": true,
+		"true":  true,
 	}
 
 	if !allowedValues[c.Stop] {

@@ -24,17 +24,9 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 
 ## Usage
 
-#### copy-template, modify-vm-template and create-vm-from-template tasks are deprecated and will be removed in future versions. These tasks based on templates will be replaced with create-vm task with enhancements related to instance types.
-
 #### Create Virtual Machines
 
 - [create-vm-from-manifest](release/tasks/create-vm-from-manifest)
-- [create-vm-from-template](release/tasks/create-vm-from-template)
-
-#### Utilize Templates
-
-- [copy-template](release/tasks/copy-template)
-- [modify-vm-template](release/tasks/modify-vm-template)
 
 #### Modify data objects
 
