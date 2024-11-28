@@ -4,15 +4,18 @@ kind: Role
 metadata:
   name: disk-uploader
 rules:
-- apiGroups: ["kubevirt.io"]
-  resources: ["virtualmachines"]
-  verbs: ["get", "create", "patch"]
 - apiGroups: ["export.kubevirt.io"]
   resources: ["virtualmachineexports"]
   verbs: ["get", "create"]
+- apiGroups: ["cdi.kubevirt.io"]
+  resources: ["datavolumes"]
+  verbs: ["get"]
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["get", "create"]
 - apiGroups: [""]
   resources: ["pods"]
+  verbs: ["get"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
   verbs: ["get"]
