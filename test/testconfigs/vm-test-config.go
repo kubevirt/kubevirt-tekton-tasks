@@ -28,6 +28,10 @@ type CreateVMTaskData struct {
 func (c *CreateVMTaskData) GetExpectedVM() (*kubevirtv1.VirtualMachine, error) {
 	var vm *kubevirtv1.VirtualMachine
 
+	if c.VMManifest == "" {
+		return nil, nil
+	}
+
 	err := yaml.Unmarshal([]byte(c.VMManifest), &vm)
 	if err != nil {
 		return nil, err
@@ -54,18 +58,15 @@ func (c *CreateVMTestConfig) Init(options *testoptions.TestOptions) {
 
 func (c *CreateVMTestConfig) initCreateVMManifest(options *testoptions.TestOptions) {
 	vm := c.TaskData.VM
-	if vm.Name != "" {
-		vm.Name = E2ETestsRandomName(vm.Name)
-		vm.Spec.Template.ObjectMeta.Name = vm.Name
+	if vm != nil {
+		if vm.Name != "" {
+			vm.Name = E2ETestsRandomName(vm.Name)
+		}
+		vm.Namespace = ""
+		c.TaskData.VMManifest = (&testobjects.TestVM{Data: vm}).ToString()
 	}
 
-	vm.Spec.Template.ObjectMeta.Namespace = ""
-
-	vm.Namespace = ""
 	c.TaskData.VMNamespace = options.GetDeployNamespace()
-
-	c.TaskData.VMManifest = (&testobjects.TestVM{Data: vm}).ToString()
-
 }
 
 func (c *CreateVMTestConfig) GetTaskRun() *pipev1.TaskRun {

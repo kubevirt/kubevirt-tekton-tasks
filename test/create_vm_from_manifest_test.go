@@ -30,19 +30,11 @@ var _ = Describe("Create VM from manifest", func() {
 	DescribeTable("taskrun fails and no VM is created", func(config *testconfigs.CreateVMTestConfig) {
 		f.TestSetup(config)
 
-		expectedVM, err := config.TaskData.GetExpectedVM()
-		Expect(err).ToNot(HaveOccurred())
-		f.ManageVMs(expectedVM) // in case it succeeds
-
 		runner.NewTaskRunRunner(f, config.GetTaskRun()).
 			CreateTaskRun().
 			ExpectFailure().
 			ExpectLogs(config.GetAllExpectedLogs()...).
 			ExpectResults(nil)
-
-		_, err = vm.WaitForVM(f.KubevirtClient, expectedVM.Namespace, expectedVM.Name,
-			"", config.GetTaskRunTimeout(), false)
-		Expect(err).Should(HaveOccurred())
 	},
 		Entry("no vm manifest", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{

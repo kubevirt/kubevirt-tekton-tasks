@@ -49,10 +49,6 @@ pushd modules
         kubectl delete $RESOURCE --all
     done
 
-    if [[ "$IS_OKD" == "true" ]]; then
-      kubectl delete templates.template.openshift.io --all
-    fi
-
     kubectl delete namespace "$TEST_NS"
   done
 popd
