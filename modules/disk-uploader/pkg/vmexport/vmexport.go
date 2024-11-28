@@ -24,29 +24,28 @@ const (
 	sourcePVC        string = "pvc"
 )
 
-func CreateVirtualMachineExport(virtClient kubecli.KubevirtClient, exportSourceKind, exportSourceNamespace, exportSourceName string) error {
-	source, err := getExportSource(exportSourceKind, exportSourceName)
+func CreateVirtualMachineExport(virtClient kubecli.KubevirtClient, exportSourceKind, exportSourceNamespace, baseExportSourceName, secretName string) (*v1beta1.VirtualMachineExport, error) {
+	source, err := getExportSource(exportSourceKind, baseExportSourceName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	v1VmExport := &v1beta1.VirtualMachineExport{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      exportSourceName,
-			Namespace: exportSourceNamespace,
+			GenerateName: baseExportSourceName + "-",
+			Namespace:    exportSourceNamespace,
 		},
 		Spec: v1beta1.VirtualMachineExportSpec{
-			TokenSecretRef: &exportSourceName,
+			TokenSecretRef: &secretName,
 			Source:         source,
 		},
 	}
 
 	if err := ownerreference.SetPodOwnerReference(virtClient, v1VmExport); err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = virtClient.VirtualMachineExport(exportSourceNamespace).Create(context.Background(), v1VmExport, metav1.CreateOptions{})
-	return err
+	return virtClient.VirtualMachineExport(exportSourceNamespace).Create(context.Background(), v1VmExport, metav1.CreateOptions{})
 }
 
 func WaitUntilVirtualMachineExportReady(client kubecli.KubevirtClient, namespace, name string) error {

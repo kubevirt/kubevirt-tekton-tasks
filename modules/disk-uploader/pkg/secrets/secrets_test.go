@@ -50,12 +50,12 @@ var _ = Describe("VMExport", func() {
 			)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = secrets.CreateVirtualMachineExportSecret(kubeClient, namespace, name)
+			_, err = secrets.CreateVirtualMachineExportSecret(kubeClient, namespace, name)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("should return error when set pod owner reference failed", func() {
-			err := secrets.CreateVirtualMachineExportSecret(kubeClient, namespace, name)
+			_, err := secrets.CreateVirtualMachineExportSecret(kubeClient, namespace, name)
 			Expect(err).To(MatchError(errors.IsNotFound, "errors.IsNotFound"))
 		})
 	})
