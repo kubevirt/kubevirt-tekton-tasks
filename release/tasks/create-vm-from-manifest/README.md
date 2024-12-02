@@ -39,7 +39,7 @@ spec:
         -   name: name
             value: create-vm-from-manifest
         -   name: version
-            value: v0.22.0
+            value: v0.23.0
         resolver: hub
 ```
 

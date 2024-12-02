@@ -77,7 +77,7 @@ spec:
         -   name: name
             value: cleanup-vm
         -   name: version
-            value: v0.22.0
+            value: v0.23.0
         resolver: hub
 ```
 

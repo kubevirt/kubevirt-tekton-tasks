@@ -16,7 +16,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.22.0
+    app.kubernetes.io/version: v0.23.0
   name: disk-uploader
 spec:
   description: >-
@@ -43,7 +43,7 @@ spec:
     type: string
   steps:
   - name: disk-uploader-step
-    image: "quay.io/kubevirt/tekton-tasks:v0.22.0"
+    image: "quay.io/kubevirt/tekton-tasks:v0.23.0"
     env:
     - name: ACCESS_KEY_ID
       valueFrom:
