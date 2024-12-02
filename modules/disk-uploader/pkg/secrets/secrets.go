@@ -13,17 +13,17 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func CreateVirtualMachineExportSecret(k8sClient kubernetes.Interface, namespace, name string) error {
+func CreateVirtualMachineExportSecret(k8sClient kubernetes.Interface, namespace, baseName string) (*corev1.Secret, error) {
 	length := 20
 	token, err := generateSecureRandomString(length)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	v1Secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
+			GenerateName: baseName + "-",
+			Namespace:    namespace,
 		},
 		StringData: map[string]string{
 			"token": token,
@@ -31,11 +31,10 @@ func CreateVirtualMachineExportSecret(k8sClient kubernetes.Interface, namespace,
 	}
 
 	if err := ownerreference.SetPodOwnerReference(k8sClient, v1Secret); err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = k8sClient.CoreV1().Secrets(namespace).Create(context.Background(), v1Secret, metav1.CreateOptions{})
-	return err
+	return k8sClient.CoreV1().Secrets(namespace).Create(context.Background(), v1Secret, metav1.CreateOptions{})
 }
 
 func GetTokenFromVirtualMachineExportSecret(k8sClient kubernetes.Interface, namespace, name string) (string, error) {

@@ -73,7 +73,7 @@ var _ = Describe("VMExport", func() {
 				)
 				Expect(err).NotTo(HaveOccurred())
 
-				err = vmexport.CreateVirtualMachineExport(virtClient, resource, namespace, name)
+				_, err = vmexport.CreateVirtualMachineExport(virtClient, resource, namespace, name, "fake-secret")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(errors.IsNotFound(err)).To(BeFalse())
 			},
@@ -83,12 +83,12 @@ var _ = Describe("VMExport", func() {
 		)
 
 		It("should return error when export-source-kind invalid", func() {
-			err := vmexport.CreateVirtualMachineExport(virtClient, "fake", namespace, name)
+			_, err := vmexport.CreateVirtualMachineExport(virtClient, "fake", namespace, name, "fake-secret")
 			Expect(err).To(MatchError("invalid export-source-kind: fake, must be one of vm, vmsnapshot, pvc"))
 		})
 
 		It("should return error when set pod owner reference failed", func() {
-			err := vmexport.CreateVirtualMachineExport(virtClient, "vm", namespace, name)
+			_, err := vmexport.CreateVirtualMachineExport(virtClient, "vm", namespace, name, "fake-secret")
 			Expect(err).To(MatchError(errors.IsNotFound, "errors.IsNotFound"))
 		})
 	})

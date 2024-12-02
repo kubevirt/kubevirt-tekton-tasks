@@ -40,32 +40,34 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 
 	log.Logger().Info("Creating a new Secret object...", zap.String("namespace", namespace), zap.String("name", name))
 
-	if err := secrets.CreateVirtualMachineExportSecret(k8sClient, namespace, name); err != nil {
+	vmExportSecret, err := secrets.CreateVirtualMachineExportSecret(k8sClient, namespace, name)
+	if err != nil {
 		return err
 	}
 
 	log.Logger().Info("Creating a new VirtualMachineExport object...", zap.String("namespace", namespace), zap.String("name", name))
 
-	if err := vmexport.CreateVirtualMachineExport(virtClient, kind, namespace, name); err != nil {
+	vmExport, err := vmexport.CreateVirtualMachineExport(virtClient, kind, namespace, name, vmExportSecret.Name)
+	if err != nil {
 		return err
 	}
 
 	log.Logger().Info("Waiting for VirtualMachineExport status to be ready...")
 
-	if err := vmexport.WaitUntilVirtualMachineExportReady(virtClient, namespace, name); err != nil {
+	if err := vmexport.WaitUntilVirtualMachineExportReady(virtClient, namespace, vmExport.Name); err != nil {
 		return err
 	}
 
 	log.Logger().Info("Getting raw disk URL from the VirtualMachineExport object status...")
 
-	rawDiskUrl, err := vmexport.GetRawDiskUrlFromVolumes(virtClient, namespace, name, volumeName)
+	rawDiskUrl, err := vmexport.GetRawDiskUrlFromVolumes(virtClient, namespace, vmExport.Name, volumeName)
 	if err != nil {
 		return err
 	}
 
 	log.Logger().Info("Creating TLS certificate file from the VirtualMachineExport object status...")
 
-	certificateData, err := certificate.GetCertificateFromVirtualMachineExport(virtClient, namespace, name)
+	certificateData, err := certificate.GetCertificateFromVirtualMachineExport(virtClient, namespace, vmExport.Name)
 	if err != nil {
 		return err
 	}
@@ -76,7 +78,7 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 
 	log.Logger().Info("Getting export token from the Secret object...")
 
-	kvExportToken, err := secrets.GetTokenFromVirtualMachineExportSecret(virtClient, namespace, name)
+	kvExportToken, err := secrets.GetTokenFromVirtualMachineExportSecret(virtClient, namespace, vmExportSecret.Name)
 	if err != nil {
 		return err
 	}
