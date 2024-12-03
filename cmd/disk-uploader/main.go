@@ -18,7 +18,6 @@ import (
 	"k8s.io/client-go/rest"
 
 	goarg "github.com/alexflint/go-arg"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"go.uber.org/zap"
 	kubecli "kubevirt.io/client-go/kubecli"
 )
@@ -29,7 +28,7 @@ const (
 	kvExportTokenHeader string = "x-kubevirt-export-token"
 )
 
-func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubecli.KubevirtClient) (v1.Image, error) {
+func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubecli.KubevirtClient) (string, error) {
 	kind := opts.GetExportSourceKind()
 	name := opts.GetExportSourceName()
 	namespace := opts.GetExportSourceNamespace()
@@ -41,75 +40,78 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 
 	vmExportSecret, err := secrets.CreateVirtualMachineExportSecret(k8sClient, namespace, name)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	log.Logger().Info("Creating a new VirtualMachineExport object...", zap.String("namespace", namespace), zap.String("name", name))
 
 	vmExport, err := vmexport.CreateVirtualMachineExport(virtClient, kind, namespace, name, vmExportSecret.Name)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	log.Logger().Info("Waiting for VirtualMachineExport status to be ready...")
 
 	if err := vmexport.WaitUntilVirtualMachineExportReady(virtClient, namespace, vmExport.Name); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	log.Logger().Info("Getting raw disk URL from the VirtualMachineExport object status...")
 
 	rawDiskUrl, err := vmexport.GetRawDiskUrlFromVolumes(virtClient, namespace, vmExport.Name, volumeName)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	log.Logger().Info("Creating TLS certificate file from the VirtualMachineExport object status...")
 
 	certificateData, err := certificate.GetCertificateFromVirtualMachineExport(virtClient, namespace, vmExport.Name)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if err := os.WriteFile(certificatePath, []byte(certificateData), 0644); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	log.Logger().Info("Getting export token from the Secret object...")
 
 	kvExportToken, err := secrets.GetTokenFromVirtualMachineExportSecret(virtClient, namespace, vmExportSecret.Name)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	log.Logger().Info("Downloading disk image from the VirtualMachineExport server...")
 
 	if err := disk.DownloadDiskImageFromURL(rawDiskUrl, kvExportTokenHeader, kvExportToken, certificatePath, diskPath); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	log.Logger().Info("Building a new container image...")
 
 	labels, err := vmexport.GetLabelsFromExportSource(virtClient, kind, namespace, name, volumeName)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	config := image.DefaultConfig(labels)
 	containerImage, err := image.Build(diskPath, config)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	digest, _ := containerImage.Digest()
+	digest, err := containerImage.Digest()
+	if err != nil {
+		return "", err
+	}
 
 	log.Logger().Info("Pushing new container image to the container registry...")
 
 	if err := image.Push(containerImage, imageDestination, imagePushTimeout); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	log.Logger().Info("Successfully uploaded to the container registry.", zap.String("digest", digest.String()))
-	return containerImage, nil
+	return digest.String(), nil
 }
 
 func main() {
@@ -141,13 +143,12 @@ func main() {
 		exit.ExitOrDieFromError(constants.GenericExitCode, err)
 	}
 
-	image, err := run(*cliOptions, k8sClient, virtClient)
+	imageDigest, err := run(*cliOptions, k8sClient, virtClient)
 	if err != nil {
 		exit.ExitOrDieFromError(constants.DiskUploaderErrorExitCode, err)
 	}
 
-	digest, _ := image.Digest()
-	results := map[string]string{constants.DigestResultName: digest.String()}
+	results := map[string]string{constants.DigestResultName: imageDigest}
 
 	log.Logger().Debug("recording results", zap.Reflect("results", results))
 
