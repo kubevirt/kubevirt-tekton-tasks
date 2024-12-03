@@ -15,7 +15,7 @@ spec:
     - name: name
       value: disk-uploader
     - name: version
-      value: v0.22.0
+      value: v0.23.0
   params:
   - name: EXPORT_SOURCE_KIND
     value: vm

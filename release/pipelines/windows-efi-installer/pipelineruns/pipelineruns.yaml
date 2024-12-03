@@ -21,7 +21,7 @@ spec:
       - name: name
         value: windows-efi-installer
       - name: version
-        value: v0.22.0
+        value: v0.23.0
   taskRunSpecs:
     - pipelineTaskName: "modify-windows-iso-file"
       podTemplate:
@@ -59,7 +59,7 @@ spec:
       - name: name
         value: windows-efi-installer
       - name: version
-        value: v0.22.0
+        value: v0.23.0
   taskRunSpecs:
     - pipelineTaskName: "modify-windows-iso-file"
       podTemplate:
@@ -98,7 +98,7 @@ spec:
       - name: name
         value: windows-efi-installer
       - name: version
-        value: v0.22.0
+        value: v0.23.0
   taskRunSpecs:
     - pipelineTaskName: "modify-windows-iso-file"
       podTemplate:
@@ -137,7 +137,7 @@ spec:
       - name: name
         value: windows-efi-installer
       - name: version
-        value: v0.22.0
+        value: v0.23.0
   taskRunSpecs:
     - pipelineTaskName: "modify-windows-iso-file"
       podTemplate:
