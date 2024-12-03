@@ -1,7 +1,9 @@
 package parse
 
 import (
+	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
@@ -9,7 +11,7 @@ import (
 )
 
 const (
-	defaultPushTimeout = 120
+	defaultPushTimeout = "120"
 )
 
 type CLIOptions struct {
@@ -18,7 +20,7 @@ type CLIOptions struct {
 	ExportSourceName      string `arg:"--export-source-name" help:"Name of the export source"`
 	VolumeName            string `arg:"--volumename" help:"Name of the volume (if source kind is 'pvc', then volume name is equal to source name)"`
 	ImageDestination      string `arg:"--imagedestination" help:"Destination of the image in container registry"`
-	PushTimeout           int    `arg:"--pushtimeout" help:"Push timeout of container disk to registry"`
+	PushTimeout           string `arg:"--pushtimeout" help:"Push timeout of container disk to registry"`
 	Debug                 bool   `arg:"--debug" help:"Sets DEBUG log level"`
 }
 
@@ -43,7 +45,12 @@ func (c *CLIOptions) GetImageDestination() string {
 }
 
 func (c *CLIOptions) GetPushTimeout() int {
-	return c.PushTimeout
+	timeout, err := strconv.Atoi(c.PushTimeout)
+	if err != nil {
+		log.Fatalf("Invalid push timeout value: %v", err)
+	}
+
+	return timeout
 }
 
 func (c *CLIOptions) GetDebugLevel() zapcore.Level {
@@ -91,7 +98,7 @@ func (c *CLIOptions) setValues() error {
 		c.ExportSourceNamespace = namespace
 	}
 
-	if c.PushTimeout == 0 {
+	if c.PushTimeout == "" || c.PushTimeout == "0" {
 		c.PushTimeout = defaultPushTimeout
 	}
 	return nil

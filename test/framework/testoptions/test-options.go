@@ -17,6 +17,7 @@ var debug string
 var skipCreateVMFromManifestTests string
 var skipExecuteInVMTests string
 var skipGenerateSSHKeysTests string
+var skipDiskUploaderTests string
 
 type TestOptions struct {
 	DeployNamespace               string
@@ -26,6 +27,9 @@ type TestOptions struct {
 	SkipCreateVMFromManifestTests bool
 	SkipExecuteInVMTests          bool
 	SkipGenerateSSHKeysTests      bool
+	SkipDiskUploaderTests         bool
+
+	CommonTemplatesVersion string
 }
 
 func init() {
@@ -36,6 +40,7 @@ func init() {
 	flag.StringVar(&skipCreateVMFromManifestTests, "skip-create-vm-from-manifests-tests", "", "Skip create vm from manifests test suite. One of: true|false")
 	flag.StringVar(&skipExecuteInVMTests, "skip-execute-in-vm-tests", "", "Skip execute in vm test suite. One of: true|false")
 	flag.StringVar(&skipGenerateSSHKeysTests, "skip-generate-ssh-keys-tests", "", "Skip generate ssh keys suite. One of: true|false")
+	flag.StringVar(&skipDiskUploaderTests, "skip-disk-uploader-tests", "", "Skip disk uploader suite. One of: true|false")
 }
 
 func InitTestOptions(testOptions *TestOptions) error {
@@ -61,6 +66,7 @@ func InitTestOptions(testOptions *TestOptions) error {
 	testOptions.SkipCreateVMFromManifestTests = strings.ToLower(skipCreateVMFromManifestTests) == "true"
 	testOptions.SkipExecuteInVMTests = strings.ToLower(skipExecuteInVMTests) == "true"
 	testOptions.SkipGenerateSSHKeysTests = strings.ToLower(skipGenerateSSHKeysTests) == "true"
+	testOptions.SkipDiskUploaderTests = strings.ToLower(skipDiskUploaderTests) == "true"
 
 	return nil
 }

@@ -39,7 +39,7 @@ var _ = Describe("CLIOptions", func() {
 				ExportSourceName:      expectedExportSourceName,
 				VolumeName:            expectedVolumeName,
 				ImageDestination:      expectedImageDestination,
-				PushTimeout:           60,
+				PushTimeout:           "60",
 				Debug:                 true,
 			}
 			Expect(options.Init()).To(Succeed())
@@ -52,7 +52,7 @@ var _ = Describe("CLIOptions", func() {
 				ExportSourceName:      " " + expectedExportSourceName + " ",
 				VolumeName:            " " + expectedVolumeName + " ",
 				ImageDestination:      " " + expectedImageDestination + " ",
-				PushTimeout:           60,
+				PushTimeout:           "60",
 				Debug:                 true,
 			}
 

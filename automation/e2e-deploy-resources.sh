@@ -24,7 +24,7 @@ kubectl apply -f "https://github.com/kubevirt/kubevirt/releases/download/${KUBEV
 
 kubectl apply -f "https://github.com/kubevirt/kubevirt/releases/download/${KUBEVIRT_VERSION}/kubevirt-cr.yaml"
 
-kubectl patch kubevirt kubevirt -n kubevirt --type merge -p '{"spec":{"configuration":{"developerConfiguration":{"featureGates": ["VMPersistentState"]}}}}'
+kubectl patch kubevirt kubevirt -n kubevirt --type merge -p '{"spec":{"configuration":{"developerConfiguration":{"featureGates": ["VMExport", "VMPersistentState"]}}}}'
 
 # Deploy Storage
 kubectl apply -f "https://github.com/kubevirt/containerized-data-importer/releases/download/${CDI_VERSION}/cdi-operator.yaml"
