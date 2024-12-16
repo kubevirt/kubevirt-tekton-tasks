@@ -1,4 +1,5 @@
 task_name: disk-uploader
+secret_task_name: disk-uploader-secret
 task_category: disk-uploader
 main_image: quay.io/kubevirt/tekton-tasks
 nice_name: disk uploader

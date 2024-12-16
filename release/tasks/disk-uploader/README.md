@@ -12,14 +12,29 @@ When user runs [KubeVirt Tekton Tasks](https://github.com/kubevirt/kubevirt-tekt
 
 ### Parameters
 
-- **EXPORT_SOURCE_KIND**: The name of the export source kind
+- **EXPORT_SOURCE_KIND**: Specify the export source kind (Expected values `vm`, `vmsnapshot`, or `pvc`)
 - **EXPORT_SOURCE_NAME**: The name of the export source
 - **VOLUME_NAME**: The volume name (If source kind is PVC, then volume name is equal to source name)
 - **IMAGE_DESTINATION**: Destination of the image in container registry
-- **PUSH_TIMEOUT**: ContainerDisk push timeout in minutes
+- **PUSH_TIMEOUT**: ContainerDisk push timeout in minutes (Optional)
 - **SECRET_NAME**: Name of the secret which holds credential for container registry
 
 ### Usage
+
+To get the Secret of the task run:
+```
+apiVersion: v1
+data:
+    accessKeyId: <ACCESS_KEY_ID>
+    secretKey: <SECRET_KEY>
+kind: Secret
+metadata:
+    name: disk-uploader-credentials
+type: Opaque
+
+```
+
+Get `ACCESS_KEY_ID` or `SECRET_KEY` by running: `echo -n "<REGISTRY_USERNAME_OR_PASSWORD>" | base64`.
 
 Task run using resolver:
 ```
@@ -37,6 +52,8 @@ spec:
         value: example-dv
     -   name: IMAGE_DESTINATION
         value: quay.io/kubevirt/example-vm-exported:latest
+    -   name: SECRET_NAME
+        value: disk-uploader-credentials
     taskRef:
         params:
         -   name: catalog
