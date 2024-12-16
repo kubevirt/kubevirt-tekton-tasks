@@ -37,8 +37,6 @@ spec:
         value: example-dv
     -   name: IMAGE_DESTINATION
         value: quay.io/kubevirt/example-vm-exported:latest
-    -   name: PUSH_TIMEOUT
-        value: 120
     taskRef:
         params:
         -   name: catalog
