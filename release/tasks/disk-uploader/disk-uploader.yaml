@@ -83,3 +83,9 @@ spec:
         memory: "3Gi"
       limits:
         memory: "5Gi"
+    volumeMounts:
+      - mountPath: /tmp
+        name: disk
+  volumes:
+    - name: disk
+      emptyDir: {}
