@@ -36,6 +36,13 @@
         mode: "{{ default_file_mode }}"
       with_items:
         - { taskrun_with_flavor_name: "{{ task_name }}-taskrun-resolver"}
+    - name: Generate example secret of the task
+      template:
+        src: "{{ examples_templates_dir }}/{{ secret_task_name }}.yaml"
+        dest: "{{ examples_taskruns_output_dir }}/{{ item.secret_task_with_flavor_name }}.yaml"
+        mode: "{{ default_file_mode }}"
+      with_items:
+        - { secret_task_with_flavor_name: "{{ secret_task_name }}"}
     - name: Generate README
       template:
         src: "{{ readmes_templates_dir }}/README.md"
@@ -46,6 +53,8 @@
         task_yaml: "{{ lookup('file', task_path) | from_yaml }}"
         task_run_resolver_path: "{{ examples_taskruns_output_dir }}/{{ task_name }}-taskrun-resolver.yaml"
         task_run_resolver_yaml: "{{ lookup('file', task_run_resolver_path) | from_yaml }}"
+        secret_task_path: "{{ examples_taskruns_output_dir }}/{{ secret_task_name }}.yaml"
+        secret_task_yaml: "{{ lookup('file', secret_task_path) | from_yaml }}"
     - name: "Delete readme tmp directory"
       file:
         path: "{{ readme_output_dir_tmp }}"

@@ -18,6 +18,11 @@ When user runs [KubeVirt Tekton Tasks](https://github.com/kubevirt/kubevirt-tekt
 
 ### Usage
 
+Secret of the task run:
+```
+{{ secret_task_yaml | to_nice_yaml }}
+```
+
 Task run using resolver:
 ```
 {{ task_run_resolver_yaml | to_nice_yaml }}

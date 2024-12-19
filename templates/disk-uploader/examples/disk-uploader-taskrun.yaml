@@ -27,3 +27,5 @@ spec:
     value: quay.io/kubevirt/example-vm-exported:latest
   - name: PUSH_TIMEOUT
     value: 120
+  - name: SECRET_NAME
+    value: disk-uploader-credentials
