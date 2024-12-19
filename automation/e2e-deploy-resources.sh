@@ -16,7 +16,7 @@ if kubectl get templates > /dev/null 2>&1; then
   # okd
   COMMON_TEMPLATES_VERSION=$(curl -s https://api.github.com/repos/kubevirt/common-templates/releases | \
             jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
-  oc apply -n openshift -f "https://github.com/kubevirt/common-templates/releases/download/${COMMON_TEMPLATES_VERSION}/common-templates.yaml"
+  oc apply -n openshift -f "https://github.com/kubevirt/common-templates/releases/download/${COMMON_TEMPLATES_VERSION}/common-templates-${COMMON_TEMPLATES_VERSION}.yaml"
 
   oc new-project tekton-pipelines
 fi
