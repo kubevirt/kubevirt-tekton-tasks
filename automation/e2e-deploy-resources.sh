@@ -70,7 +70,7 @@ kubectl wait -n kubevirt kv kubevirt --for condition=Available --timeout 10m
 kubectl wait -n kubevirt deployment ssp-operator --for condition=Available --timeout 10m
 
 kubectl create -f - <<EOF
-apiVersion: ssp.kubevirt.io/v1beta1
+apiVersion: ssp.kubevirt.io/v1beta3
 kind: SSP
 metadata:
   name: ssp-sample
