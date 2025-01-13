@@ -24,7 +24,7 @@ spec:
     to be used in multiple Kubernetes clusters.
   params:
   - name: EXPORT_SOURCE_KIND
-    description: The name of the export source kind
+    description: Specify the export source kind (Expected values "vm", "vmsnapshot", or "pvc")
     type: string
   - name: EXPORT_SOURCE_NAME
     description: The name of the export source
@@ -36,7 +36,7 @@ spec:
     description: Destination of the image in container registry
     type: string
   - name: PUSH_TIMEOUT
-    description: ContainerDisk push timeout in minutes
+    description: ContainerDisk push timeout in minutes (Optional)
     type: string
     default: "120"
   - name: SECRET_NAME

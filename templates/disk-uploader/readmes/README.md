@@ -18,6 +18,13 @@ When user runs [KubeVirt Tekton Tasks](https://github.com/kubevirt/kubevirt-tekt
 
 ### Usage
 
+To get the Secret of the task run:
+```
+{{ secret_task_yaml | to_nice_yaml }}
+```
+
+Get `ACCESS_KEY_ID` or `SECRET_KEY` by running: `echo -n "<REGISTRY_USERNAME_OR_PASSWORD>" | base64`.
+
 Task run using resolver:
 ```
 {{ task_run_resolver_yaml | to_nice_yaml }}
