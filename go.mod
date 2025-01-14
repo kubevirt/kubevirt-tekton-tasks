@@ -4,17 +4,17 @@ go 1.22.7
 
 // Kubernetes
 replace (
-	k8s.io/client-go => k8s.io/client-go v0.31.2
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240709000822-3c01b740850f
-	k8s.io/kubectl => k8s.io/kubectl v0.31.2
-	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.59.1
-	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.59.1
+	k8s.io/client-go => k8s.io/client-go v0.32.0
+	k8s.io/kube-openapi => k8s.io/kube-openapi 2c72e554b1e7
+	k8s.io/kubectl => k8s.io/kubectl v0.32.0
+	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.61.0
+	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.61.0
 )
 
 // Openshift
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20240722135205-ae4f370f361f
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240528061634-b054aa794d87
+	github.com/openshift/api => github.com/openshift/api c1a063b1614a
+	github.com/openshift/client-go => github.com/openshift/client-go 89709a455e2a
 )
 
 require (
@@ -22,23 +22,23 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-containerregistry v0.20.2
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/onsi/ginkgo/v2 v2.20.1
-	github.com/onsi/gomega v1.34.2
+	github.com/onsi/ginkgo/v2 v2.22.2
+	github.com/onsi/gomega v1.36.2
 	github.com/openshift/client-go v3.9.0+incompatible
 	github.com/spf13/cobra v1.8.1
-	github.com/tektoncd/pipeline v0.65.2
+	github.com/tektoncd/pipeline v0.66.0
 	go.uber.org/zap v1.27.0
-	k8s.io/api v0.31.2
-	k8s.io/apimachinery v0.31.2
-	k8s.io/cli-runtime v0.31.2
+	k8s.io/api v0.32.0
+	k8s.io/apimachinery v0.32.0
+	k8s.io/cli-runtime v0.32.0
 	k8s.io/client-go v12.0.0+incompatible
-	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8
-	knative.dev/pkg v0.0.0-20240716082220-4355f0c73608
+	k8s.io/utils 24370beab758
+	knative.dev/pkg 0c2a238a16ed
 	kubevirt.io/api v1.4.0
 	kubevirt.io/client-go v1.4.0
-	kubevirt.io/containerdisks v0.0.0-20241001085853-ea2e8bf50322
-	kubevirt.io/containerized-data-importer v1.59.1
-	kubevirt.io/containerized-data-importer-api v1.60.3
+	kubevirt.io/containerdisks cf2f498cd55c
+	kubevirt.io/containerized-data-importer v1.61.0
+	kubevirt.io/containerized-data-importer-api v1.61.0
 	kubevirt.io/kubevirt v1.4.0
 	kubevirt.io/qe-tools v0.1.8
 	sigs.k8s.io/yaml v1.4.0

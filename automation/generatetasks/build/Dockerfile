@@ -1,4 +1,4 @@
-FROM fedora:41
+FROM fedora:42
 
 ENV HOME=/go/src/github.com/kubevirt/kubevirt-tekton-tasks/ \
     USER_UID=1001 \
