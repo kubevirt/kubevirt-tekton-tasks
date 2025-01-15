@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/ownerreference"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	"go.uber.org/zap"
 
 	kvcorev1 "kubevirt.io/api/core/v1"
 	v1beta1 "kubevirt.io/api/export/v1beta1"
@@ -57,8 +60,18 @@ func WaitUntilVirtualMachineExportReady(client kubecli.KubevirtClient, namespace
 			return false, err
 		}
 
-		if vmExport.Status != nil && vmExport.Status.Phase == v1beta1.Ready {
-			return true, nil
+		if vmExport.Status != nil {
+			log.Logger().Info("VirtualMachineExport object status", zap.String("status", string(vmExport.Status.Phase)))
+
+			if vmExport.Status.Phase == v1beta1.Ready {
+				log.Logger().Info("VirtualMachineExport is in Ready state, and export source is not longer used")
+				return true, nil
+			}
+
+			if vmExport.Status.Phase == v1beta1.Pending {
+				log.Logger().Info("VirtualMachineExport is in Pending state, and export source is used")
+				return false, nil
+			}
 		}
 		return false, nil
 	}

@@ -50,7 +50,7 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 		return "", err
 	}
 
-	log.Logger().Info("Waiting for VirtualMachineExport status to be ready...")
+	log.Logger().Info("Waiting for VirtualMachineExport object status...")
 
 	if err := vmexport.WaitUntilVirtualMachineExportReady(virtClient, namespace, vmExport.Name); err != nil {
 		return "", err
