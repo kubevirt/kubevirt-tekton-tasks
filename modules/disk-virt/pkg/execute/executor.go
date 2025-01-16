@@ -10,7 +10,6 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/utils/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 )
@@ -63,17 +62,7 @@ func (e *Executor) Execute() error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	if err := cmd.Run(); err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			return exit.Exit{
-				Code: exitErr.ExitCode(),
-				Soft: true,
-			}
-		} else {
-			return err
-		}
-	}
-	return nil
+	return cmd.Run()
 }
 
 func writeToTmpFile(content string) (string, error) {

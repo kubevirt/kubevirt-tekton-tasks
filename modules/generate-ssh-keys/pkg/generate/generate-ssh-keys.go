@@ -1,16 +1,16 @@
 package generate
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/constants"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/types"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utils/log"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utils/parse"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/constants"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/types"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utils/log"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utils/parse"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/options"
 )
 
 func GenerateSshKeys(clioptions parse.CLIOptions) (*types.SshKeys, error) {
@@ -38,14 +38,7 @@ func GenerateSshKeys(clioptions parse.CLIOptions) (*types.SshKeys, error) {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			return nil, exit.Exit{
-				Code: exitErr.ExitCode(),
-				Soft: true,
-			}
-		} else {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	return readKeysFromFiles(privateKeyFilename, publicKeyFilename)

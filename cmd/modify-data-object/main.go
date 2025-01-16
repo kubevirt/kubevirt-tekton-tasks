@@ -1,45 +1,42 @@
 package main
 
 import (
-	"net/http"
+	"os"
 
 	goarg "github.com/alexflint/go-arg"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/modify-data-object/pkg/constants"
 	dataobjectcreator "github.com/kubevirt/kubevirt-tekton-tasks/modules/modify-data-object/pkg/dataobject"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/modify-data-object/pkg/utils/parse"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	res "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"go.uber.org/zap"
 )
 
 func main() {
-	defer exit.HandleExit()
-
 	cliOptions := &parse.CLIOptions{}
 	goarg.MustParse(cliOptions)
 
 	logger := log.InitLogger(cliOptions.GetDebugLevel())
 	defer logger.Sync()
 
-	err := cliOptions.Init()
-	if err != nil {
-		exit.ExitOrDieFromError(InvalidCLIInputExitCode, err)
+	if err := cliOptions.Init(); err != nil {
+		log.Logger().Error(err.Error())
+		os.Exit(InvalidCLIInputExitCode)
 	}
 
 	log.Logger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
 
 	dataObjectCreator, err := dataobjectcreator.NewDataObjectCreator(cliOptions)
 	if err != nil {
-		exit.ExitOrDieFromError(DataObjectCreatorErrorCode, err)
+		log.Logger().Error(err.Error())
+		os.Exit(DataObjectCreatorErrorCode)
 	}
 
 	if cliOptions.GetDeleteObject() {
-		err := dataObjectCreator.DeleteDataObject()
-		if err != nil {
-			exit.ExitOrDieFromError(DeleteObjectExitCode, err)
+		if err := dataObjectCreator.DeleteDataObject(); err != nil {
+			log.Logger().Error(err.Error())
+			os.Exit(DeleteObjectExitCode)
 		}
 		log.Logger().Debug("Object was deleted")
 		return
@@ -47,9 +44,8 @@ func main() {
 
 	newDataObject, err := dataObjectCreator.CreateDataObject()
 	if err != nil {
-		exit.ExitOrDieFromError(CreateDataObjectErrorCode, err,
-			zerrors.IsStatusError(err, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity),
-		)
+		log.Logger().Error(err.Error())
+		os.Exit(CreateDataObjectErrorCode)
 	}
 
 	results := map[string]string{
@@ -58,9 +54,9 @@ func main() {
 	}
 
 	log.Logger().Debug("recording results", zap.Reflect("results", results))
-	err = res.RecordResults(results)
-	if err != nil {
-		exit.ExitOrDieFromError(WriteResultsExitCode, err)
+	if err = res.RecordResults(results); err != nil {
+		log.Logger().Error(err.Error())
+		os.Exit(WriteResultsExitCode)
 	}
 
 	output.PrettyPrint(newDataObject, cliOptions.Output)
