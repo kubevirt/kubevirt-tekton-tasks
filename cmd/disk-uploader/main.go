@@ -10,7 +10,6 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/parse"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/secrets"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/vmexport"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	res "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results"
 
@@ -115,8 +114,6 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 }
 
 func main() {
-	defer exit.HandleExit()
-
 	cliOptions := &parse.CLIOptions{}
 	goarg.MustParse(cliOptions)
 
@@ -124,28 +121,33 @@ func main() {
 	defer logger.Sync()
 
 	if err := cliOptions.Init(); err != nil {
-		exit.ExitOrDieFromError(constants.InvalidCLIInputExitCode, err)
+		log.Logger().Error(err.Error())
+		os.Exit(constants.InvalidCLIInputExitCode)
 	}
 	log.Logger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		exit.ExitOrDieFromError(constants.GenericExitCode, err)
+		log.Logger().Error(err.Error())
+		os.Exit(constants.GenericExitCode)
 	}
 
 	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		exit.ExitOrDieFromError(constants.GenericExitCode, err)
+		log.Logger().Error(err.Error())
+		os.Exit(constants.GenericExitCode)
 	}
 
 	virtClient, err := kubecli.GetKubevirtClient()
 	if err != nil {
-		exit.ExitOrDieFromError(constants.GenericExitCode, err)
+		log.Logger().Error(err.Error())
+		os.Exit(constants.GenericExitCode)
 	}
 
 	imageDigest, err := run(*cliOptions, k8sClient, virtClient)
 	if err != nil {
-		exit.ExitOrDieFromError(constants.DiskUploaderErrorExitCode, err)
+		log.Logger().Error(err.Error())
+		os.Exit(constants.DiskUploaderErrorExitCode)
 	}
 
 	results := map[string]string{constants.DigestResultName: imageDigest}
@@ -153,6 +155,7 @@ func main() {
 	log.Logger().Debug("recording results", zap.Reflect("results", results))
 
 	if err := res.RecordResults(results); err != nil {
-		exit.ExitOrDieFromError(constants.WriteResultsExitCode, err)
+		log.Logger().Error(err.Error())
+		os.Exit(constants.WriteResultsExitCode)
 	}
 }

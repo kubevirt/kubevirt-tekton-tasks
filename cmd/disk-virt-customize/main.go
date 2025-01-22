@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	goarg "github.com/alexflint/go-arg"
 	"go.uber.org/zap"
 
@@ -8,12 +10,9 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/execute"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt/pkg/utils/parse"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 )
 
 func main() {
-	defer exit.HandleExit()
-
 	cliOptions := &parse.CLIOptions{}
 	goarg.MustParse(cliOptions)
 
@@ -22,15 +21,18 @@ func main() {
 
 	log.GetLogger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
 	if err := cliOptions.Init(); err != nil {
-		exit.ExitOrDieFromError(InvalidArguments, err)
+		log.GetLogger().Error(err.Error())
+		os.Exit(InvalidArguments)
 	}
 	executor := execute.NewExecutor(cliOptions, DiskImagePath, "virt-customize")
 
 	if err := executor.PrepareGuestFSAppliance(); err != nil {
-		exit.ExitOrDieFromError(PrepareGuestFSApplianceFailed, err)
+		log.GetLogger().Error(err.Error())
+		os.Exit(PrepareGuestFSApplianceFailed)
 	}
 
 	if err := executor.Execute(); err != nil {
-		exit.ExitOrDieFromError(ExecuteFailed, err)
+		log.GetLogger().Error(err.Error())
+		os.Exit(ExecuteFailed)
 	}
 }

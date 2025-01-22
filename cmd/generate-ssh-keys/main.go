@@ -1,20 +1,19 @@
 package main
 
 import (
+	"os"
+
 	goarg "github.com/alexflint/go-arg"
 	. "github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/constants"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/generate"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/secret"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utils/log"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys/pkg/utils/parse"
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/exit"
 	res "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results"
 	"go.uber.org/zap"
 )
 
 func main() {
-	defer exit.HandleExit()
-
 	cliOptions := &parse.CLIOptions{}
 	goarg.MustParse(cliOptions)
 
@@ -23,27 +22,32 @@ func main() {
 
 	log.Logger().Debug("parsed arguments", zap.Reflect("cliOptions", cliOptions))
 	if err := cliOptions.Init(); err != nil {
-		exit.ExitOrDieFromError(InvalidArguments, err)
+		log.Logger().Error(err.Error())
+		os.Exit(InvalidArguments)
 	}
 
 	keys, err := generate.GenerateSshKeys(*cliOptions)
 	if err != nil {
-		exit.ExitOrDieFromError(SshKeysGenerationFailed, err)
+		log.Logger().Error(err.Error())
+		os.Exit(SshKeysGenerationFailed)
 	}
 
 	secretFacade, err := secret.NewSecretFacade(cliOptions, *keys)
 	if err != nil {
-		exit.ExitOrDieFromError(SecretFacadeInitFailed, err)
+		log.Logger().Error(err.Error())
+		os.Exit(SecretFacadeInitFailed)
 	}
 
 	err = secretFacade.CheckPrivateKeySecretExistence()
 	if err != nil {
-		exit.ExitOrDieFromError(PrivateKeyAlreadyExists, err)
+		log.Logger().Error(err.Error())
+		os.Exit(PrivateKeyAlreadyExists)
 	}
 
 	publicKeySecret, err := secretFacade.GetPublicKeySecret()
 	if err != nil {
-		exit.ExitOrDieFromError(PublicKeySecretFetchFailed, err)
+		log.Logger().Error(err.Error())
+		os.Exit(PublicKeySecretFetchFailed)
 	}
 	isAppendingPublicKey := publicKeySecret != nil
 
@@ -54,7 +58,8 @@ func main() {
 	}
 
 	if err != nil {
-		exit.ExitOrDieFromError(PublicKeySecretCreationFailed, err)
+		log.Logger().Error(err.Error())
+		os.Exit(PublicKeySecretCreationFailed)
 	}
 
 	cleanupPublicKey := func() {
@@ -66,7 +71,8 @@ func main() {
 	privateKeySecret, err := secretFacade.CreatePrivateKeySecret()
 	if err != nil {
 		defer cleanupPublicKey()
-		exit.ExitOrDieFromError(PrivateKeySecretCreationFailed, err)
+		log.Logger().Error(err.Error())
+		os.Exit(PrivateKeySecretCreationFailed)
 	}
 
 	cleanupPrivateKey := func() {
@@ -86,6 +92,7 @@ func main() {
 			defer cleanupPublicKey()
 			defer cleanupPrivateKey()
 		}()
-		exit.ExitOrDieFromError(WriteResultsExitCode, err)
+		log.Logger().Error(err.Error())
+		os.Exit(WriteResultsExitCode)
 	}
 }

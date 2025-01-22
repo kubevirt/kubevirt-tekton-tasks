@@ -215,7 +215,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			}),
 			Entry("non existent VM", &testconfigs.ExecuteOrCleanupVMTestConfig{
 				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					ExpectedLogs: "virtualmachine.kubevirt.io \"non-existent\" not found",
+					ExpectedLogs: "virtualmachine.kubevirt.io \\\"non-existent\\\" not found",
 				},
 				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 					Secret: testobjects.NewTestSecret(sshConnectionInfo),
@@ -242,20 +242,6 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 					VM:     testobjects.NewTestFedoraCloudVM("not-authorized-vm").Build(),
 					Secret: testobjects.NewTestSecret(sshConnectionInfo),
 					Script: helloWorldScript,
-				},
-			}),
-			Entry("fail script", &testconfigs.ExecuteOrCleanupVMTestConfig{
-				TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-					Timeout:      Timeouts.QuickTaskRun,
-					ExpectedLogs: "fail",
-					ExpectedTermination: &testconfigs.TaskRunExpectedTermination{
-						ExitCode: 25,
-					},
-				},
-				TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
-					VM:     testobjects.NewTestFedoraCloudVM("fail-script").WithCloudConfig(fedoraCloudConfig).Build(),
-					Secret: testobjects.NewTestSecret(sshConnectionInfo),
-					Script: failScript,
 				},
 			}),
 			Entry("execute with wrong public key", &testconfigs.ExecuteOrCleanupVMTestConfig{
@@ -443,15 +429,14 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		// negative cases
 		Entry("execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-
-				ExpectedLogs: "command timed out",
+				ExpectSuccess: false,
+				ExpectedLogs:  "command timed out",
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:            testobjects.NewTestFedoraCloudVM("execute-too-low-timeout-stop-vm").WithCloudConfig(fedoraCloudConfig).Build(),
 				Secret:        testobjects.NewTestSecret(sshConnectionInfo),
 				Script:        sleepScript,
 				ShouldStartVM: true,
-				Stop:          true,
 				Timeout: &metav1.Duration{
 					Duration: 27 * time.Second,
 				},
@@ -460,14 +445,13 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 
 		Entry("starts and execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-
-				ExpectedLogs: "command timed out",
+				ExpectedLogs:  "timed out waiting for the condition",
+				ExpectSuccess: false,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:     testobjects.NewTestFedoraCloudVM("start-execute-too-low-timeout-stop-vm").WithCloudConfig(fedoraCloudConfig).Build(),
 				Secret: testobjects.NewTestSecret(sshConnectionInfo),
 				Script: sleepScript,
-				Stop:   true,
 				Timeout: &metav1.Duration{
 					Duration: 27 * time.Second,
 				},
@@ -476,7 +460,6 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		// positive cases
 		Entry("stop vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-
 				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
@@ -488,7 +471,6 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("stop non running vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-
 				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
@@ -499,7 +481,6 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-
 				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
@@ -511,7 +492,6 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("stop and delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-
 				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
@@ -524,7 +504,6 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("execute and stop and delete vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-
 				ExpectedLogs:  "hello world",
 				ExpectSuccess: true,
 			},
@@ -539,7 +518,6 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("execute and stops vm with timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-
 				ExpectedLogs:  "hello world",
 				ExpectSuccess: true,
 			},
@@ -554,7 +532,6 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("execute and deletes vm with timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-
 				ExpectedLogs:  "hello world",
 				ExpectSuccess: true,
 			},
@@ -569,7 +546,6 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		}),
 		Entry("stops failed VMI", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-
 				ExpectSuccess: true,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{

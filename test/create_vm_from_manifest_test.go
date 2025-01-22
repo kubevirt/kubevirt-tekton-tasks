@@ -52,7 +52,7 @@ var _ = Describe("Create VM from manifest", func() {
 		}),
 		Entry("create vm with non matching disk fails", &testconfigs.CreateVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
-				ExpectedLogs: "admission webhook \"virtualmachine-validator.kubevirt.io\" denied the request: spec.template.spec.domain.devices.disks[0].Name",
+				ExpectedLogs: "admission webhook \\\"virtualmachine-validator.kubevirt.io\\\" denied the request: spec.template.spec.domain.devices.disks[0].Name",
 			},
 			TaskData: testconfigs.CreateVMTaskData{
 				VM: testobjects.NewTestAlpineVM("vm-with-non-existent-pvc").WithNonMatchingDisk().Build(),
