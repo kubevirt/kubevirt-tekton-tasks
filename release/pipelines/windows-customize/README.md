@@ -61,7 +61,7 @@ spec:
         -   name: name
             value: windows-customize
         -   name: version
-            value: v0.23.0
+            value: v0.24.0
         resolver: hub
 EOF
 ```
@@ -92,7 +92,7 @@ spec:
         -   name: name
             value: windows-customize
         -   name: version
-            value: v0.23.0
+            value: v0.24.0
         resolver: hub
 EOF
 ```
@@ -121,7 +121,7 @@ spec:
         -   name: name
             value: windows-customize
         -   name: version
-            value: v0.23.0
+            value: v0.24.0
         resolver: hub
 EOF
 ```
