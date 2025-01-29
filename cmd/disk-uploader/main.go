@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/certificate"
@@ -153,6 +155,15 @@ func main() {
 	results := map[string]string{constants.DigestResultName: imageDigest}
 
 	log.Logger().Debug("recording results", zap.Reflect("results", results))
+
+	if err := res.TektonResultDirExists(); err != nil {
+		log.Logger().Error("something happened while retrieving Tekton result folder")
+		if errors.Is(err, fs.ErrNotExist) {
+			os.Exit(0)
+		} else {
+			os.Exit(constants.WriteResultsExitCode)
+		}
+	}
 
 	if err := res.RecordResults(results); err != nil {
 		log.Logger().Error(err.Error())

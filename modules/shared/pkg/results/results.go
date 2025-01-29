@@ -1,9 +1,10 @@
 package results
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
-	"io/ioutil"
+	"os"
 	"path/filepath"
+
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/env"
 )
 
 func RecordResults(results map[string]string) error {
@@ -17,10 +18,16 @@ func RecordResultsIn(destination string, results map[string]string) error {
 
 	for resKey, resVal := range results {
 		filename := filepath.Join(destination, resKey)
-		err := ioutil.WriteFile(filename, []byte(resVal), 0644)
+		err := os.WriteFile(filename, []byte(resVal), 0644)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func TektonResultDirExists() error {
+	_, err := os.Stat(env.GetTektonResultsDir())
+
+	return err
 }
