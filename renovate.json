@@ -1,84 +1,20 @@
 {
-  "extends": [
-    ":gitSignOff",
-    ":dependencyDashboard"
-  ],
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "baseBranches": [
-    "main",
-    "release-v0.17",
-    "release-v0.15",
-    "release-v0.13",
-    "release-v0.12"
-  ],
+  "baseBranches": ["main", "/^release-v([0-9]+\\.([0-9]+))$/"],
   "prConcurrentLimit": 3,
-  "groupName": "all dependencies",
-  "groupSlug": "all",
   "lockFileMaintenance": {
     "enabled": false
   },
-  "labels": [
-    "release-note-none"
-  ],
-  "ignorePaths": [
-    "modules/tests/**"
-  ],
+  "postUpdateOptions": ["gomodTidy"],
+  "labels": ["release-note-none"],
+  "extends": [":gitSignOff", ":dependencyDashboard"],
   "packageRules": [
     {
       "groupName": "all dependencies",
       "groupSlug": "all",
       "enabled": false,
-      "matchBaseBranches": [
-        "main"
-      ],
-      "matchPackagePatterns": [
+      "matchPackageNames": [
         "*"
-      ]
-    },
-    {
-      "groupName": "all dependencies",
-      "groupSlug": "all",
-      "enabled": false,
-      "matchBaseBranches": [
-        "release-v0.20",
-        "release-v0.17",
-        "release-v0.15",
-        "release-v0.13",
-        "release-v0.12"
-      ],
-      "matchPackagePatterns": [
-        "*"
-      ]
-    },
-    {
-      "matchPackageNames": [
-        "golang",
-        "go"
-      ],
-      "allowedVersions": "<=1.21",
-      "matchBaseBranches": [
-        "release-v0.17"
-      ]
-    },
-    {
-      "matchPackageNames": [
-        "golang",
-        "go"
-      ],
-      "allowedVersions": "<=1.20",
-      "matchBaseBranches": [
-        "release-v0.15"
-      ]
-    },
-    {
-      "matchPackageNames": [
-        "golang",
-        "go"
-      ],
-      "allowedVersions": "<=1.19",
-      "matchBaseBranches": [
-        "release-v0.13",
-        "release-v0.12"
       ]
     }
   ],
@@ -87,5 +23,8 @@
   },
   "osvVulnerabilityAlerts": true,
   "assigneesFromCodeOwners": true,
-  "separateMajorMinor": false
+  "separateMajorMinor": true,
+  "ignorePaths": [
+    "**/vendor/**"
+  ]
 }
