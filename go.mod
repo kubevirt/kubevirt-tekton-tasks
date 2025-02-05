@@ -22,7 +22,7 @@ replace (
 replace (
 	kubevirt.io/api => kubevirt.io/api v1.2.0
 	kubevirt.io/client-go => kubevirt.io/client-go v1.2.0
-	kubevirt.io/kubevirt => kubevirt.io/kubevirt v1.2.0
+	kubevirt.io/kubevirt => kubevirt.io/kubevirt v1.2.1
 )
 
 // CDI
@@ -57,7 +57,7 @@ require (
 	kubevirt.io/client-go v1.2.0
 	kubevirt.io/containerized-data-importer v1.58.1
 	kubevirt.io/containerized-data-importer-api v1.58.1
-	kubevirt.io/kubevirt v1.2.0
+	kubevirt.io/kubevirt v1.2.1
 	kubevirt.io/qe-tools v0.1.8
 	sigs.k8s.io/yaml v1.4.0
 )
