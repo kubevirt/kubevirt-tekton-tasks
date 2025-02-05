@@ -268,7 +268,7 @@ var _ = Describe("Create VM from template", func() {
 				ExpectedLogs:   ExpectedSuccessfulVMCreation,
 			},
 			TaskData: testconfigs.CreateVMTaskData{
-				TemplateName:      SpacesSmall + "fedora-server-tiny",
+				TemplateName:      SpacesSmall + "fedora-server-medium",
 				TemplateNamespace: SpacesSmall + "openshift" + SpacesSmall,
 				TemplateParams: []string{
 					testtemplate.TemplateParam(testtemplate.NameParam, E2ETestsRandomName("vm-from-common-template")),
