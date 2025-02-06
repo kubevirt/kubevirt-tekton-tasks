@@ -22,20 +22,27 @@ import (
 	"strings"
 
 	"github.com/tektoncd/pipeline/pkg/apis/config"
+	pod "github.com/tektoncd/pipeline/pkg/apis/pipeline/pod"
 	"github.com/tektoncd/pipeline/pkg/apis/validate"
 	"github.com/tektoncd/pipeline/pkg/apis/version"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/utils/strings/slices"
 	"knative.dev/pkg/apis"
+	"knative.dev/pkg/webhook/resourcesemantics"
 )
 
 var _ apis.Validatable = (*TaskRun)(nil)
+var _ resourcesemantics.VerbLimited = (*TaskRun)(nil)
+
+// SupportedVerbs returns the operations that validation should be called for
+func (tr *TaskRun) SupportedVerbs() []admissionregistrationv1.OperationType {
+	return []admissionregistrationv1.OperationType{admissionregistrationv1.Create, admissionregistrationv1.Update}
+}
 
 // Validate taskrun
 func (tr *TaskRun) Validate(ctx context.Context) *apis.FieldError {
-	if apis.IsInDelete(ctx) {
-		return nil
-	}
 	errs := validate.ObjectMetadata(tr.GetObjectMeta()).ViaField("metadata")
 	return errs.Also(tr.Spec.Validate(apis.WithinSpec(ctx)).ViaField("spec"))
 }
@@ -55,8 +62,6 @@ func (ts *TaskRunSpec) Validate(ctx context.Context) (errs *apis.FieldError) {
 	}
 	// Validate TaskSpec if it's present.
 	if ts.TaskSpec != nil {
-		// skip validation of parameter and workspaces variables since we validate them via taskrunspec below.
-		ctx = config.SkipValidationDueToPropagatedParametersAndWorkspaces(ctx, true)
 		errs = errs.Also(ts.TaskSpec.Validate(ctx).ViaField("taskSpec"))
 	}
 
@@ -65,7 +70,6 @@ func (ts *TaskRunSpec) Validate(ctx context.Context) (errs *apis.FieldError) {
 	// Validate propagated parameters
 	errs = errs.Also(ts.validateInlineParameters(ctx))
 	errs = errs.Also(ValidateWorkspaceBindings(ctx, ts.Workspaces).ViaField("workspaces"))
-	errs = errs.Also(ts.Resources.Validate(ctx).ViaField("resources"))
 	if ts.Debug != nil {
 		errs = errs.Also(version.ValidateEnabledAPIFields(ctx, "debug", config.AlphaAPIFields).ViaField("debug"))
 		errs = errs.Also(validateDebug(ts.Debug).ViaField("debug"))
@@ -100,7 +104,12 @@ func (ts *TaskRunSpec) Validate(ctx context.Context) (errs *apis.FieldError) {
 			errs = errs.Also(apis.ErrInvalidValue(fmt.Sprintf("%s should be >= 0", ts.Timeout.Duration.String()), "timeout"))
 		}
 	}
-
+	if ts.PodTemplate != nil {
+		errs = errs.Also(validatePodTemplateEnv(ctx, *ts.PodTemplate))
+	}
+	if ts.Resources != nil {
+		errs = errs.Also(apis.ErrDisallowedFields("resources"))
+	}
 	return errs
 }
 
@@ -132,7 +141,21 @@ func (ts *TaskRunSpec) validateInlineParameters(ctx context.Context) (errs *apis
 	}
 	if ts.TaskSpec != nil && ts.TaskSpec.Steps != nil {
 		errs = errs.Also(ValidateParameterTypes(ctx, paramSpec))
-		errs = errs.Also(ValidateParameterVariables(config.SkipValidationDueToPropagatedParametersAndWorkspaces(ctx, false), ts.TaskSpec.Steps, paramSpec))
+		errs = errs.Also(ValidateParameterVariables(ctx, ts.TaskSpec.Steps, paramSpec))
+		errs = errs.Also(ValidateUsageOfDeclaredParameters(ctx, ts.TaskSpec.Steps, paramSpec))
+	}
+	return errs
+}
+
+func validatePodTemplateEnv(ctx context.Context, podTemplate pod.Template) (errs *apis.FieldError) {
+	forbiddenEnvsConfigured := config.FromContextOrDefaults(ctx).Defaults.DefaultForbiddenEnv
+	if len(forbiddenEnvsConfigured) == 0 {
+		return errs
+	}
+	for _, pEnv := range podTemplate.Env {
+		if slices.Contains(forbiddenEnvsConfigured, pEnv.Name) {
+			errs = errs.Also(apis.ErrInvalidValue("PodTemplate cannot update a forbidden env: "+pEnv.Name, "PodTemplate.Env"))
+		}
 	}
 	return errs
 }
@@ -216,14 +239,9 @@ func ValidateWorkspaceBindings(ctx context.Context, wb []WorkspaceBinding) (errs
 }
 
 // ValidateParameters makes sure the params for the Task are valid.
-func ValidateParameters(ctx context.Context, params []Param) (errs *apis.FieldError) {
+func ValidateParameters(ctx context.Context, params Params) (errs *apis.FieldError) {
 	var names []string
 	for _, p := range params {
-		if p.Value.Type == ParamTypeObject {
-			// Object type parameter is an alpha feature and will fail validation if it's used in a taskrun spec
-			// when the enable-api-fields feature gate is not "alpha".
-			errs = errs.Also(version.ValidateEnabledAPIFields(ctx, "object type parameter", config.AlphaAPIFields))
-		}
 		names = append(names, p.Name)
 	}
 	return errs.Also(validateNoDuplicateNames(names, false))
