@@ -66,7 +66,7 @@ func BuildTestSuite() {
 func getCommonTemplatesVersion(templateList *v1.TemplateList) string {
 	var commonTemplatesVersion []int
 	found := false
-	requiredTemplate := "fedora-server-tiny"
+	requiredTemplate := "fedora-server-medium"
 
 	for _, template := range templateList.Items {
 		if strings.HasPrefix(template.Name, requiredTemplate) {
