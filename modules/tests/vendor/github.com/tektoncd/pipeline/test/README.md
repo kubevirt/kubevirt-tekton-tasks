@@ -30,6 +30,8 @@ in local kubeconfig file (~/.kube/config by default) in you local machine.
 is the difference of running environments. The envs that our presubmit test
 uses are stored in ./*.env files. Specifically,
 > - e2e-tests-kind-prow-alpha.env for [`pull-tekton-pipeline-alpha-integration-tests`](https://github.com/tektoncd/plumbing/blob/d2c8ccb63d02c6e72c62def788af32d63ff1981a/prow/config.yaml#L1304)
+> - e2e-tests-kind-prow-beta.env for [`pull-tekton-pipeline-beta-integration-tests`]
+(TODO: https://github.com/tektoncd/pipeline/issues/6048 Add permanent link after plumbing setup for prow)
 > - e2e-tests-kind-prow.env for [`pull-tekton-pipeline-integration-tests`](https://github.com/tektoncd/plumbing/blob/d2c8ccb63d02c6e72c62def788af32d63ff1981a/prow/config.yaml#L1249)
 
 ## Unit tests
@@ -161,7 +163,7 @@ EMAIL=$(gcloud iam service-accounts list | grep $ACCOUNT_NAME | awk '{print $2}'
 gcloud projects add-iam-policy-binding $PROJECT_ID --member serviceAccount:$EMAIL --role roles/storage.admin
 
 # create the JSON key
-gcloud iam service-accounts keys create config.json --iam-account $EMAIL
+gcloud iam service-accounts keys create config.json --iam-account=$EMAIL
 
 export GCP_SERVICE_ACCOUNT_KEY_PATH="$PWD/config.json"
 
@@ -253,6 +255,16 @@ There are two scenarios in upgrade tests. One is to install the previous release
 validate whether the Tekton pipeline works. The other is to install the previous release, create the pipelines and tasks,
 upgrade to the current release, and validate whether the Tekton pipeline works.
 
+
+#### Prerequisites for running upgrade tests locally:
+- Set up the cluster
+  - Running against a fresh kind cluster
+    - export SKIP_INITIALIZE=true
+
+  - Running against a GKE cluster
+    - export PROJECT_ID=<my_gcp_project>
+    - install [kubetest](https://github.com/kubernetes/test-infra/blob/master/kubetest/README.md)
+
 To run the upgrade tests, run the following command:
 
 ```bash
@@ -306,7 +318,7 @@ The `Clients` struct contains initialized clients for accessing:
 For example, to create a `Pipeline`:
 
 ```bash
-_, err = clients.PipelineClient.Pipelines.Create(test.Route(namespaceName, pipelineName))
+_, err = clients.v1PipelineClient.Pipelines.Create(test.Route(namespaceName, pipelineName))
 ```
 
 And you can use the client to clean up resources created by your test (e.g. in
@@ -356,7 +368,7 @@ err = WaitForTaskRunState(c, hwTaskRunName, func(tr *v1alpha1.TaskRun) (bool, er
         return true, nil
     }
     return false, nil
-}, "TaskRunHasCondition")
+}, "TaskRunHasCondition", v1Version)
 ```
 
 _[Metrics will be emitted](https://github.com/knative/pkg/tree/master/test#emit-metrics)
