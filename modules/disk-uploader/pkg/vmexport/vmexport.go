@@ -52,7 +52,7 @@ func CreateVirtualMachineExport(virtClient kubecli.KubevirtClient, exportSourceK
 }
 
 func WaitUntilVirtualMachineExportReady(client kubecli.KubevirtClient, namespace, name string) error {
-	pollInterval := 15 * time.Second
+	pollInterval := 60 * time.Second
 	pollTimeout := 3600 * time.Second
 	poller := func(ctx context.Context) (bool, error) {
 		vmExport, err := client.VirtualMachineExport(namespace).Get(ctx, name, metav1.GetOptions{})
