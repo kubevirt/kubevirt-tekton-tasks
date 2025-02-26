@@ -25,9 +25,9 @@ var _ = Describe("Lookup", func() {
 		Entry("nil vm", nil, testSelector, labels.Set{}),
 		Entry("empty requirements", testobjects.NewTestFedoraCloudVM("fedora").Build(), "", labels.Set{}),
 		Entry("basic", testobjects.NewTestFedoraCloudVM("fedora").Build(), testSelector, labels.Set{
-			"metadata.name": "fedora",
-			"spec.running":  "false",
-			"metadata":      "{\"name\":\"fedora\",\"namespace\":\"default\",\"creationTimestamp\":null}",
+			"metadata.name":    "fedora",
+			"spec.runStrategy": "Halted",
+			"metadata":         "{\"name\":\"fedora\",\"namespace\":\"default\",\"creationTimestamp\":null}",
 		}),
 		Entry("with spaces", testobjects.NewTestFedoraCloudVM("fedora").Build(), "  metadata.name   ", labels.Set{
 			"metadata.name": "fedora",

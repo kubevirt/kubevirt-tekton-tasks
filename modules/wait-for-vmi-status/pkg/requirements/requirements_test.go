@@ -23,7 +23,7 @@ var _ = Describe("Reruirements", func() {
 				utilstest.GetRequirement("invalid.path", selection.NotIn, []string{"1", "2", "3"}),
 				utilstest.GetRequirement("metadata", selection.Exists, []string{}),
 				utilstest.GetRequirement("metadata.name", selection.In, []string{"fedora", "ubuntu"}),
-				utilstest.GetRequirement("spec.running", selection.NotEquals, []string{"true"}),
+				utilstest.GetRequirement("spec.runStrategy", selection.NotEquals, []string{"true"}),
 			}),
 			Entry("with spaces", "  metadata.name   ", labels.Requirements{
 				utilstest.GetRequirement("metadata.name", selection.Exists, []string{}),
@@ -50,7 +50,7 @@ var _ = Describe("Reruirements", func() {
 			Entry("vm and empty requirements", testobjects.NewTestFedoraCloudVM("fedora").Build(), labels.Requirements{}, true),
 			Entry("matches requirements", testobjects.NewTestFedoraCloudVM("fedora").Build(), labels.Requirements{
 				utilstest.GetRequirement("metadata.name", selection.In, []string{"fedora", "ubuntu"}),
-				utilstest.GetRequirement("spec.running", selection.NotEquals, []string{"true"}),
+				utilstest.GetRequirement("spec.runStrategy", selection.NotEquals, []string{"true"}),
 			}, true),
 			Entry("does not match requirements", testobjects.NewTestFedoraCloudVM("fedora").Build(), labels.Requirements{
 				utilstest.GetRequirement("metadata.name", selection.In, []string{"ubuntu", "arch"}),
@@ -59,7 +59,7 @@ var _ = Describe("Reruirements", func() {
 				utilstest.GetRequirement("invalid.path", selection.In, []string{"1", "2", "3"}),
 				utilstest.GetRequirement("metadata", selection.Exists, []string{}),
 				utilstest.GetRequirement("metadata.name", selection.In, []string{"ubuntu", "arch"}),
-				utilstest.GetRequirement("spec.running", selection.NotEquals, []string{"true"}),
+				utilstest.GetRequirement("spec.runStrategy", selection.NotEquals, []string{"true"}),
 			}, false),
 		)
 	})
