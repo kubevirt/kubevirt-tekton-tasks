@@ -63,6 +63,11 @@ func WaitUntilVirtualMachineExportReady(client kubecli.KubevirtClient, namespace
 		if vmExport.Status != nil {
 			log.Logger().Info("VirtualMachineExport object status", zap.String("status", string(vmExport.Status.Phase)))
 
+			if vmExport.Status.Phase == v1beta1.Skipped {
+				log.Logger().Error("VirtualMachineExport is in Skipped state, and can't be exported - exiting.")
+				return false, fmt.Errorf("vm export is in skipped phase")
+			}
+
 			if vmExport.Status.Phase == v1beta1.Ready {
 				log.Logger().Info("VirtualMachineExport is in Ready state, and export source is not longer used")
 				return true, nil
