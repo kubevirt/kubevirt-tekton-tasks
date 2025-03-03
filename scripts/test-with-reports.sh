@@ -23,24 +23,22 @@ rm -rf "${TEST_OUT}" "${COVER_OUT}" "${JUNIT_XML}" "${COVERAGE_HTML}" "${FAKE_GO
 mkdir -p "${ARTIFACT_DIR}"
 
 visit "${REPO_DIR}/modules"
-  for MODULE_DIR in $(ls | grep -vE "^(tests)$"); do
+  for MODULE_DIR in */ ; do
     visit "$MODULE_DIR"
-      if [ -f go.mod ]; then
-        DIST_DIR=dist
-        mkdir -p ${DIST_DIR}
-        go test -v -coverprofile=${DIST_DIR}/coverage.out -covermode=atomic \
-           $(go list ./... | grep -v utilstest) | tee ${DIST_DIR}/test.out
-        CURRENT_RET_CODE=$?
-        if [ "${CURRENT_RET_CODE}" -ne 0 ]; then
-          RET_CODE=${CURRENT_RET_CODE}
-        fi
-        cat ${DIST_DIR}/test.out >> "${TEST_OUT}"
+      DIST_DIR=dist
+      mkdir -p ${DIST_DIR}
+      go test -v -coverprofile=${DIST_DIR}/coverage.out -covermode=atomic \
+        $(go list ./... | grep -v utilstest) | tee ${DIST_DIR}/test.out
+      CURRENT_RET_CODE=$?
+      if [ "${CURRENT_RET_CODE}" -ne 0 ]; then
+        RET_CODE=${CURRENT_RET_CODE}
+      fi
+      cat ${DIST_DIR}/test.out >> "${TEST_OUT}"
 
-        if [ -f "${COVER_OUT}" ]; then
-          sed "/^mode.*/d" dist/coverage.out >> "${COVER_OUT}" # remove first line with mode
-        else
-          cp ${DIST_DIR}/coverage.out "${COVER_OUT}"
-        fi
+      if [ -f "${COVER_OUT}" ]; then
+        sed "/^mode.*/d" dist/coverage.out >> "${COVER_OUT}" # remove first line with mode
+      else
+        cp ${DIST_DIR}/coverage.out "${COVER_OUT}"
       fi
     leave
   done

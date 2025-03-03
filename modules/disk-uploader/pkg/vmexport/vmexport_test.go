@@ -4,23 +4,22 @@ import (
 	"context"
 	"os"
 
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	"github.com/golang/mock/gomock"
-
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	fakek8sclient "k8s.io/client-go/kubernetes/fake"
 
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/vmexport"
+	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
 	v1beta1 "kubevirt.io/api/export/v1beta1"
 	fakecdiclient "kubevirt.io/client-go/containerizeddataimporter/fake"
 	"kubevirt.io/client-go/kubecli"
 	kubevirtfake "kubevirt.io/client-go/kubevirt/fake"
 	cdiv1beta1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
-
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/vmexport"
 )
 
 var _ = Describe("VMExport", func() {
@@ -95,6 +94,9 @@ var _ = Describe("VMExport", func() {
 
 	Describe("WaitUntilVirtualMachineExportReady", func() {
 		It("should return no error", func() {
+			//initialize logger, otherwise logging events inside fn panics
+			log.InitLogger(zap.InfoLevel)
+
 			_, err := vmExportClient.ExportV1beta1().VirtualMachineExports(namespace).Create(context.Background(),
 				&v1beta1.VirtualMachineExport{
 					ObjectMeta: metav1.ObjectMeta{
