@@ -2,6 +2,7 @@ package vmexport_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/golang/mock/gomock"
@@ -92,7 +93,7 @@ var _ = Describe("VMExport", func() {
 		})
 	})
 
-	Describe("WaitUntilVirtualMachineExportReady", func() {
+	Describe("WaitUntilVirtualMachineExport", func() {
 		It("should return no error", func() {
 			//initialize logger, otherwise logging events inside fn panics
 			log.InitLogger(zap.InfoLevel)
@@ -113,6 +114,26 @@ var _ = Describe("VMExport", func() {
 
 			err = vmexport.WaitUntilVirtualMachineExportReady(virtClient, namespace, name)
 			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("should return error", func() {
+			_, err := vmExportClient.ExportV1beta1().VirtualMachineExports(namespace).Create(context.Background(),
+				&v1beta1.VirtualMachineExport{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      name,
+						Namespace: namespace,
+					},
+					Status: &v1beta1.VirtualMachineExportStatus{
+						Phase: v1beta1.Skipped,
+					},
+				},
+				metav1.CreateOptions{},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = vmexport.WaitUntilVirtualMachineExportReady(virtClient, namespace, name)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(fmt.Errorf("vm export is in skipped phase")))
 		})
 	})
 
