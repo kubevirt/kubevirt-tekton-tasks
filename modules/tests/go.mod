@@ -1,6 +1,8 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/tests
 
-go 1.19
+go 1.23.0
+
+toolchain go1.23.7
 
 require (
 	github.com/kubevirt/kubevirt-tekton-tasks/modules/copy-template v0.0.0
@@ -98,7 +100,7 @@ require (
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/oauth2 v0.13.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/term v0.27.0 // indirect
@@ -106,7 +108,6 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/api v0.70.0 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	google.golang.org/grpc v1.56.3 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
