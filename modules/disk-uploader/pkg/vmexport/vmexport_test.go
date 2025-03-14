@@ -114,6 +114,25 @@ var _ = Describe("VMExport", func() {
 			err = vmexport.WaitUntilVirtualMachineExportReady(virtClient, namespace, name)
 			Expect(err).NotTo(HaveOccurred())
 		})
+
+		It("should return error", func() {
+			_, err := vmExportClient.ExportV1beta1().VirtualMachineExports(namespace).Create(context.Background(),
+				&v1beta1.VirtualMachineExport{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      name,
+						Namespace: namespace,
+					},
+					Status: &v1beta1.VirtualMachineExportStatus{
+						Phase: v1beta1.Skipped,
+					},
+				},
+				metav1.CreateOptions{},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = vmexport.WaitUntilVirtualMachineExportReady(virtClient, namespace, name)
+			Expect(err).To(MatchError("vm export is in skipped phase"))
+		})
 	})
 
 	Describe("GetRawDiskUrlFromVolumes", func() {
