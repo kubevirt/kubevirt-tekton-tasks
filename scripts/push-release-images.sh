@@ -19,12 +19,12 @@ export IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
 
 echo "Pushing ${IMAGE}"
 
-podman push "${IMAGE}"
+podman manifest push "${IMAGE}" "${IMAGE}"
 
 IMAGE_NAME_AND_TAG="tekton-tasks-disk-virt:${RELEASE_VERSION}"
 export IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
 
 echo "Pushing ${IMAGE}"
 
-podman push "${IMAGE}"
+podman manifest push "${IMAGE}" ${IMAGE}
           
