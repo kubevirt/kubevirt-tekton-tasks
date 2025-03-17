@@ -17,7 +17,7 @@ RUN task_names=("disk-virt-customize" "disk-virt-sysprep"); \
         CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o /out/${TASK_NAME} ./cmd/${TASK_NAME}; \
     done
 
-FROM quay.io/kubevirt/libguestfs-tools:v1.4.0
+FROM quay.io/kubevirt/libguestfs-tools:v1.5.0
 ENV USER_UID=1001 \
     USER_NAME=tekton-tasks-disk-virt \
     HOME=/home/${USER_NAME}
