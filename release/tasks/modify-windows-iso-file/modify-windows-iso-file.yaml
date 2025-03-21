@@ -39,6 +39,8 @@ spec:
         capabilities:
           drop:
           - "ALL"
+        seccompProfile:
+          type: RuntimeDefault
       image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.24.0"
       script: |
         #!/bin/bash
@@ -87,6 +89,8 @@ spec:
         capabilities:
           drop:
           - "ALL"
+        seccompProfile:
+          type: RuntimeDefault
       image: "quay.io/kubevirt/tekton-tasks:v0.24.0"
       script: |
         #!/bin/bash
@@ -114,6 +118,8 @@ spec:
         capabilities:
           drop:
           - "ALL"
+        seccompProfile:
+          type: RuntimeDefault
       image: "quay.io/kubevirt/tekton-tasks-disk-virt:v0.24.0"
       script: |
         #!/bin/bash
