@@ -88,6 +88,13 @@ spec:
         - mountPath: /data/connectionsecret/
           name: connectionsecret
           readOnly: true
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
+        seccompProfile:
+          type: RuntimeDefault
   volumes:
     - name: connectionsecret
       secret:

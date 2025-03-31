@@ -39,6 +39,8 @@ spec:
         capabilities:
           drop:
           - "ALL"
+        seccompProfile:
+          type: RuntimeDefault
       image: "{{ extract_iso_image }}:{{ version }}"
       script: |
         #!/bin/bash
@@ -87,6 +89,8 @@ spec:
         capabilities:
           drop:
           - "ALL"
+        seccompProfile:
+          type: RuntimeDefault
       image: "{{ create_iso_image }}:{{ version }}"
       script: |
         #!/bin/bash
@@ -114,6 +118,8 @@ spec:
         capabilities:
           drop:
           - "ALL"
+        seccompProfile:
+          type: RuntimeDefault
       image: "{{ extract_iso_image }}:{{ version }}"
       script: |
         #!/bin/bash
