@@ -26,6 +26,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	v1 "kubevirt.io/api/core/v1"
+
+	"kubevirt.io/kubevirt/pkg/pointer"
 )
 
 const (
@@ -33,58 +35,71 @@ const (
 )
 
 // WithContainerDisk specifies the disk name and the name of the container image to be used.
-func WithContainerDisk(diskName, imageName string) Option {
+func WithContainerDisk(diskName, imageName string, options ...DiskOption) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
-		addDisk(vmi, newDisk(diskName, v1.DiskBusVirtio))
-		addVolume(vmi, newContainerVolume(diskName, imageName))
+		addDisk(vmi, newDisk(diskName, v1.DiskBusVirtio, options...))
+		addVolume(vmi, newContainerVolume(diskName, imageName, ""))
+	}
+}
+
+// WithContainerDiskAndPullPolicy specifies the disk name, the name of the container image and Pull Policy to be used.
+func WithContainerDiskAndPullPolicy(diskName, imageName string, imagePullPolicy k8sv1.PullPolicy, diskOpts ...DiskOption) Option {
+	return func(vmi *v1.VirtualMachineInstance) {
+		addDisk(vmi, newDisk(diskName, v1.DiskBusVirtio, diskOpts...))
+		addVolume(vmi, newContainerVolume(diskName, imageName, imagePullPolicy))
 	}
 }
 
 // WithContainerSATADisk specifies the disk name and the name of the container image to be used.
-func WithContainerSATADisk(diskName, imageName string) Option {
+func WithContainerSATADisk(diskName, imageName string, diskOpts ...DiskOption) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
-		addDisk(vmi, newDisk(diskName, v1.DiskBusSATA))
-		addVolume(vmi, newContainerVolume(diskName, imageName))
+		addDisk(vmi, newDisk(diskName, v1.DiskBusSATA, diskOpts...))
+		addVolume(vmi, newContainerVolume(diskName, imageName, ""))
 	}
 }
 
 // WithPersistentVolumeClaim specifies the name of the PersistentVolumeClaim to be used.
-func WithPersistentVolumeClaim(diskName, pvcName string) Option {
+func WithPersistentVolumeClaim(diskName, pvcName string, diskOpts ...DiskOption) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
-		addDisk(vmi, newDisk(diskName, v1.DiskBusVirtio))
+		addDisk(vmi, newDisk(diskName, v1.DiskBusVirtio, diskOpts...))
 		addVolume(vmi, newPersistentVolumeClaimVolume(diskName, pvcName))
 	}
 }
 
 // WithEphemeralPersistentVolumeClaim specifies the name of the Ephemeral.PersistentVolumeClaim to be used.
-func WithEphemeralPersistentVolumeClaim(diskName, pvcName string) Option {
+func WithEphemeralPersistentVolumeClaim(diskName, pvcName string, diskOpts ...DiskOption) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
-		addDisk(vmi, newDisk(diskName, v1.DiskBusSATA))
+		addDisk(vmi, newDisk(diskName, v1.DiskBusSATA, diskOpts...))
 		addVolume(vmi, newEphemeralPersistentVolumeClaimVolume(diskName, pvcName))
 	}
 }
 
 // WithDataVolume specifies the name of the DataVolume to be used.
-func WithDataVolume(diskName, pvcName string) Option {
+func WithDataVolume(diskName, pvcName string, diskOpts ...DiskOption) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
-		addDisk(vmi, newDisk(diskName, v1.DiskBusVirtio))
+		addDisk(vmi, newDisk(diskName, v1.DiskBusVirtio, diskOpts...))
 		addVolume(vmi, newDataVolume(diskName, pvcName))
 	}
 }
 
 // WithEmptyDisk specifies the name of the EmptyDisk to be used.
-func WithEmptyDisk(diskName string, bus v1.DiskBus, capacity resource.Quantity) Option {
+func WithEmptyDisk(diskName string, bus v1.DiskBus, capacity resource.Quantity, diskOpts ...DiskOption) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
-		addDisk(vmi, newDisk(diskName, bus))
+		addDisk(vmi, newDisk(diskName, bus, diskOpts...))
 		addVolume(vmi, newEmptyDisk(diskName, capacity))
 	}
 }
 
 // WithCDRom specifies a CDRom drive backed by a PVC to be used.
 func WithCDRom(cdRomName string, bus v1.DiskBus, claimName string) Option {
+	return WithCDRomAndVolume(bus, newPersistentVolumeClaimVolume(cdRomName, claimName))
+}
+
+// WithCDRomAndVolume specifies a CDRom drive backed by given volume and given bus.
+func WithCDRomAndVolume(bus v1.DiskBus, volume v1.Volume) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
-		addDisk(vmi, newCDRom(cdRomName, bus))
-		addVolume(vmi, newPersistentVolumeClaimVolume(cdRomName, claimName))
+		addDisk(vmi, newCDRom(volume.Name, bus))
+		addVolume(vmi, volume)
 	}
 }
 
@@ -92,7 +107,7 @@ func WithCDRom(cdRomName string, bus v1.DiskBus, claimName string) Option {
 func WithEphemeralCDRom(cdRomName string, bus v1.DiskBus, claimName string) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
 		addDisk(vmi, newCDRom(cdRomName, bus))
-		addVolume(vmi, newContainerVolume(cdRomName, claimName))
+		addVolume(vmi, newContainerVolume(cdRomName, claimName, ""))
 	}
 }
 
@@ -120,9 +135,17 @@ func WithPersistentVolumeClaimLun(diskName, pvcName string, reservation bool) Op
 }
 
 func WithHostDisk(diskName, path string, diskType v1.HostDiskType) Option {
+	var capacity string
+	if diskType == v1.HostDiskExistsOrCreate {
+		capacity = defaultDiskSize
+	}
+	return WithHostDiskAndCapacity(diskName, path, diskType, capacity)
+}
+
+func WithHostDiskAndCapacity(diskName, path string, diskType v1.HostDiskType, capacity string) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
 		addDisk(vmi, newDisk(diskName, v1.DiskBusVirtio))
-		addVolume(vmi, newHostDisk(diskName, path, diskType))
+		addVolume(vmi, newHostDisk(diskName, path, diskType, capacity))
 	}
 }
 
@@ -130,6 +153,12 @@ func WithHostDisk(diskName, path string, diskType v1.HostDiskType) Option {
 func WithIOThreadsPolicy(policy v1.IOThreadsPolicy) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
 		vmi.Spec.Domain.IOThreadsPolicy = &policy
+	}
+}
+
+func WithIOThreads(iothreads v1.DiskIOThreads) Option {
+	return func(vmi *v1.VirtualMachineInstance) {
+		vmi.Spec.Domain.IOThreads = pointer.P(iothreads)
 	}
 }
 
@@ -189,14 +218,27 @@ func filesystemExists(vmi *v1.VirtualMachineInstance, filesystem v1.Filesystem) 
 	return false
 }
 
-func newDisk(name string, bus v1.DiskBus) v1.Disk {
-	return v1.Disk{
+type DiskOption func(vm *v1.Disk)
+
+func newDisk(name string, bus v1.DiskBus, opts ...DiskOption) v1.Disk {
+	d := v1.Disk{
 		Name: name,
 		DiskDevice: v1.DiskDevice{
 			Disk: &v1.DiskTarget{
 				Bus: bus,
 			},
 		},
+	}
+	for _, f := range opts {
+		f(&d)
+	}
+
+	return d
+}
+
+func WithDedicatedIOThreads(enabled bool) DiskOption {
+	return func(d *v1.Disk) {
+		d.DedicatedIOThread = pointer.P(enabled)
 	}
 }
 
@@ -234,8 +276,8 @@ func newVolume(name string) v1.Volume {
 	return v1.Volume{Name: name}
 }
 
-func newContainerVolume(name, image string) v1.Volume {
-	return v1.Volume{
+func newContainerVolume(name, image string, imagePullPolicy k8sv1.PullPolicy) v1.Volume {
+	container := v1.Volume{
 		Name: name,
 		VolumeSource: v1.VolumeSource{
 			ContainerDisk: &v1.ContainerDiskSource{
@@ -243,6 +285,10 @@ func newContainerVolume(name, image string) v1.Volume {
 			},
 		},
 	}
+	if imagePullPolicy != "" {
+		container.ContainerDisk.ImagePullPolicy = imagePullPolicy
+	}
+	return container
 }
 
 func newPersistentVolumeClaimVolume(name, claimName string) v1.Volume {
@@ -293,13 +339,15 @@ func newEmptyDisk(name string, capacity resource.Quantity) v1.Volume {
 	}
 }
 
-func newHostDisk(name, path string, diskType v1.HostDiskType) v1.Volume {
+func newHostDisk(name, path string, diskType v1.HostDiskType, capacity string) v1.Volume {
 	hostDisk := v1.HostDisk{
 		Path: path,
 		Type: diskType,
 	}
-	if diskType == v1.HostDiskExistsOrCreate {
-		hostDisk.Capacity = resource.MustParse(defaultDiskSize)
+
+	// Set capacity if provided
+	if capacity != "" {
+		hostDisk.Capacity = resource.MustParse(capacity)
 	}
 
 	return v1.Volume{
