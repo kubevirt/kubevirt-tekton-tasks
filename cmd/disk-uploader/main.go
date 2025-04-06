@@ -37,34 +37,30 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 	imageDestination := opts.GetImageDestination()
 	imagePushTimeout := opts.GetPushTimeout()
 
-	log.Logger().Info("Creating a new Secret object...", zap.String("namespace", namespace), zap.String("name", name))
-
 	vmExportSecret, err := secrets.CreateVirtualMachineExportSecret(k8sClient, namespace, name)
 	if err != nil {
 		return "", err
 	}
 
-	log.Logger().Info("Creating a new VirtualMachineExport object...", zap.String("namespace", namespace), zap.String("name", name))
+	log.Logger().Info("Created a new Secret object.", zap.String("namespace", vmExportSecret.Namespace), zap.String("name", vmExportSecret.Name))
 
 	vmExport, err := vmexport.CreateVirtualMachineExport(virtClient, kind, namespace, name, vmExportSecret.Name)
 	if err != nil {
 		return "", err
 	}
 
-	log.Logger().Info("Waiting for VirtualMachineExport object status...")
+	log.Logger().Info("Created a new VirtualMachineExport object and waiting for its status...", zap.String("namespace", vmExport.Namespace), zap.String("name", vmExport.Name))
 
 	if err := vmexport.WaitUntilVirtualMachineExportReady(virtClient, namespace, vmExport.Name); err != nil {
 		return "", err
 	}
-
-	log.Logger().Info("Getting raw disk URL from the VirtualMachineExport object status...")
 
 	rawDiskUrl, err := vmexport.GetRawDiskUrlFromVolumes(virtClient, namespace, vmExport.Name, volumeName)
 	if err != nil {
 		return "", err
 	}
 
-	log.Logger().Info("Creating TLS certificate file from the VirtualMachineExport object status...")
+	log.Logger().Info("Retrieved raw disk URL from the VirtualMachineExport object status.", zap.String("url", rawDiskUrl))
 
 	certificateData, err := certificate.GetCertificateFromVirtualMachineExport(virtClient, namespace, vmExport.Name)
 	if err != nil {
@@ -74,8 +70,6 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 	if err := os.WriteFile(certificatePath, []byte(certificateData), 0644); err != nil {
 		return "", err
 	}
-
-	log.Logger().Info("Getting export token from the Secret object...")
 
 	kvExportToken, err := secrets.GetTokenFromVirtualMachineExportSecret(virtClient, namespace, vmExportSecret.Name)
 	if err != nil {
