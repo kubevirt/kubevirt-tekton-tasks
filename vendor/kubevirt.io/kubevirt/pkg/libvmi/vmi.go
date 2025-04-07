@@ -269,6 +269,26 @@ func WithoutSerialConsole() Option {
 	}
 }
 
+func WithKernelBootContainer(imageName string) Option {
+	return func(vmi *v1.VirtualMachineInstance) {
+		vmi.Spec.Domain.Firmware = &v1.Firmware{
+			KernelBoot: &v1.KernelBoot{
+				Container: &v1.KernelBootContainer{
+					Image: imageName,
+				},
+			},
+		}
+	}
+}
+
+func WithTPM(persistent bool) Option {
+	return func(vmi *v1.VirtualMachineInstance) {
+		vmi.Spec.Domain.Devices.TPM = &v1.TPMDevice{
+			Persistent: pointer.P(persistent),
+		}
+	}
+}
+
 func baseVmi(name string) *v1.VirtualMachineInstance {
 	vmi := v1.NewVMIReferenceFromNameWithNS("", name)
 	vmi.Spec = v1.VirtualMachineInstanceSpec{Domain: v1.DomainSpec{}}
