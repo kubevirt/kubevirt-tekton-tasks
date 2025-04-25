@@ -2,6 +2,8 @@ module github.com/kubevirt/kubevirt-tekton-tasks
 
 go 1.23.0
 
+toolchain go1.23.8
+
 // Kubernetes
 replace (
 	k8s.io/client-go => k8s.io/client-go v0.31.6
