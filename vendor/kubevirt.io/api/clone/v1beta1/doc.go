@@ -1,6 +1,5 @@
 /*
- *
- * Copyright 2022 gRPC authors.
+ * This file is part of the KubeVirt project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+ * Copyright 2024 The KubeVirt Authors.
+ *
  */
 
-package grpcsync
+// +k8s:deepcopy-gen=package
+// +groupName=clone.kubevirt.io
+// +k8s:openapi-gen=true
 
-import (
-	"sync"
-)
-
-// OnceFunc returns a function wrapping f which ensures f is only executed
-// once even if the returned function is executed multiple times.
-func OnceFunc(f func()) func() {
-	var once sync.Once
-	return func() {
-		once.Do(f)
-	}
-}
+package v1beta1
