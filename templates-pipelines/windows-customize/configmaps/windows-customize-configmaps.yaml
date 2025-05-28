@@ -245,9 +245,17 @@ data:
           </AutoLogon>
           <FirstLogonCommands>
             <SynchronousCommand wcm:action="add">
+              <CommandLine>bcdedit /set device partition=C:</CommandLine>
+              <Order>1</Order>
+            </SynchronousCommand>
+            <SynchronousCommand wcm:action="add">
+              <CommandLine>bcdedit /set osdevice partition=C:</CommandLine>
+              <Order>2</Order>
+            </SynchronousCommand>
+            <SynchronousCommand wcm:action="add">
               <CommandLine>reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /t REG_DWORD /d 0 /f</CommandLine>
               <RequiresUserInput>false</RequiresUserInput>
-              <Order>1</Order>
+              <Order>3</Order>
               <Description>Set AutoLogonCount to 0</Description>
             </SynchronousCommand>
           </FirstLogonCommands>

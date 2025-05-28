@@ -8,7 +8,7 @@ metadata:
 spec:
   source:
     registry:
-      url: docker://quay.io/openshift-cnv/containerdisks:Win11_22H2_English_x64
+      url: docker://quay.io/openshift-cnv/containerdisks:Win11_24H2_English_x64
       secretRef: tekton-tasks-container-disk-puller
   storage:
     volumeMode: Filesystem
