@@ -76,3 +76,11 @@ spec:
           value: $(params.privateKeySecretNamespace)
         - name: ADDITIONAL_SSH_KEYGEN_OPTIONS
           value: $(params.additionalSSHKeygenOptions)
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
+        seccompProfile:
+          type: RuntimeDefault

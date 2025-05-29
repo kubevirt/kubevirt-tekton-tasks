@@ -81,3 +81,11 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
+        seccompProfile:
+          type: RuntimeDefault

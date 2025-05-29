@@ -100,6 +100,7 @@ func (c *DiskVirtLibguestfsTestConfig) GetTaskRunWithName(nameSuffix string) *pi
 			Namespace: c.deploymentNamespace,
 		},
 		Spec: pipev1.TaskRunSpec{
+			ServiceAccountName: "pipeline",
 			TaskRef: &pipev1.TaskRef{
 				Name: taskName,
 				Kind: pipev1.NamespacedTaskKind,
