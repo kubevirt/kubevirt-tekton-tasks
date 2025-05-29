@@ -68,6 +68,12 @@ spec:
           name: guestfsappliance
         - mountPath: /mnt/targetpvc/
           name: targetpvc
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
   volumes:
     - name: guestfsappliance
       emptyDir: {}

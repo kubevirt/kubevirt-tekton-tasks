@@ -87,6 +87,14 @@ spec:
     volumeMounts:
       - mountPath: /tmp
         name: disk
+    securityContext:
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - "ALL"
+      seccompProfile:
+        type: RuntimeDefault
   volumes:
     - name: disk
       emptyDir: {}
