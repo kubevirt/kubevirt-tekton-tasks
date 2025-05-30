@@ -53,3 +53,11 @@ spec:
           value: $(params.successCondition)
         - name: FAILURE_CONDITION
           value: $(params.failureCondition)
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - "ALL"
+        seccompProfile:
+          type: RuntimeDefault

@@ -24,6 +24,22 @@ mkdir -p "${ARTIFACT_DIR}"
 
 kubectl get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || kubectl create namespace "$DEPLOY_NAMESPACE" > /dev/null
 
+oc apply -f - <<EOF
+kind: SecurityContextConstraints
+apiVersion: security.openshift.io/v1
+metadata:
+  name: scc-fsgroup-pipeline
+allowPrivilegedContainer: false
+fsGroup:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+runAsUser:
+  type: RunAsAny
+EOF
+
+oc adm policy add-scc-to-user scc-fsgroup-pipeline -z pipeline
+
 pushd test || exit
   rm -rf dist
   mkdir dist
@@ -42,5 +58,9 @@ pushd test || exit
   set -e
 
 popd
+
+oc adm policy remove-scc-from-user scc-fsgroup-pipeline -z pipeline
+
+oc delete scc scc-fsgroup-pipeline
 
 exit "${RET_CODE}"
