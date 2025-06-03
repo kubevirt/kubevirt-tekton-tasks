@@ -24,6 +24,7 @@ mkdir -p "${ARTIFACT_DIR}"
 
 kubectl get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || kubectl create namespace "$DEPLOY_NAMESPACE" > /dev/null
 
+
 pushd test || exit
   rm -rf dist
   mkdir dist
@@ -42,5 +43,6 @@ pushd test || exit
   set -e
 
 popd
+
 
 exit "${RET_CODE}"
