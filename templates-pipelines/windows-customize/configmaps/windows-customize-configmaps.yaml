@@ -245,20 +245,36 @@ data:
           </AutoLogon>
           <FirstLogonCommands>
             <SynchronousCommand wcm:action="add">
-              <CommandLine>bcdedit /set device partition=C:</CommandLine>
+              <CommandLine>PowerShell -ExecutionPolicy Bypass -NoProfile F:\post-update.ps1</CommandLine>
               <Order>1</Order>
-            </SynchronousCommand>
-            <SynchronousCommand wcm:action="add">
-              <CommandLine>bcdedit /set osdevice partition=C:</CommandLine>
-              <Order>2</Order>
             </SynchronousCommand>
             <SynchronousCommand wcm:action="add">
               <CommandLine>reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /t REG_DWORD /d 0 /f</CommandLine>
               <RequiresUserInput>false</RequiresUserInput>
-              <Order>3</Order>
+              <Order>2</Order>
               <Description>Set AutoLogonCount to 0</Description>
             </SynchronousCommand>
           </FirstLogonCommands>
         </component>
       </settings>
     </unattend>
+  post-update.ps1: |
+    bcdedit /set '{current}' device partition=C:
+    bcdedit /set '{current}' osdevice partition=C:
+    
+    $bcdOutput = bcdedit /enum all | Out-String
+
+    $pattern = @"
+    Resume from Hibernate
+    ---------------------
+    identifier\s+({[0-9a-fA-F-]+})
+    "@
+
+    if ($bcdOutput -match $pattern) {
+        $identifier = $Matches[1]
+        bcdedit /set $identifier device partition=C:
+    } else {
+        Write-Output "Identifier for 'Resume from Hibernate' not found."
+    }
+
+    bcdedit /set '{memdiag}' device partition=\Device\HarddiskVolume1
