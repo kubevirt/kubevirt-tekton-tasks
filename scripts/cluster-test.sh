@@ -24,7 +24,34 @@ mkdir -p "${ARTIFACT_DIR}"
 
 kubectl get namespaces -o name | grep -Eq "^namespace/$DEPLOY_NAMESPACE$" || kubectl create namespace "$DEPLOY_NAMESPACE" > /dev/null
 
-
+# for purposes of disk-virt tests, we need to create SCC, which will allow pod to 
+# set FSgroup to uid 107
+oc apply -f - <<EOF
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: tekton-tasks-scc
+allowPrivilegedContainer: false
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+seccompProfiles:
+  - "runtime/default"
+readOnlyRootFilesystem: false
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+fsGroup:
+  type: MustRunAs
+  ranges:
+    - min: 107
+      max: 107
+users:
+- system:serviceaccount:${DEPLOY_NAMESPACE}:pipeline
+EOF
 pushd test || exit
   rm -rf dist
   mkdir dist
@@ -44,5 +71,5 @@ pushd test || exit
 
 popd
 
-
+oc delete scc tekton-tasks-scc
 exit "${RET_CODE}"

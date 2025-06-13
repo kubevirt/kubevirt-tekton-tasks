@@ -277,6 +277,39 @@ spec:
           fsGroup: 107
           runAsUser: 107
 ```
+
+To be able to set the SecurityContext with fsGroup you will probably need custom SCC. Please update variable `${PIPELINE_NAMESPACE}` with namespace where the pipeline is deployed
+```
+oc apply -f - <<EOF
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: tekton-tasks-scc
+allowPrivilegedContainer: false
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+seccompProfiles:
+  - "runtime/default"
+readOnlyRootFilesystem: false
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+fsGroup:
+  type: MustRunAs
+  ranges:
+    - min: 107
+      max: 107
+users:
+- system:serviceaccount:${PIPELINE_NAMESPACE}:pipeline
+EOF
+```
+
+Then you have to add annotation `"openshift.io/required-scc": "tekton-tasks-scc"` to your PipelineRun.
+
 - Windows preferences in older KubeVirt versions might still use Bios mode. In that case, set the `useBiosMode` parameter 
 to `true`. This will skip the `modify-windows-iso-file` task. In case the the Windows preference uses Bios and the 
 `useBiosMode` parameter is not set to true, the Windows VM will not work.

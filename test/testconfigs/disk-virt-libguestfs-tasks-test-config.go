@@ -96,6 +96,9 @@ func (c *DiskVirtLibguestfsTestConfig) GetTaskRunWithName(nameSuffix string) *pi
 	var qemuUser int64 = 107
 	return &pipev1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{
+				"openshift.io/required-scc": "tekton-tasks-scc",
+			},
 			Name:      E2ETestsRandomName("taskrun-disk-" + string(c.TaskData.LibguestfsTaskType) + nameSuffix),
 			Namespace: c.deploymentNamespace,
 		},
