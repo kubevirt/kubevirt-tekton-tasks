@@ -32,6 +32,9 @@ func (c *PipelineTestConfig) GetPipelineRun() *pipev1.PipelineRun {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      E2ETestsRandomName(c.PipelineRunData.Name),
 			Namespace: c.deploymentNamespace,
+			Annotations: map[string]string{
+				"openshift.io/required-scc": "tekton-tasks-scc",
+			},
 		},
 		Spec: pipev1.PipelineRunSpec{
 			PipelineRef:  c.PipelineRunData.PipelineRef,
