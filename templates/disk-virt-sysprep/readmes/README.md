@@ -29,6 +29,37 @@ spec:
       runAsUser: 107
 ```
 
+To be able to set the SecurityContext with fsGroup you will probably need custom SCC. Please update variable `${TASK_NAMESPACE}` with namespace where the task is deployed
+```
+oc apply -f - <<EOF
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: tekton-tasks-scc
+allowPrivilegedContainer: false
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+seccompProfiles:
+  - "runtime/default"
+readOnlyRootFilesystem: false
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+fsGroup:
+  type: MustRunAs
+  ranges:
+    - min: 107
+      max: 107
+users:
+- system:serviceaccount:${TASK_NAMESPACE}:pipeline
+EOF
+```
+Then you have to add annotation `"openshift.io/required-scc": "tekton-tasks-scc"` to your TaskRun.
+
 ### OS support
 
 - Linux: full; all the sysprep commands work
