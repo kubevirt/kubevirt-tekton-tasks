@@ -58,22 +58,22 @@ var _ = Describe("Run disk-uploader", func() {
 	})
 
 	It("Extracts disk from VM and upload to container registry", func() {
-		cirrosDataVolume := newCirrosDataVolume()
-		cirrosVm, err := createCirrosVM(f.KubevirtClient, f.DeployNamespace, cirrosDataVolume)
+		alpineDataVolume := newAlpineDataVolume()
+		alpineVm, err := createAlpineVM(f.KubevirtClient, f.DeployNamespace, alpineDataVolume)
 		Expect(err).ToNot(HaveOccurred())
 
-		f.ManageVMs(cirrosVm)
-		f.ManageDataVolumes(cirrosDataVolume)
+		f.ManageVMs(alpineVm)
+		f.ManageDataVolumes(alpineDataVolume)
 
-		_, err = vm.WaitForVM(f.KubevirtClient, f.DeployNamespace, cirrosVm.Name, "", constants.Timeouts.WaitForVMStart.Duration, false)
+		_, err = vm.WaitForVM(f.KubevirtClient, f.DeployNamespace, alpineVm.Name, "", constants.Timeouts.WaitForVMStart.Duration, false)
 		Expect(err).ToNot(HaveOccurred())
 
 		config := &testconfigs.DiskUploaderTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{},
 			TaskData: testconfigs.DiskUploaderTaskData{
 				ExportSourceKind: "vm",
-				ExportSourceName: cirrosVm.Name,
-				VolumeName:       cirrosVm.Spec.Template.Spec.Volumes[0].DataVolume.Name,
+				ExportSourceName: alpineVm.Name,
+				VolumeName:       alpineVm.Spec.Template.Spec.Volumes[0].DataVolume.Name,
 				ImageDestination: imageDestination,
 				SecretName:       secretName,
 			},
@@ -115,7 +115,7 @@ func createRegistryCredentials(client kubeclientcorev1.CoreV1Interface, name, na
 	return client.Secrets(namespace).Create(context.Background(), v1Secret, metav1.CreateOptions{})
 }
 
-func createCirrosVM(client kubevirtcliv1.KubevirtClient, namespace string, dataVolume *cdiv1beta1.DataVolume) (*v1.VirtualMachine, error) {
+func createAlpineVM(client kubevirtcliv1.KubevirtClient, namespace string, dataVolume *cdiv1beta1.DataVolume) (*v1.VirtualMachine, error) {
 	v1VirtualMachine := libvmi.NewVirtualMachine(
 		libvmi.New(
 			libvmi.WithDataVolume("datavolumedisk", dataVolume.Name),
@@ -127,7 +127,7 @@ func createCirrosVM(client kubevirtcliv1.KubevirtClient, namespace string, dataV
 	return client.VirtualMachine(namespace).Create(context.Background(), v1VirtualMachine, metav1.CreateOptions{})
 }
 
-func newCirrosDataVolume() *cdiv1beta1.DataVolume {
+func newAlpineDataVolume() *cdiv1beta1.DataVolume {
 	return &cdiv1beta1.DataVolume{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: constants.E2ETestsRandomName("test-datavolume"),
@@ -138,7 +138,7 @@ func newCirrosDataVolume() *cdiv1beta1.DataVolume {
 		Spec: cdiv1beta1.DataVolumeSpec{
 			Source: &cdiv1beta1.DataVolumeSource{
 				Registry: &cdiv1beta1.DataVolumeSourceRegistry{
-					URL: ptr.To("docker://quay.io/kubevirt/cirros-container-disk-demo"),
+					URL: ptr.To("docker://quay.io/kubevirt/alpine-container-disk-demo:20250818_82ae6622ba"),
 				},
 			},
 			Storage: &cdiv1beta1.StorageSpec{
