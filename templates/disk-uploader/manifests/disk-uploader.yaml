@@ -3,6 +3,7 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   annotations:
+    openshift.io/required-scc: restricted-v2
     tekton.dev/pipelines.minVersion: "0.43.0"
     tekton.dev/categories: Automation
     tekton.dev/tags: kubevirt, containerdisks
