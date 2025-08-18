@@ -26,7 +26,7 @@ func NewTestAlpineVM(name string) *TestVM {
 			Name: containerDiskName,
 			VolumeSource: v1.VolumeSource{
 				ContainerDisk: &v1.ContainerDiskSource{
-					Image: "quay.io/kubevirt/alpine-container-disk-demo:20240426_ca94b81c6",
+					Image: "quay.io/kubevirt/alpine-container-disk-demo:20250817_82ae6622ba",
 				},
 			},
 		},
