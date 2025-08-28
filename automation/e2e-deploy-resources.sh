@@ -6,17 +6,14 @@ if kubectl get namespace tekton-pipelines > /dev/null 2>&1; then
   exit 0
 fi
 
-KUBEVIRT_VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+KUBEVIRT_VERSION="v1.1.1"
 
-CDI_VERSION=$(curl -s https://api.github.com/repos/kubevirt/containerized-data-importer/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+CDI_VERSION="v1.58.5"
 
 TEKTON_VERSION=$(curl -s https://api.github.com/repos/tektoncd/operator/releases | \
             jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
 
-SSP_OPERATOR_VERSION=$(curl -s  https://api.github.com/repos/kubevirt/ssp-operator/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+SSP_OPERATOR_VERSION="v0.19.1"
 
 if kubectl get templates > /dev/null 2>&1; then
   # okd
@@ -71,7 +68,7 @@ kubectl wait -n kubevirt kv kubevirt --for condition=Available --timeout 10m
 kubectl wait -n kubevirt deployment ssp-operator --for condition=Available --timeout 10m
 
 kubectl create -f - <<EOF
-apiVersion: ssp.kubevirt.io/v1beta3
+apiVersion: ssp.kubevirt.io/v1beta2
 kind: SSP
 metadata:
   name: ssp-sample
