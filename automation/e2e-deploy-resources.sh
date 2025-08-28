@@ -6,16 +6,13 @@ if kubectl get namespace tekton-pipelines > /dev/null 2>&1; then
   exit 0
 fi
 
-KUBEVIRT_VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+KUBEVIRT_VERSION="v1.0.1"
 
-CDI_VERSION=$(curl -s https://api.github.com/repos/kubevirt/containerized-data-importer/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+CDI_VERSION="v1.57.0"
 
-TEKTON_VERSION="v0.67.0"
+TEKTON_URL="https://github.com/tektoncd/operator/releases/download/v0.76.0/openshift-release.yaml"
 
-SSP_OPERATOR_VERSION=$(curl -s  https://api.github.com/repos/kubevirt/ssp-operator/releases | \
-            jq '.[] | select(.prerelease==false) | .tag_name' | sort -V | tail -n1 | tr -d '"')
+SSP_OPERATOR_VERSION="v0.18.3"
 
 if kubectl get templates > /dev/null 2>&1; then
   # okd
@@ -27,7 +24,9 @@ if kubectl get templates > /dev/null 2>&1; then
 fi
 
 # Deploy Tekton Pipelines
-oc apply -f "https://github.com/tektoncd/operator/releases/download/${TEKTON_VERSION}/openshift-release.yaml"
+curl --silent --show-error --location "${TEKTON_URL}" \
+  | sed 's|gcr.io/tekton-releases|ghcr.io/tektoncd|g' \
+  | oc apply -f -
 
 # Deploy Kubevirt
 kubectl apply -f "https://github.com/kubevirt/kubevirt/releases/download/${KUBEVIRT_VERSION}/kubevirt-operator.yaml"
@@ -70,7 +69,7 @@ kubectl wait -n kubevirt kv kubevirt --for condition=Available --timeout 10m
 kubectl wait -n kubevirt deployment ssp-operator --for condition=Available --timeout 10m
 
 kubectl create -f - <<EOF
-apiVersion: ssp.kubevirt.io/v1beta3
+apiVersion: ssp.kubevirt.io/v1beta2
 kind: SSP
 metadata:
   name: ssp-sample
