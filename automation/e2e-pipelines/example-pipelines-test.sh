@@ -58,6 +58,9 @@ fi
 echo "Deploying resources"
 ./automation/e2e-deploy-resources.sh
 
+#insert information about access modes and volume mode
+oc patch storageprofile ssd-csi --type=merge -p '{"spec": {"claimPropertySets": [{"accessModes": ["ReadWriteOnce"], "volumeMode": "Filesystem"}]}}'
+
 # SECRET
 accessKeyId="/tmp/secrets/accessKeyId"
 secretKey="/tmp/secrets/secretKey"
