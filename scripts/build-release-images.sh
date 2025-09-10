@@ -30,4 +30,4 @@ IMAGE="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME_AND_TAG}"
 # Remove any existing manifest and image
 podman manifest exists "$IMAGE" && podman manifest rm "${IMAGE}" || true
 podman image exists "$IMAGE" && podman rmi "${IMAGE}" || true
-podman build --platform=linux/amd64,linux/arm64 --manifest "${IMAGE}" -f "build/Containerfile.DiskVirt" .
+podman build --platform=linux/amd64,linux/arm64,linux/s390x --manifest "${IMAGE}" -f "build/Containerfile.DiskVirt" .
