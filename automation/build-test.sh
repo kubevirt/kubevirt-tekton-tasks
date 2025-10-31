@@ -2,5 +2,5 @@
 
 GOFLAGS='' go install github.com/jstemmer/go-junit-report@latest
 
-GOFLAGS='' go install github.com/onsi/ginkgo/v2/ginkgo@v2.21.0
-GOFLAGS='' go install github.com/onsi/gomega/...@v1.35.1
+GOFLAGS='' go install github.com/onsi/ginkgo/v2/ginkgo@v2.27.2
+GOFLAGS='' go install github.com/onsi/gomega/...@v1.38.2
