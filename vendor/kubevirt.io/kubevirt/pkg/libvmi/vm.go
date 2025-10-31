@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Copyright 2024 Red Hat, Inc.
+ * Copyright The KubeVirt Authors.
  *
  */
 
@@ -57,6 +57,28 @@ func NewVirtualMachine(vmi *v1.VirtualMachineInstance, opts ...VMOption) *v1.Vir
 	}
 
 	return vm
+}
+
+func WithAnnotations(annotations map[string]string) VMOption {
+	return func(vm *v1.VirtualMachine) {
+		if vm.Annotations == nil {
+			vm.Annotations = annotations
+		}
+		for key, val := range annotations {
+			vm.Annotations[key] = val
+		}
+	}
+}
+
+func WithLabels(labels map[string]string) VMOption {
+	return func(vm *v1.VirtualMachine) {
+		if vm.Labels == nil {
+			vm.Labels = labels
+		}
+		for key, val := range labels {
+			vm.Labels[key] = val
+		}
+	}
 }
 
 func WithRunStrategy(strategy v1.VirtualMachineRunStrategy) VMOption {
@@ -167,5 +189,11 @@ func WithPreferenceRevision(revisionName string) VMOption {
 			Name:         "unused",
 			RevisionName: revisionName,
 		}
+	}
+}
+
+func WithUpdateVolumeStrategy(strategy v1.UpdateVolumesStrategy) VMOption {
+	return func(vm *v1.VirtualMachine) {
+		vm.Spec.UpdateVolumesStrategy = pointer.P(strategy)
 	}
 }
