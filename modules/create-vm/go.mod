@@ -16,7 +16,7 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	kubevirt.io/api v1.0.0
 	kubevirt.io/client-go v1.0.0
-	kubevirt.io/kubevirt v1.0.0
+	kubevirt.io/kubevirt v1.5.3
 	sigs.k8s.io/yaml v1.3.0
 )
 
