@@ -1,10 +1,10 @@
 ARG BUILD_ARCH=amd64
-FROM --platform=linux/${BUILD_ARCH} quay.io/centos/centos:stream9 AS taskBuilder
+FROM --platform=linux/${BUILD_ARCH} quay.io/centos/centos:stream10 AS taskBuilder
 ARG TARGETARCH
 
 RUN dnf install -y tar gzip && dnf clean all
 
-ENV GO_VERSION="1.22.7"
+ENV GO_VERSION="1.24.9"
 ENV TARGETARCH=${TARGETARCH:-amd64}
 
 RUN export ARCH=$(uname -m | sed 's/x86_64/amd64/'); curl -L https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz | tar -C /usr/local -xzf -

@@ -142,7 +142,7 @@ func newAlpineDataVolume() *cdiv1beta1.DataVolume {
 				},
 			},
 			Storage: &cdiv1beta1.StorageSpec{
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						"storage": resource.MustParse("512Mi"),
 					},

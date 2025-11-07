@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Copyright 2017, 2018 Red Hat, Inc.
+ * Copyright The KubeVirt Authors.
  *
  */
 
@@ -26,22 +26,20 @@ import (
 	"sync"
 	"time"
 
-	"kubevirt.io/api/snapshot"
-
-	"kubevirt.io/api/clone"
-	clonev1alpha1 "kubevirt.io/api/clone/v1alpha1"
-
 	vsv1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	secv1 "github.com/openshift/api/security/v1"
 	promv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
+	coordinationv1 "k8s.io/api/coordination/v1"
 	k8sv1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	resourcev1beta1 "k8s.io/api/resource/v1beta1"
 	storagev1 "k8s.io/api/storage/v1"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	extclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -54,6 +52,8 @@ import (
 	apiregv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 	aggregatorclient "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
 
+	clonebase "kubevirt.io/api/clone"
+	clone "kubevirt.io/api/clone/v1beta1"
 	"kubevirt.io/api/core"
 	kubev1 "kubevirt.io/api/core/v1"
 	exportv1 "kubevirt.io/api/export/v1beta1"
@@ -62,6 +62,7 @@ import (
 	"kubevirt.io/api/migrations"
 	migrationsv1 "kubevirt.io/api/migrations/v1alpha1"
 	poolv1 "kubevirt.io/api/pool/v1alpha1"
+	"kubevirt.io/api/snapshot"
 	snapshotv1 "kubevirt.io/api/snapshot/v1beta1"
 	"kubevirt.io/client-go/kubecli"
 	"kubevirt.io/client-go/log"
@@ -78,6 +79,11 @@ const (
 	*/
 	OperatorLabel    = kubev1.ManagedByLabel + " in (" + kubev1.ManagedByLabelOperatorValue + "," + kubev1.ManagedByLabelOperatorOldValue + " )"
 	NotOperatorLabel = kubev1.ManagedByLabel + " notin (" + kubev1.ManagedByLabelOperatorValue + "," + kubev1.ManagedByLabelOperatorOldValue + " )"
+)
+
+const (
+	ByVMINameIndex  = "byVMIName"
+	UnfinishedIndex = "unfinished"
 )
 
 var unexpectedObjectError = errors.New("unexpected object")
@@ -161,6 +167,9 @@ type KubeInformerFactory interface {
 
 	// Watches for the kubevirt export CA config map
 	KubeVirtExportCAConfigMap() cache.SharedIndexInformer
+
+	// Watches for changes in kubevirt leases
+	Leases() cache.SharedIndexInformer
 
 	// Watches for the export route config map
 	ExportRouteConfigMap() cache.SharedIndexInformer
@@ -316,6 +325,14 @@ type KubeInformerFactory interface {
 	Pod() cache.SharedIndexInformer
 
 	ResourceQuota() cache.SharedIndexInformer
+
+	ResourceClaim() cache.SharedIndexInformer
+
+	DummyResourceClaim() cache.SharedIndexInformer
+
+	ResourceSlice() cache.SharedIndexInformer
+
+	DummyResourceSlice() cache.SharedIndexInformer
 
 	K8SInformerFactory() informers.SharedInformerFactory
 }
@@ -510,10 +527,33 @@ func (f *kubeInformerFactory) VirtualMachinePreset() cache.SharedIndexInformer {
 	})
 }
 
+func GetVirtualMachineInstanceMigrationInformerIndexers() cache.Indexers {
+	return cache.Indexers{
+		cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
+		ByVMINameIndex: func(obj interface{}) ([]string, error) {
+			migration, ok := obj.(*kubev1.VirtualMachineInstanceMigration)
+			if !ok {
+				return nil, nil
+			}
+			return []string{fmt.Sprintf("%s/%s", migration.Namespace, migration.Spec.VMIName)}, nil
+		},
+		UnfinishedIndex: func(obj interface{}) ([]string, error) {
+			migration, ok := obj.(*kubev1.VirtualMachineInstanceMigration)
+			if !ok {
+				return nil, nil
+			}
+			if !migration.IsFinal() {
+				return []string{UnfinishedIndex}, nil
+			}
+			return nil, nil
+		},
+	}
+}
+
 func (f *kubeInformerFactory) VirtualMachineInstanceMigration() cache.SharedIndexInformer {
 	return f.getInformer("vmimInformer", func() cache.SharedIndexInformer {
 		lw := cache.NewListWatchFromClient(f.restClient, "virtualmachineinstancemigrations", k8sv1.NamespaceAll, fields.Everything())
-		return cache.NewSharedIndexInformer(lw, &kubev1.VirtualMachineInstanceMigration{}, f.defaultResync, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+		return cache.NewSharedIndexInformer(lw, &kubev1.VirtualMachineInstanceMigration{}, f.defaultResync, GetVirtualMachineInstanceMigrationInformerIndexers())
 	})
 }
 
@@ -717,15 +757,42 @@ func (f *kubeInformerFactory) MigrationPolicy() cache.SharedIndexInformer {
 }
 
 func GetVirtualMachineCloneInformerIndexers() cache.Indexers {
-	getkey := func(vmClone *clonev1alpha1.VirtualMachineClone, resourceName string) string {
+	getkey := func(vmClone *clone.VirtualMachineClone, resourceName string) string {
 		return fmt.Sprintf("%s/%s", vmClone.Namespace, resourceName)
 	}
 
 	return cache.Indexers{
 		cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
+		// Gets: vm key. Returns: clones that their source or target is the specified vm
+		"vmSource": func(obj interface{}) ([]string, error) {
+			vmClone, ok := obj.(*clone.VirtualMachineClone)
+			if !ok {
+				return nil, unexpectedObjectError
+			}
+
+			source := vmClone.Spec.Source
+			if source != nil && source.APIGroup != nil && *source.APIGroup == core.GroupName && source.Kind == "VirtualMachine" {
+				return []string{getkey(vmClone, source.Name)}, nil
+			}
+
+			return nil, nil
+		},
+		"vmTarget": func(obj interface{}) ([]string, error) {
+			vmClone, ok := obj.(*clone.VirtualMachineClone)
+			if !ok {
+				return nil, unexpectedObjectError
+			}
+
+			target := vmClone.Spec.Target
+			if target != nil && target.APIGroup != nil && *target.APIGroup == core.GroupName && target.Kind == "VirtualMachine" {
+				return []string{getkey(vmClone, target.Name)}, nil
+			}
+
+			return nil, nil
+		},
 		// Gets: snapshot key. Returns: clones that their source is the specified snapshot
 		"snapshotSource": func(obj interface{}) ([]string, error) {
-			vmClone, ok := obj.(*clonev1alpha1.VirtualMachineClone)
+			vmClone, ok := obj.(*clone.VirtualMachineClone)
 			if !ok {
 				return nil, unexpectedObjectError
 			}
@@ -738,39 +805,39 @@ func GetVirtualMachineCloneInformerIndexers() cache.Indexers {
 			return nil, nil
 		},
 		// Gets: snapshot key. Returns: clones in phase SnapshotInProgress that wait for the specified snapshot
-		string(clonev1alpha1.SnapshotInProgress): func(obj interface{}) ([]string, error) {
-			vmClone, ok := obj.(*clonev1alpha1.VirtualMachineClone)
+		string(clone.SnapshotInProgress): func(obj interface{}) ([]string, error) {
+			vmClone, ok := obj.(*clone.VirtualMachineClone)
 			if !ok {
 				return nil, unexpectedObjectError
 			}
 
-			if vmClone.Status.Phase == clonev1alpha1.SnapshotInProgress && vmClone.Status.SnapshotName != nil {
+			if vmClone.Status.Phase == clone.SnapshotInProgress && vmClone.Status.SnapshotName != nil {
 				return []string{getkey(vmClone, *vmClone.Status.SnapshotName)}, nil
 			}
 
 			return nil, nil
 		},
 		// Gets: restore key. Returns: clones in phase RestoreInProgress that wait for the specified restore
-		string(clonev1alpha1.RestoreInProgress): func(obj interface{}) ([]string, error) {
-			vmClone, ok := obj.(*clonev1alpha1.VirtualMachineClone)
+		string(clone.RestoreInProgress): func(obj interface{}) ([]string, error) {
+			vmClone, ok := obj.(*clone.VirtualMachineClone)
 			if !ok {
 				return nil, unexpectedObjectError
 			}
 
-			if vmClone.Status.Phase == clonev1alpha1.RestoreInProgress && vmClone.Status.RestoreName != nil {
+			if vmClone.Status.Phase == clone.RestoreInProgress && vmClone.Status.RestoreName != nil {
 				return []string{getkey(vmClone, *vmClone.Status.RestoreName)}, nil
 			}
 
 			return nil, nil
 		},
 		// Gets: restore key. Returns: clones in phase Succeeded
-		string(clonev1alpha1.Succeeded): func(obj interface{}) ([]string, error) {
-			vmClone, ok := obj.(*clonev1alpha1.VirtualMachineClone)
+		string(clone.Succeeded): func(obj interface{}) ([]string, error) {
+			vmClone, ok := obj.(*clone.VirtualMachineClone)
 			if !ok {
 				return nil, unexpectedObjectError
 			}
 
-			if vmClone.Status.Phase == clonev1alpha1.Succeeded && vmClone.Status.RestoreName != nil {
+			if vmClone.Status.Phase == clone.Succeeded && vmClone.Status.RestoreName != nil {
 				return []string{getkey(vmClone, *vmClone.Status.RestoreName)}, nil
 			}
 
@@ -781,8 +848,8 @@ func GetVirtualMachineCloneInformerIndexers() cache.Indexers {
 
 func (f *kubeInformerFactory) VirtualMachineClone() cache.SharedIndexInformer {
 	return f.getInformer("virtualMachineCloneInformer", func() cache.SharedIndexInformer {
-		lw := cache.NewListWatchFromClient(f.clientSet.GeneratedKubeVirtClient().CloneV1alpha1().RESTClient(), clone.ResourceVMClonePlural, k8sv1.NamespaceAll, fields.Everything())
-		return cache.NewSharedIndexInformer(lw, &clonev1alpha1.VirtualMachineClone{}, f.defaultResync, GetVirtualMachineCloneInformerIndexers())
+		lw := cache.NewListWatchFromClient(f.clientSet.GeneratedKubeVirtClient().CloneV1beta1().RESTClient(), clonebase.ResourceVMClonePlural, k8sv1.NamespaceAll, fields.Everything())
+		return cache.NewSharedIndexInformer(lw, &clone.VirtualMachineClone{}, f.defaultResync, GetVirtualMachineCloneInformerIndexers())
 	})
 }
 
@@ -884,6 +951,22 @@ func (f *kubeInformerFactory) CDIConfig() cache.SharedIndexInformer {
 func (f *kubeInformerFactory) DummyCDIConfig() cache.SharedIndexInformer {
 	return f.getInformer("fakeCdiConfigInformer", func() cache.SharedIndexInformer {
 		informer, _ := testutils.NewFakeInformerFor(&cdiv1.CDIConfig{})
+		return informer
+	})
+}
+
+func (f *kubeInformerFactory) Leases() cache.SharedIndexInformer {
+	return f.getInformer("leasesInformer", func() cache.SharedIndexInformer {
+		restClient := f.clientSet.CoordinationV1().RESTClient()
+		lw := cache.NewListWatchFromClient(restClient, "leases", f.kubevirtNamespace, fields.Everything())
+
+		return cache.NewSharedIndexInformer(lw, &coordinationv1.Lease{}, f.defaultResync, cache.Indexers{})
+	})
+}
+
+func (f *kubeInformerFactory) DummyLeases() cache.SharedIndexInformer {
+	return f.getInformer("fakeLeasesInformer", func() cache.SharedIndexInformer {
+		informer, _ := testutils.NewFakeInformerFor(&coordinationv1.Lease{})
 		return informer
 	})
 }
@@ -1391,6 +1474,34 @@ func (f *kubeInformerFactory) ResourceQuota() cache.SharedIndexInformer {
 	return f.getInformer("resourceQuotaInformer", func() cache.SharedIndexInformer {
 		lw := cache.NewListWatchFromClient(f.clientSet.CoreV1().RESTClient(), "resourcequotas", k8sv1.NamespaceAll, fields.Everything())
 		return cache.NewSharedIndexInformer(lw, &k8sv1.ResourceQuota{}, f.defaultResync, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	})
+}
+
+func (f *kubeInformerFactory) ResourceClaim() cache.SharedIndexInformer {
+	return f.getInformer("resourceClaimInformer", func() cache.SharedIndexInformer {
+		lw := cache.NewListWatchFromClient(f.clientSet.ResourceV1beta1().RESTClient(), "resourceclaims", k8sv1.NamespaceAll, fields.Everything())
+		return cache.NewSharedIndexInformer(lw, &resourcev1beta1.ResourceClaim{}, f.defaultResync, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	})
+}
+
+func (f *kubeInformerFactory) DummyResourceClaim() cache.SharedIndexInformer {
+	return f.getInformer("fakeResourceClaimInformer", func() cache.SharedIndexInformer {
+		informer, _ := testutils.NewFakeInformerFor(&resourcev1beta1.ResourceClaim{})
+		return informer
+	})
+}
+
+func (f *kubeInformerFactory) ResourceSlice() cache.SharedIndexInformer {
+	return f.getInformer("resourceSliceInformer", func() cache.SharedIndexInformer {
+		lw := cache.NewListWatchFromClient(f.clientSet.ResourceV1beta1().RESTClient(), "resourceslices", k8sv1.NamespaceAll, fields.Everything())
+		return cache.NewSharedIndexInformer(lw, &resourcev1beta1.ResourceSlice{}, f.defaultResync, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	})
+}
+
+func (f *kubeInformerFactory) DummyResourceSlice() cache.SharedIndexInformer {
+	return f.getInformer("fakeResourceSliceInformer", func() cache.SharedIndexInformer {
+		informer, _ := testutils.NewFakeInformerFor(&resourcev1beta1.ResourceSlice{})
+		return informer
 	})
 }
 

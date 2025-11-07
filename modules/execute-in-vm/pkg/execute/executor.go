@@ -105,7 +105,7 @@ func (e *Executor) EnsureVMRunning(timeout time.Duration) error {
 				log.Logger().Debug("ip address not found", logFields[0], logFields[1], zap.Reflect("status", vmInstance.Status))
 
 				if ipError != nil {
-					return false, zerrors.NewMissingRequiredError(ipError.Error())
+					return false, zerrors.NewMissingRequiredError("ip address not found: %v", ipError.Error())
 				}
 				// wait for ipAddress
 				return false, nil

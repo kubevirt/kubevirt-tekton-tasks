@@ -519,6 +519,11 @@ type DevicePreferences struct {
 	//
 	// +optional
 	PreferredInterfaceMasquerade *v1.InterfaceMasquerade `json:"preferredInterfaceMasquerade,omitempty"`
+
+	// PreferredPanicDeviceModel optionally defines the preferred panic device model to use with panic devices.
+	//
+	// +optional
+	PreferredPanicDeviceModel *v1.PanicDeviceModel `json:"preferredPanicDeviceModel,omitempty"`
 }
 
 // FeaturePreferences contains various optional defaults for Features.
@@ -573,14 +578,16 @@ type FirmwarePreferences struct {
 	// PreferredUseEfi optionally enables EFI
 	//
 	// +optional
-	PreferredUseEfi *bool `json:"preferredUseEfi,omitempty"`
+	// Deprecated: Will be removed with v1beta2 or v1
+	DeprecatedPreferredUseEfi *bool `json:"preferredUseEfi,omitempty"`
 
 	// PreferredUseSecureBoot optionally enables SecureBoot and the OVMF roms will be swapped for SecureBoot-enabled ones.
 	//
 	// Requires PreferredUseEfi and PreferredSmm to be enabled.
 	//
 	// +optional
-	PreferredUseSecureBoot *bool `json:"preferredUseSecureBoot,omitempty"`
+	// Deprecated: Will be removed with v1beta2 or v1
+	DeprecatedPreferredUseSecureBoot *bool `json:"preferredUseSecureBoot,omitempty"`
 
 	// PreferredEfi optionally enables EFI
 	//

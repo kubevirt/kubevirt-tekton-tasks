@@ -1,11 +1,11 @@
 ARG BUILD_ARCH=amd64
-FROM --platform=linux/${BUILD_ARCH} quay.io/centos/centos:stream9 AS taskBuilder
+FROM --platform=linux/${BUILD_ARCH} quay.io/centos/centos:stream10 AS taskBuilder
 ARG TARGETARCH
 
 RUN dnf install -y tar gzip && dnf clean all
 
 ENV TARGETARCH=${TARGETARCH:-amd64}
-ENV GO_VERSION="1.22.7"
+ENV GO_VERSION="1.24.9"
 RUN export ARCH=$(uname -m | sed 's/x86_64/amd64/'); curl -L https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz | tar -C /usr/local -xzf -
 ENV PATH=$PATH:/usr/local/go/bin
 
@@ -20,7 +20,7 @@ RUN task_names=("create-vm" "execute-in-vm" "generate-ssh-keys" "modify-data-obj
     done
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} GODEBUG=http2client=0 go build -mod=vendor -o /out/disk-uploader ./cmd/disk-uploader
 
-FROM --platform=linux/${TARGETARCH} quay.io/centos/centos:stream9
+FROM --platform=linux/${TARGETARCH} quay.io/centos/centos:stream10
 ENV USER_UID=1001 \
     USER_NAME=tekton-tasks \
     HOME=/home/${USER_NAME}

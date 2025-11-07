@@ -78,6 +78,13 @@ func (c *FakeVirtualMachineInstances) Unfreeze(ctx context.Context, name string)
 	return err
 }
 
+func (c *FakeVirtualMachineInstances) Reset(ctx context.Context, name string) error {
+	_, err := c.Fake.
+		Invokes(fake2.NewPutSubresourceAction(virtualmachineinstancesResource, c.ns, "reset", name, struct{}{}), nil)
+
+	return err
+}
+
 func (c *FakeVirtualMachineInstances) SoftReboot(ctx context.Context, name string) error {
 	_, err := c.Fake.
 		Invokes(fake2.NewPutSubresourceAction(virtualmachineinstancesResource, c.ns, "softreboot", name, struct{}{}), nil)
@@ -151,4 +158,11 @@ func (c *FakeVirtualMachineInstances) SEVInjectLaunchSecret(ctx context.Context,
 		Invokes(fake2.NewPutSubresourceAction(virtualmachineinstancesResource, c.ns, "sev/injectlaunchsecret", name, sevSecretOptions), nil)
 
 	return err
+}
+
+func (c *FakeVirtualMachineInstances) ObjectGraph(ctx context.Context, name string, objectGraphOptions *v1.ObjectGraphOptions) (v1.ObjectGraphNode, error) {
+	obj, err := c.Fake.
+		Invokes(fake2.NewGetSubresourceAction(virtualmachineinstancesResource, c.ns, "objectgraph", name, objectGraphOptions), nil)
+
+	return *obj.(*v1.ObjectGraphNode), err
 }
