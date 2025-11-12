@@ -23,6 +23,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
 
+      - name: Install QEMU emulation
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static binfmt-support
+
       - name: Publish tekton images and generate release manifests
         run: |
           echo ${{ secrets.QUAY_PASSWORD }} | podman login -u="${{ secrets.QUAY_BOT }}" --password-stdin quay.io
