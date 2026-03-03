@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-virt-sysprep
 
-go 1.20
+go 1.24.0
 
 require (
 	github.com/alexflint/go-arg v1.3.0
@@ -26,9 +26,9 @@ require (
 	github.com/pborman/uuid v1.2.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.45.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

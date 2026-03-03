@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/sharedtest
 
-go 1.20
+go 1.24.0
 
 require (
 	github.com/openshift/api v0.0.0-20211217221424-8779abfbd571
@@ -21,8 +21,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
 	github.com/pborman/uuid v1.2.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.45.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/apiextensions-apiserver v0.23.5 // indirect
