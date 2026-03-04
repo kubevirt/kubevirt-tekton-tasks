@@ -1424,8 +1424,8 @@ kubevirt.io/containerized-data-importer-api v1.63.1 h1:g2I9za0QEscRsQjOOK/MM0fey
 kubevirt.io/containerized-data-importer-api v1.63.1/go.mod h1:VGp35wxpLXU18b7cnEpmcThI3AjcZUSfg/Zfql44U4o=
 kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4 h1:fZYvD3/Vnitfkx6IJxjLAk8ugnZQ7CXVYcRfkSKmuZY=
 kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4/go.mod h1:018lASpFYBsYN6XwmA2TIrPCx6e0gviTd/ZNtSitKgc=
-kubevirt.io/kubevirt v1.7.0 h1:Emz0v1IGKwTvWvD+d0mZmfZFvVCxreSAPAUQnp0ZhZI=
-kubevirt.io/kubevirt v1.7.0/go.mod h1:lNChHrG5sO7crCDM+Rj5PNUY6piTVIx1osdHczfUio0=
+kubevirt.io/kubevirt v1.7.1 h1:rEt9dGvnjKD9FUsvDQA4Fvti4HXjKWfGcol6QkbXMHQ=
+kubevirt.io/kubevirt v1.7.1/go.mod h1:Oupi7549kmxDCZD3KfNu/9poPhh6rKcdKHsGSMkWFWk=
 kubevirt.io/qe-tools v0.1.8 h1:Ar7qicmzHdd+Ia+6rjHDg3D7GReIyq7QFXoC4F7TjhQ=
 kubevirt.io/qe-tools v0.1.8/go.mod h1:+Tr/WZGHIDQa/4pQgzM7+4J6YeVbUWAXESXtL2/zxqc=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
