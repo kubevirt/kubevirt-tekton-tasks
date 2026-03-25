@@ -1,0 +1,10 @@
+---
+description: Always read the AGENTS.md project guide before starting any task
+alwaysApply: true
+---
+
+# Read AGENTS.md First
+
+Before doing any work in this repository, **always** read the file `AGENTS.md` at the project root first. It contains the project guide, required AI workflow rules, documentation index, project structure, and common commands.
+
+This is mandatory for every conversation - do not skip it, even if you think you already know the project layout.
