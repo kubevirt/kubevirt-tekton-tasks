@@ -100,4 +100,7 @@ Then, a VM is created from such image.
 
 ## Development Guide
 
-See [Getting Started](docs/getting-started.md) for the environment setup and development workflow.
+- See [AGENTS.md](AGENTS.md) for project structure, documentation index, and common commands
+- See [Build & Dependencies](docs/build.md) for build system and supported environments
+- See [Testing](docs/testing.md) for unit and E2E test instructions
+- See [Contributing](docs/contributing.md) for PR requirements and adding new tasks
