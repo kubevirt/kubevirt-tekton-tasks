@@ -51,7 +51,7 @@ Visit [RBAC permissions for running the tasks](docs/tasks-rbac-permissions.md) i
 - [wait-for-vmi-status](release/tasks/wait-for-vmi-status)
 
 #### Modify Windows iso
-- [modify-windows-iso-file](release/tasks/modify-windows-iso-file) - modifies windows iso (replaces prompt bootloader with no-promt 
+- [modify-windows-iso-file](release/tasks/modify-windows-iso-file) - modifies windows iso (replaces prompt bootloader with no-promt
    bootloader) and replaces original iso in PVC with updated one.
 
 #### Disk Uploader
@@ -73,6 +73,11 @@ Supported Windows versions: Windows 10, 11, Server 2k22, 2k25
 #### [Disk Uploader Pipeline](release/pipelines/disk-uploader)
 
 Extracts disk image from one of the sources (VM, VMSnapshot, PVC) and uploads to the container registry.
+
+#### [Secure Execution Installer Pipeline](templates-pipelines/secure-execution-installer)
+
+Automates creation of IBM Secure Execution (SE) enabled virtual machines on s390x architecture (IBM Z/LinuxONE). Performs automated Linux installation with LUKS encryption, generates SE images using genprotimg, and optionally creates golden image DataSources for cloning.
+Supported architectures: s390x
 
 #### [Unit Tester Pipeline](examples/pipelines/unit-tester) - Unmaintained
 
