@@ -1,0 +1,16 @@
+---
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: create-kickstart-config-taskrun-
+spec:
+  taskRef:
+    kind: Task
+    name: create-kickstart-config
+  params:
+    - name: vmName
+      value: "fedora-se-vm"
+    - name: namespace
+      value: "default"
+    - name: setOwnerReference
+      value: "false"

@@ -1,0 +1,64 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: se-pipeline
+  labels:
+    app.kubernetes.io/component: secure-execution
+    app.kubernetes.io/managed-by: tekton-pipelines
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: se-pipeline-role
+  labels:
+    app.kubernetes.io/component: secure-execution
+    app.kubernetes.io/managed-by: tekton-pipelines
+rules:
+  # KubeVirt VM permissions
+  - apiGroups: ["kubevirt.io"]
+    resources: ["virtualmachines", "virtualmachineinstances"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  # CDI DataVolume permissions
+  - apiGroups: ["cdi.kubevirt.io"]
+    resources: ["datavolumes", "datasources"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  # Core resources
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "endpoints", "configmaps", "secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  # Deployments and Routes
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  # PVCs
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: se-pipeline-rolebinding
+  labels:
+    app.kubernetes.io/component: secure-execution
+    app.kubernetes.io/managed-by: tekton-pipelines
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: se-pipeline-role
+subjects:
+  - kind: ServiceAccount
+    name: se-pipeline
+    namespace: default
+  - kind: ServiceAccount
+    name: pipeline
+    namespace: default

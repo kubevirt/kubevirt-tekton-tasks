@@ -1,0 +1,65 @@
+---
+task_name: create-kickstart-config
+task_description: Creates a ConfigMap with kickstart configuration for automated Linux installation on s390x
+task_version: v0.25.0
+task_display_name: "KubeVirt create kickstart config"
+task_categories: "Automation"
+task_tags: "kubevirt,s390x,kickstart,secure-execution"
+task_platforms: "linux/s390x"
+task_min_version: "0.43.0"
+
+image_name: "{{ TEKTON_TASKS_IMAGE }}"
+
+service_account:
+  create: true
+  name: "{{ task_name }}-sa"
+
+cluster_role:
+  create: true
+  name: "{{ task_name }}"
+  rules:
+    - verbs:
+        - get
+        - list
+        - watch
+        - create
+        - update
+        - patch
+      apiGroups:
+        - ""
+      resources:
+        - configmaps
+    - verbs:
+        - get
+        - list
+      apiGroups:
+        - ""
+      resources:
+        - namespaces
+
+cluster_role_binding:
+  create: true
+  name: "{{ task_name }}"
+
+params:
+  - name: vmName
+    type: string
+    description: Name of the VM for which to create the kickstart configuration
+  - name: namespace
+    type: string
+    description: Namespace where to create the ConfigMap (defaults to active namespace)
+    default: ""
+  - name: kickstartTemplate
+    type: string
+    description: Kickstart configuration template content
+    default: ""
+  - name: setOwnerReference
+    type: string
+    description: Set owner reference to the new object created by the task run pod
+    default: "false"
+
+results:
+  - name: name
+    description: The name of the created ConfigMap
+  - name: namespace
+    description: The namespace of the created ConfigMap

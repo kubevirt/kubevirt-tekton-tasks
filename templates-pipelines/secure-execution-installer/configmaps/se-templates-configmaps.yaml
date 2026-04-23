@@ -1,0 +1,606 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: se-templates-configmap
+  labels:
+    app.kubernetes.io/component: secure-execution
+    app.kubernetes.io/managed-by: tekton-pipelines
+data:
+  post_secure_exec.yaml: |
+    #cloud-config
+    bootcmd:
+      - mkdir -p /etc/pki/secure-exec
+      - mkdir -p /opt/secure-exec
+      - mkdir -p /etc/luks
+    
+    users:
+      - name: core
+        groups: wheel
+        shell: /bin/bash
+        sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+        ssh_authorized_keys:
+          - __SSH_KEY__ 
+    
+    write_files:
+      - path: /root/host-doc
+        permissions: '0600'
+        content: __HOST_DOC__
+      - path: /root/ibm-sign
+        permissions: '0600'
+        content: __IBM_SIGN__
+      - path: /root/ca-cert
+        permissions: '0600'
+        content: __CA_CERT__
+
+      - path: /usr/lib/kernel/install.d/91-zipl.install
+        permissions: '0755'
+        content: |
+          #!/bin/bash
+          # This script is run by kernel-install when a new kernel is added and generate 
+          # Secure Execution image with latest kernel.
+          
+          set -e
+          
+          if [ "$1" != "add" ]; then
+            # We only care about "add" (new kernel) events
+            exit 0
+          fi
+          
+          KVER="$2"
+          INSTALL_PATH="$3"
+          shift 3
+          
+          KERNEL_IMG="$1"
+          INITRDS="/boot/initramfs-${KVER}.img"
+          
+          echo "Secure-exec hook: new kernel version = $KVER"
+          echo "Kernel image = $KERNEL_IMG"
+          echo "Initrd(s) = ${INITRDS[*]}"
+          echo "Install path = $INSTALL_PATH"
+          
+          # Env for Secure execution image build
+          HOST_KEY_DOC="/etc/pki/secure-exec/hostkey_doc.crt"
+          CA_CERT="/etc/pki/secure-exec/ca.crt"
+          IBM_SIGN_CERT="/etc/pki/secure-exec/ibm-sign.crt"
+          PARMFILE="/etc/pki/secure-exec/parmfile"
+          SECURE_OUTPUT="/se/secure-linux-${KVER}.img"
+          
+          # Create the parameter file for SE
+          cat /proc/cmdline > "${PARMFILE}"
+          
+          echo "Generating secure execution image: ${SECURE_OUTPUT}"
+          if [[  -f "${CA_CERT}" && -f "${IBM_SIGN_CERT}" ]]; then
+              genprotimg -i "${KERNEL_IMG}" -r "${INITRDS[@]}" -p "${PARMFILE}" -k "${HOST_KEY_DOC}" --cert "${CA_CERT}" --cert "${IBM_SIGN_CERT}" -o "${SECURE_OUTPUT}" 
+          else
+              genprotimg -i "${KERNEL_IMG}" -r "${INITRDS[@]}" -p "${PARMFILE}" -k "${HOST_KEY_DOC}" -o "${SECURE_OUTPUT}" --no-verify 
+              fi
+          
+          # Now regenerate zIPL bootmap so the new secure image is available:
+          echo "Running zipl to update bootmap"
+          if [ ! -f "${SECURE_OUTPUT}" ]; then
+              echo "zipl failed secure execution"
+              exit 1
+              fi
+          
+          zipl -i "${SECURE_OUTPUT}" -t /se
+          
+          exit 0
+    
+    
+      - path: /opt/secure-exec/secure-execution.sh
+        permissions: '0700'
+        content: |
+          #!/bin/bash
+    
+          # Script to create Secure Execution Image 
+          # Author - MadhuPillai80@gmail.com
+          set -euo pipefail
+          
+          # === Variables ===== 
+          NEW_ROOT_PART="$(blkid -L NEWROOT)"
+          readonly NEW_ROOT_PART
+          BOOT_MOUNT_SRC="$(findmnt -n -o SOURCE --target /boot || true)"
+          readonly BOOT_MOUNT_SRC 
+          SE_SRC="$(findmnt -n -o SOURCE --target /se || true)"
+          readonly SE_SRC
+          MAPPER_NAME="luks-root"
+          NEW_ROOT="/mnt/newroot"
+          R_KEYFILE="/etc/luks/root_keyfile.bin"
+          B_KEYFILE='/etc/luks/boot_keyfile.bin'          
+          KEYFILE_PERM=0400
+          LOGFILE="/var/log/secure-exec.log"
+          HOME='/root'
+          BACKUP_FILE="/root/boot_backup_$(date +%F).tar"
+          BOOT_MAPPER='/dev/mapper/boot'
+          FSTAB='/mnt/newroot/etc/fstab'
+          CRYPTTAB='/mnt/newroot/etc/crypttab'
+          DEFAULT_CK='196M'
+          PARM_PARAMETER=" loglevel=0 systemd.show_status=0 panic=0 swiotlb=262144 crashkernel=$DEFAULT_CK"
+          PARMFILE='/tmp/parmfile'
+          KERNEL_IMAGE="$(ls /boot/vmlinuz-$(uname -r) || ls /boot/kernel-$(uname -r))"
+          INITRD_IMAGE="$(ls /boot/initramfs-$(uname -r).img || ls /boot/initrd-$(uname -r).img)"
+          IMAGE_OUT="/se/secure-linux-$(uname -r).img"
+          FLAG="$NEW_ROOT/var/lib/se-firstboot.done"
+          HOST_KEY_DOC="/etc/pki/secure-exec/hostkey_doc.crt"
+          CA_CERT="/etc/pki/secure-exec/ca.crt"
+          IBM_SIGN_CERT="/etc/pki/secure-exec/ibm-sign.crt"
+          
+          exec > >(tee -a "$LOGFILE") 2>&1
+          log() { echo "[+] $*"; }
+          err() { echo "[ERROR] $*" >&2; }
+    
+          if ! command -v cryptsetup > /dev/null 2>&1; then
+              dnf install -y  cryptsetup 
+          fi
+          
+          if [ ! -b "${NEW_ROOT_PART}" ]; then
+            err "Partition ${NEW_ROOT_PART} does not exist or is not a block device."
+            exit 1
+          fi
+          
+          if mount | grep -q " ${NEW_ROOT_PART} "; then
+            err "${NEW_ROOT_PART} appears mounted. Unmount first."
+            exit 1
+          fi
+          
+          if [ -z "$BOOT_MOUNT_SRC" ]; then
+            err "Could not detect current physical /boot device. Please mount /boot and try again."
+            exit 1
+          fi
+          
+          # Security hardening the SE image  
+          se_security_hardend() {
+              
+              log "Security hardening disabling the serial console"
+              mkdir -p /etc/systemd/system/serial-getty@.service.d
+              echo -e "[Unit]\nConditionKernelCommandLine=allowlocallogin" >> /etc/systemd/system/serial-getty@.service.d/disable.conf
+              mkdir -p /etc/systemd/system/autovt@.service.d
+              echo -e "[Unit]\nConditionKernelCommandLine=allowlocallogin" >> /etc/systemd/system/autovt@.service.d/disable.conf
+          
+              log "Mask emergency service"
+              systemctl mask emergency.service emergency.target rescue.service rescue.target
+          
+              log "Blacklist virio-rng"
+              echo "blacklist virtio-rng" >> /etc/modprobe.d/virtio-rng.conf
+          }
+          
+          # Encrypt the Root Volume
+          encrypt_root() {
+          
+              log "Creating key file for RootVolume "
+              if [[ ! -f "$R_KEYFILE" ]]; then 
+                  mkdir -p "$(dirname "$R_KEYFILE")"
+                  dd if=/dev/urandom of="$R_KEYFILE" bs=1024 count=4
+                  chmod "$KEYFILE_PERM" "$R_KEYFILE"
+                  log "Created keyfile $R_KEYFILE" 
+              fi
+          
+              log "Creating key file for BootVolume"
+              if [[ ! -f "$B_KEYFILE" ]]; then
+                  mkdir -p "$(dirname "$B_KEYFILE")"
+                  dd if=/dev/urandom of="$B_KEYFILE" bs=1024 count=4
+                  chmod "$KEYFILE_PERM" "$B_KEYFILE"
+                  log "Created keyfile $B_KEYFILE:"
+              fi
+          
+              log "Luks formating "
+              cryptsetup luksFormat --type luks2 --batch-mode --key-file "$R_KEYFILE" "$NEW_ROOT_PART"
+          
+              log "Luks opening the device"
+              cryptsetup open --key-file "$R_KEYFILE" "$NEW_ROOT_PART" "$MAPPER_NAME"
+          
+              log "Creating filesystem"
+              mkfs.xfs -f "/dev/mapper/${MAPPER_NAME}" || {
+                  err "${MAPPER_NAME} filesystem creation failed";
+                  return 1;
+                  }
+          
+              log "mounting the new root"
+              mkdir -p "$NEW_ROOT"
+              mount "/dev/mapper/${MAPPER_NAME}" "$NEW_ROOT" || {
+                  err "New ROOT mount failed";
+                  return 1;
+                  }
+          
+          
+              log "Backup root to newroot using tar"
+              tar --numeric-owner --preserve-permissions --acls --xattrs --selinux  --one-file-system --sparse -cf - --exclude=/proc --exclude=/sys --exclude=/run --exclude=/dev --exclude=/mnt/newroot -C / .  | sudo tar --numeric-owner --preserve-permissions --acls --xattrs --selinux --preserve-order -xf - -C /mnt/newroot || {
+                  err "Root backup failed"; 
+                  return 1;
+                  }
+          
+              log "Validating Root uuid"
+              ROOT_UUID=$(blkid -s UUID -o value "$NEW_ROOT_PART")
+              readonly ROOT_UUID
+              if [ -z "$ROOT_UUID" ]; then
+                err "Could not determine UUID of ${NEW_ROOT_PART}"
+                return 1
+              fi
+          
+              log "Adding entry into crypttab"
+              echo "${MAPPER_NAME} UUID=${ROOT_UUID} ${R_KEYFILE} luks" > "$CRYPTTAB"
+          
+              log "Validating Boot UUID"
+              BOOT_UUID=$(blkid -s UUID -o value "$BOOT_MOUNT_SRC")
+              if [ -z "$BOOT_UUID" ]; then
+                err "Could not determine UUID of ${BOOT_MOUNT_SRC}"
+                return 1
+              fi
+          
+              log "Validating SE partition UUID"
+              SE_UUID=$(blkid -s UUID -o value "$SE_SRC")
+              if [ -z "$SE_UUID" ]; then
+                err "Could not determine UUID of $SE_SRC"
+                return 1
+              fi
+              SE_FSTYPE=$(blkid -s TYPE -o value "$SE_SRC") 
+              log "Adding to fstab"
+              echo "/dev/mapper/${MAPPER_NAME}           /     xfs defaults 0 1"  > "$FSTAB"
+              echo "${BOOT_MAPPER}                       /boot ext4 defaults 1 2" >> "$FSTAB"
+              echo "UUID=${SE_UUID}                  /se   ${SE_FSTYPE} defaults 0 0"  >> "$FSTAB"
+          
+          
+              log  "Adding to dracut"
+              mkdir -p "$NEW_ROOT/etc/dracut.conf.d"
+              printf 'install_items+=" %s %s " ' "$R_KEYFILE" "$B_KEYFILE" > $NEW_ROOT/etc/dracut.conf.d/10-lukskey.conf
+          
+          
+              log "Add entries in the /boot/loader/entries/*"
+              if [ -z "$ROOT_UUID" ]; then
+                  err "LUKS_UUID is empty exiting"
+                  return 1
+                  fi
+              for f in /boot/loader/entries/*.conf; do
+                echo "adding entries to $f"
+                sed -i -E "s#^options .*#options root=/dev/mapper/${MAPPER_NAME} rd.luks.uuid=luks-${ROOT_UUID}#g" "$f"
+              done
+          
+          
+              log "Mounting Boot vol to newroot"
+              mkdir -p "$NEW_ROOT/boot"
+              mount "$BOOT_MOUNT_SRC" "$NEW_ROOT/boot" || {
+                  err "Failed to mount $NEW_ROOT/boot";
+                  return 1;
+              }
+              
+              log "Mount temporary devices '/dev /proc /sys /run'"
+              mount --bind /dev "$NEW_ROOT/dev"
+              mount --bind /proc "$NEW_ROOT/proc"
+              mount --bind /sys "$NEW_ROOT/sys"
+              mount --bind /run "$NEW_ROOT/run"
+          
+              log "Running dracut on newroot"  
+              chroot "$NEW_ROOT" /bin/bash -c "
+              KVER=\$(ls -1 /boot/vmlinuz-* 2>/dev/null | awk -F'vmlinuz-' '{print \$2}' | sort -V | tail -n1)
+              echo \"Detected kernel: \$KVER\"
+              if [ -n \"\$KVER\" ]; then
+                  dracut -f --kver \"\$KVER\"
+                  lsinitrd \"/boot/initramfs-\$KVER.img\"
+              else
+                  echo \"ERROR: No kernel detected!\" >&2
+                  return 1
+              fi
+              " 
+              
+              log "Unmounting '/dev /proc /sys /run /boot'"
+              umount  "$NEW_ROOT/dev"
+              umount  "$NEW_ROOT/proc"
+              umount "$NEW_ROOT/sys"
+              umount  "$NEW_ROOT/run"
+              umount "$NEW_ROOT/boot"
+              
+              log "Running zipl for new root"
+              zipl -V || {
+                  err "Failed running ZIPL";
+                  return 1
+              }
+              return 0
+          } 
+          
+          # Backup the boot volume for encryption
+          boot_backup() {
+          
+              log "Backing up the boot volume"
+              if [ "$EUID" -ne 0 ]; then
+                err "Must be root"
+                return 1
+                fi
+          
+              ls -l /boot > /root/boot_list.out
+              cd /boot || {
+                  err "Failed to change directory to /boot";
+                  return 1;
+              }
+          
+              log "Backup /boot"
+              tar -cf "$BACKUP_FILE" . || {
+                  err "Backup creation failed";
+                  return 1;
+              }
+          
+              log "Verifying backup..."
+              if ! tar -tf "$BACKUP_FILE" > /dev/null 2>&1
+                then
+                  err "Backup verification failed — tar archive is corrupt"
+                  return 1
+                fi
+              cd $HOME
+          
+              log "/boot Backup verified successfully"
+              return 0
+          }
+          
+          # Encrypt the boot volume
+          encrypt_boot() {
+          
+              if [ ! -f "$BACKUP_FILE" ]; then
+                  err "Boot backup file not found"
+                  return 1
+              fi 
+          
+              log "Unmounting '/boot'"
+              cd $HOME
+              umount -f /boot || {
+                  err "unmounting /boot failed";
+                  return 1;
+              }
+          
+              # Luks Format the boot device 
+              log "Luks Formating the '/boot'"
+              cryptsetup -q luksFormat "$BOOT_MOUNT_SRC" --key-file $B_KEYFILE || {
+                  err "luksFormat failed on /boot";
+                  return 1;
+              }
+          
+              #Verify opening the luks device
+              log "Opening the luks partition '/boot'"
+              cryptsetup luksOpen "$BOOT_MOUNT_SRC" boot --key-file $B_KEYFILE || {
+                  err "Failed to open $BOOT_MOUNT_SRC";
+                  return 1;
+              }
+          
+              # Verify the mapper device.
+              ls -l $BOOT_MAPPER || { 
+                  err "no mapper device for boot";
+                  return 1;
+                  }
+          
+              log "Creating filesystem on '/boot'"
+              mke2fs -t ext4 $BOOT_MAPPER || { 
+                  err "Failed to create filesystem boot";
+                  return 1;
+                  }
+          
+              # Adding the crypttab entry  for /boot
+              b_uuid=$(blkid -s UUID -o value "$BOOT_MOUNT_SRC")
+              lsblk -f | grep "$b_uuid" || {
+                  err "Failed to find the UUID for /boot";
+                  return 1;
+              } 
+          
+              [[ ${#b_uuid} -ne 36 ]] && err "Undefined value in b_uuid UUID for boot"
+          
+              log "Adding boot value  into crypttab"
+              echo "boot  UUID=$b_uuid $B_KEYFILE luks" >> $CRYPTTAB || {
+                  err "Failed to add entry in crypttab";
+                  return 1
+              }
+          
+              # mount /boot
+              log "Mount '/boot'"
+              mount $BOOT_MAPPER /boot || {
+                  err "Failed to mount /boot";
+                  return 1
+              }
+          
+              # Restoring /boot
+              log "Restoring boot files"
+              cd /boot || {
+                  err "Failed changing directory";
+                  return 1
+              }
+              tar -xvf "$BACKUP_FILE" || {
+                  err "Restoring /boot failed";
+                  return 1
+              }
+              cd $HOME
+          
+              log "Finished Luks encryption /boot"
+              return 0
+          }
+          
+          # Generating the Secure Image and zipl for next boot
+          generate_secureImage() {
+              
+              log "Generating Secure Image"
+              c_ker=$(grep -o 'crashkernel=[^ ]*' /proc/cmdline 2>/dev/null || true)
+              log "Generate the parm file"
+              if [ -n "$c_ker" ]; then
+                  log "Existing crashkernel value $c_ker"
+                  PARM_PARAMETER=$(echo "$PARM_PARAMETER" | sed -E "s/crashkernel=[^ ]*/$c_ker/")
+              fi
+          
+              log "No crashkernel found, applying the default"
+              concat_conf="root=/dev/mapper/${MAPPER_NAME} rd.luks.uuid=luks-${ROOT_UUID} $PARM_PARAMETER"
+              printf '%s' "$concat_conf" > "$PARMFILE"
+              
+              log "Creating secure image"
+    
+                   
+              if [[  -f "${CA_CERT}" && -f "${IBM_SIGN_CERT}" ]]; then
+                  if ! genprotimg -i "${KERNEL_IMAGE}" -r "${INITRD_IMAGE}" -p "${PARMFILE}" -k "${HOST_KEY_DOC}" --cert "${CA_CERT}" --cert "${IBM_SIGN_CERT}" -o "${IMAGE_OUT}"
+                    then
+                       err "Failed Secure Image with CA Cert"
+                       return 1
+                  fi
+              else
+                  if ! genprotimg -i "${KERNEL_IMAGE}" -r "${INITRD_IMAGE}" -p "${PARMFILE}" -k "${HOST_KEY_DOC}" -o "${IMAGE_OUT}" --no-verify
+                    then
+                      err "Failed Secure Image Creation-Test"
+                      return 1
+                  fi
+              fi
+          
+              log "zipl ing the secure image"
+              zipl -i "$IMAGE_OUT" -t /se -V || {
+                  err "Zipl fail on secure image";
+                  return 1;
+              }
+              touch "$FLAG"
+              cp /etc/systemd/system/secure-cleanup-root.service $NEW_ROOT/etc/systemd/system/ 
+              chroot "$NEW_ROOT" systemctl enable secure-cleanup-root.service 
+              return 0
+          }
+          
+          log "Security Hardening the SE image"
+          se_security_hardend
+          log "Setting up root volume in crypttab"
+          encrypt_root
+          log "Backup /boot"
+          boot_backup
+          log "Setting LUKS encryption on /boot"
+          encrypt_boot
+          log "Generate secureImage"
+          generate_secureImage 
+          cat "$LOGFILE" >> "$NEW_ROOT""$LOGFILE"
+    
+      - path: /opt/secure-exec/cleanup-old-root.sh
+        owner: root:root
+        permissions: '0700'
+        content: |
+          #!/bin/bash
+          set -euo pipefail
+          
+          NEW_ROOT=$(findmnt -no source /)
+          OLD_ROOT=$(blkid -t LABEL=root -o device)
+          R_KEYFILE="/etc/luks/root_keyfile.bin"
+          LOGFILE="/var/log/secure-exec.log"
+
+          exec > >(tee -a "$LOGFILE") 2>&1
+          log() { echo "[+] $*"; }
+          err() { echo "[ERROR] $*" >&2; }
+          
+          if [ -z "$OLD_ROOT" ]; then
+              log "old root volume not found exiting"
+              exit 1
+              fi
+          
+          if echo "$NEW_ROOT" | grep -q "$OLD_ROOT"; then
+              log ">>> Still running from old root ($NEW_ROOT). Cleanup skipped."
+              exit 0 
+          fi
+          
+          BASENAME=$(basename "$OLD_ROOT")
+          
+          if [ -z "$BASENAME" ]; then
+              err "Error: no devices found"
+              exit 1
+              fi
+          
+          PARTNUM=$(echo "$BASENAME" | sed 's/^[^0-9]*//')
+          if [ -z "$PARTNUM" ]; then
+              err "ERROR: Unable to derive partition number from device name."
+              exit 1
+          fi
+          
+          DISK=$(lsblk -no PKNAME "$OLD_ROOT" 2>/dev/null || echo "")
+          if [ -z "$DISK" ]; then
+              DISK=$(echo "$BASENAME" | sed 's/[0-9]*$//')
+          fi
+          
+          DISK="/dev/$DISK"
+          
+          blkdiscard -f "$OLD_ROOT"       
+          sfdisk --delete "$DISK" "$PARTNUM" || {
+              err "Unable to delete $OLD_ROOT";
+              exit 1
+          }
+          partprobe
+          log "Shreded old root volume" 
+
+          #GrowFS the root volume 
+          ROOT_DEVICE=$(ls /sys/class/block/$(basename $(readlink /dev/mapper/luks-root))/slaves/)
+          ROOT_PARTNO=$(echo "$ROOT_DEVICE" | sed 's/^[^0-9]*//')
+          ROOT_DISK=$(echo "$ROOT_DEVICE" | sed 's/[0-9]*$//')
+
+          #echo "$ROOT_DEVICE, $ROOT_PARTNO, $ROOT_DISK"
+
+          command -v growpart || {
+            err "Growpart command not found";
+            exit 1;
+          } 
+          growpart /dev/$ROOT_DISK $ROOT_PARTNO || {
+            err "Growpart failed";
+            exit 1;
+          }
+          partprobe /dev/$ROOT_DISK || {
+            err "Partprobe failed";
+            exit 1;
+          }
+          udevadm settle || {
+           err "udevadm settle failed";
+            exit 1;
+          }
+          cryptsetup resize /dev/mapper/luks-root --key-file "$R_KEYFILE" || { 
+            err "Crypt device resize failed";
+            exit 1;
+          }
+          xfs_growfs / || {
+            err "Xfs_growfs failed";
+            exit 1;
+          }
+          log "Root volume resize completed" 
+          rm -f /var/lib/se-firstboot.done
+          rm -f /etc/systemd/system/secure-cleanup-root.service
+          systemctl daemon-reload
+          touch /etc/cloud/cloud-init.disabled
+          sync
+          systemctl --no-block poweroff
+          
+      - path: /etc/systemd/system/secure-execution.service
+        permissions: '0744'
+        content: |
+          [Unit]
+          Description=IBM Secure Execution - create protected image (first boot)
+          After=cloud-init.target
+          Wants=cloud-init.target
+          ConditionPathExists=!/var/lib/se-firstboot.done
+    
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/env bash /opt/secure-exec/secure-execution.sh
+          StandardOutput=journal
+          StandardError=journal
+          ExecStartPost=/usr/bin/touch /var/lib/se-firstboot.done
+          ExecStartPost=/usr/bin/systemctl --no-block reboot
+          RemainAfterExit=yes
+    
+          [Install]
+          WantedBy=multi-user.target
+    
+      - path: /etc/systemd/system/secure-cleanup-root.service
+        permissions: '0744'
+        content: |
+          [Unit]
+          Description=IBM Secure Execution - cleanup old root
+          After=network.target 
+          ConditionPathExists=/var/lib/se-firstboot.done
+    
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/env bash /opt/secure-exec/cleanup-old-root.sh
+    
+          [Install]
+          WantedBy=multi-user.target
+      
+    runcmd:
+      - base64 -d /root/host-doc > /etc/pki/secure-exec/hostkey_doc.crt
+      - base64 -d /root/ibm-sign > /etc/pki/secure-exec/ibm-sign.crt
+      - base64 -d /root/ca-cert > /etc/pki/secure-exec/ca.crt
+      - rm -rf /root/host-doc
+      - rm -rf /root/ibm-sign
+      - rm -rf /root/ca-cert
+      - systemctl daemon-reload 
+      - systemctl enable secure-execution.service
+      - systemctl start --no-block secure-execution.service

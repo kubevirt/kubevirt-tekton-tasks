@@ -1,0 +1,15 @@
+# Manual Kernel Boot Container Builder
+# Use this when you already have kernel.img and initrd.img files extracted
+
+FROM scratch
+
+# Copy your pre-extracted kernel and initrd files
+# Place kernel.img and initrd.img in the same directory as this Containerfile
+COPY kernel.img /kernel.img
+COPY initrd.img /initrd.img
+
+# Metadata
+LABEL name="custom-s390x-boot" \
+      architecture="s390x" \
+      description="Custom kernel and initrd for s390x direct kernel boot" \
+      io.kubevirt.kernel-boot="true"
