@@ -1,0 +1,132 @@
+---
+# Example PipelineRun for Fedora 44 on s390x with Secure Execution
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: fedora-se-installer-
+  labels:
+    pipeline: secure-execution-installer
+spec:
+  pipelineRef:
+    name: secure-execution-installer
+  params:
+    - name: vmName
+      value: "fedora-se-vm"
+    - name: memory
+      value: "8Gi"
+    - name: diskSize
+      value: "20Gi"
+    - name: isoUrl
+      value: "https://download.fedoraproject.org/pub/fedora-secondary/releases/44/Server/s390x/iso/Fedora-Server-netinst-s390x-44-1.7.iso"
+    - name: bootImage
+      value: "quay.io/<repo>/fedora-44:latest"
+    - name: hostDoc
+      value: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."  # Replace with actual base64 encoded cert
+    - name: ibmSign
+      value: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."  # Replace with actual base64 encoded cert
+    - name: caCert
+      value: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."  # Replace with actual base64 encoded cert
+    - name: sshKey
+      value: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB..."  # Replace with actual SSH public key
+    - name: storageClass
+      value: "hostpath-sc"
+    - name: createGoldenImage
+      value: "false"
+    - name: seTemplatesConfigMapURL
+      value: "https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/release/pipelines/secure-execution-installer/configmaps/secure-execution-installer-configmaps.yaml"
+    # Optional: Override CLI image (default is docker.io/bitnami/kubectl:1.33.4)
+    # Uncomment for OpenShift with Red Hat registry access:
+    # - name: cliImage
+    #   value: "registry.redhat.io/openshift4/ose-cli:latest"
+  timeouts:
+    pipeline: 2h0m0s
+---
+# Example PipelineRun with Golden Image creation
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: fedora-se-golden-
+  labels:
+    pipeline: secure-execution-installer
+spec:
+  pipelineRef:
+    name: secure-execution-installer
+  params:
+    - name: vmName
+      value: "fedora-se-golden"
+    - name: memory
+      value: "8Gi"
+    - name: diskSize
+      value: "30Gi"
+    - name: isoUrl
+      value: "https://download.fedoraproject.org/pub/fedora-secondary/releases/44/Server/s390x/iso/Fedora-Server-dvd-s390x-44-1.7.iso"
+    - name: bootImage
+      value: "quay.io/<repo>/fedora-44:latest"
+    - name: hostDoc
+      value: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."
+    - name: ibmSign
+      value: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."
+    - name: caCert
+      value: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."
+    - name: sshKey
+      value: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB..."
+    - name: storageClass
+      value: "hostpath-sc"
+    - name: createGoldenImage
+      value: "true"
+    - name: goldenImageName
+      value: "fedora-44-se-golden"
+    - name: seTemplatesConfigMapURL
+      value: "https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/release/pipelines/secure-execution-installer/configmaps/secure-execution-installer-configmaps.yaml"
+    # Optional: Override CLI image (default is docker.io/bitnami/kubectl:1.33.4)
+    # Uncomment for OpenShift with Red Hat registry access:
+    # - name: cliImage
+    #   value: "registry.redhat.io/openshift4/ose-cli:latest"
+  timeouts:
+    pipeline: 2h0m0s
+---
+# Example PipelineRun for RHEL on s390x
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: rhel-se-installer-
+  labels:
+    pipeline: secure-execution-installer
+spec:
+  pipelineRef:
+    name: secure-execution-installer
+  params:
+    - name: vmName
+      value: "rhel-se-vm"
+    - name: memory
+      value: "16Gi"
+    - name: diskSize
+      value: "50Gi"
+    - name: isoUrl
+      value: "https://your-rhel-iso-url/rhel-9.x-s390x-dvd.iso"
+    - name: bootImage
+      value: "quay.io/your-org/rhel-9-boot:latest"
+    - name: hostDoc
+      value: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."
+    - name: ibmSign
+      value: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."
+    - name: caCert
+      value: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."
+    - name: sshKey
+      value: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB..."
+    - name: namespace
+      value: "rhel-vms"
+    - name: storageClass
+      value: "ocs-storagecluster-ceph-rbd"
+    - name: createGoldenImage
+      value: "true"
+    - name: goldenImageName
+      value: "rhel-9-se-base"
+    - name: seTemplatesConfigMapURL
+      value: "https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/templates-pipelines/secure-execution-installer/configmaps/se-templates-configmaps.yaml"
+    # Optional: Override CLI image (default is docker.io/bitnami/kubectl:1.33.4)
+    # Uncomment for OpenShift with Red Hat registry access:
+    # - name: cliImage
+    #   value: "registry.redhat.io/openshift4/ose-cli:latest"
+  timeouts:
+    pipeline: 3h0m0s

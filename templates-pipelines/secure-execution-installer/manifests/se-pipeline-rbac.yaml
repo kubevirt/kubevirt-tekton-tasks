@@ -1,0 +1,68 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: se-pipeline-role
+  labels:
+    app.kubernetes.io/component: secure-execution
+    app.kubernetes.io/managed-by: tekton-pipelines
+rules:
+  # ConfigMaps for kickstart and SE templates
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "get", "list", "patch", "delete"]
+  
+  # Secrets for cloud-init and SSH keys
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create", "get", "list", "patch", "delete"]
+  
+  # Deployments for kickstart HTTP server
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["create", "get", "list", "patch", "delete"]
+  
+  # Services for kickstart HTTP server
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["create", "get", "list", "patch", "delete"]
+  
+  # Routes for kickstart HTTP server (OpenShift)
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
+    verbs: ["create", "get", "delete"]
+  
+  # DataVolumes for ISO and disk images
+  - apiGroups: ["cdi.kubevirt.io"]
+    resources: ["datavolumes"]
+    verbs: ["create", "get", "list", "watch", "patch", "delete"]
+  
+  # DataSources for golden images
+  - apiGroups: ["cdi.kubevirt.io"]
+    resources: ["datasources"]
+    verbs: ["create", "get", "delete"]
+  
+  # VMs for secure execution
+  - apiGroups: ["kubevirt.io"]
+    resources: ["virtualmachines", "virtualmachineinstances"]
+    verbs: ["create", "get", "list", "watch", "patch", "delete"]
+  
+  # VM subresources (start/stop)
+  - apiGroups: ["subresources.kubevirt.io"]
+    resources: ["virtualmachines/start", "virtualmachines/stop"]
+    verbs: ["update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: se-pipeline-rolebinding
+  labels:
+    app.kubernetes.io/component: secure-execution
+    app.kubernetes.io/managed-by: tekton-pipelines
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: se-pipeline-role
+subjects:
+  - kind: ServiceAccount
+    name: pipeline

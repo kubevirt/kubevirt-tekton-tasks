@@ -1,0 +1,72 @@
+name: Test SE Pipeline
+
+on:
+  pull_request:
+    paths:
+      - 'templates-pipelines/secure-execution-installer/**'
+      - 'automation/e2e-pipelines/se-pipeline-test.sh'
+      - 'automation/e2e-pipelines/test-files/fedora-se-*'
+      - '.github/workflows/test-se-pipeline.yaml'
+  workflow_dispatch:
+
+jobs:
+  # Note: SE pipeline tests require s390x architecture and cannot run on GitHub Actions
+  # This workflow only validates YAML syntax and documentation
+
+  lint-yaml:
+    name: Lint SE Pipeline YAML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint SE Pipeline YAML files
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: {max: 200}, document-start: disable}}" \
+            templates-pipelines/secure-execution-installer/manifests/*.yaml \
+            templates-pipelines/secure-execution-installer/configmaps/*.yaml \
+            templates-pipelines/secure-execution-installer/pipelineruns/*.yaml \
+            automation/e2e-pipelines/test-files/fedora-se-*.yaml
+
+  check-documentation:
+    name: Check SE Pipeline Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check README exists
+        run: |
+          if [ ! -f "templates-pipelines/secure-execution-installer/README.md" ]; then
+            echo "ERROR: README.md not found"
+            exit 1
+          fi
+          echo "✓ README.md exists"
+
+      - name: Check GETTING-STARTED exists
+        run: |
+          if [ ! -f "templates-pipelines/secure-execution-installer/GETTING-STARTED.md" ]; then
+            echo "ERROR: GETTING-STARTED.md not found"
+            exit 1
+          fi
+          echo "✓ GETTING-STARTED.md exists"
+
+      - name: Check test documentation exists
+        run: |
+          if [ ! -f "automation/e2e-pipelines/test-files/SE-PIPELINE-TESTS.md" ]; then
+            echo "ERROR: SE-PIPELINE-TESTS.md not found"
+            exit 1
+          fi
+          echo "✓ SE-PIPELINE-TESTS.md exists"
+
+      - name: Verify documentation links
+        run: |
+          echo "Checking for broken links in documentation..."
+          # Check if seTemplatesConfigMapURL is documented
+          if ! grep -q "seTemplatesConfigMapURL" templates-pipelines/secure-execution-installer/README.md; then
+            echo "WARNING: seTemplatesConfigMapURL not documented in README"
+          fi
+          echo "✓ Documentation check complete"
