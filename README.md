@@ -74,6 +74,11 @@ Supported Windows versions: Windows 10, 11, Server 2k22, 2k25
 
 Extracts disk image from one of the sources (VM, VMSnapshot, PVC) and uploads to the container registry.
 
+#### [Secure Execution Installer Pipeline](templates-pipelines/secure-execution-installer)
+
+Automates creation of IBM Secure Execution (SE) enabled virtual machines on s390x architecture (IBM Z/LinuxONE). Performs automated Linux installation with LUKS encryption, generates SE images using genprotimg, and optionally creates golden image DataSources for cloning.
+Supported architectures: s390x
+
 #### [Unit Tester Pipeline](examples/pipelines/unit-tester) - Unmaintained
 
 Good unit tests are detached from the operating system and can run everywhere.

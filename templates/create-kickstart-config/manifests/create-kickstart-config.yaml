@@ -1,0 +1,158 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: "{{ pipelines_min_version }}"
+    tekton.dev/categories: {{ task_categories }}
+    tekton.dev/tags: {{ task_tags }}
+    tekton.dev/displayName: "{{ task_display_name }}"
+    tekton.dev/platforms: "{{ task_platforms }}"
+    artifacthub.io/maintainers: |
+      - name: KubeVirt Tekton tasks maintainers
+        email: kubevirt-tekton-tasks@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
+  labels:
+    app.kubernetes.io/version: {{ task_version }}
+  name: {{ task_name }}
+spec:
+  description: >-
+    {{ task_description }}
+  params:
+{% for param in params %}
+    - name: {{ param.name }}
+      description: {{ param.description }}
+      type: {{ param.type }}
+{% if param.default is defined %}
+      default: "{{ param.default }}"
+{% endif %}
+{% endfor %}
+  results:
+{% for result in results %}
+    - name: {{ result.name }}
+      description: {{ result.description }}
+{% endfor %}
+  steps:
+    - name: create-kickstart-configmap
+      image: "{{ image_name }}"
+      command:
+        - /bin/bash
+        - -c
+      args:
+        - |
+          #!/bin/bash
+          set -euo pipefail
+          
+          # Determine namespace
+          NAMESPACE="$(params.namespace)"
+          if [ -z "$NAMESPACE" ]; then
+            NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
+          fi
+          
+          VM_NAME="$(params.vmName)"
+          CONFIGMAP_NAME="kickstart-config-${VM_NAME}"
+          
+          # Default kickstart content if not provided
+          KICKSTART_CONTENT="$(params.kickstartTemplate)"
+          if [ -z "$KICKSTART_CONTENT" ]; then
+            KICKSTART_CONTENT=$(cat <<'EOF'
+          text
+          lang en_US.UTF-8
+          keyboard us
+          network --bootproto=dhcp
+          rootpw --plaintext redhat
+          timezone UTC 
+          firewall --enabled
+          selinux --enforcing
+          bootloader --location=mbr
+          reboot
+          
+          #Do not change the device name
+          ignoredisk --only-use=vdb
+          zerombr
+          
+          # ******DO NOT CHANGE LABELS AS THIS BREAKS THE AUTOMATION******
+          # --label=root is shredded off on post boot and growfs the newroot  
+          %pre
+          parted -s /dev/vdb mklabel gpt
+          parted -s /dev/vdb mkpart primary ext4 1MiB 513MiB
+          parted -s /dev/vdb mkpart primary xfs 513MiB 1025MiB
+          parted -s /dev/vdb mkpart primary xfs 1025MiB 4025MiB
+          parted -s /dev/vdb mkpart primary xfs 4025MiB 100%
+          
+          /usr/sbin/udevadm settle
+          /usr/sbin/partprobe /dev/vdb
+          /usr/sbin/udevadm settle
+          %end
+          
+          part /boot --onpart=vdb1 --fstype=ext4 --label=boot
+          part /se --onpart=vdb2 --fstype=xfs --label=se
+          part newroot --onpart=vdb3 --fstype=xfs --label=NEWROOT
+          part / --onpart=vdb4 --label=root
+          # --------------------END-----------------------------
+          
+          # Packages
+          # These packages are the minimum requirements for Fedora and RHEL.
+          # Fedora uses 'growpart', while RHEL uses 'cloud-utils-growpart'.
+          %packages --ignoremissing  
+          @core
+          dracut
+          vim
+          s390-tools
+          cryptsetup
+          growpart
+          cloud-init
+          cloud-utils-growpart
+          %end
+          
+          # Post-install section
+          %post
+          echo "Finished Installation"
+          %end
+          EOF
+          )
+          fi
+          
+          # Create ConfigMap YAML
+          cat > /tmp/configmap.yaml <<EOF
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: ${CONFIGMAP_NAME}
+            namespace: ${NAMESPACE}
+            labels:
+              app.kubernetes.io/managed-by: tekton-pipelines
+              pipeline: secure-execution
+              vm-name: ${VM_NAME}
+          data:
+            ks.cfg: |
+          $(echo "$KICKSTART_CONTENT" | sed 's/^/      /')
+          EOF
+          
+          # Set owner reference if requested
+          if [ "$(params.setOwnerReference)" = "true" ]; then
+            POD_NAME=$(cat /etc/hostname)
+            POD_UID=$(kubectl get pod ${POD_NAME} -n ${NAMESPACE} -o jsonpath='{.metadata.uid}')
+            
+            cat >> /tmp/configmap.yaml <<EOF
+            ownerReferences:
+            - apiVersion: v1
+              kind: Pod
+              name: ${POD_NAME}
+              uid: ${POD_UID}
+              controller: false
+              blockOwnerDeletion: false
+          EOF
+          fi
+          
+          # Apply ConfigMap
+          kubectl apply -f /tmp/configmap.yaml
+          
+          # Output results
+          echo -n "${CONFIGMAP_NAME}" > $(results.name.path)
+          echo -n "${NAMESPACE}" > $(results.namespace.path)
+          
+          echo "ConfigMap ${CONFIGMAP_NAME} created successfully in namespace ${NAMESPACE}"

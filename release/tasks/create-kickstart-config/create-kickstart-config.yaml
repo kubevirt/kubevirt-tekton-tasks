@@ -1,0 +1,132 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.43.0"
+    tekton.dev/categories: Automation
+    tekton.dev/tags: kubevirt,s390x,kickstart,secure-execution
+    tekton.dev/displayName: "KubeVirt create kickstart config"
+    tekton.dev/platforms: "linux/s390x"
+    artifacthub.io/maintainers: |
+      - name: KubeVirt Tekton tasks maintainers
+        email: kubevirt-tekton-tasks@redhat.com
+    artifacthub.io/provider: KubeVirt
+    artifacthub.io/recommendations: |
+      - url: https://kubevirt.io/
+    artifacthub.io/category: integration-delivery
+  labels:
+    app.kubernetes.io/version: v0.25.0
+  name: create-kickstart-config
+spec:
+  description: >-
+    Creates a ConfigMap with kickstart configuration for automated Linux installation on s390x
+  params:
+    - name: vmName
+      description: Name of the VM for which to create the kickstart configuration
+      type: string
+    - name: namespace
+      description: Namespace where to create the ConfigMap (defaults to active namespace)
+      type: string
+      default: ""
+    - name: kickstartTemplate
+      description: Kickstart configuration template content
+      type: string
+      default: ""
+    - name: setOwnerReference
+      description: Set owner reference to the new object created by the task run pod
+      type: string
+      default: "false"
+  results:
+    - name: name
+      description: The name of the created ConfigMap
+    - name: namespace
+      description: The namespace of the created ConfigMap
+  steps:
+    - name: create-kickstart-configmap
+      image: "registry.redhat.io/openshift4/ose-cli:latest"
+      script: |
+        #!/bin/bash
+        set -euo pipefail
+        
+        # Determine namespace
+        NAMESPACE="$(params.namespace)"
+        if [ -z "$NAMESPACE" ]; then
+          NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
+        fi
+        
+        VM_NAME="$(params.vmName)"
+        CONFIGMAP_NAME="kickstart-config-${VM_NAME}"
+        
+        # Default kickstart content if not provided
+        KICKSTART_CONTENT="$(params.kickstartTemplate)"
+        if [ -z "$KICKSTART_CONTENT" ]; then
+          KICKSTART_CONTENT='text
+        lang en_US.UTF-8
+        keyboard us
+        network --bootproto=dhcp
+        rootpw --plaintext redhat
+        timezone UTC 
+        firewall --enabled
+        selinux --enforcing
+        bootloader --location=mbr
+        reboot
+        
+        #Do not change the device name
+        ignoredisk --only-use=vdb
+        zerombr
+        
+        # ******DO NOT CHANGE LABELS AS THIS BREAKS THE AUTOMATION******
+        %pre
+        parted -s /dev/vdb mklabel gpt
+        parted -s /dev/vdb mkpart primary ext4 1MiB 513MiB
+        parted -s /dev/vdb mkpart primary xfs 513MiB 1025MiB
+        parted -s /dev/vdb mkpart primary xfs 1025MiB 4025MiB
+        parted -s /dev/vdb mkpart primary xfs 4025MiB 100%
+        
+        /usr/sbin/udevadm settle
+        /usr/sbin/partprobe /dev/vdb
+        /usr/sbin/udevadm settle
+        %end
+        
+        part /boot --onpart=vdb1 --fstype=ext4 --label=boot
+        part /se --onpart=vdb2 --fstype=xfs --label=se
+        part newroot --onpart=vdb3 --fstype=xfs --label=NEWROOT
+        part / --onpart=vdb4 --label=root
+        
+        %packages --ignoremissing  
+        @core
+        dracut
+        vim
+        s390-tools
+        cryptsetup
+        growpart
+        cloud-init
+        cloud-utils-growpart
+        %end
+        
+        %post
+        echo "Finished Installation"
+        %end'
+        fi
+        
+        # Write kickstart content to file
+        echo "$KICKSTART_CONTENT" > /tmp/ks.cfg
+        
+        # Create ConfigMap using kubectl create configmap (this handles multiline correctly)
+        kubectl create configmap "${CONFIGMAP_NAME}" \
+          --from-file=ks.cfg=/tmp/ks.cfg \
+          --namespace="${NAMESPACE}" \
+          --dry-run=client -o yaml | \
+        kubectl label --local -f - \
+          app.kubernetes.io/managed-by=tekton-pipelines \
+          pipeline=secure-execution \
+          vm-name="${VM_NAME}" \
+          --dry-run=client -o yaml | \
+        kubectl apply -f -
+        
+        # Output results
+        echo -n "${CONFIGMAP_NAME}" > $(results.name.path)
+        echo -n "${NAMESPACE}" > $(results.namespace.path)
+        
+        echo "ConfigMap ${CONFIGMAP_NAME} created successfully in namespace ${NAMESPACE}"
