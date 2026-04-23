@@ -1,0 +1,44 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: fedora-se-installer-run-
+  labels:
+    pipelinerun: fedora-se-installer-run
+spec:
+  taskRunTemplate:
+    serviceAccountName: pipeline
+  params:
+    - name: vmName
+      value: "sec-exec-vm"
+    - name: memory
+      value: "8Gi"
+    - name: diskSize
+      value: "10Gi"
+    - name: isoUrl
+      value: "https://download.fedoraproject.org/pub/fedora-secondary/releases/44/Server/s390x/iso/Fedora-Server-dvd-s390x-44-1.7.iso"
+    - name: bootImage
+      value: "quay.io/<repo>/fedora-44:latest"
+    - name: hostDoc
+      value: "<hostdoc file in base64>"
+    - name: ibmSign
+      value: "<signin key>"
+    - name: caCert
+      value: "<ca certificate>"
+    - name: sshKey
+      value: "<sshd key>"
+    - name: storageClass
+      value: "standard"
+    - name: createGoldenImage
+      value: "false"
+    - name: seTemplatesConfigMapURL
+      value: "https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/templates-pipelines/secure-execution-installer/configmaps/se-templates-configmaps.yaml"
+    - name: cliImage
+      value: "quay.io/<repo>/kubectl:latest"
+    - name: kickstartServerImage
+      value: "docker.io/httpd:2.4-alpine"
+  pipelineRef:
+    name: secure-execution-installer
+  timeouts:
+    pipeline: 20m0s
+
