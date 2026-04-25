@@ -10,7 +10,7 @@ require (
 	github.com/onsi/gomega v1.27.10
 	github.com/openshift/api v3.9.0+incompatible
 	github.com/openshift/client-go v3.9.0+incompatible
-	github.com/tektoncd/pipeline v0.52.1
+	github.com/tektoncd/pipeline v1.11.1
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.3
 	k8s.io/client-go v12.0.0+incompatible
