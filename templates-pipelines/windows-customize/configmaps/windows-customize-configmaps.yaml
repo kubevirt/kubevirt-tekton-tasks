@@ -100,12 +100,13 @@ data:
     Set-NetIPInterface -InterfaceIndex $(Get-NetAdapter).ifIndex -NlMtuBytes 1300
 
     # Download VS Code
-    $url = "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user"
-    $setupPath = "C:\VSCodeUserSetup-x64.exe"
+    $url = "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64"
+    $setupPath = "C:\VSCodeSetup-x64.exe"
     Invoke-WebRequest -Uri $url -OutFile $setupPath
 
-    # vs code
-    Start-Process $setupPath -Wait -ArgumentList "/ACTION=INSTALL /VERYSILENT /MERGETASKS=!runcode"
+    Start-Process $setupPath -Wait -ArgumentList "/VERYSILENT /MERGETASKS=!runcode"
+
+    Get-AppxPackage *VisualStudioCode* | Remove-AppxPackage -ErrorAction SilentlyContinue
 
     # Rename cached unattend.xml to avoid it is picked up by sysprep
     mv C:\Windows\Panther\unattend.xml C:\Windows\Panther\unattend.visualStudio.xml
