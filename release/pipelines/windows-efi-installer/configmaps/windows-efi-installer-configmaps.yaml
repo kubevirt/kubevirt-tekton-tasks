@@ -106,6 +106,15 @@ data:
         </component>
       </settings>
       <settings pass="specialize">
+        <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+          <RunSynchronous>
+            <RunSynchronousCommand wcm:action="add">
+              <Order>1</Order>
+              <Path>reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v BypassNRO /t REG_DWORD /d 1 /f</Path>
+              <Description>Bypass Windows 11 Network Requirement</Description>
+            </RunSynchronousCommand>
+          </RunSynchronous>
+        </component>
         <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
           <InputLocale>0409:00000409</InputLocale>
           <SystemLocale>en-US</SystemLocale>
