@@ -101,6 +101,7 @@ data:
             <AcceptEula>false</AcceptEula>
             <ProductKey>
               <Key/>
+              <WillShowUI>Never</WillShowUI>
             </ProductKey>
           </UserData>
         </component>
@@ -152,8 +153,57 @@ data:
     # Install qemu guest agent
     Start-Process msiexec -Wait -ArgumentList "/i E:\guest-agent\qemu-ga-x86_64.msi /qn /passive /norestart"
 
-    # Rename cached unattend.xml to avoid it is picked up by sysprep
-    mv C:\Windows\Panther\unattend.xml C:\Windows\Panther\unattend.install.xml
+    # Create a minimal unattend.xml for Sysprep folder to skip OOBE after cloning
+    # This XML contains Microsoft-Windows-Shell-Setup with OOBE skip settings
+    $oobeXml = '<?xml version="1.0" encoding="utf-8"?>' + "`n"
+    $oobeXml += '<unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">' + "`n"
+    $oobeXml += '  <settings pass="oobeSystem">' + "`n"
+    $oobeXml += '    <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">' + "`n"
+    $oobeXml += '      <InputLocale>0409:00000409</InputLocale>' + "`n"
+    $oobeXml += '      <SystemLocale>en-US</SystemLocale>' + "`n"
+    $oobeXml += '      <UILanguage>en-US</UILanguage>' + "`n"
+    $oobeXml += '      <UserLocale>en-US</UserLocale>' + "`n"
+    $oobeXml += '    </component>' + "`n"
+    $oobeXml += '    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">' + "`n"
+    $oobeXml += '      <OOBE>' + "`n"
+    $oobeXml += '        <HideEULAPage>true</HideEULAPage>' + "`n"
+    $oobeXml += '        <HideOnlineAccountScreens>true</HideOnlineAccountScreens>' + "`n"
+    $oobeXml += '        <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>' + "`n"
+    $oobeXml += '        <ProtectYourPC>3</ProtectYourPC>' + "`n"
+    $oobeXml += '      </OOBE>' + "`n"
+    $oobeXml += '      <UserAccounts>' + "`n"
+    $oobeXml += '        <AdministratorPassword>' + "`n"
+    $oobeXml += '          <Value></Value>' + "`n"
+    $oobeXml += '          <PlainText>true</PlainText>' + "`n"
+    $oobeXml += '        </AdministratorPassword>' + "`n"
+    $oobeXml += '        <LocalAccounts>' + "`n"
+    $oobeXml += '          <LocalAccount wcm:action="add">' + "`n"
+    $oobeXml += '            <Name>Administrator</Name>' + "`n"
+    $oobeXml += '            <Group>Administrators</Group>' + "`n"
+    $oobeXml += '            <Password>' + "`n"
+    $oobeXml += '              <Value></Value>' + "`n"
+    $oobeXml += '              <PlainText>true</PlainText>' + "`n"
+    $oobeXml += '            </Password>' + "`n"
+    $oobeXml += '          </LocalAccount>' + "`n"
+    $oobeXml += '        </LocalAccounts>' + "`n"
+    $oobeXml += '      </UserAccounts>' + "`n"
+    $oobeXml += '      <AutoLogon>' + "`n"
+    $oobeXml += '        <Enabled>true</Enabled>' + "`n"
+    $oobeXml += '        <Username>Administrator</Username>' + "`n"
+    $oobeXml += '        <Password>' + "`n"
+    $oobeXml += '          <Value></Value>' + "`n"
+    $oobeXml += '          <PlainText>true</PlainText>' + "`n"
+    $oobeXml += '        </Password>' + "`n"
+    $oobeXml += '      </AutoLogon>' + "`n"
+    $oobeXml += '    </component>' + "`n"
+    $oobeXml += '  </settings>' + "`n"
+    $oobeXml += '</unattend>'
+
+    # Write the OOBE-skip unattend to Sysprep folder
+    $oobeXml | Out-File -FilePath "C:\Windows\System32\Sysprep\unattend.xml" -Encoding UTF8 -Force
+
+    # Rename cached unattend.xml to avoid duplicate processing
+    Rename-Item C:\Windows\Panther\unattend.xml C:\Windows\Panther\unattend.install.xml -Force -ErrorAction SilentlyContinue
 
     # Eject CD, to avoid that the unattend.xml on the CD is picked up by sysprep
     (New-Object -COMObject Shell.Application).NameSpace(17).ParseName("F:").InvokeVerb("Eject")
@@ -409,6 +459,7 @@ data:
             <AcceptEula>false</AcceptEula>
             <ProductKey>
               <Key/>
+              <WillShowUI>Never</WillShowUI>
             </ProductKey>
           </UserData>
         </component>
@@ -451,8 +502,57 @@ data:
     # Install qemu guest agent
     Start-Process msiexec -Wait -ArgumentList "/i E:\guest-agent\qemu-ga-x86_64.msi /qn /passive /norestart"
 
-    # Rename cached unattend.xml to avoid it is picked up by sysprep
-    mv C:\Windows\Panther\unattend.xml C:\Windows\Panther\unattend.install.xml
+    # Create a minimal unattend.xml for Sysprep folder to skip OOBE after cloning
+    # This XML contains Microsoft-Windows-Shell-Setup with OOBE skip settings
+    $oobeXml = '<?xml version="1.0" encoding="utf-8"?>' + "`n"
+    $oobeXml += '<unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">' + "`n"
+    $oobeXml += '  <settings pass="oobeSystem">' + "`n"
+    $oobeXml += '    <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">' + "`n"
+    $oobeXml += '      <InputLocale>0409:00000409</InputLocale>' + "`n"
+    $oobeXml += '      <SystemLocale>en-US</SystemLocale>' + "`n"
+    $oobeXml += '      <UILanguage>en-US</UILanguage>' + "`n"
+    $oobeXml += '      <UserLocale>en-US</UserLocale>' + "`n"
+    $oobeXml += '    </component>' + "`n"
+    $oobeXml += '    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">' + "`n"
+    $oobeXml += '      <OOBE>' + "`n"
+    $oobeXml += '        <HideEULAPage>true</HideEULAPage>' + "`n"
+    $oobeXml += '        <HideOnlineAccountScreens>true</HideOnlineAccountScreens>' + "`n"
+    $oobeXml += '        <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>' + "`n"
+    $oobeXml += '        <ProtectYourPC>3</ProtectYourPC>' + "`n"
+    $oobeXml += '      </OOBE>' + "`n"
+    $oobeXml += '      <UserAccounts>' + "`n"
+    $oobeXml += '        <AdministratorPassword>' + "`n"
+    $oobeXml += '          <Value></Value>' + "`n"
+    $oobeXml += '          <PlainText>true</PlainText>' + "`n"
+    $oobeXml += '        </AdministratorPassword>' + "`n"
+    $oobeXml += '        <LocalAccounts>' + "`n"
+    $oobeXml += '          <LocalAccount wcm:action="add">' + "`n"
+    $oobeXml += '            <Name>Administrator</Name>' + "`n"
+    $oobeXml += '            <Group>Administrators</Group>' + "`n"
+    $oobeXml += '            <Password>' + "`n"
+    $oobeXml += '              <Value></Value>' + "`n"
+    $oobeXml += '              <PlainText>true</PlainText>' + "`n"
+    $oobeXml += '            </Password>' + "`n"
+    $oobeXml += '          </LocalAccount>' + "`n"
+    $oobeXml += '        </LocalAccounts>' + "`n"
+    $oobeXml += '      </UserAccounts>' + "`n"
+    $oobeXml += '      <AutoLogon>' + "`n"
+    $oobeXml += '        <Enabled>true</Enabled>' + "`n"
+    $oobeXml += '        <Username>Administrator</Username>' + "`n"
+    $oobeXml += '        <Password>' + "`n"
+    $oobeXml += '          <Value></Value>' + "`n"
+    $oobeXml += '          <PlainText>true</PlainText>' + "`n"
+    $oobeXml += '        </Password>' + "`n"
+    $oobeXml += '      </AutoLogon>' + "`n"
+    $oobeXml += '    </component>' + "`n"
+    $oobeXml += '  </settings>' + "`n"
+    $oobeXml += '</unattend>'
+
+    # Write the OOBE-skip unattend to Sysprep folder
+    $oobeXml | Out-File -FilePath "C:\Windows\System32\Sysprep\unattend.xml" -Encoding UTF8 -Force
+
+    # Rename cached unattend.xml to avoid duplicate processing
+    Rename-Item C:\Windows\Panther\unattend.xml C:\Windows\Panther\unattend.install.xml -Force -ErrorAction SilentlyContinue
 
     # Eject CD, to avoid that the unattend.xml on the CD is picked up by sysprep
     (New-Object -COMObject Shell.Application).NameSpace(17).ParseName("F:").InvokeVerb("Eject")
