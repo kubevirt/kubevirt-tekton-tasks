@@ -1,6 +1,6 @@
 module github.com/kubevirt/kubevirt-tekton-tasks/modules/generate-ssh-keys
 
-go 1.20
+go 1.25.0
 
 require (
 	github.com/alexflint/go-arg v1.3.0
@@ -43,7 +43,7 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/oauth2 v0.13.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/term v0.27.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
