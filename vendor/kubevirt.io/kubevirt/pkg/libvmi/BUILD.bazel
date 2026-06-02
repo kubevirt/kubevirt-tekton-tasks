@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "accesscredentials.go",
+        "clock.go",
         "cloudinit.go",
         "config.go",
         "cpu.go",
@@ -31,6 +32,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/rand:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
         "//vendor/kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1:go_default_library",
     ],
 )
