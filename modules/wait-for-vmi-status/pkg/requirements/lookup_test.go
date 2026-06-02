@@ -27,7 +27,7 @@ var _ = Describe("Lookup", func() {
 		Entry("basic", testobjects.NewTestFedoraCloudVM("fedora").Build(), testSelector, labels.Set{
 			"metadata.name":    "fedora",
 			"spec.runStrategy": "Halted",
-			"metadata":         "{\"name\":\"fedora\",\"namespace\":\"default\",\"creationTimestamp\":null}",
+			"metadata":         "{\"name\":\"fedora\",\"namespace\":\"default\"}",
 		}),
 		Entry("with spaces", testobjects.NewTestFedoraCloudVM("fedora").Build(), "  metadata.name   ", labels.Set{
 			"metadata.name": "fedora",
