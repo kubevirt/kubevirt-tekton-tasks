@@ -38,7 +38,7 @@ require (
 	kubevirt.io/containerdisks v0.0.0-20241001085853-ea2e8bf50322
 	kubevirt.io/containerized-data-importer v1.59.1
 	kubevirt.io/containerized-data-importer-api v1.63.1
-	kubevirt.io/kubevirt v1.7.1
+	kubevirt.io/kubevirt v1.8.2
 	kubevirt.io/qe-tools v0.1.8
 	sigs.k8s.io/yaml v1.6.0
 )
