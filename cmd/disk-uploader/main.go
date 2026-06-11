@@ -36,6 +36,10 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 	volumeName := opts.GetVolumeName()
 	imageDestination := opts.GetImageDestination()
 	imagePushTimeout := opts.GetPushTimeout()
+	auth, err := image.RegistryAuth()
+	if err != nil {
+		return "", err
+	}
 
 	vmExportSecret, err := secrets.CreateVirtualMachineExportSecret(k8sClient, namespace, name)
 	if err != nil {
@@ -101,7 +105,7 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 
 	log.Logger().Info("Pushing new container image to the container registry...")
 
-	if err := image.Push(containerImage, imageDestination, imagePushTimeout); err != nil {
+	if err := image.Push(containerImage, imageDestination, imagePushTimeout, auth); err != nil {
 		return "", err
 	}
 
