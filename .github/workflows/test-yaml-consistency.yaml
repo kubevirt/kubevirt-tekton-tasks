@@ -8,6 +8,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: test yaml consistency
       run: scripts/test-yaml-consistency.sh
