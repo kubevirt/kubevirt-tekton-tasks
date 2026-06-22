@@ -5,8 +5,6 @@ const (
 	InvalidCLIInputExitCode   = 2
 	DiskUploaderErrorExitCode = 3
 	WriteResultsExitCode      = 4
-)
 
-const (
 	DigestResultName = "digest"
 )
