@@ -65,7 +65,7 @@ spec:
         -   name: name
             value: disk-uploader
         -   name: version
-            value: v0.25.0
+            value: v0.26.0
         resolver: hub
 
 ```
