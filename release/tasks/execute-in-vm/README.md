@@ -67,7 +67,7 @@ spec:
         -   name: name
             value: execute-in-vm
         -   name: version
-            value: v0.25.0
+            value: v0.26.0
         resolver: hub
 ```
 

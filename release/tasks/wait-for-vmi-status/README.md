@@ -36,7 +36,7 @@ spec:
         -   name: name
             value: wait-for-vmi-status
         -   name: version
-            value: v0.25.0
+            value: v0.26.0
         resolver: hub
 ```
 
