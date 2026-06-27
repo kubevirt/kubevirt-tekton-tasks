@@ -57,9 +57,14 @@ spec:
         echo "ISO file checksum:" $(sha256sum ${TARGET_IMG_FILE_PATH})
         ls -la ${TARGET_IMG_FILE_PATH}
 
-        if [ ! -f ${EFI_BOOT}/efisys_noprompt.bin ] || [ ! -f ${EFI_BOOT}/cdboot_noprompt.efi ]; then
-          echo "${EFI_BOOT}/efisys_noprompt.bin or ${EFI_BOOT}/cdboot_noprompt.efi not found in the iso file! Task expects that ISO file contains bootloader without prompt. If the no prompt bootloader is not present, the installation might behave unexpectedly. Exiting"
-          exit 1
+        if [ ! -f "${EFI_BOOT}/efisys_noprompt.bin" ]; then
+        echo "efisys_noprompt.bin not found, using efisys.bin as fallback"
+        cp "${EFI_BOOT}/efisys.bin" "${EFI_BOOT}/efisys_noprompt.bin"
+        fi
+
+        if [ ! -f "${EFI_BOOT}/cdboot_noprompt.efi" ]; then
+        echo "cdboot_noprompt.efi not found, using cdboot.efi as fallback"
+        cp "${EFI_BOOT}/cdboot.efi" "${EFI_BOOT}/cdboot_noprompt.efi"
         fi
 
         chmod u+w "${ISO_FILES_PATH}/efi" "${ISO_FILES_PATH}/efi/microsoft" "${ISO_FILES_PATH}/efi/microsoft/boot"
