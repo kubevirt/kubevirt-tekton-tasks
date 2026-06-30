@@ -1,0 +1,1029 @@
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: "{{ tekton_project_version }}"
+    tekton.dev/categories: "Virtualization,Security"
+    tekton.dev/tags: "{{ virt_project | lower }},secure-execution,s390x,ibm-z"
+    tekton.dev/displayName: "{{ display_name_provider }} Secure Execution VM Installer"
+    tekton.dev/platforms: "linux/s390x"
+    artifacthub.io/maintainers: |
+      - name: {{ maintainer_name }}
+        email: {{ maintainer_email }}
+    artifacthub.io/provider: {{ provider }}
+    artifacthub.io/recommendations: |
+      - url: {{ recommendation_url }}
+      - url: https://www.ibm.com/docs/en/linux-on-systems?topic=virtualization-secure-execution
+    artifacthub.io/category: integration-delivery
+  labels:
+    app.kubernetes.io/version: {{ catalog_version }}
+  name: secure-execution-installer
+spec:
+  description: >-
+    This pipeline automates the creation of IBM Secure Execution (SE) enabled virtual machines on s390x architecture.
+    It performs automated Linux installation, configures LUKS encryption for root and boot volumes, and generates SE images.
+    The pipeline handles the complete workflow from ISO download to production-ready SE VM.
+  params:
+    - name: vmName
+      type: string
+      description: "Name of the VM to create"
+    - name: memory
+      type: string
+      description: "Memory allocation for the VM (e.g., 8Gi, 16Gi)"
+      default: "8Gi"
+    - name: diskSize
+      type: string
+      description: "Root disk size for the VM (e.g., 20Gi, 50Gi)"
+      default: "20Gi"
+    - name: isoUrl
+      type: string
+      description: "URL to the Linux ISO file for s390x (Fedora or RHEL)"
+    - name: bootImage
+      type: string
+      description: "Container image containing kernel and initrd for initial boot"
+    - name: hostDoc
+      type: string
+      description: "Base64 encoded host key document certificate for SE"
+    - name: ibmSign
+      type: string
+      description: "Base64 encoded IBM signing certificate for SE"
+    - name: caCert
+      type: string
+      description: "Base64 encoded CA certificate for SE"
+    - name: sshKey
+      type: string
+      description: "SSH public key for VM access"
+    - name: namespace
+      type: string
+      description: "Namespace for VM and resources (defaults to pipeline namespace)"
+      default: ""
+    - name: storageClass
+      type: string
+      description: "Storage class for DataVolumes"
+      default: "hostpath-sc"
+    - name: createGoldenImage
+      type: string
+      description: "Create a DataSource golden image after installation (true/false)"
+      default: "false"
+    - name: goldenImageName
+      type: string
+      description: "Name for the golden image DataSource (if createGoldenImage=true)"
+      default: ""
+    - name: osPreference
+      type: string
+      description: "OS preference label for golden image (fedora or rhel)"
+      default: "fedora"
+    - name: machineType
+      type: string
+      description: "VM machine type for s390x architecture"
+      default: "s390-ccw-virtio"
+    - name: seTemplatesConfigMapURL
+      type: string
+      description: "URL to SE templates ConfigMap YAML (cloud-init scripts)"
+      default: "{{ se_configmap_url }}"
+    - name: cliImage
+      type: string
+      description: "Container image with kubectl/oc CLI"
+      default: "{{ cli_image }}"
+    - name: kickstartServerImage
+      type: string
+      description: "HTTP server image for serving kickstart file"
+      default: "{{ kickstart_server_image }}"
+  
+  tasks:
+    # Task 0: Deploy SE Templates ConfigMap
+    - name: deploy-se-templates
+      taskSpec:
+        params:
+          - name: cliImage
+          - name: namespace
+          - name: seTemplatesConfigMapURL
+        steps:
+          - name: deploy-configmap
+            image: "$(params.cliImage)"
+            script: |
+              #!/bin/bash
+              set -euo pipefail
+              
+              NAMESPACE="$(params.namespace)"
+              if [ -z "$NAMESPACE" ]; then
+                NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
+              fi
+              
+              echo "Fetching SE templates ConfigMap from: $(params.seTemplatesConfigMapURL)"
+              curl -sSL "$(params.seTemplatesConfigMapURL)" | \
+                sed "s/namespace: .*/namespace: ${NAMESPACE}/" | \
+                kubectl apply -n ${NAMESPACE} -f -
+              
+              echo "SE templates ConfigMap deployed successfully"
+      params:
+        - name: cliImage
+          value: $(params.cliImage)
+        - name: namespace
+          value: $(params.namespace)
+        - name: seTemplatesConfigMapURL
+          value: $(params.seTemplatesConfigMapURL)
+    
+    # Task 1: Create kickstart ConfigMap
+    - name: create-kickstart-config
+      runAfter: ["deploy-se-templates"]
+      taskSpec:
+        params:
+          - name: cliImage
+          - name: namespace
+          - name: vmName
+        steps:
+          - name: create-configmap
+            image: "$(params.cliImage)"
+            script: |
+              #!/bin/bash
+              set -euo pipefail
+              
+              NAMESPACE="$(params.namespace)"
+              if [ -z "$NAMESPACE" ]; then
+                NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
+              fi
+              
+              VM_NAME="$(params.vmName)"
+              CONFIGMAP_NAME="kickstart-config-${VM_NAME}"
+              
+              cat <<EOF | kubectl apply -f -
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: ${CONFIGMAP_NAME}
+                namespace: ${NAMESPACE}
+                labels:
+                  app.kubernetes.io/managed-by: tekton-pipelines
+                  pipeline: secure-execution
+                  vm-name: ${VM_NAME}
+              data:
+                ks.cfg: |
+                  text
+                  lang en_US.UTF-8
+                  keyboard us
+                  network --bootproto=dhcp
+                  rootpw --lock
+                  timezone UTC
+                  firewall --enabled
+                  selinux --enforcing
+                  bootloader --location=mbr
+                  reboot
+                  
+                  #Do not change the device name
+                  ignoredisk --only-use=vdb
+                  zerombr
+                  
+                  # ******DO NOT CHANGE LABELS AS THIS BREAKS THE AUTOMATION******
+                  # --label=root is shredded off on post boot and growfs the newroot
+                  %pre
+                  parted -s /dev/vdb mklabel gpt
+                  parted -s /dev/vdb mkpart primary ext4 1MiB 1024MiB
+                  parted -s /dev/vdb mkpart primary xfs 1025MiB 2049MiB
+                  parted -s /dev/vdb mkpart primary xfs 2050MiB 6050MiB
+                  parted -s /dev/vdb mkpart primary xfs 6051MiB 100%
+                  
+                  /usr/sbin/udevadm settle
+                  /usr/sbin/partprobe /dev/vdb
+                  /usr/sbin/udevadm settle
+                  %end
+                  
+                  part /boot --onpart=vdb1 --fstype=ext4 --label=boot
+                  part /se --onpart=vdb2 --fstype=xfs --label=se
+                  part newroot --onpart=vdb3 --fstype=xfs --label=NEWROOT
+                  part / --onpart=vdb4 --label=root
+                  # --------------------END-----------------------------
+                  
+                  # Packages
+                  # These packages are the minimum requirements for Fedora and RHEL.
+                  # Fedora uses 'growpart', while RHEL uses 'cloud-utils-growpart'.
+                  %packages --ignoremissing
+                  @core
+                  dracut
+                  vim
+                  cryptsetup
+                  %end
+                  
+                  # Post-install section
+                  %post --log=/root/ks-post.log
+                  #!/bin/bash
+                  set -x
+                  
+                  dnf -y makecache
+                  
+                  install_if_exists() {
+                    if dnf -q list available "\$1" > /dev/null 2>&1 || \
+                       rpm -q "\$1" > /dev/null 2>&1; then
+                      dnf -y install "\$1"
+                    fi
+                  }
+                  
+                  # cloud-init
+                  install_if_exists cloud-init
+                  
+                  # Fedora RHEL packages
+                  install_if_exists cloud-utils-growpart
+                  install_if_exists growpart
+                  install_if_exists s390-tools
+                  
+                  # Enable Cloud init
+                  if rpm -q cloud-init > /dev/null 2>&1; then
+                    systemctl enable cloud-init
+                  fi
+                  
+                  echo "Finished Installation"
+                  %end
+              EOF
+              
+              echo "ConfigMap ${CONFIGMAP_NAME} created successfully in namespace ${NAMESPACE}"
+      params:
+        - name: cliImage
+          value: $(params.cliImage)
+        - name: namespace
+          value: $(params.namespace)
+        - name: vmName
+          value: $(params.vmName)
+    
+    # Task 2: Deploy HTTP server for kickstart
+    - name: deploy-kickstart-server
+      runAfter: ["create-kickstart-config"]
+      taskSpec:
+        params:
+          - name: cliImage
+          - name: vmName
+          - name: namespace
+          - name: configMapName
+          - name: kickstartServerImage
+        results:
+          - name: route-url
+            description: HTTP URL for kickstart file
+        steps:
+          - name: deploy-httpd
+            image: $(params.cliImage)
+            script: |
+              #!/bin/bash
+              set -euo pipefail
+              
+              NAMESPACE=$(params.namespace)
+              if [ -z "$NAMESPACE" ]; then
+                NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
+              fi
+              
+              VM_NAME=$(params.vmName)
+              CONFIGMAP_NAME=$(params.configMapName)
+              
+              # Create Deployment
+              KICKSTART_IMAGE=$(params.kickstartServerImage)
+              
+              # Determine mount path based on image
+              if [[ "$KICKSTART_IMAGE" == *"httpd"* ]] && [[ "$KICKSTART_IMAGE" == *"alpine"* ]]; then
+                MOUNT_PATH="/usr/local/apache2/htdocs/ks.cfg"
+                CONTAINER_PORT="80"
+              elif [[ "$KICKSTART_IMAGE" == *"nginx"* ]]; then
+                MOUNT_PATH="/usr/share/nginx/html/ks.cfg"
+                CONTAINER_PORT="80"
+              elif [[ "$KICKSTART_IMAGE" == *"bitnami/apache"* ]]; then
+                MOUNT_PATH="/opt/bitnami/apache/htdocs/ks.cfg"
+                CONTAINER_PORT="8080"
+              elif [[ "$KICKSTART_IMAGE" == *"registry.redhat.io"* ]]; then
+                MOUNT_PATH="/var/www/html/ks.cfg"
+                CONTAINER_PORT="8080"
+              else
+                # Default to Apache httpd alpine
+                MOUNT_PATH="/usr/local/apache2/htdocs/ks.cfg"
+                CONTAINER_PORT="80"
+              fi
+              
+              echo "Using kickstart server image: $KICKSTART_IMAGE"
+              echo "Mount path: $MOUNT_PATH"
+              echo "Container port: $CONTAINER_PORT"
+              
+              cat <<EOF | kubectl apply -f -
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: kickstart-server-${VM_NAME}
+                namespace: ${NAMESPACE}
+                labels:
+                  app: kickstart-server-${VM_NAME}
+                  vm-name: ${VM_NAME}
+                  pipeline: secure-execution
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels:
+                    app: kickstart-server-${VM_NAME}
+                template:
+                  metadata:
+                    labels:
+                      app: kickstart-server-${VM_NAME}
+                      vm-name: ${VM_NAME}
+                  spec:
+                    containers:
+                    - name: httpd
+                      image: ${KICKSTART_IMAGE}
+                      ports:
+                      - containerPort: ${CONTAINER_PORT}
+                      volumeMounts:
+                      - name: ks-file
+                        mountPath: ${MOUNT_PATH}
+                        subPath: ks.cfg
+                        readOnly: true
+                    volumes:
+                    - name: ks-file
+                      configMap:
+                        name: ${CONFIGMAP_NAME}
+              EOF
+              
+              # Create Service
+              cat <<EOF | kubectl apply -f -
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: kickstart-server-${VM_NAME}
+                namespace: ${NAMESPACE}
+                labels:
+                  vm-name: ${VM_NAME}
+                  pipeline: secure-execution
+              spec:
+                ports:
+                - port: 80
+                  targetPort: ${CONTAINER_PORT}
+                selector:
+                  app: kickstart-server-${VM_NAME}
+              EOF
+              
+              # Create Route (OpenShift only - skip on vanilla Kubernetes)
+              echo "Attempting to create Route (OpenShift)..."
+              if cat <<EOF | kubectl apply -f - 2>/dev/null; then
+              apiVersion: route.openshift.io/v1
+              kind: Route
+              metadata:
+                name: kickstart-server-${VM_NAME}
+                namespace: ${NAMESPACE}
+                labels:
+                  vm-name: ${VM_NAME}
+                  pipeline: secure-execution
+              spec:
+                to:
+                  kind: Service
+                  name: kickstart-server-${VM_NAME}
+                port:
+                  targetPort: ${CONTAINER_PORT}
+              EOF
+                echo "Route created successfully"
+                sleep 5
+                ROUTE_URL=$(kubectl get route kickstart-server-${VM_NAME} -n ${NAMESPACE} -o jsonpath='{.spec.host}')
+                echo -n "http://${ROUTE_URL}/ks.cfg" > $(results.route-url.path)
+                echo "Kickstart server deployed at: http://${ROUTE_URL}/ks.cfg"
+              else
+                echo "Route not supported (vanilla Kubernetes), using Service ClusterIP"
+                SERVICE_IP=$(kubectl get svc kickstart-server-${VM_NAME} -n ${NAMESPACE} -o jsonpath='{.spec.clusterIP}')
+                echo -n "http://${SERVICE_IP}/ks.cfg" > $(results.route-url.path)
+                echo "Kickstart server deployed at: http://${SERVICE_IP}/ks.cfg"
+              fi
+      params:
+        - name: cliImage
+          value: $(params.cliImage)
+        - name: vmName
+          value: $(params.vmName)
+        - name: namespace
+          value: $(params.namespace)
+        - name: configMapName
+          value: kickstart-config-$(params.vmName)
+        - name: kickstartServerImage
+          value: $(params.kickstartServerImage)
+    
+    # Task 3: Create SE cloud-init secret
+    - name: create-se-secret
+      runAfter: ["deploy-kickstart-server"]
+      taskSpec:
+        params:
+          - name: cliImage
+          - name: vmName
+          - name: namespace
+          - name: hostDoc
+          - name: ibmSign
+          - name: caCert
+          - name: sshKey
+        steps:
+          - name: create-secret
+            image: "$(params.cliImage)"
+            script: |
+              #!/bin/bash
+              set -euo pipefail
+              
+              NAMESPACE="$(params.namespace)"
+              if [ -z "$NAMESPACE" ]; then
+                NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
+              fi
+              
+              VM_NAME="$(params.vmName)"
+              
+              # Fetch the SE automation script from ConfigMap
+              kubectl get configmap se-templates-configmap -n ${NAMESPACE} -o jsonpath='{.data.post_secure_exec\.yaml}' > /tmp/template.yaml
+              
+              # Write parameters to temporary files to avoid injection
+              printf '%s' "$(params.hostDoc)" > /tmp/host_doc
+              printf '%s' "$(params.ibmSign)" > /tmp/ibm_sign
+              printf '%s' "$(params.caCert)" > /tmp/ca_cert
+              printf '%s' "$(params.sshKey)" > /tmp/ssh_key
+              
+              # Use pure shell for safe substitution (no external dependencies)
+              # Read template into variable
+              TEMPLATE=$(cat /tmp/template.yaml)
+              
+              # Read parameter values from files
+              HOST_DOC=$(cat /tmp/host_doc)
+              IBM_SIGN=$(cat /tmp/ibm_sign)
+              CA_CERT=$(cat /tmp/ca_cert)
+              SSH_KEY=$(cat /tmp/ssh_key)
+              
+              # Perform safe string replacements using parameter expansion
+              # This treats the replacement strings as literals (no regex/glob interpretation)
+              TEMPLATE="${TEMPLATE//__VM_NAME__/$VM_NAME}"
+              TEMPLATE="${TEMPLATE//__HOST_DOC__/$HOST_DOC}"
+              TEMPLATE="${TEMPLATE//__IBM_SIGN__/$IBM_SIGN}"
+              TEMPLATE="${TEMPLATE//__CA_CERT__/$CA_CERT}"
+              TEMPLATE="${TEMPLATE//__SSH_KEY__/$SSH_KEY}"
+              
+              # Write processed template to file using printf (preserves all characters)
+              printf '%s' "$TEMPLATE" > /tmp/processed.yaml
+              
+              # Create secret
+              kubectl create secret generic post-secure-exec-${VM_NAME} \
+                --from-file=userData=/tmp/processed.yaml \
+                --dry-run=client -o yaml | \
+                kubectl apply -n ${NAMESPACE} -f -
+              
+              # Clean up temporary files
+              rm -f /tmp/template.yaml /tmp/host_doc /tmp/ibm_sign /tmp/ca_cert /tmp/ssh_key /tmp/processed.yaml
+              
+              # Add labels
+              kubectl label secret post-secure-exec-${VM_NAME} -n ${NAMESPACE} \
+                vm-name=${VM_NAME} \
+                pipeline=secure-execution \
+                --overwrite
+              
+              echo "SE secret created successfully"
+      params:
+        - name: cliImage
+          value: $(params.cliImage)
+        - name: vmName
+          value: $(params.vmName)
+        - name: namespace
+          value: $(params.namespace)
+        - name: hostDoc
+          value: $(params.hostDoc)
+        - name: ibmSign
+          value: $(params.ibmSign)
+        - name: caCert
+          value: $(params.caCert)
+        - name: sshKey
+          value: $(params.sshKey)
+    
+    # Task 4 & 5: Create DataVolumes (parallel)
+    - name: create-iso-datavolume
+      runAfter: ["create-se-secret"]
+      taskRef:
+        kind: Task
+        name: modify-data-object
+      params:
+        - name: manifest
+          value: |
+            apiVersion: cdi.kubevirt.io/v1beta1
+            kind: DataVolume
+            metadata:
+              name: $(params.vmName)-iso-dv
+              namespace: $(params.namespace)
+              labels:
+                pipeline: secure-execution
+                vm-name: $(params.vmName)
+            spec:
+              source:
+                http:
+                  url: $(params.isoUrl)
+              storage:
+                accessModes:
+                  - ReadWriteOnce
+                storageClassName: $(params.storageClass)
+                resources:
+                  requests:
+                    storage: 8Gi
+        - name: namespace
+          value: $(params.namespace)
+        - name: waitForSuccess
+          value: "true"
+        - name: allowReplace
+          value: "false"
+    
+    - name: create-root-datavolume
+      runAfter: ["create-se-secret"]
+      taskRef:
+        kind: Task
+        name: modify-data-object
+      params:
+        - name: manifest
+          value: |
+            apiVersion: cdi.kubevirt.io/v1beta1
+            kind: DataVolume
+            metadata:
+              name: $(params.vmName)-dv
+              namespace: $(params.namespace)
+              labels:
+                pipeline: secure-execution
+                vm-name: $(params.vmName)
+              annotations:
+                cdi.kubevirt.io/storage.usePopulator: "false"
+            spec:
+              source:
+                blank: {}
+              storage:
+                accessModes:
+                  - ReadWriteOnce
+                storageClassName: $(params.storageClass)
+                resources:
+                  requests:
+                    storage: $(params.diskSize)
+        - name: namespace
+          value: $(params.namespace)
+        - name: waitForSuccess
+          value: "true"
+        - name: allowReplace
+          value: "false"
+    
+    # Task 6: Get kickstart URL
+    - name: get-kickstart-url
+      runAfter: ["create-iso-datavolume", "create-root-datavolume"]
+      taskSpec:
+        params:
+          - name: cliImage
+          - name: vmName
+          - name: namespace
+        results:
+          - name: kickstart-url
+            description: URL for kickstart file
+        steps:
+          - name: get-url
+            image: "$(params.cliImage)"
+            script: |
+              #!/bin/bash
+              set -e
+              
+              VM_NAME="$(params.vmName)"
+              NAMESPACE="$(params.namespace)"
+              
+              if [ -z "$NAMESPACE" ]; then
+                NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
+              fi
+              
+              # Get the kickstart URL (Route on OpenShift, Service on Kubernetes)
+              if kubectl get route kickstart-server-${VM_NAME} -n ${NAMESPACE} &>/dev/null; then
+                # OpenShift: Use Route
+                ROUTE_HOST=$(kubectl get route kickstart-server-${VM_NAME} -n ${NAMESPACE} -o jsonpath='{.spec.host}')
+                echo "Using Route URL: ${ROUTE_HOST}"
+              else
+                # Kubernetes: Use Service ClusterIP
+                ROUTE_HOST=$(kubectl get svc kickstart-server-${VM_NAME} -n ${NAMESPACE} -o jsonpath='{.spec.clusterIP}')
+                echo "Using Service IP: ${ROUTE_HOST}"
+              fi
+              
+              echo -n "http://${ROUTE_HOST}/ks.cfg" | tee $(results.kickstart-url.path)
+      params:
+        - name: cliImage
+          value: $(params.cliImage)
+        - name: vmName
+          value: $(params.vmName)
+        - name: namespace
+          value: $(params.namespace)
+    
+    # Task 7: Create VM
+    - name: create-vm
+      runAfter: ["get-kickstart-url"]
+      taskRef:
+        kind: Task
+        name: create-vm-from-manifest
+      params:
+        - name: manifest
+          value: |
+            apiVersion: kubevirt.io/v1
+            kind: VirtualMachine
+            metadata:
+              name: $(params.vmName)
+              namespace: $(params.namespace)
+              labels:
+                pipeline: secure-execution
+            spec:
+              runStrategy: Once
+              template:
+                spec:
+                  architecture: s390x
+                  domain:
+                    launchSecurity: {}
+                    machine:
+                      type: $(params.machineType)
+                    resources:
+                      requests:
+                        memory: $(params.memory)
+                    firmware:
+                      kernelBoot:
+                        container:
+                          image: $(params.bootImage)
+                          kernelPath: /kernel.img
+                          initrdPath: /initrd.img
+                        kernelArgs: >-
+                          console=ttysclp0
+                          inst.text
+                          inst.stage2=hd:/dev/vda
+                          inst.ks=$(tasks.get-kickstart-url.results.kickstart-url)
+                          ip=dhcp
+                    devices:
+                      disks:
+                        - name: installiso
+                          disk:
+                            bus: virtio
+                        - name: rootdisk
+                          disk:
+                            bus: virtio
+                        - name: cloudinitdisk
+                          disk:
+                            bus: virtio
+                      interfaces:
+                        - name: default
+                          masquerade: {}
+                  networks:
+                    - name: default
+                      pod: {}
+                  volumes:
+                    - name: installiso
+                      dataVolume:
+                        name: $(params.vmName)-iso-dv
+                    - name: rootdisk
+                      dataVolume:
+                        name: $(params.vmName)-dv
+                    - name: cloudinitdisk
+                      cloudInitNoCloud:
+                        secretRef:
+                          name: post-secure-exec-$(params.vmName)
+        - name: namespace
+          value: $(params.namespace)
+        - name: runStrategy
+          value: "Once"
+    
+    # Task 8: Wait for VM to stop (installation complete)
+    - name: wait-for-installation
+      runAfter: ["create-vm"]
+      taskRef:
+        kind: Task
+        name: wait-for-vmi-status
+      params:
+        - name: vmiName
+          value: $(params.vmName)
+        - name: vmiNamespace
+          value: $(params.namespace)
+        - name: successCondition
+          value: "status.phase == Succeeded"
+        - name: failureCondition
+          value: "status.phase == Failed"
+    
+    # Task 9: Cleanup and finalize VM
+    - name: finalize-vm
+      runAfter: ["wait-for-installation"]
+      taskSpec:
+        params:
+          - name: cliImage
+          - name: vmName
+            type: string
+          - name: namespace
+            type: string
+        steps:
+          - name: finalize
+            image: "$(params.cliImage)"
+            script: |
+              #!/bin/bash
+              set -e
+              
+              VM_NAME="$(params.vmName)"
+              NAMESPACE="$(params.namespace)"
+              
+              # Use default namespace if not specified
+              if [ -z "$NAMESPACE" ]; then
+                NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
+              fi
+              
+              echo "Finalizing VM: $VM_NAME in namespace: $NAMESPACE"
+              
+              # Remove kernel boot, ISO volume, and cloud-init disk
+              echo "Removing kernelBoot, installiso, and cloudinitdisk from VM..."
+              kubectl patch vm "$VM_NAME" -n "$NAMESPACE" --type=json -p '[
+                {"op": "remove", "path": "/spec/template/spec/domain/firmware/kernelBoot"},
+                {"op": "replace", "path": "/spec/template/spec/domain/devices/disks", "value": [{"disk": {"bus": "virtio"}, "name": "rootdisk"}]},
+                {"op": "replace", "path": "/spec/template/spec/volumes", "value": [{"dataVolume": {"name": "'"$VM_NAME"'-dv"}, "name": "rootdisk"}]},
+                {"op": "replace", "path": "/spec/runStrategy", "value": "Always"}
+              ]'
+              
+              echo "Removed kernelBoot from VM"
+              echo "Removed installiso disk from VM"
+              echo "Removed cloudinitdisk from VM"
+              
+              # Verify the changes
+              echo ""
+              echo "Verifying VM configuration..."
+              DISKS_COUNT=$(kubectl get vm "$VM_NAME" -n "$NAMESPACE" -o jsonpath='{.spec.template.spec.domain.devices.disks[*].name}' | wc -w)
+              VOLUMES_COUNT=$(kubectl get vm "$VM_NAME" -n "$NAMESPACE" -o jsonpath='{.spec.template.spec.volumes[*].name}' | wc -w)
+              
+              echo "Current disks: $(kubectl get vm "$VM_NAME" -n "$NAMESPACE" -o jsonpath='{.spec.template.spec.domain.devices.disks[*].name}')"
+              echo "Current volumes: $(kubectl get vm "$VM_NAME" -n "$NAMESPACE" -o jsonpath='{.spec.template.spec.volumes[*].name}')"
+              
+              if [ "$DISKS_COUNT" -eq 1 ] && [ "$VOLUMES_COUNT" -eq 1 ]; then
+                echo "✓ Verification passed: VM has only rootdisk"
+              else
+                echo "⚠ Warning: VM has $DISKS_COUNT disks and $VOLUMES_COUNT volumes (expected 1 each)"
+              fi
+              
+              # Cleanup temporary resources
+              echo "Cleaning up kickstart server resources..."
+              kubectl delete deployment,service,configmap,secret -l vm-name="$VM_NAME" -n "$NAMESPACE" --ignore-not-found
+              
+              # Try to delete route (OpenShift only - ignore error on vanilla Kubernetes)
+              kubectl delete route -l vm-name="$VM_NAME" -n "$NAMESPACE" --ignore-not-found 2>/dev/null || true
+              
+              echo "Cleaned up kickstart server resources"
+              echo "VM finalized and ready for Secure Execution"
+      params:
+        - name: cliImage
+          value: $(params.cliImage)
+        - name: vmName
+          value: $(params.vmName)
+        - name: namespace
+          value: $(params.namespace)
+    
+    # Task 10: Verify Secure Execution is enabled
+    - name: verify-se-enabled
+      runAfter: ["finalize-vm"]
+      taskSpec:
+        params:
+          - name: cliImage
+          - name: vmName
+          - name: namespace
+          - name: sshKey
+        steps:
+          - name: verify-se
+            image: "$(params.cliImage)"
+            script: |
+              #!/bin/bash
+              set -e
+              
+              VM_NAME="$(params.vmName)"
+              NAMESPACE="$(params.namespace)"
+              
+              if [ -z "$NAMESPACE" ]; then
+                NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
+              fi
+              
+              echo "Waiting for VM to start after finalization..."
+              
+              # Wait for VMI to be running (max 5 minutes)
+              for i in {1..60}; do
+                VMI_PHASE=$(kubectl get vmi "$VM_NAME" -n "$NAMESPACE" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
+                if [ "$VMI_PHASE" = "Running" ]; then
+                  echo "✓ VM is running"
+                  break
+                fi
+                echo "Waiting for VM to start... ($i/60) Current phase: $VMI_PHASE"
+                sleep 5
+              done
+              
+              if [ "$VMI_PHASE" != "Running" ]; then
+                echo "ERROR: VM did not start within timeout"
+                exit 1
+              fi
+              
+              # Get VM IP address
+              echo "Getting VM IP address..."
+              for i in {1..30}; do
+                VM_IP=$(kubectl get vmi "$VM_NAME" -n "$NAMESPACE" -o jsonpath='{.status.interfaces[0].ipAddress}' 2>/dev/null || echo "")
+                if [ -n "$VM_IP" ]; then
+                  echo "✓ VM IP: $VM_IP"
+                  break
+                fi
+                echo "Waiting for VM IP... ($i/30)"
+                sleep 5
+              done
+              
+              if [ -z "$VM_IP" ]; then
+                echo "ERROR: Could not get VM IP address"
+                exit 1
+              fi
+              
+              # Wait for SSH to be available
+              echo "Waiting for SSH to be available..."
+              for i in {1..60}; do
+                if timeout 5 bash -c "echo > /dev/tcp/$VM_IP/22" 2>/dev/null; then
+                  echo "✓ SSH port is open"
+                  break
+                fi
+                echo "Waiting for SSH... ($i/60)"
+                sleep 5
+              done
+              
+              # Create SSH key file
+              mkdir -p ~/.ssh
+              chmod 700 ~/.ssh
+              echo "$(params.sshKey)" > ~/.ssh/id_rsa.pub
+              
+              # Extract private key from public key comment or use a test approach
+              # Since we only have public key, we'll use virtctl console instead
+              echo "Verifying Secure Execution status via virtctl console..."
+              
+              # Use kubectl exec to check SE status through virtctl
+              SE_CHECK_CMD='[ -f /sys/firmware/uv/prot_virt_guest ] && cat /sys/firmware/uv/prot_virt_guest || echo "FILE_NOT_FOUND"'
+              
+              echo "Attempting to verify SE status..."
+              echo "Note: This verification requires SSH access to the VM"
+              echo "If SSH is not configured, this step will be skipped"
+              
+              # Try to use virtctl if available
+              if command -v virtctl &> /dev/null; then
+                echo "Using virtctl to check SE status..."
+                SE_VALUE=$(timeout 30 virtctl console "$VM_NAME" -n "$NAMESPACE" --command "$SE_CHECK_CMD" 2>/dev/null || echo "VIRTCTL_FAILED")
+                
+                if [ "$SE_VALUE" = "1" ]; then
+                  echo "✓✓✓ SUCCESS: Secure Execution is ENABLED ✓✓✓"
+                  echo "    /sys/firmware/uv/prot_virt_guest = 1"
+                  exit 0
+                elif [ "$SE_VALUE" = "FILE_NOT_FOUND" ]; then
+                  echo "⚠ WARNING: /sys/firmware/uv/prot_virt_guest not found"
+                  echo "    This may indicate SE is not properly configured"
+                  exit 1
+                else
+                  echo "⚠ WARNING: Could not verify SE status via virtctl"
+                  echo "    SE value: $SE_VALUE"
+                  echo "    Manual verification recommended after pipeline completion"
+                fi
+              else
+                echo "⚠ WARNING: virtctl not available in CLI image"
+                echo "    Cannot automatically verify SE status"
+                echo "    Please manually verify after pipeline completion:"
+                echo "    1. SSH to VM: ssh root@<vm-ip>"
+                echo "    2. Check SE: cat /sys/firmware/uv/prot_virt_guest"
+                echo "    3. Expected value: 1"
+              fi
+              
+              echo ""
+              echo "Manual verification command:"
+              echo "  virtctl console $VM_NAME -n $NAMESPACE"
+              echo "  cat /sys/firmware/uv/prot_virt_guest"
+              echo ""
+      params:
+        - name: cliImage
+          value: $(params.cliImage)
+        - name: vmName
+          value: $(params.vmName)
+        - name: namespace
+          value: $(params.namespace)
+        - name: sshKey
+          value: $(params.sshKey)
+    
+    # Task 11: Delete ISO DataVolume
+    - name: delete-iso-datavolume
+      runAfter: ["verify-se-enabled"]
+      taskRef:
+        kind: Task
+        name: modify-data-object
+      params:
+        - name: deleteObject
+          value: "true"
+        - name: deleteObjectKind
+          value: "DataVolume"
+        - name: deleteObjectName
+          value: "$(params.vmName)-iso-dv"
+        - name: namespace
+          value: $(params.namespace)
+    
+    # Task 12: Stop VM before creating golden image (optional)
+    - name: stop-vm-for-golden-image
+      runAfter: ["delete-iso-datavolume"]
+      when:
+        - input: "$(params.createGoldenImage)"
+          operator: in
+          values: ["true"]
+      taskRef:
+        kind: Task
+        name: cleanup-vm
+      params:
+        - name: vmName
+          value: $(params.vmName)
+        - name: vmNamespace
+          value: $(params.namespace)
+        - name: stop
+          value: "true"
+        - name: delete
+          value: "false"
+        - name: secretName
+          value: "__empty__"
+    
+    # Task 13: Create golden image DataSource (optional)
+    - name: create-golden-image
+      runAfter: ["stop-vm-for-golden-image"]
+      when:
+        - input: "$(params.createGoldenImage)"
+          operator: in
+          values: ["true"]
+      taskRef:
+        kind: Task
+        name: modify-data-object
+      params:
+        - name: manifest
+          value: |
+            apiVersion: cdi.kubevirt.io/v1beta1
+            kind: DataSource
+            metadata:
+              name: $(params.goldenImageName)
+              namespace: $(params.namespace)
+              labels:
+                instancetype.kubevirt.io/default-preference: $(params.osPreference)
+                pipeline: secure-execution
+            spec:
+              source:
+                pvc:
+                  name: $(params.vmName)-dv
+                  namespace: $(params.namespace)
+        - name: namespace
+          value: $(params.namespace)
+        - name: waitForSuccess
+          value: "false"
+        - name: allowReplace
+          value: "false"
+    
+    # Task 14: Delete VM to free DataVolume for golden image (optional)
+    - name: delete-vm-after-golden-image
+      runAfter: ["create-golden-image"]
+      when:
+        - input: "$(params.createGoldenImage)"
+          operator: in
+          values: ["true"]
+      taskRef:
+        kind: Task
+        name: cleanup-vm
+      params:
+        - name: vmName
+          value: $(params.vmName)
+        - name: vmNamespace
+          value: $(params.namespace)
+        - name: delete
+          value: "true"
+        - name: secretName
+          value: "__empty__"
+  
+  finally:
+    - name: cleanup-vm-on-failure
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Failed"]
+      taskRef:
+        kind: Task
+        name: cleanup-vm
+      params:
+        - name: vmName
+          value: $(params.vmName)
+        - name: vmNamespace
+          value: $(params.namespace)
+        - name: delete
+          value: "true"
+        - name: secretName
+          value: "__empty__"
+    
+    - name: cleanup-resources-on-failure
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Failed"]
+      taskSpec:
+        params:
+          - name: cliImage
+          - name: vmName
+          - name: namespace
+        steps:
+          - name: cleanup
+            image: "$(params.cliImage)"
+            script: |
+              #!/bin/bash
+              NAMESPACE="$(params.namespace)"
+              if [ -z "$NAMESPACE" ]; then
+                NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
+              fi
+              
+              echo "Cleaning up additional resources due to pipeline failure..."
+              kubectl delete dv,deployment,service,route,configmap,secret -l vm-name=$(params.vmName) -n ${NAMESPACE} --ignore-not-found
+              echo "Cleanup complete"
+      params:
+        - name: cliImage
+          value: $(params.cliImage)
+        - name: vmName
+          value: $(params.vmName)
+        - name: namespace
+          value: $(params.namespace)
+

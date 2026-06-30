@@ -22,10 +22,13 @@
       with_items:
         - "{{ customize_pipeline_dir }}"
         - "{{ efi_pipeline_dir }}"
+        - "{{ se_pipeline_dir }}"
         - "{{ customize_pipeline_dir }}/configmaps"
         - "{{ efi_pipeline_dir }}/configmaps"
+        - "{{ se_pipeline_dir }}/configmaps"
         - "{{ customize_pipeline_dir }}/pipelineruns"
         - "{{ efi_pipeline_dir }}/pipelineruns"
+        - "{{ se_pipeline_dir }}/pipelineruns"
 
     - name: "copy config maps"
       template:
@@ -35,6 +38,7 @@
       with_items:
         - "{{ efi_pipeline_name }}"
         - "{{ customize_pipeline_name }}"
+        - "{{ se_pipeline_name }}"
 
     - name: "copy manifests"
       template:
@@ -44,6 +48,7 @@
       with_items:
         - "{{ efi_pipeline_name }}"
         - "{{ customize_pipeline_name }}"
+        - "{{ se_pipeline_name }}"
 
     - name: "copy pipelineruns"
       template:
@@ -53,6 +58,7 @@
       with_items:
         - { pipeline_name: "{{ efi_pipeline_name }}" }
         - { pipeline_name: "{{ customize_pipeline_name }}" }
+        - { pipeline_name: "{{ se_pipeline_name }}" }
     
     - name: "copy get iso URL script"
       template:
@@ -75,3 +81,4 @@
       with_items:
         - { pipeline_name: "{{ efi_pipeline_name }}" }
         - { pipeline_name: "{{ customize_pipeline_name }}" }
+        - { pipeline_name: "{{ se_pipeline_name }}" }
