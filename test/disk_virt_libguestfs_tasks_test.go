@@ -114,7 +114,7 @@ var _ = Describe("Run disk virt-customize / virt-sysprep", func() {
 				TaskData: testconfigs.DiskVirtLibguestfsTaskData{
 					Datavolume: datavolume.NewBlankDataVolume("basic-functionality").
 						WithSize(15, resource.Giga).
-						WithRegistrySource("docker://quay.io/containerdisks/opensuse-leap:15.6").
+						WithRegistrySource("docker://quay.io/containerdisks/centos-stream:9-latest").
 						Build(),
 					Commands:           customizeCommand,
 					LibguestfsTaskType: taskType,

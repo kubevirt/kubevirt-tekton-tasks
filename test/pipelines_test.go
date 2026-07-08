@@ -64,7 +64,7 @@ spec:
     - ReadWriteOnce
   source:
     registry:
-      url: "docker://quay.io/containerdisks/opensuse-leap:15.6"
+      url: "docker://quay.io/containerdisks/centos-stream:9-latest"
 											`,
 									},
 								},
