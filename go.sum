@@ -1109,8 +1109,8 @@ kubevirt.io/containerized-data-importer-api v1.64.0 h1:yBLY6qEogUp8F+XSJvabIkx9u
 kubevirt.io/containerized-data-importer-api v1.64.0/go.mod h1:VGp35wxpLXU18b7cnEpmcThI3AjcZUSfg/Zfql44U4o=
 kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4 h1:fZYvD3/Vnitfkx6IJxjLAk8ugnZQ7CXVYcRfkSKmuZY=
 kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4/go.mod h1:018lASpFYBsYN6XwmA2TIrPCx6e0gviTd/ZNtSitKgc=
-kubevirt.io/kubevirt v1.8.2 h1:qUnQPvFHlNqA4aQxvKCyX+mfgwE4mwELM82cOJ75ujE=
-kubevirt.io/kubevirt v1.8.2/go.mod h1:NZAnwSaOh+vqTxLs3rV2qth7CbKIeiVjMZa+756aphU=
+kubevirt.io/kubevirt v1.8.3 h1:LUKElWXWVq/mCWUUgb4u9bBsQaM2F7eEjH7mYf+uYXY=
+kubevirt.io/kubevirt v1.8.3/go.mod h1:0iKcI7nw3Hnc0CYRU/VoCXUsdO55QPkAFbrvj5JtvBo=
 kubevirt.io/qe-tools v0.1.8 h1:Ar7qicmzHdd+Ia+6rjHDg3D7GReIyq7QFXoC4F7TjhQ=
 kubevirt.io/qe-tools v0.1.8/go.mod h1:+Tr/WZGHIDQa/4pQgzM7+4J6YeVbUWAXESXtL2/zxqc=
 kubevirt.io/virt-template-api v0.1.7 h1:E4PWNux+bse3NeexKPi165Hk+3i4F2wN9inRnZU+WOU=
