@@ -17,6 +17,9 @@ type ExecuteOrCleanupVMTaskData struct {
 
 	UseDefaultVMNamespacesInTaskParams bool
 	ShouldStartVM                      bool
+	// if set, poll until the VMI reaches Running after starting the VM and before running
+	// the task under test, instead of assuming readiness based on elapsed time
+	WaitForVMRunning bool
 	// supplied
 	ExecInVMMode ExecInVMMode
 
