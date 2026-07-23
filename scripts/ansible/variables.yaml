@@ -5,3 +5,10 @@ openshift_client_task_version: 0.2.0
 openshift_client_oc_version: latest
 catalog_type: artifact
 pipelines_catalog: kubevirt-tekton-pipelines
+
+# Secure Execution Pipeline variables
+se_pipeline_name: secure-execution-installer
+se_pipeline_dir: "{{ pipelines_output_dir }}/{{ se_pipeline_name }}"
+se_configmap_url: "https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/release/pipelines/secure-execution-installer/configmaps/secure-execution-installer-configmaps.yaml"
+cli_image: "docker.io/bitnami/kubectl:1.33.4"
+kickstart_server_image: "docker.io/httpd:2.4-alpine"
