@@ -23,16 +23,19 @@ const (
 	helloWorldScript = `#!/bin/bash
 echo hello world
 `
-	failScript = `#!/bin/bash
-echo fail
-exit 25
-`
+
 	sleepScript = `#!/bin/bash
 sleep 30
-echo fail
-exit 5
 `
 )
+
+func waitForVMRunning(f *framework.Framework, namespace, name string) {
+	Eventually(func(g Gomega) {
+		vmi, err := f.KubevirtClient.VirtualMachineInstance(namespace).Get(context.Background(), name, metav1.GetOptions{})
+		g.Expect(err).ShouldNot(HaveOccurred())
+		g.Expect(vmi.Status.Phase).To(Equal(kubevirtv1.Running))
+	}, Timeouts.WaitForVMStart.Duration, PollInterval).Should(Succeed())
+}
 
 var _ = Describe("Execute in VM / Cleanup VM", func() {
 	f := framework.NewFramework()
@@ -406,7 +409,9 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 			if config.TaskData.ShouldStartVM {
 				err := f.KubevirtClient.VirtualMachine(vm.Namespace).Start(context.Background(), vm.Name, &kubevirtv1.StartOptions{})
 				Expect(err).ShouldNot(HaveOccurred())
-				time.Sleep(Timeouts.WaitBeforeExecutingVM.Duration)
+				if config.TaskData.WaitForVMRunning {
+					waitForVMRunning(f, config.TaskData.VMNamespace, config.TaskData.VMName)
+				}
 			}
 		}
 
@@ -437,6 +442,9 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				Secret:        testobjects.NewTestSecret(sshConnectionInfo),
 				Script:        sleepScript,
 				ShouldStartVM: true,
+				// wait for the VMI to actually be Running before the low timeout window starts,
+				// so the timeout reliably hits during script execution instead of connection setup
+				WaitForVMRunning: true,
 				Timeout: &metav1.Duration{
 					Duration: 27 * time.Second,
 				},
@@ -449,10 +457,15 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				ExpectSuccess: false,
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
-				VM:      testobjects.NewTestFedoraCloudVM("start-execute-too-low-timeout-stop-vm").WithCloudConfig(fedoraCloudConfig).Build(),
-				Secret:  testobjects.NewTestSecret(sshConnectionInfo),
-				Script:  sleepScript,
-				Timeout: constants.Timeouts.TenSeconds,
+				VM:     testobjects.NewTestFedoraCloudVM("start-execute-too-low-timeout-stop-vm").WithCloudConfig(fedoraCloudConfig).Build(),
+				Secret: testobjects.NewTestSecret(sshConnectionInfo),
+				Script: sleepScript,
+				// the VM is never started beforehand, so 2s is structurally too short for a
+				// fresh VMI to even reach Running - this fails deterministically regardless
+				// of cluster speed, unlike a "usually enough" value
+				Timeout: &metav1.Duration{
+					Duration: 2 * time.Second,
+				},
 			},
 		}),
 		// positive cases
