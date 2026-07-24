@@ -63,6 +63,10 @@ spec:
       description: Name of the base DataVolume which is created. Pre-installed Windows VMs can be created from this DataVolume.
       name: baseDvName
       type: string
+    - default: 20Gi
+      description: Size of the base DataVolume which is created.
+      name: baseDvSize
+      type: string
     - default: win11
       description: Name of Windows ISO datavolume
       name: isoDVName
@@ -211,7 +215,7 @@ spec:
               storage:
                 resources:
                   requests:
-                    storage: 20Gi
+                    storage: $(params.baseDvSize)
               source:
                 blank: {}
         - name: waitForSuccess
