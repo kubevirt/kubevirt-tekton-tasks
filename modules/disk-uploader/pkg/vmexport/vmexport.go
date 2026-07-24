@@ -51,6 +51,10 @@ func CreateVirtualMachineExport(virtClient kubecli.KubevirtClient, exportSourceK
 	return virtClient.VirtualMachineExport(exportSourceNamespace).Create(context.Background(), v1VmExport, metav1.CreateOptions{})
 }
 
+func DeleteVirtualMachineExport(virtClient kubecli.KubevirtClient, namespace, name string) error {
+	return virtClient.VirtualMachineExport(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
+}
+
 func WaitUntilVirtualMachineExportReady(client kubecli.KubevirtClient, namespace, name string) error {
 	pollInterval := 60 * time.Second
 	pollTimeout := 3600 * time.Second
