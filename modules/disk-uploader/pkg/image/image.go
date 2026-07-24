@@ -2,9 +2,14 @@ package image
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"math"
+	"net"
 	"os"
+	"strings"
+	"syscall"
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -63,6 +68,29 @@ func Build(diskPath string, config v1.Config) (v1.Image, error) {
 	return image, nil
 }
 
+func retryPredicate(err error) bool {
+	if err == nil {
+		return false
+	}
+	// Replicate the default go-containerregistry retry predicate.
+	if errors.Is(err, io.ErrUnexpectedEOF) || errors.Is(err, io.EOF) ||
+		errors.Is(err, syscall.EPIPE) || errors.Is(err, syscall.ECONNRESET) ||
+		errors.Is(err, net.ErrClosed) {
+		return true
+	}
+	if !errors.Is(err, context.DeadlineExceeded) {
+		if te, ok := err.(interface{ Temporary() bool }); ok && te.Temporary() {
+			return true
+		}
+	}
+	// HTTP/2 GOAWAY is not covered by the default predicate but is a
+	// transient condition that occurs when a registry pod restarts.
+	if strings.Contains(err.Error(), "GOAWAY") {
+		return true
+	}
+	return false
+}
+
 func Push(image v1.Image, imageDestination string, pushTimeout int, auth *authn.Basic) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*time.Duration(pushTimeout))
 	defer cancel()
@@ -90,6 +118,14 @@ func Push(image v1.Image, imageDestination string, pushTimeout int, auth *authn.
 		remote.WithAuth(auth),
 		remote.WithContext(ctx),
 		remote.WithProgress(progressChan),
+		remote.WithRetryBackoff(remote.Backoff{
+			Duration: 2 * time.Second,
+			Factor:   2.0,
+			Jitter:   0.1,
+			Steps:    5,
+			Cap:      60 * time.Second,
+		}),
+		remote.WithRetryPredicate(retryPredicate),
 	)
 
 	<-done
