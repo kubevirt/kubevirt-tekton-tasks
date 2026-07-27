@@ -90,6 +90,13 @@ func Push(image v1.Image, imageDestination string, pushTimeout int, auth *authn.
 		remote.WithAuth(auth),
 		remote.WithContext(ctx),
 		remote.WithProgress(progressChan),
+		remote.WithRetryBackoff(remote.Backoff{
+			Duration: 2 * time.Second,
+			Factor:   2.0,
+			Jitter:   0.1,
+			Steps:    5,
+			Cap:      60 * time.Second,
+		}),
 	)
 
 	<-done
