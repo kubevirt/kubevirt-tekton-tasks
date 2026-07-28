@@ -52,7 +52,11 @@ func CreateVirtualMachineExport(virtClient kubecli.KubevirtClient, exportSourceK
 }
 
 func DeleteVirtualMachineExport(virtClient kubecli.KubevirtClient, namespace, name string) error {
-	return virtClient.VirtualMachineExport(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
+	err := virtClient.VirtualMachineExport(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+	return nil
 }
 
 func WaitUntilVirtualMachineExportReady(client kubecli.KubevirtClient, namespace, name string) error {
