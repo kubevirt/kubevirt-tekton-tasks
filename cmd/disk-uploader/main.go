@@ -86,6 +86,12 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 		return "", err
 	}
 
+	log.Logger().Info("Deleting VirtualMachineExport object...", zap.String("namespace", vmExport.Namespace), zap.String("name", vmExport.Name))
+
+	if err := vmexport.DeleteVirtualMachineExport(virtClient, namespace, vmExport.Name); err != nil {
+		log.Logger().Warn("Failed to delete VirtualMachineExport", zap.String("namespace", vmExport.Namespace), zap.String("name", vmExport.Name), zap.Error(err))
+	}
+
 	log.Logger().Info("Building a new container image...")
 
 	labels, err := vmexport.GetLabelsFromExportSource(virtClient, kind, namespace, name, volumeName)
