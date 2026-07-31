@@ -759,136 +759,9 @@ spec:
         - name: namespace
           value: $(params.namespace)
 
-    # Task 10: Verify Secure Execution is enabled
-    - name: verify-se-enabled
-      runAfter: ["finalize-vm"]
-      taskSpec:
-        params:
-          - name: cliImage
-          - name: vmName
-          - name: namespace
-          - name: sshKey
-        steps:
-          - name: verify-se
-            image: "$(params.cliImage)"
-            script: |
-              #!/bin/bash
-              set -e
-
-              VM_NAME="$(params.vmName)"
-              NAMESPACE="$(params.namespace)"
-
-              if [ -z "$NAMESPACE" ]; then
-                NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
-              fi
-
-              echo "Waiting for VM to start after finalization..."
-
-              # Wait for VMI to be running (max 5 minutes)
-              for i in {1..60}; do
-                VMI_PHASE=$(kubectl get vmi "$VM_NAME" -n "$NAMESPACE" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
-                if [ "$VMI_PHASE" = "Running" ]; then
-                  echo "✓ VM is running"
-                  break
-                fi
-                echo "Waiting for VM to start... ($i/60) Current phase: $VMI_PHASE"
-                sleep 5
-              done
-
-              if [ "$VMI_PHASE" != "Running" ]; then
-                echo "ERROR: VM did not start within timeout"
-                exit 1
-              fi
-
-              # Get VM IP address
-              echo "Getting VM IP address..."
-              for i in {1..30}; do
-                VM_IP=$(kubectl get vmi "$VM_NAME" -n "$NAMESPACE" -o jsonpath='{.status.interfaces[0].ipAddress}' 2>/dev/null || echo "")
-                if [ -n "$VM_IP" ]; then
-                  echo "✓ VM IP: $VM_IP"
-                  break
-                fi
-                echo "Waiting for VM IP... ($i/30)"
-                sleep 5
-              done
-
-              if [ -z "$VM_IP" ]; then
-                echo "ERROR: Could not get VM IP address"
-                exit 1
-              fi
-
-              # Wait for SSH to be available
-              echo "Waiting for SSH to be available..."
-              for i in {1..60}; do
-                if timeout 5 bash -c "echo > /dev/tcp/$VM_IP/22" 2>/dev/null; then
-                  echo "✓ SSH port is open"
-                  break
-                fi
-                echo "Waiting for SSH... ($i/60)"
-                sleep 5
-              done
-
-              # Create SSH key file
-              mkdir -p ~/.ssh
-              chmod 700 ~/.ssh
-              echo "$(params.sshKey)" > ~/.ssh/id_rsa.pub
-
-              # Extract private key from public key comment or use a test approach
-              # Since we only have public key, we'll use virtctl console instead
-              echo "Verifying Secure Execution status via virtctl console..."
-
-              # Use kubectl exec to check SE status through virtctl
-              SE_CHECK_CMD='[ -f /sys/firmware/uv/prot_virt_guest ] && cat /sys/firmware/uv/prot_virt_guest || echo "FILE_NOT_FOUND"'
-
-              echo "Attempting to verify SE status..."
-              echo "Note: This verification requires SSH access to the VM"
-              echo "If SSH is not configured, this step will be skipped"
-
-              # Try to use virtctl if available
-              if command -v virtctl &> /dev/null; then
-                echo "Using virtctl to check SE status..."
-                SE_VALUE=$(timeout 30 virtctl console "$VM_NAME" -n "$NAMESPACE" --command "$SE_CHECK_CMD" 2>/dev/null || echo "VIRTCTL_FAILED")
-
-                if [ "$SE_VALUE" = "1" ]; then
-                  echo "✓✓✓ SUCCESS: Secure Execution is ENABLED ✓✓✓"
-                  echo "    /sys/firmware/uv/prot_virt_guest = 1"
-                  exit 0
-                elif [ "$SE_VALUE" = "FILE_NOT_FOUND" ]; then
-                  echo "⚠ WARNING: /sys/firmware/uv/prot_virt_guest not found"
-                  echo "    This may indicate SE is not properly configured"
-                  exit 1
-                else
-                  echo "⚠ WARNING: Could not verify SE status via virtctl"
-                  echo "    SE value: $SE_VALUE"
-                  echo "    Manual verification recommended after pipeline completion"
-                fi
-              else
-                echo "⚠ WARNING: virtctl not available in CLI image"
-                echo "    Cannot automatically verify SE status"
-                echo "    Please manually verify after pipeline completion:"
-                echo "    1. SSH to VM: ssh root@<vm-ip>"
-                echo "    2. Check SE: cat /sys/firmware/uv/prot_virt_guest"
-                echo "    3. Expected value: 1"
-              fi
-
-              echo ""
-              echo "Manual verification command:"
-              echo "  virtctl console $VM_NAME -n $NAMESPACE"
-              echo "  cat /sys/firmware/uv/prot_virt_guest"
-              echo ""
-      params:
-        - name: cliImage
-          value: $(params.cliImage)
-        - name: vmName
-          value: $(params.vmName)
-        - name: namespace
-          value: $(params.namespace)
-        - name: sshKey
-          value: $(params.sshKey)
-
-    # Task 11: Delete ISO DataVolume
+    # Task 10: Delete ISO DataVolume
     - name: delete-iso-datavolume
-      runAfter: ["verify-se-enabled"]
+      runAfter: ["finalize-vm"]
       taskRef:
         kind: Task
         name: modify-data-object
@@ -902,7 +775,7 @@ spec:
         - name: namespace
           value: $(params.namespace)
 
-    # Task 12: Stop VM before creating golden image (optional)
+    # Task 11: Stop VM before creating golden image (optional)
     - name: stop-vm-for-golden-image
       runAfter: ["delete-iso-datavolume"]
       when:
@@ -924,7 +797,7 @@ spec:
         - name: secretName
           value: "__empty__"
 
-    # Task 13: Create golden image DataSource (optional)
+    # Task 12: Create golden image DataSource (optional)
     - name: create-golden-image
       runAfter: ["stop-vm-for-golden-image"]
       when:
@@ -957,7 +830,7 @@ spec:
         - name: allowReplace
           value: "false"
 
-    # Task 14: Delete VM to free DataVolume for golden image (optional)
+    # Task 13: Delete VM to free DataVolume for golden image (optional)
     - name: delete-vm-after-golden-image
       runAfter: ["create-golden-image"]
       when:

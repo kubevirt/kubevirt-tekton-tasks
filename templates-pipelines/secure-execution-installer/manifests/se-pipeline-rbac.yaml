@@ -66,3 +66,8 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: pipeline
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pipeline

@@ -70,7 +70,7 @@ data:
           cat /proc/cmdline > "${PARMFILE}"
 
           echo "Generating secure execution image: ${SECURE_OUTPUT}"
-          if [[ -f "${CA_CERT}" && -f "${IBM_SIGN_CERT}" ]]; then
+          if [[ -s "${CA_CERT}" && -s "${IBM_SIGN_CERT}" ]]; then
               genprotimg -i "${KERNEL_IMG}" -r "${INITRD}" -p "${PARMFILE}" -k "${HOST_KEY_DOC}" --cert "${CA_CERT}" --cert "${IBM_SIGN_CERT}" -o "${SECURE_OUTPUT}"
           else
               genprotimg -i "${KERNEL_IMG}" -r "${INITRD}" -p "${PARMFILE}" -k "${HOST_KEY_DOC}" -o "${SECURE_OUTPUT}" --no-verify
@@ -428,7 +428,7 @@ data:
               log "Creating secure image"
 
 
-              if [[  -f "${CA_CERT}" && -f "${IBM_SIGN_CERT}" ]]; then
+              if [[ -s "${CA_CERT}" && -s "${IBM_SIGN_CERT}" ]]; then
                   genprotimg -i "${KERNEL_IMAGE}" -r "${INITRD_IMAGE}" -p "${PARMFILE}" -k "${HOST_KEY_DOC}" --cert "${CA_CERT}" --cert "${IBM_SIGN_CERT}" -o "${IMAGE_OUT}" || { err "Failed Secure Image with CA Cert"; return 1; }
               else
                   genprotimg -i "${KERNEL_IMAGE}" -r "${INITRD_IMAGE}" -p "${PARMFILE}" -k "${HOST_KEY_DOC}" -o "${IMAGE_OUT}" --no-verify || { err "Failed Secure Image without CA Cert"; return 1; }
