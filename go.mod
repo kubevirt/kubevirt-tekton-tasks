@@ -33,10 +33,10 @@ require (
 	k8s.io/apimachinery v0.36.1
 	k8s.io/cli-runtime v0.36.1
 	k8s.io/client-go v12.0.0+incompatible
-	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
+	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5
 	knative.dev/pkg v0.0.0-20260210181456-ba7fd23eb13c
-	kubevirt.io/api v1.8.2
-	kubevirt.io/client-go v1.8.2
+	kubevirt.io/api v1.9.0
+	kubevirt.io/client-go v1.9.0
 	kubevirt.io/containerdisks v0.0.0-20260518121102-3621cf7f87dd
 	kubevirt.io/containerized-data-importer v0.0.0-00010101000000-000000000000
 	kubevirt.io/containerized-data-importer-api v1.65.0
@@ -169,6 +169,8 @@ require (
 	k8s.io/kube-aggregator v0.31.5 // indirect
 	k8s.io/kube-openapi v0.32.5 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4 // indirect
+	kubevirt.io/virt-template-api v0.2.0 // indirect
+	kubevirt.io/virt-template-client-go v0.2.0 // indirect
 	sigs.k8s.io/controller-runtime v0.23.3 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.21.1 // indirect
