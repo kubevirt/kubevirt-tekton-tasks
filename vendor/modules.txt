@@ -1383,7 +1383,7 @@ k8s.io/kube-openapi/pkg/schemaconv
 k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
+# k8s.io/utils v0.0.0-20260319190234-28399d86e0b5
 ## explicit; go 1.23
 k8s.io/utils/buffer
 k8s.io/utils/clock
@@ -1454,7 +1454,7 @@ knative.dev/pkg/test/logstream/v2
 knative.dev/pkg/test/spoof
 knative.dev/pkg/tracker
 knative.dev/pkg/webhook/resourcesemantics
-# kubevirt.io/api v1.8.2
+# kubevirt.io/api v1.9.0
 ## explicit; go 1.24.0
 kubevirt.io/api/backup
 kubevirt.io/api/backup/v1alpha1
@@ -1464,19 +1464,21 @@ kubevirt.io/api/clone/v1beta1
 kubevirt.io/api/core
 kubevirt.io/api/core/v1
 kubevirt.io/api/export
-kubevirt.io/api/export/v1alpha1
+kubevirt.io/api/export/v1
 kubevirt.io/api/export/v1beta1
 kubevirt.io/api/instancetype
 kubevirt.io/api/instancetype/v1beta1
 kubevirt.io/api/migrations
 kubevirt.io/api/migrations/v1alpha1
+kubevirt.io/api/plugin
+kubevirt.io/api/plugin/v1alpha1
 kubevirt.io/api/pool
 kubevirt.io/api/pool/v1alpha1
 kubevirt.io/api/pool/v1beta1
 kubevirt.io/api/snapshot
 kubevirt.io/api/snapshot/v1alpha1
 kubevirt.io/api/snapshot/v1beta1
-# kubevirt.io/client-go v1.8.2
+# kubevirt.io/client-go v1.9.0
 ## explicit; go 1.24.0
 kubevirt.io/client-go/containerizeddataimporter
 kubevirt.io/client-go/containerizeddataimporter/fake
@@ -1500,14 +1502,16 @@ kubevirt.io/client-go/kubevirt/typed/clone/v1beta1
 kubevirt.io/client-go/kubevirt/typed/clone/v1beta1/fake
 kubevirt.io/client-go/kubevirt/typed/core/v1
 kubevirt.io/client-go/kubevirt/typed/core/v1/fake
-kubevirt.io/client-go/kubevirt/typed/export/v1alpha1
-kubevirt.io/client-go/kubevirt/typed/export/v1alpha1/fake
+kubevirt.io/client-go/kubevirt/typed/export/v1
+kubevirt.io/client-go/kubevirt/typed/export/v1/fake
 kubevirt.io/client-go/kubevirt/typed/export/v1beta1
 kubevirt.io/client-go/kubevirt/typed/export/v1beta1/fake
 kubevirt.io/client-go/kubevirt/typed/instancetype/v1beta1
 kubevirt.io/client-go/kubevirt/typed/instancetype/v1beta1/fake
 kubevirt.io/client-go/kubevirt/typed/migrations/v1alpha1
 kubevirt.io/client-go/kubevirt/typed/migrations/v1alpha1/fake
+kubevirt.io/client-go/kubevirt/typed/plugin/v1alpha1
+kubevirt.io/client-go/kubevirt/typed/plugin/v1alpha1/fake
 kubevirt.io/client-go/kubevirt/typed/pool/v1alpha1
 kubevirt.io/client-go/kubevirt/typed/pool/v1alpha1/fake
 kubevirt.io/client-go/kubevirt/typed/pool/v1beta1
@@ -1548,8 +1552,8 @@ kubevirt.io/containerized-data-importer-api/pkg/apis/upload/v1beta1
 # kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4
 ## explicit; go 1.17
 kubevirt.io/controller-lifecycle-operator-sdk/api
-# kubevirt.io/kubevirt v1.8.3
-## explicit; go 1.24.0
+# kubevirt.io/kubevirt v1.9.0
+## explicit; go 1.26.0
 kubevirt.io/kubevirt/pkg/apimachinery/patch
 kubevirt.io/kubevirt/pkg/controller
 kubevirt.io/kubevirt/pkg/instancetype/conflict
@@ -1575,11 +1579,25 @@ kubevirt.io/kubevirt/pkg/virtctl/templates
 ## explicit; go 1.16
 kubevirt.io/qe-tools/pkg/ginkgo-reporters
 kubevirt.io/qe-tools/pkg/polarion-xml
+# kubevirt.io/virt-template-api v0.2.0
+## explicit; go 1.24.0
+kubevirt.io/virt-template-api/core
+kubevirt.io/virt-template-api/core/subresourcesv1alpha1
+kubevirt.io/virt-template-api/core/subresourcesv1beta1
+kubevirt.io/virt-template-api/core/v1alpha1
+kubevirt.io/virt-template-api/core/v1beta1
+# kubevirt.io/virt-template-client-go v0.2.0
+## explicit; go 1.24.0
+kubevirt.io/virt-template-client-go/virttemplate
+kubevirt.io/virt-template-client-go/virttemplate/scheme
+kubevirt.io/virt-template-client-go/virttemplate/typed/core/v1alpha1
+kubevirt.io/virt-template-client-go/virttemplate/typed/core/v1beta1
 # sigs.k8s.io/controller-runtime v0.23.3
 ## explicit; go 1.25.0
 sigs.k8s.io/controller-runtime/pkg/controller/priorityqueue
 sigs.k8s.io/controller-runtime/pkg/internal/metrics
 sigs.k8s.io/controller-runtime/pkg/metrics
+sigs.k8s.io/controller-runtime/pkg/scheme
 # sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730
 ## explicit; go 1.23
 sigs.k8s.io/json
