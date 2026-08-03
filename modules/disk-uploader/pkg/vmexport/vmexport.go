@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 
 	kvcorev1 "kubevirt.io/api/core/v1"
-	v1beta1 "kubevirt.io/api/export/v1beta1"
+	exportv1 "kubevirt.io/api/export/v1"
 	snapshotv1 "kubevirt.io/api/snapshot/v1beta1"
 	kubecli "kubevirt.io/client-go/kubecli"
 )
@@ -27,18 +27,18 @@ const (
 	sourcePVC        string = "pvc"
 )
 
-func CreateVirtualMachineExport(virtClient kubecli.KubevirtClient, exportSourceKind, exportSourceNamespace, baseExportSourceName, secretName string) (*v1beta1.VirtualMachineExport, error) {
+func CreateVirtualMachineExport(virtClient kubecli.KubevirtClient, exportSourceKind, exportSourceNamespace, baseExportSourceName, secretName string) (*exportv1.VirtualMachineExport, error) {
 	source, err := getExportSource(exportSourceKind, baseExportSourceName)
 	if err != nil {
 		return nil, err
 	}
 
-	v1VmExport := &v1beta1.VirtualMachineExport{
+	v1VmExport := &exportv1.VirtualMachineExport{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: baseExportSourceName + "-",
 			Namespace:    exportSourceNamespace,
 		},
-		Spec: v1beta1.VirtualMachineExportSpec{
+		Spec: exportv1.VirtualMachineExportSpec{
 			TokenSecretRef: &secretName,
 			Source:         source,
 		},
@@ -71,17 +71,17 @@ func WaitUntilVirtualMachineExportReady(client kubecli.KubevirtClient, namespace
 		if vmExport.Status != nil {
 			log.Logger().Info("VirtualMachineExport object status", zap.String("status", string(vmExport.Status.Phase)))
 
-			if vmExport.Status.Phase == v1beta1.Skipped {
+			if vmExport.Status.Phase == exportv1.Skipped {
 				log.Logger().Error("VirtualMachineExport is in Skipped state, and can't be exported - exiting.")
 				return false, fmt.Errorf("vm export is in skipped phase")
 			}
 
-			if vmExport.Status.Phase == v1beta1.Ready {
+			if vmExport.Status.Phase == exportv1.Ready {
 				log.Logger().Info("VirtualMachineExport is in Ready state, and export source is not longer used")
 				return true, nil
 			}
 
-			if vmExport.Status.Phase == v1beta1.Pending {
+			if vmExport.Status.Phase == exportv1.Pending {
 				log.Logger().Info("VirtualMachineExport is in Pending state, and export source is used")
 				return false, nil
 			}
@@ -108,7 +108,7 @@ func GetRawDiskUrlFromVolumes(client kubecli.KubevirtClient, namespace, name, vo
 		}
 
 		for _, format := range volume.Formats {
-			if format.Format == v1beta1.KubeVirtRaw {
+			if format.Format == exportv1.KubeVirtRaw {
 				return format.Url, nil
 			}
 		}
