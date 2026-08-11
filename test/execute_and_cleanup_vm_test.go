@@ -435,7 +435,7 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 		Entry("execute and stops vm with too low timeout", &testconfigs.ExecuteOrCleanupVMTestConfig{
 			TaskRunTestConfig: testconfigs.TaskRunTestConfig{
 				ExpectSuccess: false,
-				ExpectedLogs:  "command timed out",
+				ExpectedLogs:  "timed out",
 			},
 			TaskData: testconfigs.ExecuteOrCleanupVMTaskData{
 				VM:            testobjects.NewTestFedoraCloudVM("execute-too-low-timeout-stop-vm").WithCloudConfig(fedoraCloudConfig).Build(),
