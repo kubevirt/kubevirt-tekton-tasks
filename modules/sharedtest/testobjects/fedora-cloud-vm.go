@@ -37,7 +37,7 @@ func NewTestFedoraCloudVM(name string) *TestVM {
 			Name: containerDiskName,
 			VolumeSource: v1.VolumeSource{
 				ContainerDisk: &v1.ContainerDiskSource{
-					Image: "kubevirt/fedora-cloud-container-disk-demo:latest",
+					Image: "quay.io/kubevirt/fedora-realtime-container-disk:v1.9.0",
 				},
 			},
 		},
