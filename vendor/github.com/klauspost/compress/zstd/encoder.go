@@ -6,6 +6,7 @@ package zstd
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -130,6 +131,29 @@ func (e *Encoder) Reset(w io.Writer) {
 	s.frameContentSize = 0
 }
 
+// ResetWithOptions will re-initialize the writer and apply the given options
+// as a new, independent stream.
+// Options are applied on top of the existing options.
+// Some options cannot be changed on reset and will return an error.
+func (e *Encoder) ResetWithOptions(w io.Writer, opts ...EOption) error {
+	e.o.resetOpt = true
+	defer func() { e.o.resetOpt = false }()
+	hadDict := e.o.dict != nil
+	for _, o := range opts {
+		if err := o(&e.o); err != nil {
+			return err
+		}
+	}
+	hasDict := e.o.dict != nil
+	if hadDict != hasDict {
+		// Dict presence changed — encoder type must be recreated.
+		e.state.encoder = nil
+		e.init = sync.Once{}
+	}
+	e.Reset(w)
+	return nil
+}
+
 // ResetContentSize will reset and set a content size for the next stream.
 // If the bytes written does not match the size given an error will be returned
 // when calling Close().
@@ -149,6 +173,9 @@ func (e *Encoder) ResetContentSize(w io.Writer, size int64) {
 // and write CRC if requested.
 func (e *Encoder) Write(p []byte) (n int, err error) {
 	s := &e.state
+	if s.eofWritten {
+		return 0, ErrEncoderClosed
+	}
 	for len(p) > 0 {
 		if len(p)+len(s.filling) < e.o.blockSize {
 			if e.o.crc {
@@ -288,6 +315,9 @@ func (e *Encoder) nextBlock(final bool) error {
 	s.filling, s.current, s.previous = s.previous[:0], s.filling, s.current
 	s.nInput += int64(len(s.current))
 	s.wg.Add(1)
+	if final {
+		s.eofWritten = true
+	}
 	go func(src []byte) {
 		if debugEncoder {
 			println("Adding block,", len(src), "bytes, final:", final)
@@ -303,9 +333,6 @@ func (e *Encoder) nextBlock(final bool) error {
 		blk := enc.Block()
 		enc.Encode(blk, src)
 		blk.last = final
-		if final {
-			s.eofWritten = true
-		}
 		// Wait for pending writes.
 		s.wWg.Wait()
 		if s.writeErr != nil {
@@ -401,12 +428,20 @@ func (e *Encoder) Flush() error {
 	if len(s.filling) > 0 {
 		err := e.nextBlock(false)
 		if err != nil {
+			// Ignore Flush after Close.
+			if errors.Is(s.err, ErrEncoderClosed) {
+				return nil
+			}
 			return err
 		}
 	}
 	s.wg.Wait()
 	s.wWg.Wait()
 	if s.err != nil {
+		// Ignore Flush after Close.
+		if errors.Is(s.err, ErrEncoderClosed) {
+			return nil
+		}
 		return s.err
 	}
 	return s.writeErr
@@ -420,8 +455,17 @@ func (e *Encoder) Close() error {
 	if s.encoder == nil {
 		return nil
 	}
+	if s.w == nil {
+		if len(s.filling) == 0 && !s.headerWritten && !s.eofWritten && s.nInput == 0 {
+			return nil
+		}
+		return errors.New("zstd: encoder has no writer")
+	}
 	err := e.nextBlock(true)
 	if err != nil {
+		if errors.Is(s.err, ErrEncoderClosed) {
+			return nil
+		}
 		return err
 	}
 	if s.frameContentSize > 0 {
@@ -459,6 +503,11 @@ func (e *Encoder) Close() error {
 		}
 		_, s.err = s.w.Write(frame)
 	}
+	if s.err == nil {
+		s.err = ErrEncoderClosed
+		return nil
+	}
+
 	return s.err
 }
 
