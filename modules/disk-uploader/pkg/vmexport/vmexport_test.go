@@ -15,7 +15,7 @@ import (
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/vmexport"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
-	v1beta1 "kubevirt.io/api/export/v1beta1"
+	exportv1 "kubevirt.io/api/export/v1"
 	fakecdiclient "kubevirt.io/client-go/containerizeddataimporter/fake"
 	"kubevirt.io/client-go/kubecli"
 	kubevirtfake "kubevirt.io/client-go/kubevirt/fake"
@@ -44,7 +44,7 @@ var _ = Describe("VMExport", func() {
 		kubecli.GetKubevirtClientFromClientConfig = kubecli.GetMockKubevirtClientFromClientConfig
 		kubecli.MockKubevirtClientInstance = kubecli.NewMockKubevirtClient(ctrl)
 		kubecli.MockKubevirtClientInstance.EXPECT().CoreV1().Return(kubeClient.CoreV1()).AnyTimes()
-		kubecli.MockKubevirtClientInstance.EXPECT().VirtualMachineExport(namespace).Return(vmExportClient.ExportV1beta1().VirtualMachineExports(namespace)).AnyTimes()
+		kubecli.MockKubevirtClientInstance.EXPECT().VirtualMachineExport(namespace).Return(vmExportClient.ExportV1().VirtualMachineExports(namespace)).AnyTimes()
 		kubecli.MockKubevirtClientInstance.EXPECT().CdiClient().Return(cdiClient).AnyTimes()
 
 		virtClient, _ = kubecli.GetKubevirtClientFromClientConfig(nil)
@@ -97,14 +97,14 @@ var _ = Describe("VMExport", func() {
 			//initialize logger, otherwise logging events inside fn panics
 			log.InitLogger(zap.InfoLevel)
 
-			_, err := vmExportClient.ExportV1beta1().VirtualMachineExports(namespace).Create(context.Background(),
-				&v1beta1.VirtualMachineExport{
+			_, err := vmExportClient.ExportV1().VirtualMachineExports(namespace).Create(context.Background(),
+				&exportv1.VirtualMachineExport{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      name,
 						Namespace: namespace,
 					},
-					Status: &v1beta1.VirtualMachineExportStatus{
-						Phase: v1beta1.Ready,
+					Status: &exportv1.VirtualMachineExportStatus{
+						Phase: exportv1.Ready,
 					},
 				},
 				metav1.CreateOptions{},
@@ -116,14 +116,14 @@ var _ = Describe("VMExport", func() {
 		})
 
 		It("should return error", func() {
-			_, err := vmExportClient.ExportV1beta1().VirtualMachineExports(namespace).Create(context.Background(),
-				&v1beta1.VirtualMachineExport{
+			_, err := vmExportClient.ExportV1().VirtualMachineExports(namespace).Create(context.Background(),
+				&exportv1.VirtualMachineExport{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      name,
 						Namespace: namespace,
 					},
-					Status: &v1beta1.VirtualMachineExportStatus{
-						Phase: v1beta1.Skipped,
+					Status: &exportv1.VirtualMachineExportStatus{
+						Phase: exportv1.Skipped,
 					},
 				},
 				metav1.CreateOptions{},
@@ -138,30 +138,30 @@ var _ = Describe("VMExport", func() {
 	Describe("GetRawDiskUrlFromVolumes", func() {
 		Context("when retrieved URL from the VirtualMachineExport volumes", func() {
 			BeforeEach(func() {
-				_, err := vmExportClient.ExportV1beta1().VirtualMachineExports(namespace).Create(context.Background(),
-					&v1beta1.VirtualMachineExport{
+				_, err := vmExportClient.ExportV1().VirtualMachineExports(namespace).Create(context.Background(),
+					&exportv1.VirtualMachineExport{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      name,
 							Namespace: namespace,
 						},
-						Status: &v1beta1.VirtualMachineExportStatus{
-							Links: &v1beta1.VirtualMachineExportLinks{
-								Internal: &v1beta1.VirtualMachineExportLink{
-									Volumes: []v1beta1.VirtualMachineExportVolume{
+						Status: &exportv1.VirtualMachineExportStatus{
+							Links: &exportv1.VirtualMachineExportLinks{
+								Internal: &exportv1.VirtualMachineExportLink{
+									Volumes: []exportv1.VirtualMachineExportVolume{
 										{
 											Name: "disk-volume-0",
-											Formats: []v1beta1.VirtualMachineExportVolumeFormat{
+											Formats: []exportv1.VirtualMachineExportVolumeFormat{
 												{
-													Format: v1beta1.KubeVirtRaw,
+													Format: exportv1.KubeVirtRaw,
 													Url:    "https://vmexport-proxy.test.net/volumes/disk-volume-0/disk.img",
 												},
 											},
 										},
 										{
 											Name: "disk-volume-1",
-											Formats: []v1beta1.VirtualMachineExportVolumeFormat{
+											Formats: []exportv1.VirtualMachineExportVolumeFormat{
 												{
-													Format: v1beta1.KubeVirtRaw,
+													Format: exportv1.KubeVirtRaw,
 													Url:    "https://vmexport-proxy.test.net/volumes/disk-volume-1/disk.img",
 												},
 											},
@@ -194,13 +194,13 @@ var _ = Describe("VMExport", func() {
 		})
 
 		It("should return an error when no links found", func() {
-			_, err := vmExportClient.ExportV1beta1().VirtualMachineExports(namespace).Create(context.Background(),
-				&v1beta1.VirtualMachineExport{
+			_, err := vmExportClient.ExportV1().VirtualMachineExports(namespace).Create(context.Background(),
+				&exportv1.VirtualMachineExport{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      name,
 						Namespace: namespace,
 					},
-					Status: &v1beta1.VirtualMachineExportStatus{
+					Status: &exportv1.VirtualMachineExportStatus{
 						Links: nil,
 					},
 				},

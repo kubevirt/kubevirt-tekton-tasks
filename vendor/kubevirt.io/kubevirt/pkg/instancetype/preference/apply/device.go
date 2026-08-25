@@ -88,6 +88,15 @@ func ApplyDevicePreferences(preferenceSpec *v1beta1.VirtualMachinePreferenceSpec
 		vmiSpec.Domain.Devices.TPM = preferenceSpec.Devices.PreferredTPM.DeepCopy()
 	}
 
+	if preferenceSpec.Devices.PreferredVideoType != nil {
+		if vmiSpec.Domain.Devices.Video == nil {
+			vmiSpec.Domain.Devices.Video = &virtv1.VideoDevice{}
+		}
+		if vmiSpec.Domain.Devices.Video.Type == "" {
+			vmiSpec.Domain.Devices.Video.Type = *preferenceSpec.Devices.PreferredVideoType
+		}
+	}
+
 	ApplyAutoAttachPreferences(preferenceSpec, vmiSpec)
 	applyDiskPreferences(preferenceSpec, vmiSpec)
 	applyInterfacePreferences(preferenceSpec, vmiSpec)
@@ -113,7 +122,13 @@ func applyPanicDevicePreferences(preferenceSpec *v1beta1.VirtualMachinePreferenc
 		return
 	}
 
-	// Only apply any preferred panic device when the same panic device has not been provided by a user already
+	if len(vmiSpec.Domain.Devices.PanicDevices) == 0 {
+		vmiSpec.Domain.Devices.PanicDevices = append(vmiSpec.Domain.Devices.PanicDevices, virtv1.PanicDevice{
+			Model: preferenceSpec.Devices.PreferredPanicDeviceModel,
+		})
+		return
+	}
+
 	for idx := range vmiSpec.Domain.Devices.PanicDevices {
 		panicDevice := &vmiSpec.Domain.Devices.PanicDevices[idx]
 		if panicDevice.Model != nil {

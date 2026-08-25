@@ -20,7 +20,6 @@
 package libvmi
 
 import (
-	k8sv1 "k8s.io/api/core/v1"
 	v1 "kubevirt.io/api/core/v1"
 
 	"kubevirt.io/kubevirt/pkg/pointer"
@@ -42,6 +41,12 @@ func WithTablet(name string, bus v1.InputBus) Option {
 func WithAutoattachGraphicsDevice(enable bool) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
 		vmi.Spec.Domain.Devices.AutoattachGraphicsDevice = &enable
+	}
+}
+
+func WithAutoattachMemBalloon(enable bool) Option {
+	return func(vmi *v1.VirtualMachineInstance) {
+		vmi.Spec.Domain.Devices.AutoattachMemBalloon = &enable
 	}
 }
 
@@ -94,10 +99,9 @@ func WithDownwardMetricsChannel() Option {
 	}
 }
 
-func WithoutSerialConsole() Option {
+func WithAutoattachSerialConsole(enable bool) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
-		enabled := false
-		vmi.Spec.Domain.Devices.AutoattachSerialConsole = &enabled
+		vmi.Spec.Domain.Devices.AutoattachSerialConsole = &enable
 	}
 }
 
@@ -129,7 +133,7 @@ func WithHostDevice(hostDevice v1.HostDevice) Option {
 	}
 }
 
-func WithResourceClaim(claim k8sv1.PodResourceClaim) Option {
+func WithResourceClaim(claim v1.VirtualMachineInstanceResourceClaim) Option {
 	return func(vmi *v1.VirtualMachineInstance) {
 		vmi.Spec.ResourceClaims = append(vmi.Spec.ResourceClaims, claim)
 	}
