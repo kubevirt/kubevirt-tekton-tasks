@@ -26,7 +26,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.29.0
 	github.com/onsi/gomega v1.41.0
 	github.com/openshift/client-go v3.9.0+incompatible
-	github.com/tektoncd/pipeline v1.10.2
+	github.com/tektoncd/pipeline v1.11.1
 	go.uber.org/mock v0.6.0
 	go.uber.org/zap v1.28.0
 	k8s.io/api v0.36.1
@@ -34,7 +34,7 @@ require (
 	k8s.io/cli-runtime v0.36.1
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
-	knative.dev/pkg v0.0.0-20260210181456-ba7fd23eb13c
+	knative.dev/pkg v0.0.0-20260318013857-98d5a706d4fd
 	kubevirt.io/api v1.8.2
 	kubevirt.io/client-go v1.8.2
 	kubevirt.io/containerdisks v0.0.0-20260518121102-3621cf7f87dd
@@ -85,7 +85,6 @@ require (
 	github.com/go-openapi/swag/yamlutils v0.26.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/cel-go v0.28.1 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
@@ -125,7 +124,6 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
-	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.68.0 // indirect
 	go.opentelemetry.io/otel v1.44.0 // indirect
