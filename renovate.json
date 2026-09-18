@@ -1,23 +1,61 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "baseBranches": ["main", "/^release-v([0-9]+\\.([0-9]+))$/"],
+  "baseBranches": ["main", "/^release-v(0\\.(1[5-9]|[2-9][0-9])|[1-9]\\d*\\.\\d+)$/"],
   "prConcurrentLimit": 3,
   "lockFileMaintenance": {
     "enabled": false
   },
+  "enabledManagers": ["gomod"],
   "postUpdateOptions": ["gomodTidy"],
   "labels": ["release-note-none"],
   "extends": [":gitSignOff", ":dependencyDashboard"],
   "packageRules": [
     {
+      "description": "Enable indirect dependency updates",
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["indirect"],
+      "enabled": true
+    },
+    {
+      "description": "Group patch and minor updates together",
       "groupName": "all dependencies",
-      "groupSlug": "all",
-      "enabled": false,
+      "matchUpdateTypes": ["digest", "patch", "minor"],
+      "enabled": true
+    },
+    {
+      "description": "Group major updates separately with import path updates",
+      "groupName": "major dependencies",
+      "matchUpdateTypes": ["major"],
+      "matchDepTypes": ["require"],
+      "enabled": true,
+      "postUpdateOptions": ["gomodUpdateImportPaths"]
+    },
+    {
+      "description": "Disable updates for packages that typically require code changes",
       "matchPackageNames": [
-        "*"
-      ]
+        "k8s.io/{/,}**",
+        "kubevirt.io/{/,}**",
+        "sigs.k8s.io/{/,}**",
+        "github.com/openshift/{/,}**",
+        "knative.dev/{/,}**",
+        "github.com/tektoncd/{/,}**",
+        "github.com/onsi/ginkgo/{/,}**",
+        "github.com/onsi/gomega{/,}**"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Disable major indirect updates as they often cause issues",
+      "groupName": "ignore",
+      "matchUpdateTypes": ["major"],
+      "matchDepTypes": ["indirect"],
+      "enabled": false
     }
   ],
+  "postUpgradeTasks": {
+    "commands": ["make vendor", "make test"],
+    "executionMode": "branch"
+  },
   "vulnerabilityAlerts": {
     "enabled": true
   },
