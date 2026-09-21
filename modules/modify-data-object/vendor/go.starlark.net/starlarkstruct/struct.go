@@ -4,7 +4,6 @@
 
 // Package starlarkstruct defines the Starlark types 'struct' and
 // 'module', both optional language extensions.
-//
 package starlarkstruct // import "go.starlark.net/starlarkstruct"
 
 // It is tempting to introduce a variant of Struct that is a wrapper
@@ -24,6 +23,7 @@ package starlarkstruct // import "go.starlark.net/starlarkstruct"
 
 import (
 	"fmt"
+	"iter"
 	"sort"
 	"strings"
 
@@ -36,10 +36,9 @@ import (
 //
 // An application can add 'struct' to the Starlark environment like so:
 //
-// 	globals := starlark.StringDict{
-// 		"struct":  starlark.NewBuiltin("struct", starlarkstruct.Make),
-// 	}
-//
+//	globals := starlark.StringDict{
+//		"struct":  starlark.NewBuiltin("struct", starlarkstruct.Make),
+//	}
 func Make(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	if len(args) > 0 {
 		return nil, fmt.Errorf("struct: unexpected positional arguments")
@@ -66,7 +65,7 @@ func FromKeywords(constructor starlark.Value, kwargs []starlark.Tuple) *Struct {
 	return s
 }
 
-// FromStringDict returns a whose elements are those of d.
+// FromStringDict returns a new struct instance whose elements are those of d.
 // The constructor parameter specifies the constructor; use Default for an ordinary struct.
 func FromStringDict(constructor starlark.Value, d starlark.StringDict) *Struct {
 	if constructor == nil {
@@ -101,6 +100,7 @@ func FromStringDict(constructor starlark.Value, d starlark.StringDict) *Struct {
 type Struct struct {
 	constructor starlark.Value
 	entries     entries // sorted by name
+	frozen      bool
 }
 
 // Default is the default constructor for structs.
@@ -132,11 +132,12 @@ func (s *Struct) ToStringDict(d starlark.StringDict) {
 
 func (s *Struct) String() string {
 	buf := new(strings.Builder)
-	if s.constructor == Default {
+	switch constructor := s.constructor.(type) {
+	case starlark.String:
 		// NB: The Java implementation always prints struct
 		// even for Bazel provider instances.
-		buf.WriteString("struct") // avoid String()'s quotation
-	} else {
+		buf.WriteString(constructor.GoString()) // avoid String()'s quotation
+	default:
 		buf.WriteString(s.constructor.String())
 	}
 	buf.WriteByte('(')
@@ -173,8 +174,11 @@ func (s *Struct) Hash() (uint32, error) {
 	return x, nil
 }
 func (s *Struct) Freeze() {
-	for _, e := range s.entries {
-		e.value.Freeze()
+	if !s.frozen {
+		s.frozen = true
+		for _, e := range s.entries {
+			e.value.Freeze()
+		}
 	}
 }
 
@@ -192,7 +196,7 @@ func (x *Struct) Binary(op syntax.Token, y starlark.Value, side starlark.Side) (
 				x.constructor, y.constructor)
 		}
 
-		z := make(starlark.StringDict, x.len()+y.len())
+		z := make(starlark.StringDict, x.Len()+y.Len())
 		for _, e := range x.entries {
 			z[e.name] = e.value
 		}
@@ -232,7 +236,7 @@ func (s *Struct) Attr(name string) (starlark.Value, error) {
 		fmt.Sprintf("%sstruct has no .%s attribute", ctor, name))
 }
 
-func (s *Struct) len() int { return len(s.entries) }
+func (s *Struct) Len() int { return len(s.entries) }
 
 // AttrNames returns a new sorted list of the struct fields.
 func (s *Struct) AttrNames() []string {
@@ -241,6 +245,26 @@ func (s *Struct) AttrNames() []string {
 		names[i] = e.name
 	}
 	return names
+}
+
+// AttrAt returns the value of the field at the specified index.
+func (s *Struct) AttrAt(i int) (string, starlark.Value) {
+	e := s.entries[i]
+	return e.name, e.value
+}
+
+// Entries returns an iterator over the sequence of fields of a struct. For
+// example:
+//
+//	for name, val := range struct1.Entries() { ... }
+func (s *Struct) Entries() iter.Seq2[string, starlark.Value] {
+	return func(yield func(string, starlark.Value) bool) {
+		for _, e := range s.entries {
+			if !yield(e.name, e.value) {
+				return
+			}
+		}
+	}
 }
 
 func (x *Struct) CompareSameType(op syntax.Token, y_ starlark.Value, depth int) (bool, error) {
@@ -257,7 +281,7 @@ func (x *Struct) CompareSameType(op syntax.Token, y_ starlark.Value, depth int) 
 }
 
 func structsEqual(x, y *Struct, depth int) (bool, error) {
-	if x.len() != y.len() {
+	if x.Len() != y.Len() {
 		return false, nil
 	}
 
@@ -268,7 +292,7 @@ func structsEqual(x, y *Struct, depth int) (bool, error) {
 		return false, nil
 	}
 
-	for i, n := 0, x.len(); i < n; i++ {
+	for i := range x.Len() {
 		if x.entries[i].name != y.entries[i].name {
 			return false, nil
 		} else if eq, err := starlark.EqualDepth(x.entries[i].value, y.entries[i].value, depth-1); err != nil {
