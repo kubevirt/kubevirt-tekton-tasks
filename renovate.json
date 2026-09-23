@@ -8,28 +8,13 @@
   "enabledManagers": ["gomod"],
   "postUpdateOptions": ["gomodTidy"],
   "labels": ["release-note-none"],
-  "extends": [":gitSignOff", ":dependencyDashboard"],
+  "extends": [
+    ":gitSignOff",
+    ":dependencyDashboard",
+    "security:only-security-updates",
+    "security:gomodIndirectSecurityUpdates"
+  ],
   "packageRules": [
-    {
-      "description": "Enable indirect dependency updates",
-      "matchManagers": ["gomod"],
-      "matchDepTypes": ["indirect"],
-      "enabled": true
-    },
-    {
-      "description": "Group patch and minor updates together",
-      "groupName": "all dependencies",
-      "matchUpdateTypes": ["digest", "patch", "minor"],
-      "enabled": true
-    },
-    {
-      "description": "Group major updates separately with import path updates",
-      "groupName": "major dependencies",
-      "matchUpdateTypes": ["major"],
-      "matchDepTypes": ["require"],
-      "enabled": true,
-      "postUpdateOptions": ["gomodUpdateImportPaths"]
-    },
     {
       "description": "Disable updates for packages that typically require code changes",
       "matchPackageNames": [
