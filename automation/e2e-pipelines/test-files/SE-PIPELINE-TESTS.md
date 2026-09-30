@@ -8,27 +8,14 @@ This directory contains CI test files for the Secure Execution (SE) pipeline.
 PipelineRun definition for testing the SE installer pipeline with Fedora.
 
 **Key Features:**
-- Uses test certificates (not real IBM Z certificates)
 - Configures for fast CI execution
 - Disables golden image creation
 - Uses local HTTP server for ISO
 
-### 2. `fedora-se-dv.yaml`
-DataVolume definition for creating a test ISO volume.
-
-**Default ISO:** Fedora 44 Server netinst for s390x (downloaded from Fedora mirrors)
-
-**Supported Operating Systems:**
-- Fedora Server (s390x) - Fedora 44 or later
-- Red Hat Enterprise Linux (s390x) - RHEL 8.x, 9.x
-
-**Note:** The ISO download may take several minutes depending on network speed (~1GB file).
-
-### 3. `se-pipeline-test.sh`
+### 2. `se-pipeline-test.sh`
 Main test script that orchestrates the SE pipeline testing.
 
 **Features:**
-- Architecture detection (requires s390x)
 - Full integration test on s390x
 - Automatic resource deployment
 - Pipeline execution and monitoring
@@ -45,6 +32,16 @@ Main test script that orchestrates the SE pipeline testing.
 - Tekton Pipelines installed
 - IBM Z or LinuxONE hardware (s390x architecture)
 - Real IBM Z SE certificates (for actual SE testing)
+```
+
+### Preparation
+
+Create a configmap containing the IBM Secure Execution Keys for the test machine.
+
+Rename or copy `HKD-XXXXXXXXXXXX.crt` to `secex-hostkey.crt` and create the configmap:
+```bash
+kubectl create namespace kubevirt-prow-jobs
+kubectl create -n kubevirt-prow-jobs configmap secex-hostkey --from-file=secex-hostkey.crt
 ```
 
 ### Integration Tests (s390x Only)
@@ -77,38 +74,17 @@ export DEV_MODE=true  # Optional: use local images
 │                    SE Pipeline CI Test                       │
 └─────────────────────────────────────────────────────────────┘
                             ↓
-                    Architecture Check
-                            ↓
-        ┌───────────────────┴───────────────────┐
-        ↓                                       ↓
-   Non-s390x                                s390x
-        ↓                                       ↓
-┌───────────────────┐              ┌────────────────────────┐
-│   Exit with Error │              │ Full Integration Tests │
-│                   │              ├────────────────────────┤
-│ SE requires s390x │              │ • Deploy resources     │
-└───────────────────┘              │ • Create ISO DV        │
-                                   │ • Start HTTP server    │
-                                   │ • Deploy pipeline      │
-                                   │ • Run pipeline         │
-                                   │ • Wait for completion  │
-                                   │ • Verify results       │
-                                   └────────────────────────┘
+                ┌────────────────────────┐
+                │ Full Integration Tests │
+                ├────────────────────────┤
+                │ • Deploy resources     │
+                │ • Start HTTP server    │
+                │ • Deploy pipeline      │
+                │ • Run pipeline         │
+                │ • Wait for completion  │
+                │ • Verify results       │
+                └────────────────────────┘
 ```
-
-## Test Certificates
-
-The test uses **dummy certificates** for CI purposes. These are NOT real IBM Z certificates and will NOT work for actual Secure Execution.
-
-**Test Certificate Format:**
-```yaml
-hostDoc: "LS0tLS1CRUdJTi..."  # Base64 encoded test cert
-ibmSign: "LS0tLS1CRUdJTi..."  # Base64 encoded test cert
-caCert: "LS0tLS1CRUdJTi..."   # Base64 encoded test cert
-```
-
-**For Real Testing:**
-Replace these with actual IBM Z SE certificates obtained from your IBM Z system.
 
 ## Customizing Tests
 
@@ -151,16 +127,14 @@ spec:
 Edit `se-pipeline-test.sh`:
 
 ```bash
-local timeout=7200  # Change from 2 hours to desired value
+local timeout=3660  # Change from 1 hours to desired value
 ```
 
 ## Troubleshooting
 
 ### Test Fails on Non-s390x
 
-**Expected behavior:** Test will exit with error message stating SE requires s390x architecture.
-
-This is correct behavior - SE pipeline can only run on s390x systems.
+**Expected behavior:** Test will fail to start s390x VMs
 
 ### Test Fails on s390x
 
@@ -205,40 +179,6 @@ oc get pods -l app=http-server
 oc logs -l app=http-server
 ```
 
-## Integration with CI/CD
-
-### GitHub Actions (Limited)
-
-GitHub Actions doesn't support s390x runners, so only validation tests can run on x86_64 runners:
-
-```yaml
-name: SE Pipeline Validation
-on: [pull_request]
-jobs:
-  validate:
-    runs-on: ubuntu-latest  # x86_64 runner - validation only
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run validation tests
-        run: ./automation/e2e-pipelines/se-pipeline-test.sh
-```
-
-**Note**: This only runs YAML validation. Full integration tests require s390x hardware with Fedora or RHEL.
-
-### IBM Cloud CI (Recommended for Full Testing)
-
-For full integration tests, use IBM Cloud CI with s390x nodes running Fedora or RHEL:
-
-```yaml
-# Jenkins/Tekton pipeline on IBM Cloud
-stages:
-  - name: SE Pipeline Test
-    agent: s390x
-    steps:
-      - checkout
-      - sh './automation/e2e-pipelines/se-pipeline-test.sh'
-```
-
 ## Test Results
 
 ### Success Criteria
@@ -250,19 +190,17 @@ stages:
 - ✅ (s390x only) VM is created and running
 - ✅ (s390x only) SE image is generated
 
-### Expected Output
-
+When successfull, it will look like this:
 ```
-=== Secure Execution Pipeline CI Test ===
-Running on architecture: x86_64
-WARNING: SE pipeline requires s390x architecture
-Current architecture is x86_64 - running validation tests only
-Validating pipeline YAML files
-All required YAML files exist
-Deploying SE pipeline resources for validation
-...
-Pipeline structure validation passed
-=== SE Pipeline Validation Tests Completed Successfully ===
+=== Verifying Secure Execution Status ===
+VMI phase: Running
+Verifying Secure Execution status of VM
+Warning: Permanently added 'vm.sec-exec-vm.test-kubevirt-tekton-tasks-secure-execution' (ED25519) to the list of known hosts.
+Warning: Permanently added 'vm.sec-exec-vm.test-kubevirt-tekton-tasks-secure-execution' (ED25519) to the list of known hosts.
+Secure Execution verified: /sys/firmware/uv/prot_virt_guest = 1
+
+=== SE Pipeline Integration Test Completed Successfully ===
+Total execution time: 22m 54s (1374 seconds)
 ```
 
 ## Contributing
