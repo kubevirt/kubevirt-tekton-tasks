@@ -10,6 +10,23 @@ VMExport support must be enabled in the feature gates to be available. The [feat
 
 When user runs [KubeVirt Tekton Tasks](https://github.com/kubevirt/kubevirt-tekton-tasks) example pipelines (windows-installer, windows-customize) to prepare Windows disk images - The newly created disk image is only in a single cluster. If user wants to have it in another cluster, then KubeVirt Disk Uploader can be used to push it out of the cluster.
 
+The uploaded OCI image's architecture comes from the selected export source:
+
+- `vm`: the VM's `spec.template.spec.architecture`.
+- `vmsnapshot`: the captured VM's architecture in the snapshot content.
+- `pvc`: the PVC's `template.kubevirt.io/architecture` label, when it has a
+  supported KubeVirt architecture (`amd64`, `arm64`, or `s390x`).
+
+The architecture stays empty when a VM template has no architecture or a PVC
+has no supported architecture label. A snapshot without its content causes an
+error. When the architecture is set, the OCI platform OS is `linux`, which
+describes the container image and does not indicate the guest OS.
+
+The task's service account needs `get` permission on `virtualmachines` for VM
+sources, `virtualmachinesnapshots` and `virtualmachinesnapshotcontents` for
+snapshot sources, and `persistentvolumeclaims` for PVC sources, in the source
+namespace. The example pipeline's disk-uploader Role includes these permissions.
+
 ### Parameters
 
 {% for item in task_yaml.spec.params %}
