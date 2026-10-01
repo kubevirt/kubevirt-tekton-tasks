@@ -97,6 +97,16 @@ var _ = Describe("Run disk-uploader", func() {
 		}))
 		Expect(err).ToNot(HaveOccurred())
 		Expect(descriptor.Digest.String()).To(Equal(digest))
+
+		uploadedImage, err := descriptor.Image()
+		Expect(err).ToNot(HaveOccurred())
+
+		imageConfig, err := uploadedImage.ConfigFile()
+		Expect(err).ToNot(HaveOccurred())
+
+		vmArchitecture := alpineVm.Spec.Template.Spec.Architecture
+		Expect(vmArchitecture).ToNot(BeEmpty())
+		Expect(imageConfig.Architecture).To(Equal(vmArchitecture))
 	})
 })
 
