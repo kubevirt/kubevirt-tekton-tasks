@@ -127,6 +127,17 @@ func GetLabelsFromExportSource(virtClient kubecli.KubevirtClient, exportSourceKi
 	}
 }
 
+func GetVirtualMachineArchitecture(virtClient kubecli.KubevirtClient, namespace, name string) (string, error) {
+	vm, err := virtClient.VirtualMachine(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		return "", fmt.Errorf("getting VirtualMachine %s/%s: %w", namespace, name, err)
+	}
+	if vm.Spec.Template == nil {
+		return "", fmt.Errorf("VirtualMachine %s/%s has no spec.template", namespace, name)
+	}
+	return vm.Spec.Template.Spec.Architecture, nil
+}
+
 func getLabelsFromVirtualMachineOrSnapshot(virtClient kubecli.KubevirtClient, namespace, volumeName string) (map[string]string, error) {
 	dv, err := virtClient.CdiClient().CdiV1beta1().DataVolumes(namespace).Get(context.Background(), volumeName, metav1.GetOptions{})
 	if err == nil {
