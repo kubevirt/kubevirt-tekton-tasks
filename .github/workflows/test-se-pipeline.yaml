@@ -1,0 +1,32 @@
+name: Test SE Pipeline
+
+on:
+  pull_request:
+    paths:
+      - 'templates-pipelines/secure-execution-installer/**'
+      - 'automation/e2e-pipelines/se-pipeline-test.sh'
+      - 'automation/e2e-pipelines/test-files/fedora-se-*'
+      - '.github/workflows/test-se-pipeline.yaml'
+  workflow_dispatch:
+
+jobs:
+  # Note: SE pipeline tests require s390x architecture and cannot run on GitHub Actions
+  # This workflow only validates YAML syntax and documentation
+
+  lint-yaml:
+    name: Lint SE Pipeline YAML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint SE Pipeline YAML files
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: {max: 200}, document-start: disable}}" \
+            release/pipelines/secure-execution-installer/*.yaml \
+            release/pipelines/secure-execution-installer/configmaps/*.yaml \
+            release/pipelines/secure-execution-installer/pipelineruns/*.yaml \
+            automation/e2e-pipelines/test-files/fedora-se-*.yaml
