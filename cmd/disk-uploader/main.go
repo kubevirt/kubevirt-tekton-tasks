@@ -36,6 +36,10 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 	volumeName := opts.GetVolumeName()
 	imageDestination := opts.GetImageDestination()
 	imagePushTimeout := opts.GetPushTimeout()
+	architecture, err := vmexport.GetArchitectureFromExportSource(virtClient, kind, namespace, name)
+	if err != nil {
+		return "", err
+	}
 	auth, err := image.RegistryAuth()
 	if err != nil {
 		return "", err
@@ -100,7 +104,7 @@ func run(opts parse.CLIOptions, k8sClient kubernetes.Interface, virtClient kubec
 	}
 
 	config := image.DefaultConfig(labels)
-	containerImage, err := image.Build(diskPath, config)
+	containerImage, err := image.Build(diskPath, config, architecture)
 	if err != nil {
 		return "", err
 	}
