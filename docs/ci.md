@@ -10,14 +10,18 @@
 
 - **Dependabot**: Watches Go modules and GitHub Actions (ignores Ginkgo/Gomega). Runs daily on
   `main` only, and opens PRs for all `gomod` updates, routine or security.
-- **Renovate**: Runs on a schedule via `.github/workflows/renovate.yml` (GitHub App token; requires
-  `RENOVATE_APP_ID`/`RENOVATE_APP_PRIVATE_KEY` repo secrets). Covers `main` and `release-v0.15`+
-  branches, but only raises PRs for security fixes (including indirect deps), and runs
-  `make vendor` and `make test` after each update. Excludes packages that typically need code
-  changes (`k8s.io`, `kubevirt.io`, `sigs.k8s.io`, `openshift`, `knative.dev`, `tektoncd`,
-  Ginkgo/Gomega). Also handles vulnerability/OSV alerts; ignores `vendor/`. Because Dependabot
-  also covers security fixes on `main`, expect the occasional duplicate PR there; release
-  branches only get updates from Renovate.
+- **Renovate**: Runs daily at 06:00 UTC or manually from the Actions tab. The workflow uses a
+  GitHub App token and requires the `RENOVATE_APP_ID` and `RENOVATE_APP_PRIVATE_KEY` repository
+  secrets. It checks `main` and `release-v0.15`+ for security Go updates, including indirect
+  dependencies, and runs `make vendor` after updates. It ignores `vendor/` and
+  packages that typically need code changes (`k8s.io`, `kubevirt.io`, `sigs.k8s.io`, `openshift`,
+  `knative.dev`, `tektoncd`, Ginkgo/Gomega). Renovate only opens vulnerability PRs, including
+  OSV alerts.
+  A `pull_request_target` workflow comments on same-repository Renovate PRs when a `go` or
+  `toolchain` directive changes. It replaces the comment after each push and removes it if the
+  directive change disappears. Review these changes against the midstream build toolchain before
+  merging; Go version bumps on release branches break midstream builds. Dependabot can create
+  duplicate security PRs on `main`; release branches rely on Renovate.
 
 ---
 <- Back to [AGENTS.md](../AGENTS.md) | [Documentation Index](../AGENTS.md#documentation)

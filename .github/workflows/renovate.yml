@@ -1,4 +1,4 @@
-# Scheduled Renovate workflow for dependency updates.
+# Scheduled and manually triggered Renovate workflow for dependency updates.
 #
 # Uses a GitHub App to generate short-lived tokens with the
 # necessary permissions (contents:write, pull-requests:write).
@@ -37,4 +37,4 @@ jobs:
         env:
           LOG_LEVEL: info
           RENOVATE_REPOSITORIES: ${{ github.repository }}
-          RENOVATE_ALLOWED_COMMANDS: '["make vendor", "make test"]'
+          RENOVATE_ALLOWED_COMMANDS: '["make vendor"]'
