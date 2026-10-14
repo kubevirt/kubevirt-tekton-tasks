@@ -4,6 +4,12 @@ set -e
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
+export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --output 'jsonpath={..namespace}')}"
+if [[ -z "${DEPLOY_NAMESPACE}" ]]; then
+  echo "DEPLOY_NAMESPACE is not set and no namespace is configured in the current kube context." >&2
+  echo "Set it explicitly, e.g. 'DEPLOY_NAMESPACE=kubevirt make cluster-sync'." >&2
+  exit 1
+fi
 
 source "./scripts/common.sh"
 
