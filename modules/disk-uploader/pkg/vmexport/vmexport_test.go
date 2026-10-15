@@ -15,6 +15,7 @@ import (
 
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/disk-uploader/pkg/vmexport"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/log"
+	kvcorev1 "kubevirt.io/api/core/v1"
 	exportv1 "kubevirt.io/api/export/v1"
 	fakecdiclient "kubevirt.io/client-go/containerizeddataimporter/fake"
 	"kubevirt.io/client-go/kubecli"
@@ -32,6 +33,7 @@ var _ = Describe("VMExport", func() {
 		kubeClient     *fakek8sclient.Clientset
 		cdiClient      *fakecdiclient.Clientset
 		vmExportClient *kubevirtfake.Clientset
+		vmClient       *kubecli.MockVirtualMachineInterface
 		virtClient     kubecli.KubevirtClient
 	)
 
@@ -39,6 +41,7 @@ var _ = Describe("VMExport", func() {
 		ctrl := gomock.NewController(GinkgoT())
 		kubeClient = fakek8sclient.NewSimpleClientset()
 		vmExportClient = kubevirtfake.NewSimpleClientset()
+		vmClient = kubecli.NewMockVirtualMachineInterface(ctrl)
 		cdiClient = fakecdiclient.NewSimpleClientset()
 
 		kubecli.GetKubevirtClientFromClientConfig = kubecli.GetMockKubevirtClientFromClientConfig
@@ -297,5 +300,51 @@ var _ = Describe("VMExport", func() {
 			Entry("for VirtualMachineSnapshot with missing DV and PVC", "vmsnapshot", "example-volume"),
 			Entry("for PersistentVolumeClaim with missing PVC", "pvc", ""),
 		)
+	})
+
+	Describe("GetArchitectureFromExportSource", func() {
+		DescribeTable("returns the VM architecture or a lookup error", func(vm *kvcorev1.VirtualMachine, getErr error, expectedArchitecture, expectedError string) {
+			kubecli.MockKubevirtClientInstance.EXPECT().VirtualMachine(namespace).Return(vmClient)
+			vmClient.EXPECT().Get(gomock.Any(), name, metav1.GetOptions{}).Return(vm, getErr)
+
+			architecture, err := vmexport.GetArchitectureFromExportSource(virtClient, "vm", namespace, name)
+			Expect(architecture).To(Equal(expectedArchitecture))
+			if expectedError == "" {
+				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Expect(err).To(MatchError(ContainSubstring(expectedError)))
+			}
+			if getErr != nil {
+				Expect(errors.IsNotFound(err)).To(BeTrue())
+			}
+		},
+			Entry("architecture is set", &kvcorev1.VirtualMachine{
+				Spec: kvcorev1.VirtualMachineSpec{
+					Template: &kvcorev1.VirtualMachineInstanceTemplateSpec{Spec: kvcorev1.VirtualMachineInstanceSpec{Architecture: "arm64"}},
+				},
+			}, nil, "arm64", ""),
+			Entry("architecture is empty", &kvcorev1.VirtualMachine{
+				Spec: kvcorev1.VirtualMachineSpec{
+					Template: &kvcorev1.VirtualMachineInstanceTemplateSpec{},
+				},
+			}, nil, "", ""),
+			Entry("VM is not found", nil, errors.NewNotFound(kvcorev1.Resource("virtualmachines"), name), "", "getting VirtualMachine test-namespace/test-vmexport"),
+			Entry("VM template is missing", &kvcorev1.VirtualMachine{}, nil, "", "VirtualMachine test-namespace/test-vmexport has no spec.template"),
+		)
+
+		DescribeTable("does not read a VM for other supported sources", func(sourceKind string) {
+			architecture, err := vmexport.GetArchitectureFromExportSource(virtClient, sourceKind, namespace, name)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(architecture).To(BeEmpty())
+		},
+			Entry("VM snapshot", "vmsnapshot"),
+			Entry("PVC", "pvc"),
+		)
+
+		It("rejects unsupported sources", func() {
+			architecture, err := vmexport.GetArchitectureFromExportSource(virtClient, "vmi", namespace, name)
+			Expect(err).To(MatchError("unsupported source kind: vmi"))
+			Expect(architecture).To(BeEmpty())
+		})
 	})
 })
