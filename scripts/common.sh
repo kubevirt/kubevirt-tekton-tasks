@@ -8,6 +8,15 @@ function leave() {
   popd > /dev/null || return
 }
 
+function resolve_deploy_namespace() {
+  export DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --output 'jsonpath={..namespace}')}"
+  if [[ -z "${DEPLOY_NAMESPACE}" ]]; then
+    echo "DEPLOY_NAMESPACE is not set and no namespace is configured in the current kube context." >&2
+    echo "Set it explicitly, e.g. 'DEPLOY_NAMESPACE=kubevirt make <target>'." >&2
+    exit 1
+  fi
+}
+
 export IS_OKD="false"
 export IS_MINIKUBE="false"
 

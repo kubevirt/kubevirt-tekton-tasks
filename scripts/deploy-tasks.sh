@@ -4,9 +4,10 @@ set -e
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
-DEPLOY_NAMESPACE="${DEPLOY_NAMESPACE:-$(kubectl config view --minify --output 'jsonpath={..namespace}')}"
 
 source "${SCRIPT_DIR}/common.sh"
+
+resolve_deploy_namespace
 
 if [ -z "${RELEASE_VERSION}" ]; then
   echo "RELEASE_VERSION is not defined"
