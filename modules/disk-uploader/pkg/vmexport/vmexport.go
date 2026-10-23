@@ -27,6 +27,8 @@ const (
 	sourcePVC        string = "pvc"
 )
 
+const templateArchitectureLabel = "template.kubevirt.io/architecture"
+
 func CreateVirtualMachineExport(virtClient kubecli.KubevirtClient, exportSourceKind, exportSourceNamespace, baseExportSourceName, secretName string) (*exportv1.VirtualMachineExport, error) {
 	source, err := getExportSource(exportSourceKind, baseExportSourceName)
 	if err != nil {
@@ -124,6 +126,54 @@ func GetLabelsFromExportSource(virtClient kubecli.KubevirtClient, exportSourceKi
 		return getLabelsFromPVC(virtClient, exportSourceNamespace, exportSourceName)
 	default:
 		return nil, fmt.Errorf("unsupported source kind: %s", exportSourceKind)
+	}
+}
+
+func GetArchitectureFromExportSource(virtClient kubecli.KubevirtClient, exportSourceKind, namespace, name string) (string, error) {
+	switch exportSourceKind {
+	case sourceVM:
+		vm, err := virtClient.VirtualMachine(namespace).Get(context.Background(), name, metav1.GetOptions{})
+		if err != nil {
+			return "", fmt.Errorf("getting VirtualMachine %s/%s: %w", namespace, name, err)
+		}
+		if vm.Spec.Template == nil {
+			return "", fmt.Errorf("VirtualMachine %s/%s has no spec.template", namespace, name)
+		}
+		return vm.Spec.Template.Spec.Architecture, nil
+	case sourceVMSnapshot:
+		snapshot, err := virtClient.VirtualMachineSnapshot(namespace).Get(context.Background(), name, metav1.GetOptions{})
+		if err != nil {
+			return "", fmt.Errorf("getting VirtualMachineSnapshot %s/%s: %w", namespace, name, err)
+		}
+		if snapshot.Status == nil ||
+			snapshot.Status.VirtualMachineSnapshotContentName == nil ||
+			*snapshot.Status.VirtualMachineSnapshotContentName == "" {
+			return "", fmt.Errorf("VirtualMachineSnapshot %s/%s has no snapshot content name", namespace, name)
+		}
+
+		contentName := *snapshot.Status.VirtualMachineSnapshotContentName
+		content, err := virtClient.VirtualMachineSnapshotContent(namespace).Get(context.Background(), contentName, metav1.GetOptions{})
+		if err != nil {
+			return "", fmt.Errorf("getting VirtualMachineSnapshotContent %s/%s: %w", namespace, contentName, err)
+		}
+		if content.Spec.Source.VirtualMachine == nil || content.Spec.Source.VirtualMachine.Spec.Template == nil {
+			return "", fmt.Errorf("VirtualMachineSnapshotContent %s/%s has no source VM template", namespace, contentName)
+		}
+		return content.Spec.Source.VirtualMachine.Spec.Template.Spec.Architecture, nil
+	case sourcePVC:
+		labels, err := getLabelsFromPVC(virtClient, namespace, name)
+		if err != nil {
+			return "", fmt.Errorf("getting PersistentVolumeClaim %s/%s: %w", namespace, name, err)
+		}
+		architecture := labels[templateArchitectureLabel]
+		switch architecture {
+		case "amd64", "arm64", "s390x":
+			return architecture, nil
+		default:
+			return "", nil
+		}
+	default:
+		return "", fmt.Errorf("unsupported source kind: %s", exportSourceKind)
 	}
 }
 
