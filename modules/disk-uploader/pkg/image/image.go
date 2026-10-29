@@ -39,7 +39,7 @@ func DefaultConfig(labels map[string]string) v1.Config {
 	return v1.Config{Env: env}
 }
 
-func Build(diskPath string, config v1.Config) (v1.Image, error) {
+func Build(diskPath string, config v1.Config, architecture string) (v1.Image, error) {
 	layer, err := tarball.LayerFromOpener(tar.StreamLayerOpener(diskPath))
 	if err != nil {
 		return nil, fmt.Errorf("error creating layer from file: %v", err)
@@ -55,6 +55,10 @@ func Build(diskPath string, config v1.Config) (v1.Image, error) {
 		return nil, fmt.Errorf("error getting the image config file: %v", err)
 	}
 	configFile.Config = config
+	if architecture != "" {
+		configFile.Architecture = architecture
+		configFile.OS = tar.ImageOS
+	}
 
 	image, err = mutate.ConfigFile(image, configFile)
 	if err != nil {
