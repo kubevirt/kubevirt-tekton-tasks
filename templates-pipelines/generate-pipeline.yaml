@@ -58,7 +58,7 @@
       template:
         src: "{{ item.pipeline_name }}/getisourl.py"
         dest: "{{ pipelines_output_dir }}/{{ item.pipeline_name }}/getisourl.py"
-        mode: "{{ default_file_mode }}"
+        mode: "0755"
       with_items:
         - { pipeline_name: "{{ efi_pipeline_name }}" }
     
