@@ -24,7 +24,7 @@ After the ISO is modified it creates a new VirtualMachine which boots from the m
 ### Obtain Windows 10 ISO download URL
 
 1. Go to https://www.microsoft.com/en-us/software-download/windows10ISO.
-2. Fill in the edition and `English (United States)` language (other languages need to be updated in `windows10-autounattend` ConfigMap) and go to the download page.
+2. Fill in the edition and `English (United States)` language (other languages need to be updated in `windows10-efi-autounattend` ConfigMap) and go to the download page.
 3. Right-click on the 64-bit download button and copy the download link. The link should be valid for 24 hours.
 
 ### Obtain Windows 11 ISO download URL
