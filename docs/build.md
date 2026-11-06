@@ -47,7 +47,9 @@ make release
 - `/etc/passwd` cannot be modified at runtime. `build/bin/user_setup` adds an entry for the default
   image user (UID 1001) and keeps `/etc/passwd` not writable by group and others, so that CRI-O
   generates an entry for an arbitrary UID (with `HOME` as its home directory). `ssh` and
-  `ssh-keygen` fail without a passwd entry for the current UID.
+  `ssh-keygen` fail without a passwd entry for the current UID, so on container runtimes that do
+  not generate passwd entries the ssh based tasks (execute-in-vm, cleanup-vm, generate-ssh-keys)
+  require the default UID 1001.
 
 ## Supported environments
 
