@@ -37,6 +37,20 @@ make release
 - `build/Containerfile.DiskVirt`: Builds disk-virt tasks on a libguestfs-tools base. Check the file for the current base image tag.
 - Images pushed to `quay.io/kubevirt/tekton-tasks` and `quay.io/kubevirt/tekton-tasks-disk-virt`.
 
+### Runtime filesystem and user
+
+- Task steps run with `readOnlyRootFilesystem: true`. A step that writes at runtime must mount a
+  writable volume at that path (usually an `emptyDir` at `/tmp`, or at `HOME` for ssh based steps).
+  libguestfs based steps also need `/var/tmp`: libguestfs keeps its cache there and qemu creates the
+  appliance snapshot overlay there even when `TMPDIR=/tmp`. `modules/task-manifests` checks the
+  generated task manifests for this.
+- `/etc/passwd` cannot be modified at runtime. `build/bin/user_setup` adds an entry for the default
+  image user (UID 1001) and keeps `/etc/passwd` not writable by group and others, so that CRI-O
+  generates an entry for an arbitrary UID (with `HOME` as its home directory). `ssh` and
+  `ssh-keygen` fail without a passwd entry for the current UID, so on container runtimes that do
+  not generate passwd entries the ssh based tasks (execute-in-vm, cleanup-vm, generate-ssh-keys)
+  require the default UID 1001.
+
 ## Supported environments
 
 - **OKD** (OpenShift Kubernetes Distribution)

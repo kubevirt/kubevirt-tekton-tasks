@@ -1,13 +1,9 @@
 #!/bin/sh -e
 
-# This is documented here:
-# https://docs.openshift.com/container-platform/3.11/creating_images/guidelines.html#openshift-specific-guidelines
-
-if ! whoami &>/dev/null; then
-  if [ -w /etc/passwd ]; then
-    echo "${USER_NAME}:x:$(id -u):$(id -g):${USER_NAME} user:${HOME}:/sbin/nologin" >> /etc/passwd
-  fi
-fi
+# /etc/passwd is not modified at runtime: Task steps run with a read-only root
+# filesystem. The passwd entry for the default image user is created at build
+# time (see user_setup) and the container runtime (CRI-O) generates one for an
+# arbitrary UID, using $HOME as its home directory.
 
 #this variable is needed for tasks which work with ssh keys
 export USER="tekton-tasks"

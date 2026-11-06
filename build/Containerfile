@@ -22,8 +22,10 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} GODEBUG=http2client=0 go build
 
 FROM --platform=linux/${TARGETARCH} quay.io/centos/centos:stream10
 ENV USER_UID=1001 \
-    USER_NAME=tekton-tasks \
-    HOME=/home/${USER_NAME}
+    USER_NAME=tekton-tasks
+# separate instruction: variables set in the same ENV instruction are not
+# visible to each other, HOME would otherwise expand to /home/
+ENV HOME=/home/${USER_NAME}
 
 RUN dnf install -y xorriso openssh-clients nbdkit nbdkit-curl-plugin qemu-img && dnf clean all
 
