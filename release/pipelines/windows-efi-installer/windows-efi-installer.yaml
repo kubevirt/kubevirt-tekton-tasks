@@ -76,7 +76,54 @@ spec:
       name: useBiosMode
       type: string
   tasks:
+    - name: validate-default-storage-profile
+      params:
+        - name: SCRIPT
+          value: |-
+            set -e
+            DEFAULT_SC=$(oc get storageclass \
+              -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' \
+              | awk '{print $1}')
+            if [ -z "$DEFAULT_SC" ]; then
+              echo "ERROR: No default StorageClass is configured on the cluster."
+              echo "The Windows ISO import requires a default StorageClass that supports volumeMode=Filesystem."
+              exit 1
+            fi
+            echo "Default StorageClass: $DEFAULT_SC"
+            CLAIM_MODES=$(oc get storageprofile "$DEFAULT_SC" \
+              -o jsonpath='{range .status.claimPropertySets[*]}[{.volumeMode}] {end}')
+            echo "StorageProfile $DEFAULT_SC advertises claimPropertySet volumeModes: $CLAIM_MODES"
+            case "$CLAIM_MODES" in
+              *"[Filesystem]"* | *"[]"*)
+                echo "OK: default StorageClass '$DEFAULT_SC' supports volumeMode=Filesystem."
+                ;;
+              *)
+                echo "ERROR: default StorageClass '$DEFAULT_SC' does not support volumeMode=Filesystem."
+                echo "The Windows ISO import (import-win-iso) requires a Filesystem-capable default StorageClass."
+                echo "Fix by either:"
+                echo "  - setting a Filesystem-capable StorageClass as the cluster default, or"
+                echo "  - adding a Filesystem claimPropertySet to the '$DEFAULT_SC' StorageProfile."
+                exit 1
+                ;;
+            esac
+        - name: VERSION
+          value: latest
+      taskRef:
+        resolver: hub
+        params:
+          - name: catalog
+            value: tekton-catalog-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: version
+            value: 0.2.0
     - name: import-autounattend-configmaps
+      runAfter:
+        - validate-default-storage-profile
       params:
         - name: SCRIPT
           value: |-
@@ -105,6 +152,8 @@ spec:
           - name: version
             value: 0.2.0
     - name: import-win-iso
+      runAfter:
+        - validate-default-storage-profile
       params:
         - name: manifest
           value: |-
@@ -166,6 +215,7 @@ spec:
             value: v0.26.0
     - name: create-vm-root-disk
       runAfter:
+        - validate-default-storage-profile
         - import-autounattend-configmaps
       taskRef:
         resolver: hub
@@ -382,6 +432,10 @@ spec:
           - name: version
             value: v0.26.0
     - name: delete-imported-configmaps
+      when:
+        - input: $(tasks.import-autounattend-configmaps.status)
+          operator: in
+          values: ["Succeeded"]
       params:
         - name: SCRIPT
           value: oc delete -f $(params.autounattendXMLConfigMapsURL)
