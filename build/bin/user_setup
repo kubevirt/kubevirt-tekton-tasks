@@ -6,8 +6,17 @@ mkdir -p ${HOME}
 chown ${USER_UID}:0 ${HOME}
 chmod ug+rwx ${HOME}
 
-# runtime user will need to be able to self-insert in /etc/passwd
-chmod g+rw /etc/passwd
+# Task steps run with a read-only root filesystem, so /etc/passwd cannot be
+# modified at runtime. Register the default user at build time, because ssh and
+# ssh-keygen refuse to run when the current UID has no passwd entry.
+if ! grep -q "^[^:]*:[^:]*:${USER_UID}:" /etc/passwd; then
+  echo "${USER_NAME}:x:${USER_UID}:0:${USER_NAME} user:${HOME}:/sbin/nologin" >> /etc/passwd
+fi
+
+# /etc/passwd must not be group or world writable: CRI-O only generates the
+# passwd entry for an arbitrary runtime UID (e.g. OpenShift restricted SCCs)
+# when the image does not allow the container to edit the file itself.
+chmod go-w /etc/passwd
 
 # no need for this script to remain in the image after running
 rm $0
