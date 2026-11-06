@@ -2,6 +2,7 @@ package taskmanifests_test
 
 import (
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -180,5 +181,40 @@ var _ = Describe("Released task manifests", func() {
 		Expect(home).To(HaveLen(2), "HOME is not set by a separate ENV instruction in build/Containerfile")
 
 		Expect(strings.ReplaceAll(home[1], "${USER_NAME}", userName[1])).To(Equal(tektonTasksHome))
+	})
+
+	It("register the default user with the configured HOME as passwd home in build/bin/user_setup", func() {
+		script, err := os.ReadFile(filepath.Join(repoDir, "build", "bin", "user_setup"))
+		Expect(err).ToNot(HaveOccurred())
+
+		tmpDir, err := os.MkdirTemp("", "user-setup-")
+		Expect(err).ToNot(HaveOccurred())
+		DeferCleanup(os.RemoveAll, tmpDir)
+
+		// Run a copy of the script against a fixture instead of the host /etc/passwd.
+		passwd := filepath.Join(tmpDir, "passwd")
+		Expect(os.WriteFile(passwd, []byte("root:x:0:0:root:/root:/bin/bash\n"), 0664)).To(Succeed())
+		scriptCopy := strings.ReplaceAll(string(script), "/etc/passwd", passwd)
+		Expect(scriptCopy).ToNot(ContainSubstring("/etc/passwd"))
+		scriptPath := filepath.Join(tmpDir, "user_setup")
+		Expect(os.WriteFile(scriptPath, []byte(scriptCopy), 0755)).To(Succeed())
+
+		// ssh resolves ~/.ssh from the passwd home, so it has to be the HOME configured for the image
+		home := filepath.Join(tmpDir, tektonTasksHome)
+		cmd := exec.Command("sh", scriptPath)
+		cmd.Env = []string{"PATH=" + os.Getenv("PATH"), "USER_UID=1001", "USER_NAME=tekton-tasks", "HOME=" + home}
+		output, err := cmd.CombinedOutput()
+		Expect(err).ToNot(HaveOccurred(), string(output))
+
+		content, err := os.ReadFile(passwd)
+		Expect(err).ToNot(HaveOccurred())
+		var entries [][]string
+		for _, line := range strings.Split(strings.TrimSpace(string(content)), "\n") {
+			if fields := strings.Split(line, ":"); len(fields) == 7 && fields[2] == "1001" {
+				entries = append(entries, fields)
+			}
+		}
+		Expect(entries).To(HaveLen(1), "passwd:\n%s", content)
+		Expect(entries[0][5]).To(Equal(home), "passwd home of the default user must be the configured HOME")
 	})
 })
