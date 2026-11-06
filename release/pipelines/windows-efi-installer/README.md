@@ -50,20 +50,21 @@ After the ISO is modified it creates a new VirtualMachine which boots from the m
 ## Pipeline Description
 
 ```
-  import-autounattend-configmaps --- import-win-iso --- modify-windows-iso-file --- create-vm --- wait-for-vmi-status --- create-datasource-root-disk --- cleanup-vm --- delete-imported-configmaps
-                                                     |
-                              create-vm-root-disk ---
+  validate-default-storage-profile --- import-autounattend-configmaps --- import-win-iso --- modify-windows-iso-file --- create-vm --- wait-for-vmi-status --- create-datasource-root-disk --- cleanup-vm --- delete-imported-configmaps
+                                                                                          |
+                                                                     create-vm-root-disk ---
 ```
-1. `import-autounattend-configmaps` imports ConfigMap with `autounattend.xml` needed for automated installation of Windows.
-2. `create-vm-root-disk` creates empty DataVolume which is used for Windows installation.
-3. `import-win-iso` creates new DataVolume with Windows ISO file with name defined in `isoDVName` parameter. The DataVolume needs to be in the same namespace as the PipelineRun (because the PVC is mounted into the PipelineRun pod).
-4. `modify-windows-iso-file` extracts imported ISO file, replaces prompt bootloader (which is used as a default one when EFI is used) with no-prompt bootloader, pack the updated files back to new ISO, convert the ISO and replaces original ISO with updated one.Replacement of bootloader is needed to be able to automate installation of Windows versions which require EFI.
-5. `create-vm` Task creates a VirtualMachine. A DataVolume with the Windows source ISO will be attached as CD-ROM and a second empty DataVolume will be used as installation destination. A third DataVolume with the virtio-win ISO will also be attached (Pipeline parameter `virtioContainerDiskName`). The VirtualMachine has to be created in the same namespace as the DataVolume with the ISO file. In case you would like to run the VirtualMachine in a different namespace, both Datavolumes have to be copied to the same namespace as the VirtualMachine.
-6. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
-7. `create-datasource-root-disk` Task creates a DataSource object, which is used by UI for discovering bootable volumes and links PVC created in `create-vm-root-disk` step.
-8. `cleanup-vm` deletes the installer VirtualMachine and all of its DataVolumes.
-9. The output artifact will be the `baseDvName`/`baseDvNamespace` DataVolume with the basic Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used.
-10. `delete-imported-configmaps` deletes imported ConfigMaps.
+1. `validate-default-storage-profile` is a pre-flight gate that checks the cluster's default `StorageClass` has a `StorageProfile` advertising `volumeMode: Filesystem`. The `import-win-iso` task creates a DataVolume that requires `volumeMode: Filesystem`; if the default `StorageClass` cannot provide it, the import would never provision a PVC and the Pipeline would hang. This task makes the Pipeline fail fast with a clear message before any work (ConfigMap import, DataVolume creation, multi-GB ISO download) starts. It runs before every other task.
+2. `import-autounattend-configmaps` imports ConfigMap with `autounattend.xml` needed for automated installation of Windows.
+3. `create-vm-root-disk` creates empty DataVolume which is used for Windows installation.
+4. `import-win-iso` creates new DataVolume with Windows ISO file with name defined in `isoDVName` parameter. The DataVolume needs to be in the same namespace as the PipelineRun (because the PVC is mounted into the PipelineRun pod).
+5. `modify-windows-iso-file` extracts imported ISO file, replaces prompt bootloader (which is used as a default one when EFI is used) with no-prompt bootloader, pack the updated files back to new ISO, convert the ISO and replaces original ISO with updated one.Replacement of bootloader is needed to be able to automate installation of Windows versions which require EFI.
+6. `create-vm` Task creates a VirtualMachine. A DataVolume with the Windows source ISO will be attached as CD-ROM and a second empty DataVolume will be used as installation destination. A third DataVolume with the virtio-win ISO will also be attached (Pipeline parameter `virtioContainerDiskName`). The VirtualMachine has to be created in the same namespace as the DataVolume with the ISO file. In case you would like to run the VirtualMachine in a different namespace, both Datavolumes have to be copied to the same namespace as the VirtualMachine.
+7. `wait-for-vmi-status` Task waits until the VirtualMachine shuts down.
+8. `create-datasource-root-disk` Task creates a DataSource object, which is used by UI for discovering bootable volumes and links PVC created in `create-vm-root-disk` step.
+9. `cleanup-vm` deletes the installer VirtualMachine and all of its DataVolumes.
+10. The output artifact will be the `baseDvName`/`baseDvNamespace` DataVolume with the basic Windows installation. It will boot into the Windows OOBE and needs to be setup further before it can be used.
+11. `delete-imported-configmaps` deletes imported ConfigMaps.
 
 ## How to run
 
@@ -267,6 +268,7 @@ WIN_IMAGE_DOWNLOAD_URL=$(./getisourl.py)
 ```
 
 ### Common Errors
+- The Pipeline fails at the `validate-default-storage-profile` task with `default StorageClass '<name>' does not support volumeMode=Filesystem`. The `import-win-iso` task imports the Windows ISO into a DataVolume that requires `volumeMode: Filesystem`, but the cluster's default `StorageClass` only advertises other volume modes (for example `Block`). Without this gate the Pipeline would hang indefinitely at `modify-windows-iso-file` waiting for a PVC that is never provisioned (CDI reports `ErrClaimNotValid: no matching accessMode specified in StorageProfile <name>`). Fix it by either setting a Filesystem-capable `StorageClass` as the cluster default, or adding a `Filesystem` `claimPropertySet` to the default `StorageProfile`.
 - The `modify-windows-iso-file` task can end with error `guestfish: access: /tmp/target-pvc/disk.img: Permissions denied`. This error means, the guestfish cannot access the Windows ISO file due to wrong permissions set on the file. This issue can be fixed by adding `taskRunSpecs` to the spec of the PipelineRun:
 ```
 spec:
