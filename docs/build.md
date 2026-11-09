@@ -42,8 +42,8 @@ make release
 - Task steps run with `readOnlyRootFilesystem: true`. A step that writes at runtime must mount a
   writable volume at that path (usually an `emptyDir` at `/tmp`, or at `HOME` for ssh based steps).
   libguestfs based steps also need `/var/tmp`: libguestfs keeps its cache there and qemu creates the
-  appliance snapshot overlay there even when `TMPDIR=/tmp`. `modules/task-manifests` checks the
-  generated task manifests for this.
+  appliance snapshot overlay there even when `TMPDIR=/tmp`. `modules/sharedtest/taskmanifests`
+  checks the generated task manifests for this.
 - `/etc/passwd` cannot be modified at runtime. `build/bin/user_setup` adds an entry for the default
   image user (UID 1001) and keeps `/etc/passwd` not writable by group and others, so that CRI-O
   generates an entry for an arbitrary UID (with `HOME` as its home directory). `ssh` and

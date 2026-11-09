@@ -15,7 +15,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-const repoDir = "../.."
+const repoDir = "../../.."
 
 // HOME of the default user of the quay.io/kubevirt/tekton-tasks image, see build/Containerfile.
 // The passwd entry created for this user by build/bin/user_setup points at this directory.
