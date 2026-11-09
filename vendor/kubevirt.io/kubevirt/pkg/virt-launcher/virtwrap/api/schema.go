@@ -107,6 +107,7 @@ const (
 	AddressCCW     = "ccw"
 
 	ControllerTypePCI              = "pci"
+	ControllerModelPCIRoot         = "pci-root"
 	ControllerModelPCIeRoot        = "pcie-root"
 	ControllerModelPCIeRootPort    = "pcie-root-port"
 	ControllerModelPCIeExpanderBus = "pcie-expander-bus"
@@ -243,11 +244,14 @@ type DomainSpec struct {
 	IOThreads      *IOThreads      `xml:"iothreads,omitempty"`
 	LaunchSecurity *LaunchSecurity `xml:"launchSecurity,omitempty"`
 	OnReboot       string          `xml:"on_reboot,omitempty"`
+	OnCrash        string          `xml:"on_crash,omitempty"`
 	IOMMUFD        *IOMMUFD        `xml:"iommufd,omitempty"`
 }
 
 const DomainOnRebootDestroy = "destroy"
 const DomainOnRebootRestart = "restart"
+
+const DomainOnCrashPreserveRunning = "preserve-running"
 
 type CPUTune struct {
 	VCPUPin     []CPUTuneVCPUPin     `xml:"vcpupin"`
@@ -804,6 +808,7 @@ type PCIHole64 struct {
 
 // BEGIN ControllerTarget
 type ControllerTarget struct {
+	Hotplug  string  `xml:"hotplug,attr,omitempty"`
 	BusNr    *uint32 `xml:"busNr,attr,omitempty"`
 	NUMANode *uint32 `xml:"node,omitempty"`
 }
