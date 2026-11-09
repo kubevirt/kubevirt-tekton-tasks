@@ -4,11 +4,11 @@ go 1.26.0
 
 // Kubernetes
 replace (
-	k8s.io/api => k8s.io/api v0.34.2
-	k8s.io/apimachinery => k8s.io/apimachinery v0.34.2
-	k8s.io/client-go => k8s.io/client-go v0.34.2
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b
-	k8s.io/kubectl => k8s.io/kubectl v0.34.2
+	k8s.io/api => k8s.io/api v0.36.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.36.4
+	k8s.io/client-go => k8s.io/client-go v0.36.4
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260317180543-43fb72c5454a
+	k8s.io/kubectl => k8s.io/kubectl v0.36.4
 	kubevirt.io/containerized-data-importer => kubevirt.io/containerized-data-importer v1.64.0
 	kubevirt.io/containerized-data-importer-api => kubevirt.io/containerized-data-importer-api v1.64.0
 )
@@ -26,21 +26,21 @@ require (
 	github.com/onsi/ginkgo/v2 v2.29.0
 	github.com/onsi/gomega v1.41.0
 	github.com/openshift/client-go v3.9.0+incompatible
-	github.com/tektoncd/pipeline v1.10.2
+	github.com/tektoncd/pipeline v1.11.1
 	go.uber.org/mock v0.6.0
 	go.uber.org/zap v1.28.0
-	k8s.io/api v0.36.1
-	k8s.io/apimachinery v0.36.1
-	k8s.io/cli-runtime v0.36.1
+	k8s.io/api v0.36.4
+	k8s.io/apimachinery v0.36.4
+	k8s.io/cli-runtime v0.36.4
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5
-	knative.dev/pkg v0.0.0-20260210181456-ba7fd23eb13c
-	kubevirt.io/api v1.9.0
-	kubevirt.io/client-go v1.9.0
+	knative.dev/pkg v0.0.0-20260318013857-98d5a706d4fd
+	kubevirt.io/api v1.10.0-rc.0
+	kubevirt.io/client-go v1.10.0-rc.0
 	kubevirt.io/containerdisks v0.0.0-20260518121102-3621cf7f87dd
 	kubevirt.io/containerized-data-importer v0.0.0-00010101000000-000000000000
 	kubevirt.io/containerized-data-importer-api v1.65.0
-	kubevirt.io/kubevirt v1.9.0
+	kubevirt.io/kubevirt v1.10.0-rc.0
 	kubevirt.io/qe-tools v0.1.8
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -85,8 +85,6 @@ require (
 	github.com/go-openapi/swag/yamlutils v0.26.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
-	github.com/google/btree v1.1.3 // indirect
 	github.com/google/cel-go v0.30.0 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
@@ -125,7 +123,6 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
-	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.68.0 // indirect
 	go.opentelemetry.io/otel v1.45.0 // indirect
@@ -163,18 +160,18 @@ require (
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gotest.tools/v3 v3.5.2 // indirect
-	k8s.io/apiextensions-apiserver v0.35.5 // indirect
-	k8s.io/apiserver v0.35.5 // indirect
+	k8s.io/apiextensions-apiserver v0.36.4 // indirect
+	k8s.io/apiserver v0.36.4 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
-	k8s.io/kube-aggregator v0.31.5 // indirect
+	k8s.io/kube-aggregator v0.36.4 // indirect
 	k8s.io/kube-openapi v0.32.5 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4 // indirect
 	kubevirt.io/virt-template-api v0.2.0 // indirect
 	kubevirt.io/virt-template-client-go v0.2.0 // indirect
-	sigs.k8s.io/controller-runtime v0.23.3 // indirect
+	sigs.k8s.io/controller-runtime v0.24.1 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.21.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.21.1 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
+	sigs.k8s.io/structured-merge-diff/v6 v6.3.3 // indirect
 )
