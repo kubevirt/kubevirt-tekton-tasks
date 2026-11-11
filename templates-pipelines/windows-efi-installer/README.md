@@ -20,6 +20,22 @@ After the ISO is modified it creates a new VirtualMachine which boots from the m
 - {{ virt_project }} `>= {{ virt_project_version }}`
 - {{ tekton_project }} `>= {{ tekton_project_version }}`
 - Apply ConfigMaps with Windows sysprep (or select one which you will need) - examples can be found here: https://github.com/kubevirt/kubevirt-tekton-tasks/tree/main/release/pipelines/windows-efi-installer/configmaps
+- The cluster's default `StorageClass` must have a `StorageProfile` that advertises `volumeMode: Filesystem`. The `import-win-iso` task imports the Windows ISO into a DataVolume that is mounted as a filesystem path into the `modify-windows-iso-file` pod (guestfish operates on `disk.img`), so a default `StorageClass` that only supports `volumeMode: Block` will never provision a usable PVC and the Pipeline will hang. See [Verify storage support](#verify-storage-support) below.
+
+### Verify storage support
+
+Before running the Pipeline, confirm that the cluster's default `StorageClass` supports `volumeMode: Filesystem`:
+
+```bash
+# Find the default StorageClass
+DEFAULT_SC=$(oc get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+echo "Default StorageClass: $DEFAULT_SC"
+
+# List the volumeModes its StorageProfile advertises
+oc get storageprofile "$DEFAULT_SC" -o jsonpath='{range .status.claimPropertySets[*]}[{.volumeMode}] {end}'
+```
+
+The output must contain `[Filesystem]`. An empty claimPropertySet list (`[]`) is also fine — it means the `StorageProfile` does not restrict the volume mode and Filesystem is allowed. If only `[Block]` is advertised, either set a Filesystem-capable `StorageClass` as the cluster default, or add a `Filesystem` `claimPropertySet` to the default `StorageProfile`.
 
 ### Obtain Windows 10 ISO download URL
 
@@ -116,6 +132,7 @@ WIN_IMAGE_DOWNLOAD_URL=$(./getisourl.py)
 ```
 
 ### Common Errors
+- The Pipeline hangs at the `import-win-iso` / `modify-windows-iso-file` task and never provisions the ISO PVC. This happens when the cluster's default `StorageClass` does not support `volumeMode: Filesystem` (for example it only advertises `Block`). The `import-win-iso` task imports the Windows ISO into a DataVolume that requires `volumeMode: Filesystem`, so CDI never binds a PVC and reports `ErrClaimNotValid: no matching accessMode specified in StorageProfile <name>`. Fix it by either setting a Filesystem-capable `StorageClass` as the cluster default, or adding a `Filesystem` `claimPropertySet` to the default `StorageProfile`. See [Verify storage support](#verify-storage-support) to check this before running the Pipeline.
 - The `modify-windows-iso-file` task can end with error `guestfish: access: /tmp/target-pvc/disk.img: Permissions denied`. This error means, the guestfish cannot access the Windows ISO file due to wrong permissions set on the file. This issue can be fixed by adding `taskRunSpecs` to the spec of the PipelineRun:
 ```
 spec:
