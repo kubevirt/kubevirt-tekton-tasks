@@ -6,6 +6,19 @@ SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 REPO_DIR="$(realpath "${SCRIPT_DIR}/..")"
 source "./scripts/common.sh"
 
+wait_for_image_registry_default_route() {
+  while true; do
+    if ! host="$(oc get route default-route -n openshift-image-registry --ignore-not-found \
+      -o go-template='{{range .status.ingress}}{{range .conditions}}{{if and (eq .type "Admitted") (eq .status "True")}}{{$.spec.host}}{{end}}{{end}}{{end}}')"; then
+      echo "failed to query route default-route (permanent error)" >&2
+      exit 1
+    fi
+    [[ -n "${host}" ]] && break
+    echo "waiting for image-registry default-route to be admitted..."
+    sleep 5
+  done
+}
+
 resolve_deploy_namespace
 
 IMAGE_REGISTRY=""
@@ -13,10 +26,10 @@ IN_CLUSTER_IMAGE_REGISTRY=""
 
 if [[ "${IS_OKD}" == "true" ]]; then
   oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
+  export -f wait_for_image_registry_default_route
+  timeout 10m bash -c 'wait_for_image_registry_default_route'
   IMAGE_REGISTRY="$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')"
   IN_CLUSTER_IMAGE_REGISTRY="image-registry.openshift-image-registry.svc:5000"
-  # wait for the route
-  sleep 5
 
   podman login -u kubeadmin -p "$(oc whoami -t)" --tls-verify=false "$IMAGE_REGISTRY"
 elif [[ "${IS_MINIKUBE}" == "true" ]]; then
