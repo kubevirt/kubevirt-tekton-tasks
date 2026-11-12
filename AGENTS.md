@@ -27,7 +27,7 @@ When the user references a Jira task (e.g., "read CNV-82681" or "check issue CNV
 | Document | Description |
 |----------|-------------|
 | [AI Workflow Rules](docs/ai-workflow.md) | **Required 2-step process for AI agents** (planning -> approval -> implementation) |
-| [Build & Dependencies](docs/build.md) | Build system, Go/container toolchain, supported environments |
+| [Build & Dependencies](docs/build.md) | Build system, Go/container toolchain, [Python and Ansible requirements](docs/build.md#python-and-ansible-requirements), contributor hosts, supported environments |
 | [YAML Generation](docs/yaml-generation.md) | Ansible-driven task YAML generation pipeline (**never hand-edit `release/`**) |
 | [Code Conventions](docs/code-conventions.md) | Go module structure, testing patterns, error handling, formatting |
 | [Testing](docs/testing.md) | Unit tests, E2E tests, `DEV_MODE` for local images |
