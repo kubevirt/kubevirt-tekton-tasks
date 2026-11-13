@@ -84,13 +84,18 @@ spec:
           value: $(params.script)
         - name: CONNECTION_SECRET_NAME
           value: $(params.secretName)
+        - name: HOME
+          value: /home/tekton-tasks
       volumeMounts:
         - mountPath: /data/connectionsecret/
           name: connectionsecret
           readOnly: true
+        - mountPath: /home/tekton-tasks
+          name: home
       securityContext:
         runAsNonRoot: true
         allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
         capabilities:
           drop:
           - "ALL"
@@ -101,3 +106,5 @@ spec:
       secret:
         secretName: $(params.secretName)
         optional: true
+    - name: home
+      emptyDir: {}
