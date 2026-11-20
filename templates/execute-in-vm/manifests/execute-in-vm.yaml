@@ -90,13 +90,21 @@ spec:
           value: $(params.script)
         - name: CONNECTION_SECRET_NAME
           value: $(params.secretName)
+{# ssh resolves ~/.ssh from the passwd entry home: the image entry for the default
+   user and runtime-generated entries both use this path, backed by an emptyDir
+   because the root filesystem is read-only. #}
+        - name: HOME
+          value: /home/tekton-tasks
       volumeMounts:
         - mountPath: /data/connectionsecret/
           name: connectionsecret
           readOnly: true
+        - mountPath: /home/tekton-tasks
+          name: home
       securityContext:
         runAsNonRoot: true
         allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
         capabilities:
           drop:
           - "ALL"
@@ -107,3 +115,5 @@ spec:
       secret:
         secretName: $(params.secretName)
         optional: true
+    - name: home
+      emptyDir: {}
