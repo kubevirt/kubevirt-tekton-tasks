@@ -24,7 +24,7 @@ spec:
             claimName: iso-dv
       containers:
         - name: http-server
-          image: quay.io/nginx/nginx-unprivileged:latest
+          image: quay.io/nginx/nginx-unprivileged:1.31.6
           ports:
             - containerPort: 8080
           volumeMounts:
