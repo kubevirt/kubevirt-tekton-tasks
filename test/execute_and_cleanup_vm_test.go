@@ -101,12 +101,29 @@ var _ = Describe("Execute in VM / Cleanup VM", func() {
 				}
 			}
 
-			runner.NewTaskRunRunner(f, config.GetTaskRun()).
+			r := runner.NewTaskRunRunner(f, config.GetTaskRun()).
 				CreateTaskRun().
 				ExpectSuccessOrFailure(config.ExpectSuccess).
 				ExpectLogs(config.GetAllExpectedLogs()...).
 				ExpectTermination(config.ExpectedTermination).
 				ExpectResults(nil)
+
+			if config.ExpectSuccess {
+				taskRun := r.GetTaskRun()
+				Expect(taskRun.Status.PodName).ToNot(BeEmpty())
+				pod, err := f.CoreV1Client.Pods(taskRun.Namespace).Get(context.Background(), taskRun.Status.PodName, metav1.GetOptions{})
+				Expect(err).ShouldNot(HaveOccurred())
+
+				var step *corev1.Container
+				for i := range pod.Spec.Containers {
+					if pod.Spec.Containers[i].Name == "step-execute-in-vm" {
+						step = &pod.Spec.Containers[i]
+					}
+				}
+				Expect(step).ToNot(BeNil())
+				Expect(step.SecurityContext).ToNot(BeNil())
+				Expect(step.SecurityContext.ReadOnlyRootFilesystem).To(HaveValue(BeTrue()))
+			}
 		},
 			// negative cases
 			Entry("no vm", &testconfigs.ExecuteOrCleanupVMTestConfig{
