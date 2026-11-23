@@ -22,8 +22,9 @@ RUN task_names=("disk-virt-customize" "disk-virt-sysprep"); \
 
 FROM --platform=linux/${TARGETARCH} quay.io/kubevirt/libguestfs-tools:v1.6.0
 ENV USER_UID=1001 \
-    USER_NAME=tekton-tasks-disk-virt \
-    HOME=/home/${USER_NAME}
+    USER_NAME=tekton-tasks-disk-virt
+# separate ENV: in the same instruction ${USER_NAME} expands to its previous (unset) value
+ENV HOME=/home/${USER_NAME}
 
 # install task binaries
 COPY --from=taskBuilder /out/. /usr/local/bin/
