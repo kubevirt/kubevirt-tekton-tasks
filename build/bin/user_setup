@@ -6,8 +6,13 @@ mkdir -p ${HOME}
 chown ${USER_UID}:0 ${HOME}
 chmod ug+rwx ${HOME}
 
-# runtime user will need to be able to self-insert in /etc/passwd
-chmod g+rw /etc/passwd
+# ssh needs a passwd entry and /etc/passwd is read-only at runtime
+if ! grep -q "^[^:]*:[^:]*:${USER_UID}:" /etc/passwd; then
+  echo "${USER_NAME}:x:${USER_UID}:0:${USER_NAME} user:${HOME}:/sbin/nologin" >> /etc/passwd
+fi
+
+# CRI-O only adds entries for arbitrary UIDs if /etc/passwd is not group/world writable
+chmod go-w /etc/passwd
 
 # no need for this script to remain in the image after running
 rm $0

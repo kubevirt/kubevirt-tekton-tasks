@@ -37,6 +37,7 @@ spec:
       securityContext:
         runAsNonRoot: true
         allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
         capabilities:
           drop:
           - "ALL"
@@ -80,6 +81,10 @@ spec:
         requests:
           devices.kubevirt.io/kvm: '1'
       volumeMounts:
+        - mountPath: /tmp
+          name: tmp
+        - mountPath: /var/tmp
+          name: var-tmp
         - mountPath: /tmp/target-pvc/
           name: target-pvc
         - mountPath: /tmp/extracted-iso-files/
@@ -88,6 +93,7 @@ spec:
       securityContext:
         runAsNonRoot: true
         allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
         capabilities:
           drop:
           - "ALL"
@@ -118,6 +124,7 @@ spec:
       securityContext:
         runAsNonRoot: true
         allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
         capabilities:
           drop:
           - "ALL"
@@ -138,6 +145,10 @@ spec:
         - mountPath: /tmp/iso-file/
           name: iso-file
   volumes:
+    - name: tmp
+      emptyDir: {}
+    - name: var-tmp
+      emptyDir: {}
     - name: target-pvc
       persistentVolumeClaim:
         claimName: "$(params.pvcName)"

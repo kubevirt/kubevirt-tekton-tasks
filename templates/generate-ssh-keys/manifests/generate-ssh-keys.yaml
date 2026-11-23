@@ -76,11 +76,18 @@ spec:
           value: $(params.privateKeySecretNamespace)
         - name: ADDITIONAL_SSH_KEYGEN_OPTIONS
           value: $(params.additionalSSHKeygenOptions)
+      volumeMounts:
+        - mountPath: /tmp
+          name: tmp
       securityContext:
         runAsNonRoot: true
         allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
         capabilities:
           drop:
           - "ALL"
         seccompProfile:
           type: RuntimeDefault
+  volumes:
+    - name: tmp
+      emptyDir: {}
