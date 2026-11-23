@@ -68,14 +68,23 @@ spec:
           name: guestfsappliance
         - mountPath: /mnt/targetpvc/
           name: targetpvc
+        - mountPath: /tmp
+          name: tmp
+        - mountPath: /var/tmp
+          name: var-tmp
       securityContext:
         runAsNonRoot: true
         allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
         capabilities:
           drop:
           - "ALL"
   volumes:
     - name: guestfsappliance
+      emptyDir: {}
+    - name: tmp
+      emptyDir: {}
+    - name: var-tmp
       emptyDir: {}
     - name: targetpvc
       persistentVolumeClaim:
